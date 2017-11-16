@@ -57,31 +57,20 @@ class ProtocopSideBar extends React.Component {
     return (
       <nav id="sidebar">
         <div className="row" style={this.styles.top}>
-          <h2>PROTOCOP </h2>
+          <h2>{'PROTOCOP'}</h2>
         </div>
         <div className="row" style={this.styles.top}>
           <ButtonToolbar>
-            <Button bsStyle="default" bsSize="lg" onClick={this.props.callbacks.collectionNew}>
-              New Blackboard Collection
-              <br />
-              <Glyphicon glyph="duplicate" />
-            </Button>
-            <Button bsStyle="default" bsSize="lg" onClick={this.props.callbacks.collectionLoad}>
-              Open Blackboard Collection
-              <br />
-              <Glyphicon glyph="briefcase" />
-            </Button>
             <Button bsStyle="default" bsSize="lg" onClick={this.props.callbacks.blackboardNewUi}>
-              New Blackboard
+              {'New Blackboard'}
               <br />
               <Glyphicon glyph="file" />
             </Button>
           </ButtonToolbar>
         </div>
-        
         {!noBoards &&
-        <div className="row" style={this.styles.list}>  
-          <h3> Your Blackboards </h3>
+        <div className="row" style={this.styles.list}>
+          <h3>{'Your Blackboards'}</h3>
           <Accordion>
             {boardsFragment}
           </Accordion>
@@ -89,9 +78,9 @@ class ProtocopSideBar extends React.Component {
         }
         {noBoards &&
         <div className="row" style={this.styles.list}>
-          <h3> You don't yet have any blackboards </h3>
+          <h3>{'You don\'t yet have any blackboards'}</h3>
           <Button bsStyle="default" bsSize="lg" onClick={this.props.callbacks.blackboardNewUi}>
-            Create a new Blackboard
+            {'Create a new Blackboard'}
           </Button>
         </div>
         }
