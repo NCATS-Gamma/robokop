@@ -32,7 +32,7 @@ with open(json_file, 'rt') as json_in:
 global collection_location
 collection_location = os.path.abspath(os.path.join('blackboards.db'))
 if os.path.isfile(collection_location) is False:
-    print("Initializeing Empty Blackboards DB")
+    print("Initializing Empty Blackboards DB")
     init_table_name = 'blackboards'
     init_database = sqlite3.connect(collection_location)
     init_cursor = init_database.cursor()
@@ -41,6 +41,18 @@ if os.path.isfile(collection_location) is False:
             .format(init_table_name))
     init_database.commit()
     init_database.close()
+
+
+# Flush the building table every time we start the server
+init_table_name = 'building'
+init_database = sqlite3.connect(collection_location)
+init_cursor = init_database.cursor()
+init_cursor.execute('''DROP TABLE IF EXISTS {};'''.format(init_table_name))
+init_cursor.execute('''CREATE TABLE IF NOT EXISTS {}
+    (id text, name text, description text, query_json text, finished text)'''\
+    .format(init_table_name))
+init_database.commit()
+init_database.close()
 
 # Flask Server code below
 ################################################################################
@@ -118,27 +130,27 @@ def collection_load():
     except:
         raise InvalidUsage('Failed to load blackboard collection.', 410)
 
-@app.route('/blackboard/building', methods=['GET'])
-def blackboard_building():
+@app.route('/building/load', methods=['GET'])
+def building_load():
     """Delivers a list of the boards currently under construction"""
     try:
         global collection_location # Location of the sqllite db file
-
-        # At this point collections are just specialized directory structures
+        
         conn = sqlite3.connect(collection_location)
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM building')
         rows = cursor.fetchall()
         conn.close()
-
+        
         boards = []
         for row in rows:
-            boards.append({
-                'id': row[0],
-                'name': row[1],
-                'description': row[2],
-            })
-
+            if row[4] == "False":
+                boards.append({
+                    'id': row[0],
+                    'name': row[1],
+                    'description': row[2],
+                })
+        
         return jsonify({'boards': boards})
 
     except Exception as ex:
@@ -170,7 +182,7 @@ def blackboard_build():
                 .format(table_name))
         # insert blackboard information into database
         cursor.execute("INSERT INTO {} VALUES (?,?,?,?,?)".format(table_name),\
-            (board_id, board_name, board_description, board_query,"True"))
+            (board_id, board_name, board_description, board_query, "False"))
         database.commit()
         database.close()
 

@@ -45,11 +45,20 @@ class ProtocopBoard extends React.Component {
   render() {
     const noBoard = this.props.board == null;
 
+    let nBoardsBuilding = 0;
+    if (Array.isArray(this.props.boardsBuilding)) {
+      nBoardsBuilding = this.props.boardsBuilding.length;
+    }
+    console.log("Boards saw these boards bulding", this.props.boardsBuilding);
+
     let nBoards = 0;
     if (Array.isArray(this.props.boards)) {
       nBoards = this.props.boards.length;
     }
     const noBoards = nBoards === 0;
+    const noBoardsBuilding = nBoardsBuilding === 0;
+    const showBoardsBrowser = !noBoards || !noBoardsBuilding;
+    const showBoard = !noBoard;
     return (
       <div id="ProtocopBoard">
         <ProtocopBoardMenu
@@ -57,7 +66,7 @@ class ProtocopBoard extends React.Component {
           callbackBacktoList={this.props.callbackBacktoList}
           board={this.props.board}
         />
-        { noBoard && noBoards &&
+        { !showBoard && !showBoardsBrowser &&
           <div id="ProtocopBoard_noboards">
             <div className="row">
               <div className="col-md-10 col-md-offset-1">
@@ -67,7 +76,7 @@ class ProtocopBoard extends React.Component {
               </div>
             </div>
             <div className="row">
-              <div className="col-md-4 col-md-offset-6">
+              <div className="col-md-4 col-md-offset-4">
                 <button className="btn btn-default btn-lg btn-block" type="button" onClick={this.props.callbackBlackboardNewUi}>
                   {'Start a New Blackboard'}
                 </button>
@@ -75,7 +84,7 @@ class ProtocopBoard extends React.Component {
             </div>
           </div>
         }
-        { noBoard && !noBoards &&
+        { !showBoard && showBoardsBrowser &&
           <div id="ProtocopBoard_noboard">
             <div className="row">
               <div className="col-md-10 col-md-offset-1">
@@ -93,7 +102,7 @@ class ProtocopBoard extends React.Component {
             />
           </div>
         }
-        { !noBoard && // You have a board currently loaded
+        { showBoard && // You have a board currently loaded
           // <div id="ProtocopBoard_browser" className="col-md-10 col-md-offset-1">
           <div id="ProtocopBoard_browser" className="col-md-12">
             <Tabs activeKey={this.state.tabKey} onSelect={this.handleTabSelect} id="ProtocopBoardTabs">
