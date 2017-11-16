@@ -1,0 +1,4 @@
+Download neo4j 3.2.6
+Make sure networkx is version 2.0
+add user to neo4j username:python, password:pyword
+pip install neo4j-driver

@@ -1,0 +1,15 @@
+name: covar-ncats
+dependencies:
+- python=3.6
+- numpy>=1.8.0
+- matplotlib
+- scipy>=0.16.1
+- scikit-learn>=0.14
+- ipython
+- pip
+- pip:
+  - neo4j-driver
+  - flask
+- nltk
+- networkx=1.11
+- nb_conda

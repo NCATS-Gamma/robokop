@@ -1,0 +1,16 @@
+.DS_Store
+/node_modules/*
+/static/js/bundle.js
+blackboards.db
+/logs/*
+/dist
+npm-debug.log
+__pycache__
+*.db
+*.bak
+
+# IntelliJ project files
+.idea
+*.iml
+out
+gen
