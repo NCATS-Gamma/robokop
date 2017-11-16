@@ -41,7 +41,7 @@ class ProtocopConstructionGraphViewer extends React.Component {
         // smooth: { type: 'dynamic' },
         color: {
           color: '#000',
-          highlight: '#848484',
+          highlight: '#3da4ed',
           hover: '#333',
         },
         length: 20,
@@ -51,10 +51,10 @@ class ProtocopConstructionGraphViewer extends React.Component {
         color: {
           border: '#000',
           highlight: {
-            border: '#848484',
+            border: '#3da4ed',
           },
           hover: {
-            border: '#333',
+            border: '#000',
           },
         },
         // mass: 6,
@@ -64,7 +64,8 @@ class ProtocopConstructionGraphViewer extends React.Component {
         hover: true,
         zoomView: true,
         dragView: true,
-        // hoverConnectedEdges: true,
+        hoverConnectedEdges: false,
+        selectConnectedEdges: false,
       },
     };
   }
@@ -93,7 +94,12 @@ class ProtocopConstructionGraphViewer extends React.Component {
 
     const g = _.cloneDeep(graph);
     g.nodes = g.nodes.map((n) => {
-      n.color = { background: nodeTypeColorMap[n.name] ? nodeTypeColorMap[n.name] : undefinedColor };
+      const backgroundColor = nodeTypeColorMap[n.name] ? nodeTypeColorMap[n.name] : undefinedColor;
+      n.color = {
+        background: backgroundColor,
+        highlight: { background: backgroundColor },
+        hover: { background: backgroundColor },
+      };
       n.label = n.name;
       return n;
     });
