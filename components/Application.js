@@ -5,6 +5,8 @@ import ProtocopMain from './ProtocopMain';
 import ProtocopStart from './ProtocopStart';
 import Message from './Message';
 
+const _ = require('lodash');
+
 /* Application is the main driver for the application pages and defines
    single-page application.
 */
@@ -26,7 +28,6 @@ class Application extends React.Component {
 
       boards: [],
       boardsBuilding: [],
-      boardsBuildingPrevious: [],
       board: null,
       boardQuery: null,
       boardGraph: null,
@@ -55,10 +56,6 @@ class Application extends React.Component {
       blackboardLoad: this.blackboardLoad.bind(this),
       blackboardUnLoad: this.blackboardUnLoad.bind(this),
       blackboardRank: this.blackboardRank.bind(this),
-
-      blackboardsBuildingAdd: this.blackboardsBuildingAdd.bind(this),
-      blackboardsBuildingRemove: this.blackboardsBuildingAdd.bind(this),
-      blackboardComplete: this.blackboardsBuildingAdd.bind(this),
     };
 
     this.blackboardsBuildingStartPolling = this.blackboardsBuildingStartPolling.bind(this);
@@ -210,6 +207,7 @@ class Application extends React.Component {
   }
   blackboardsBuildingStartPolling() {
     if (!(this.state.buildingPolling)) {
+      this.blackboardsBuildingPoll();
       const pollingJob = setInterval(this.blackboardsBuildingPoll, this.state.buildingPollingInterval);
 
       this.setState({ buildingPolling: true, buildingPollingJob: pollingJob });
@@ -217,10 +215,14 @@ class Application extends React.Component {
   }
   blackboardsBuildingPoll() {
     // Make a request to fetch all of the boards currently under construction
-    $.get(this.getUrl('blackboard/building'), (data) => {
+    $.get(this.getUrl('building/load'), (data) => {
       const boardsBuilding = data.boards;
-      console.log(boardsBuilding);
-      this.setState({ boardsBuilding });
+      const boardBuildingPrevious = this.state.boardsBuilding;
+      if (!(_.isEqual(boardsBuilding, boardBuildingPrevious))) {
+        // There has been an update to the boards building.
+        // Check for new boards here and pop up a notice of some kind
+        this.setState({ boardsBuilding }, this.collectionLoadBackground);
+      }
     }).fail((err) => {
       this.callbacks.onMessageOkRetainReturn('There was a problem communicating with the webserver ....', err.responseText, 'Ok');
     });
@@ -253,17 +255,6 @@ class Application extends React.Component {
     this.blackboardsBuildingRemove(newBoard);
     this.collectionLoad();
     this.onMessageOkCallback('Blackboard Complete!', 'Your blackboard is complete. Would you like to explore it now?', ['Explore Now', 'Maybe Later'], [() => this.callbacks.blackboardLoad(newBoard), this.callbacks.offMessage]);
-  }
-  blackboardsBuildingRemove(doneBoard) {
-    const boardsBuilding = this.state.boardsBuilding;
-    const removeInd = boardsBuilding.findIndex(b => b.id === doneBoard.id);
-    boardsBuilding.splice(removeInd, 1);
-    this.setState({ boardsBuilding });
-  }
-  blackboardsBuildingAdd(newBoard) {
-    const boardsBuilding = this.state.boardsBuilding;
-    boardsBuilding.push(newBoard);
-    this.setState({ boardsBuilding });
   }
   blackboardUnLoad() {
     const newData = {

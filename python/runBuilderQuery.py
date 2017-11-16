@@ -1,5 +1,5 @@
 """Launches the Builder service"""
-
+import sys
 import time
 import json
 import sqlite3
@@ -33,10 +33,7 @@ def runBuilderQuery(database_file, board_id):
         board_name = rows[0][1]
         board_description = rows[0][2]
         board_query = json.loads(rows[0][3])
-        print(board_name)
-        print(board_description)
-        print(board_query)
-
+        
         # convert query to the required form
         # query = boardQueryToRenciQuery(board_query)
 
@@ -73,8 +70,9 @@ def runBuilderQuery(database_file, board_id):
         database = sqlite3.connect(database_file)
         cursor = database.cursor()
         # insert blackboard information into database
-        cursor.execute("INSERT INTO {} VALUES (?,?,?,?,?)".format(table_name),\
-            (board_id, board_name, board_description, json.dumps(board_query), "True"))
+        cursor.execute('''UPDATE {}
+            SET finished = ?
+            WHERE {}'''.format(table_name, condition), ("True",))
         database.commit()
         database.close()
     

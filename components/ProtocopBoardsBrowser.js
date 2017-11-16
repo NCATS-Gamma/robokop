@@ -40,6 +40,14 @@ class ProtocopBoardsBrowser extends React.Component {
   }
 
   generateBoardsContent(boards) {
+    if (boards == null || boards.length === 0) {
+      return [
+        <div key={shortid.generate()}>
+          <h5>{'Blackboards in this Collection'}</h5>
+          <p>{'There are currently no blackboards complete.'}</p>
+        </div>,
+      ];
+    }
     return [
       <div key={shortid.generate()}>
         <h5>{'Blackboards in this Collection'}</h5>

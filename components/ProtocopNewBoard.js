@@ -198,7 +198,6 @@ class ProtocopNewBoard extends React.Component {
       description: this.state.description,
       query: this.state.query,
     };
-    console.log(newBoardInfo);
     this.props.callbackCreate(newBoardInfo);
   }
 
