@@ -80,7 +80,7 @@ class ProtocopBoardsBrowser extends React.Component {
     return [
       <div key={shortid.generate()}>
         <h5>{'Blackboards under Construction'}</h5>
-        <p>{'We are current building these blackboards:'}</p>
+        <p>{'We are currently building these blackboards:'}</p>
         <Table striped bordered condensed hover>
           {/* <thead>
             <tr>
