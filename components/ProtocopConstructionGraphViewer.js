@@ -30,8 +30,8 @@ class ProtocopConstructionGraphViewer extends React.Component {
       layout: {
         hierarchical: {
           enabled: true,
-          levelSeparation: 40,
-          nodeSpacing: 40,
+          levelSeparation: 70,
+          nodeSpacing: 70,
           direction: 'UD',
           parentCentralization: false,
         },
@@ -69,29 +69,6 @@ class ProtocopConstructionGraphViewer extends React.Component {
     };
   }
 
-  addTagsToGraph(graph) {
-    // Adds vis.js specific tags primarily to style graph as desired
-
-    const undefinedColor = '#aaa';
-    const nodeTypeColorMap = {};
-    Object.keys(NodeTypes).forEach(k => (nodeTypeColorMap[NodeTypes[k].tag] = NodeTypes[k].color));
-
-    const g = _.cloneDeep(graph);
-    g.nodes = g.nodes.map((n) => {
-      n.color = { background: nodeTypeColorMap[n.name] ? nodeTypeColorMap[n.name] : undefinedColor };
-      n.label = n.name;
-      return n;
-    });
-    
-    // Prune out support edges
-    // g.edges = g.edges.filter(e => e.type === 'Result'); // Keep only result edges for this graph display
-
-    // const removeEdgeReferences = ['chemotext', 'chemotext2'];
-    // g.edges = g.edges.filter(e => !removeEdgeReferences.reduce((output, value) => output || (value === e.reference), false));
-    // g.edges = g.edges.map(e => ({ ...e, ...{ label: e.scoring.spect_weight.toFixed(2) } }));
-    return g;
-  }
-
   componentDidMount() {
     this.setNetworkCallbacks();
   }
@@ -106,6 +83,23 @@ class ProtocopConstructionGraphViewer extends React.Component {
     this.network.on('doubleClick', () => this.network.fit());
     this.network.on('zoom', () => this.network.off('afterDrawing'));
     this.network.on('dragStart', () => this.network.off('afterDrawing'));
+  }
+
+  addTagsToGraph(graph) {
+    // Adds vis.js specific tags primarily to style graph as desired
+    const undefinedColor = '#aaa';
+    const nodeTypeColorMap = {};
+    Object.keys(NodeTypes).forEach(k => (nodeTypeColorMap[NodeTypes[k].tag] = NodeTypes[k].color));
+
+    const g = _.cloneDeep(graph);
+    g.nodes = g.nodes.map((n) => {
+      n.color = { background: nodeTypeColorMap[n.name] ? nodeTypeColorMap[n.name] : undefinedColor };
+      n.label = n.name;
+      return n;
+    });
+
+    g.edges = g.edges.map(e => ({ ...e, ...{ label: e.reference } })); // Add reference label to edges
+    return g;
   }
 
   render() {

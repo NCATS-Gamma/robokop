@@ -123,6 +123,7 @@ class ProtocopQueryViewer extends React.Component {
               options={options}
               events={{}}
               getNetwork={(network) => { this.network = network; }} // Store network reference in the component
+              style={{ width: '100%' }}
             />
           </div>
         </div>
