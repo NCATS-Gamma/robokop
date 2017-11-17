@@ -33,7 +33,9 @@ def edgeStruct(edge):
 def addNameNodeToQuery(query):
 
     firstNode = query[0]
-    name_type = 'NAME.DISEASE' if firstNode['type'] == 'Disease' else 'NAME.DRUG' if firstNode['type'] == 'Substance' else 'idk'
+    name_type = 'NAME.DISEASE' if firstNode['type'] == 'Disease' or firstNode['type'] == 'Phenotype'
+        else 'NAME.DRUG' if firstNode['type'] == 'Substance'
+        else 'idk'
     zerothNode = {
         "id": "namenode",
         "nodeSpecType": "Named Node",
