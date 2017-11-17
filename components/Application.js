@@ -207,7 +207,6 @@ class Application extends React.Component {
   }
   blackboardsBuildingStartPolling() {
     if (!(this.state.buildingPolling)) {
-      this.blackboardsBuildingPoll();
       const pollingJob = setInterval(this.blackboardsBuildingPoll, this.state.buildingPollingInterval);
 
       this.setState({ buildingPolling: true, buildingPollingJob: pollingJob });
@@ -221,6 +220,20 @@ class Application extends React.Component {
       if (!(_.isEqual(boardsBuilding, boardBuildingPrevious))) {
         // There has been an update to the boards building.
         // Check for new boards here and pop up a notice of some kind
+        const cIds = boardsBuilding.map(b => b.id);
+        const oldIds = boardBuildingPrevious.map(b => b.id);
+
+        // Find all of the ids that are gone (they finished)
+        const finishedIds = oldIds.filter(old => !cIds.reduce((results, cId) => results || old === cId, false));
+        if (finishedIds.length > 0) {
+          // If we had something(s) finish
+          // Find the board object and send those to blackboardComplete
+          const finishedBoards = boardBuildingPrevious.filter(b => finishedIds.reduce((result, f) => result || (f === b.id), false));
+          this.blackboardComplete(finishedBoards);
+        }
+
+        // Update the baords building list in memory
+        // also check for new finished blackboards, this is a harmless saftey check
         this.setState({ boardsBuilding }, this.collectionLoadBackground);
       }
     }).fail((err) => {
@@ -233,6 +246,11 @@ class Application extends React.Component {
     // Update list of boards to include a board in progress
     // this.mainComponent.callbackOpenNewEditor();
     this.onMessageProgress('Starting blackboard builder...', 'Please wait.');
+    
+    // Instantly update our knowledge of this new board.
+    const boardsBuilding = this.state.boardsBuilding;
+    boardsBuilding.push(newBoardInformation);
+    this.setState({ boardsBuilding });
 
     // Tell server to spawn the process
     const postData = {
@@ -252,10 +270,8 @@ class Application extends React.Component {
       this.callbacks.onMessageOkRetainReturn('There was a problem communicating with the webserver ....', err.responseText, 'Ok');
     });
   }
-  blackboardComplete(newBoard) {
-    this.blackboardsBuildingRemove(newBoard);
-    this.collectionLoad();
-    this.onMessageOkCallback('Blackboard Complete!', 'Your blackboard is complete. Would you like to explore it now?', ['Explore Now', 'Maybe Later'], [() => this.callbacks.blackboardLoad(newBoard), this.callbacks.offMessage]);
+  blackboardComplete(newBoards) {
+    //this.onMessageOkCallback('Blackboard Complete!', 'Your blackboard is complete. Would you like to explore it now?', ['Explore Now', 'Maybe Later'], [() => this.callbacks.blackboardLoad(newBoard), this.callbacks.offMessage]);
   }
   blackboardUnLoad() {
     const newData = {
