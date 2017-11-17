@@ -76,7 +76,7 @@
     "buildFromWin:mac": "electron-packager . AdaptiveAlarms --out=dist --ignore='^/dist$' --prune --platform=darwin --arch=x64 --overwrite --asar=true --icon=images/logo.icns",
     "prestart": "babel components --out-dir components-lib",
     "start": "./node_modules/.bin/electron main.js",
-    "test:sm2": "webpack",
+    "webpack": "webpack",
     "test:kdm": "babel components --out-dir components-lib && ./node_modules/.bin/electron main.js -d -c '/Users/kennethmorton/Documents/code/covarRenci/blackboards.db'",
     "test:sm": "babel components --out-dir components-lib &\"./node_modules/.bin/electron\" main.js -d -c \"C:\\Users\\sudee\\OneDrive - CoVar Applied Technologies\\Documents\\Projects\\NCATS\\ncats\\blackboards.db\""
   }

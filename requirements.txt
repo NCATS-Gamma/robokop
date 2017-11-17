@@ -1,0 +1,4 @@
+neo4j-driver
+flask
+nltk
+networkx==1.11
