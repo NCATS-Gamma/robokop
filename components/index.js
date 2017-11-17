@@ -9,4 +9,4 @@ window.jQuery = window.$ = $; // eslint-disable-line
 require('bootstrap');
 const config = require('../config.json');
 
-ReactDOM.render(<Application host={config.host} port={config.port} />, document.getElementById('reactEntry'));
+ReactDOM.render(<Application host={config.clientHost} port={config.port} />, document.getElementById('reactEntry'));

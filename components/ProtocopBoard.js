@@ -49,7 +49,6 @@ class ProtocopBoard extends React.Component {
     if (Array.isArray(this.props.boardsBuilding)) {
       nBoardsBuilding = this.props.boardsBuilding.length;
     }
-    console.log("Boards saw these boards bulding", this.props.boardsBuilding);
 
     let nBoards = 0;
     if (Array.isArray(this.props.boards)) {

@@ -1,1 +1,6 @@
-{"host":"localhost","port":5000}
+{
+  "serverHost": "0.0.0.0",
+  "clientHost": "localhost",
+  "neo4jPort": 7474,
+  "port": 5000
+}

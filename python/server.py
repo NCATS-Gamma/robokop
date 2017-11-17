@@ -267,4 +267,4 @@ def blackboard_rank():
         raise InvalidUsage('Failed to set run query.', 410)
 
 if __name__ == '__main__':
-    app.run(host=local_config['host'], port=local_config['port'], debug=False, use_reloader=False)
+    app.run(host=local_config['serverHost'], port=local_config['port'], debug=False, use_reloader=False)
