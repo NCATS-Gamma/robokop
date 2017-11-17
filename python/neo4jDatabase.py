@@ -14,6 +14,12 @@ class Neo4jDatabase:
         self.json_suffix = '_json'
         print('Connected to database.')
 
+    def getLabels(self):
+        result = list(self.session.run('MATCH (n) RETURN distinct labels(n) as labels'))
+        non_query_labels = ['Type', 'Concept', 'fail']
+        labels = [l for r in result if not any(i in r['labels'] for i in non_query_labels) for l in r['labels']]
+        return labels
+
     def getNodesByLabel(self, label):
         match_string = 'MATCH (n:{})'.format(label)
         support_string = 'WITH collect(n) as nodes CALL apoc.path.subgraphAll(nodes, {maxLevel:0}) YIELD relationships as rels ' + \
