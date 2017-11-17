@@ -32,6 +32,9 @@ class ProtocopBoardMenu extends React.Component {
             <Navbar.Link href="#" onClick={this.props.callbackBacktoList}>Blackboards</Navbar.Link>
           </Navbar.Text>
           <Navbar.Text>
+            <Navbar.Link href="#" onClick={this.props.callbacks.openExternalNeo4j}>Neo4j</Navbar.Link>
+          </Navbar.Text>
+          <Navbar.Text>
             <span className="header-val">{boardName}</span>
           </Navbar.Text>
         </Navbar.Collapse>

@@ -61,6 +61,7 @@ class ProtocopBoard extends React.Component {
     return (
       <div id="ProtocopBoard">
         <ProtocopBoardMenu
+          callbacks={this.props.callbacks}
           callbackToggleSidebar={this.props.callbackToggleSidebar}
           callbackBacktoList={this.props.callbackBacktoList}
           board={this.props.board}
