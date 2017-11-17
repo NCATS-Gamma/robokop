@@ -86,16 +86,18 @@ def initialize():
     return render_template('index.html')
 
 
-def fetch_table_entries(database, table, condition):
+def fetch_table_entries(database, table, condition=''):
     """Helper function to grab a SQL Lite table entries"""
-    conn = sqlite3.connect(database)
-    cursor = conn.cursor()
-
     #####################################################################################################
     # Vulnerable to SQL injection. Hard to see why a user would want to do this since everything is open,
     # but by inserting code into the query name, for example, one could gain access to the database.
-    cursor.execute('SELECT * FROM {} WHERE {}'.format(table, condition))
     #####################################################################################################
+    
+    conn = sqlite3.connect(database)
+    cursor = conn.cursor()
+
+    condition_string = ' WHERE {}'.format(condition) if condition else ''
+    cursor.execute('SELECT * FROM {}'.format(table) + condition_string)
 
     rows = cursor.fetchall()
     conn.close()
