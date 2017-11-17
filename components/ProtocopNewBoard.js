@@ -8,7 +8,6 @@ import CardTypes from './ProtocopQueryEditorCardTypes';
 import NodeTypes from './ProtocopQueryEditorNodeTypes';
 
 const shortid = require('shortid');
-shortid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
 
 class ProtocopNewBoard extends React.Component {
   constructor(props) {
@@ -194,7 +193,7 @@ class ProtocopNewBoard extends React.Component {
 
   callbackCreate() {
     const newBoardInfo = {
-      id: 'Q_'+shortid.generate(),
+      id: this.state.name.split(" ").join("_"),
       name: this.state.name,
       description: this.state.description,
       query: this.state.query,
