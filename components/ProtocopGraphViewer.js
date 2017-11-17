@@ -166,7 +166,7 @@ class ProtocopGraphViewer extends React.Component {
               <h5>
                 {'The blackboard is empty!'}
               </h5>
-              <p>{'There may habe been a problem with the query.'}</p>
+              <p>{'There may have been a problem with the query.'}</p>
             </div>
           </div>
         }
