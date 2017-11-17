@@ -58,6 +58,8 @@ class Application extends React.Component {
       blackboardLoad: this.blackboardLoad.bind(this),
       blackboardUnLoad: this.blackboardUnLoad.bind(this),
       blackboardRank: this.blackboardRank.bind(this),
+      
+      openExternalNeo4j: this.openExternalNeo4j.bind(this),
     };
 
     this.blackboardsBuildingStartPolling = this.blackboardsBuildingStartPolling.bind(this);
@@ -317,6 +319,10 @@ class Application extends React.Component {
       this.callbacks.onMessageOkRetainReturn('There was a problem communicating with the webserver ....', err.responseText, 'Ok');
     });
   }
+  openExternalNeo4j() {
+    const neo4jUrl = `http://${this.props.host}:${this.props.neo4jPort}/browser`;
+    window.open(neo4jUrl, '_blank');
+  }
 
   render() {
     return (
@@ -349,7 +355,7 @@ class Application extends React.Component {
           buttonText={this.state.message_buttonText}
           buttonCallback={this.state.message_buttonCallback}
         />
-         <NotificationContainer />
+        <NotificationContainer />
       </div>
     );
   }
