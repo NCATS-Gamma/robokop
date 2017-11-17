@@ -36,7 +36,12 @@ class ProtocopQueryViewer extends React.Component {
     let nodeTypeColorMap = {};
     Object.keys(NodeTypes).forEach(k => (nodeTypeColorMap[NodeTypes[k].tag] = NodeTypes[k].color));
     graph.nodes = graph.nodes.map((n) => {
-      n.color = { background: nodeTypeColorMap[n.type] ? nodeTypeColorMap[n.type] : undefinedColor };
+      const backgroundColor = nodeTypeColorMap[n.type] ? nodeTypeColorMap[n.type] : undefinedColor;
+      n.color = {
+        background: backgroundColor,
+        highlight: { background: backgroundColor },
+        hover: { background: backgroundColor },
+      };
       return n;
     });
     return graph;
@@ -86,7 +91,7 @@ class ProtocopQueryViewer extends React.Component {
         // smooth: { type: 'dynamic' },
         color: {
           color: '#000',
-          highlight: '#848484',
+          highlight: '#3da4ed',
           hover: '#333',
         },
         length: 20,
@@ -96,10 +101,10 @@ class ProtocopQueryViewer extends React.Component {
         color: {
           border: '#000',
           highlight: {
-            border: '#848484',
+            border: '#3da4ed',
           },
           hover: {
-            border: '#333',
+            border: '#000',
           },
         },
         // mass: 6,
@@ -109,7 +114,8 @@ class ProtocopQueryViewer extends React.Component {
         hover: true,
         zoomView: true,
         dragView: true,
-        // hoverConnectedEdges: true,
+        hoverConnectedEdges: false,
+        selectConnectedEdges: false,
       },
     };
     // console.log('Graphs is:', graph);

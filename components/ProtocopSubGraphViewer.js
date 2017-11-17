@@ -46,6 +46,7 @@ class ProtocopSubGraphViewer extends React.Component {
       },
       nodes: {
         shape: 'box',
+        labelHighlightBold: true,
         color: {
           border: '#000',
           highlight: {
@@ -131,7 +132,12 @@ class ProtocopSubGraphViewer extends React.Component {
     Object.keys(NodeTypes).forEach(k => (nodeTypeColorMap[NodeTypes[k].tag] = NodeTypes[k].color));
 
     g.nodes = g.nodes.map((n, i) => {
-      n.color = { background: nodeTypeColorMap[n.type] ? nodeTypeColorMap[n.type] : undefinedColor };
+      const backgroundColor = nodeTypeColorMap[n.type] ? nodeTypeColorMap[n.type] : undefinedColor;
+      n.color = {
+        background: backgroundColor,
+        highlight: { background: backgroundColor },
+        hover: { background: backgroundColor },
+      };
       n.label = n.name;
       n.x = 100; // Position nodes vertically
       n.y = i * 100;
