@@ -1,6 +1,8 @@
 'use babel';
 
 import React from 'react';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+
 import ProtocopMain from './ProtocopMain';
 import ProtocopStart from './ProtocopStart';
 import Message from './Message';
@@ -271,7 +273,12 @@ class Application extends React.Component {
     });
   }
   blackboardComplete(newBoards) {
-    //this.onMessageOkCallback('Blackboard Complete!', 'Your blackboard is complete. Would you like to explore it now?', ['Explore Now', 'Maybe Later'], [() => this.callbacks.blackboardLoad(newBoard), this.callbacks.offMessage]);
+    // For each newly finished board. Launch a notification.
+    newBoards.forEach((b) => {
+      const message = b.name;
+      const title = 'A new blackboard is ready!';
+      NotificationManager.success(message, title, 10000, () => this.blackboardLoad(b));
+    });
   }
   blackboardUnLoad() {
     const newData = {
@@ -342,6 +349,7 @@ class Application extends React.Component {
           buttonText={this.state.message_buttonText}
           buttonCallback={this.state.message_buttonCallback}
         />
+         <NotificationContainer />
       </div>
     );
   }

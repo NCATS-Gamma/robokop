@@ -43,6 +43,7 @@
     "react-dnd-html5-backend": "^2.5.4",
     "react-dom": "^15.0.0",
     "react-graph-vis": "^1.0.2",
+    "react-notifications": "^1.4.3",
     "react-select": "1.0.0-rc.5",
     "react-sidebar": "^2.3.2",
     "request-promise": "^4.2.2",
