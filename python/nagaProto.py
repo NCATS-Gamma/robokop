@@ -229,7 +229,7 @@ class ProtocopRank:
             cond = lambda e: ((template[0] is None or template[0] == e[0])
                 and  (template[1] is None or template[1] == e[1])
                 and  (template[2] is None or template[2] == e[2])
-                and e[-1]['type']=='Result')
+                and e[-1]['type']=='Result' or e[-1]['type']=='Lookup')
 
             edge_weights = [e[-1]['scoring'][field] for e in edges if cond(e)]
 
