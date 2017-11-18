@@ -80,8 +80,10 @@ class Neo4jDatabase:
         node_conditions = []
         for n in nodes:
             node_conds = []
+            print(n)
             if n['isBoundName']:
-                node_conds += [{'prop':'name', 'val':n['label'], 'op':'=', 'cond':True}]
+                # prefix = "NAME.DISEASE." if n['type'] == "Disease" or n['type'] == "Phenotype" else "NAME.DRUG."
+                node_conds += [{'prop':'name', 'val':n['type']+'.'+n['label'], 'op':'=', 'cond':True}]
             if n['isBoundType']:
                 node_conds += [{'prop':'node_type', 'val':n['type'].replace(' ',''), 'op':'=', 'cond':True}]
             node_conditions += [node_conds]
@@ -92,7 +94,7 @@ class Neo4jDatabase:
         # generate WHERE command string to prune paths to those containing the desired nodes/node types
         node_conditions = [[{k:(c[k] if k!='cond' else '' if c[k] else 'NOT ') for k in c} for c in conds] for conds in node_conditions]
         node_cond_strings = ['{0}{1}.{2}{3}\'{4}\''.format(c['cond'], node_names[i], c['prop'], c['op'], c['val']) for i, conds in enumerate(node_conditions) for c in conds]
-        edge_cond_strings = ["type({0})='Result'".format(r) for r in edge_names]
+        edge_cond_strings = ["(type({0})='Result' OR type({0})='Lookup')".format(r) for r in edge_names]
         where_string = 'WHERE '+' AND '.join(node_cond_strings + edge_cond_strings)
 
         # get other edges connecting these nodes
