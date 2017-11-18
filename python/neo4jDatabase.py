@@ -14,6 +14,46 @@ class Neo4jDatabase:
         self.json_suffix = '_json'
         print('Connected to database.')
 
+    def getQueries(self):
+        label_string = 'MATCH (n) RETURN distinct labels(n) as labels'
+        result = list(self.session.run(label_string))
+        non_query_labels = ['Type', 'Concept', 'fail']
+        labels = [l for r in result if not any(i in r['labels'] for i in non_query_labels) for l in r['labels']]
+        queries = []
+        for label in labels:
+            if label[:7] == 'Query1_':
+                label_string = 'MATCH (n:{}) '.format(label)
+                where_string = "WHERE n.node_type='NAME.DISEASE' "
+                return_string = "RETURN n.name as disease"
+                result = list(self.session.run(label_string+where_string+return_string))
+            elif label[:7] == 'Query2_':
+                label_string = 'MATCH (n:{}) '.format(label)
+                where_string1 = "WHERE n.node_type='NAME.DISEASE' "
+                return_string1 = "WITH n.name as disease "
+                where_string2 = "WHERE n.node_type='NAME.DRUG' "
+                return_string2 = "RETURN n.name as drug, disease "
+                query_string = label_string+where_string1+return_string1+label_string+where_string2+return_string2
+                result = list(self.session.run(query_string))
+            elif label[:7] == 'Query2a':
+                label_string = 'MATCH (n:{}) '.format(label)
+                where_string1 = "WHERE n.node_type='NAME.DISEASE' "
+                return_string1 = "WITH n.name as phenotype "
+                where_string2 = "WHERE n.node_type='NAME.DRUG' "
+                return_string2 = "RETURN n.name as drug, phenotype "
+                query_string = label_string+where_string1+return_string1+label_string+where_string2+return_string2
+                result = list(self.session.run(query_string))
+            query = {k:result[0][k] for k in result[0]}
+            if 'disease' in query and query['disease'][:13] == 'NAME.DISEASE.':
+                query['disease'] = query['disease'][13:]
+            if 'phenotype' in query and query['phenotype'][:13] == 'NAME.DISEASE.':
+                query['phenotype'] = query['phenotype'][13:]
+            if 'drug' in query and query['drug'][:10] == 'NAME.DRUG.':
+                query['drug'] = query['drug'][10:]
+            query['type'] = label.split('_')[0]
+            query['id'] = label
+            queries += [query]
+        return queries
+
     def getLabels(self):
         result = list(self.session.run('MATCH (n) RETURN distinct labels(n) as labels'))
         non_query_labels = ['Type', 'Concept', 'fail']
@@ -43,7 +83,7 @@ class Neo4jDatabase:
                 'node_count':result[0]['node_count'],
                 'edge_count':result[0]['edge_count']
             }
-            return(result)
+            return result
 
 
     def query(self, input):
