@@ -80,20 +80,27 @@ class Neo4jDatabase:
         node_conditions = []
         for n in nodes:
             node_conds = []
-            print(n)
             if n['isBoundName']:
-                # prefix = "NAME.DISEASE." if n['type'] == "Disease" or n['type'] == "Phenotype" else "NAME.DRUG."
-                node_conds += [{'prop':'name', 'val':n['type']+'.'+n['label'], 'op':'=', 'cond':True}]
+                node_conds += [[{'prop':'name', 'val':n['type']+'.'+n['label'], 'op':'=', 'cond':True},\
+                    {'prop':'name', 'val':n['label'], 'op':'=', 'cond':True}]]
             if n['isBoundType']:
-                node_conds += [{'prop':'node_type', 'val':n['type'].replace(' ',''), 'op':'=', 'cond':True}]
+                node_conds += [[{'prop':'node_type', 'val':n['type'].replace(' ',''), 'op':'=', 'cond':True}]]
             node_conditions += [node_conds]
 
         # generate MATCH command string to get paths of the appropriate size
         match_string = 'MATCH '+'({})-'.format(node_names[0])+'-'.join(['[{0}]-({1})'.format(edge_names[i],node_names[i+1]) for i in range(edge_count)])
 
         # generate WHERE command string to prune paths to those containing the desired nodes/node types
-        node_conditions = [[{k:(c[k] if k!='cond' else '' if c[k] else 'NOT ') for k in c} for c in conds] for conds in node_conditions]
-        node_cond_strings = ['{0}{1}.{2}{3}\'{4}\''.format(c['cond'], node_names[i], c['prop'], c['op'], c['val']) for i, conds in enumerate(node_conditions) for c in conds]
+        node_conditions = [[[{k:(c[k] if k!='cond'\
+            else '' if c[k]\
+            else 'NOT ') for k in c}\
+            for c in d]\
+            for d in conds]
+            for conds in node_conditions]
+        node_cond_strings = ['('+' OR '.join(['{0}{1}.{2}{3}\'{4}\''.format(c['cond'], node_names[i], c['prop'], c['op'], c['val'])\
+            for c in d])+')'\
+            for i, conds in enumerate(node_conditions)\
+            for d in conds]
         edge_cond_strings = ["(type({0})='Result' OR type({0})='Lookup')".format(r) for r in edge_names]
         where_string = 'WHERE '+' AND '.join(node_cond_strings + edge_cond_strings)
 
