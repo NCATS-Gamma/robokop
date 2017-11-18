@@ -52,7 +52,7 @@ class ProtocopGraph extends React.Component {
       if (!(edges == null) || Array.isArray(edges)) {
         nEdges = edges.length;
 
-        nEdgesSupport = edges.reduce((total, e) => total + !(e.type === 'Result'), 0);
+        nEdgesSupport = edges.reduce((total, e) => total + !(e.type === 'Result' || e.type === 'Lookup'), 0);
       }
     } else {
       nNodes = this.props.graph.node_count;

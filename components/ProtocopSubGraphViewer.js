@@ -120,7 +120,7 @@ class ProtocopSubGraphViewer extends React.Component {
       }, '');
       return (
         `<div class="vis-tooltip-inner">
-          <div><span class="title">${edge.type === 'Result' ? 'Primary' : 'Supporting'} Edge Type</span></div>
+          <div><span class="title">${edge.type === 'Result' || edge.type === 'Lookup' ? 'Primary' : 'Supporting'} Edge Type</span></div>
           ${innerHtml}
         </div>`
       );
@@ -149,7 +149,7 @@ class ProtocopSubGraphViewer extends React.Component {
     const rng = seedrandom('fixed seed'); // Set seed so re-renders look the same
     g.edges = g.edges.map((e) => {
       let edgeParams = {};
-      if (e.type === 'Result') {
+      if (e.type === 'Result' || e.type === 'Lookup') {
         edgeParams = { smooth: { type: 'curvedCW', roundness: 0 }};
       } else {
         edgeParams = {
