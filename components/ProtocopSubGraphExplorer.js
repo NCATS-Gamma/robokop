@@ -6,6 +6,7 @@ import { Panel, Tabs, Tab, Button, Glyphicon, ListGroup, ListGroupItem } from 'r
 import ProtocopPubmedEntry from './ProtocopPubmedEntry';
 
 const shortid = require('shortid');
+const _ = require('lodash');
 
 class ProtocopSubGraphExplorer extends React.Component {
   constructor(props) {
@@ -65,7 +66,7 @@ class ProtocopSubGraphExplorer extends React.Component {
     // console.log(subgraph.nodes)
     // //console.log(nodeTo)
 
-    const publications = edge.publications;
+    const publications = _.cloneDeep(edge.publications);
     let publicationString = 'No publications were';
     if (publications.length === 1) {
       publicationString = `${publications.length} publication was`;
