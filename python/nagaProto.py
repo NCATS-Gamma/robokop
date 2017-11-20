@@ -17,7 +17,8 @@ class ProtocopRank:
         self._result_count = -1
 
     def set_weights(self):
-        """ Initialize weights on the graph based on metadata. Currently just counts # of publications.
+        """ Initialize weights on the graph based on metadata.
+            Currently just counts # of publications and applies a hand tuned logistic.
         """
         
         pmids = nx.get_edge_attributes(self.G, 'pmids')
@@ -95,6 +96,9 @@ class ProtocopRank:
 
     def rank(self, sub_graph_list):
         """ Primary method to generate a sorted list and scores for a set of subgraphs """
+        if not sub_graph_list:
+            return ([],[])
+
         min_nodes = max(0,min([nx.number_of_nodes(sg) for sg in sub_graph_list])-1)
         
         self.set_weights()
@@ -122,11 +126,11 @@ class ProtocopRank:
 
     def compute_hitting_time(self, sub_graph):
         
-        sg_nodes = sub_graph.nodes()
-        sg_nodes = [n for n in sg_nodes if n[0:5]!='NAME.']
+        sg_nodes = sub_graph.nodes(data=True)
+        sg_nodes = [n for n in sg_nodes if n[-1]['node_type'][0:5]!='NAME.']
         
         # get updated weights
-        sub_graph_update = self.G.subgraph(sg_nodes)
+        sub_graph_update = self.G.subgraph([s[0] for s in sg_nodes])
         
         # calculate hitting time of last node from first node
         L = nx.laplacian_matrix(sub_graph_update.to_undirected())
@@ -156,12 +160,8 @@ class ProtocopRank:
             from_node = edge[0]
             to_node = edge[1]
             
-            # these edges are just naming connections;
-            if from_node[0:5]=='NAME.' or to_node[0:5]=='NAME.':
-                continue
-
             # support edges influence weights only in spectral graph decomposition
-            if edge[-1]['type']=='Support':
+            if edge[-1]['type']=='Support' or edge[-1]['type']=='Lookup':
                 continue
 
             # sum weights along other edges connecting these nodes

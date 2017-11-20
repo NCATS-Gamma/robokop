@@ -9,18 +9,17 @@ def queryAndScore(data):
 
     query = data['query']
     #   query = addNameNodeToQuery(query)
-
-    # csv to neo4j
+    
     d = Neo4jDatabase()
-
+    
     # query graph, neo4j to networkx subgraphs
     G, subgraphs = d.query(query) # conditions lists
     del d
-
+    
     # compute scores with NAGA, export to json
     pr = ProtocopRank(G)
     score_struct = pr.report_scores_dict(subgraphs)
-
+    
     score_struct = list(map(lambda x: {\
         'nodes':[nodeStruct(node) for node in x['nodes']],\
         'edges':[edgeStruct(edge) for edge in x['edges']],\
@@ -80,6 +79,7 @@ def mergeEdges(edges):
     else:
         edge = edges[0]
     edge['publications'] = pubs
+    edge['scoring']['num_pubs'] = len(pubs)
     # make sure we get chemotext2 similarity
     if 'chemotext2' in references:
         edge['similarity'] = edges[references.index('chemotext2')]['similarity']
