@@ -37,7 +37,7 @@ class Application extends React.Component {
       boardRanking: null,
 
       buildingPolling: false,
-      buildingPollingInterval: 5000, // in ms (every 5s seems sufficient)
+      buildingPollingInterval: 20000, // in ms (every 5s seems sufficient)
       buildingPollingJob: {}, // This is the output of setInterval
     };
 
@@ -58,7 +58,7 @@ class Application extends React.Component {
       blackboardLoad: this.blackboardLoad.bind(this),
       blackboardUnLoad: this.blackboardUnLoad.bind(this),
       blackboardRank: this.blackboardRank.bind(this),
-      
+
       openExternalNeo4j: this.openExternalNeo4j.bind(this),
     };
 
