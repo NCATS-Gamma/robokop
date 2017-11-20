@@ -37,7 +37,7 @@ class Application extends React.Component {
       boardRanking: null,
 
       buildingPolling: false,
-      buildingPollingInterval: 5000, // in ms (every 5s seems sufficient)
+      buildingPollingInterval: 20000, // in ms (every 20s seems sufficient)
       buildingPollingJob: {}, // This is the output of setInterval
     };
 
