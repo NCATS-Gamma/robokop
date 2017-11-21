@@ -10,6 +10,7 @@ dependencies:
 - pip:
   - neo4j-driver
   - flask
+  - gunicorn
 - nltk
 - networkx=1.11
 - nb_conda

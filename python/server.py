@@ -19,7 +19,8 @@ app = Flask(__name__, static_folder='../static')
 # static assets can be stored and linked
 
 # Our local config is in the main directory
-config_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
+# We will use this host and port if we are running from python and not gunicorn
+config_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),'..')
 json_file = os.path.join(config_dir,'config.json')
 with open(json_file, 'rt') as json_in:
     local_config = json.load(json_in)
@@ -30,7 +31,7 @@ with open(json_file, 'rt') as json_in:
 
 # We will use a local sqlite DB
 global collection_location
-collection_location = os.path.abspath(os.path.join('blackboards.db'))
+collection_location = os.path.abspath(os.path.join('./blackboards.db'))
 if os.path.isfile(collection_location) is False:
     print("Initializing Empty Blackboards DB")
     init_table_name = 'blackboards'
@@ -46,6 +47,8 @@ if os.path.isfile(collection_location) is False:
 global query_graph
 
 # Flush the building table every time we start the server
+# This only removes our knowledge of boards being constructed
+# When those boards finish they will still show up on the next app launch
 init_table_name = 'building'
 init_database = sqlite3.connect(collection_location)
 init_cursor = init_database.cursor()
