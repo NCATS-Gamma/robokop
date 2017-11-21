@@ -8,12 +8,13 @@ from queryManipulation import *
 def queryAndScore(data):
 
     query = data['query']
+    G = data['graph']
     #   query = addNameNodeToQuery(query)
     
     d = Neo4jDatabase()
     
     # query graph, neo4j to networkx subgraphs
-    G, subgraphs = d.query(query) # conditions lists
+    subgraphs = d.query(query) # conditions lists
     del d
     
     # compute scores with NAGA, export to json

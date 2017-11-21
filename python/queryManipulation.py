@@ -2,19 +2,23 @@ import os
 from nagaProto import ProtocopRank
 import json
 import networkx as nx
+from copy import deepcopy
 
 def networkx2struct(graph):
     return {'nodes': [nodeStruct(node) for node in graph.nodes(data=True)],
             'edges': [edgeStruct(edge) for edge in graph.edges(data=True)]}
 
 def nodeStruct(node):
-    props = node[-1]
+    props = deepcopy(node[-1])
+
+    # rename node_type to type, adding if not present
     props['type'] = props.pop('node_type', [])
+    
     return {**props,\
         'id':node[0]}
 
 def edgeStruct(edge):
-    props = edge[-1]
+    props = deepcopy(edge[-1])
 
     # rename source to reference, adding if not present
     props['reference'] = props.pop('source', [])
