@@ -98,7 +98,7 @@ class ProtocopRanking extends React.Component {
     const noRank = this.props.ranking == null;
     const noAnswers = !noRank && this.props.ranking.length === 0;
     const graph = this.props.graph;
-    
+
     // const isSummary = !(graph == null) && Object.prototype.hasOwnProperty.call(graph, 'node_count');
     const isGraph = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'nodes'));
     let isEmpty = false;
@@ -154,11 +154,11 @@ class ProtocopRanking extends React.Component {
             </div>
           </div>
         }
-        { showAnswers && 
+        { showAnswers &&
           <div>
             <div id="ProtocopRanking_Buttons" className="col-md-12" style={this.styles.buttonRow}>
               <h5>Potential answers have been ranked and are shown below.
-                <span style={{paddingLeft: '20px'}}>
+                <span style={{ paddingLeft: '20px' }}>
                   <ButtonGroup>
                     <Button bsStyle="default" bsSize="sm" onClick={this.props.callbacks.blackboardRank}>
                       <Glyphicon glyph="refresh" /> Refresh Ranking

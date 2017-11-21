@@ -1,7 +1,7 @@
 'use babel';
 
 import React from 'react';
-import { Navbar, Nav, NavItem, Button, Glyphicon } from 'react-bootstrap';
+import { Navbar, Button, Glyphicon } from 'react-bootstrap';
 
 class ProtocopBoardMenu extends React.Component {
   constructor(props) {

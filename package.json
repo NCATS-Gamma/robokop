@@ -28,6 +28,8 @@
     "webpack": "^3.8.1"
   },
   "dependencies": {
+    "ag-grid": "^14.2.0",
+    "ag-grid-react": "^14.2.0",
     "bootstrap": "^3.3.7",
     "bunyan": "^1.8.12",
     "electron": "1.7.9",
@@ -42,6 +44,7 @@
     "react-dnd": "^2.5.4",
     "react-dnd-html5-backend": "^2.5.4",
     "react-dom": "^15.0.0",
+    "react-dom-factories": "^1.0.2",
     "react-graph-vis": "^1.0.2",
     "react-notifications": "^1.4.3",
     "react-select": "1.0.0-rc.5",

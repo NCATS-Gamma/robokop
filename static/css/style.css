@@ -2,25 +2,11 @@
   display: none;
 }
 
-.modalDialog {
-  width: 90%;
-  height: 95%;
-  margin: 2.5% auto;
-  margin-top: 1%;
+.ag-header-cell-label {
+  font-weight: 600;
 }
-
-.modalBodyHeader {
-  height: 90px;
-  overflow-x: auto;
-  overflow-y: auto;
-}
-
-.modalBodyContent {
-  position: relative;
-  margin: 0 auto;
-  width: 100%;
-  height: auto !important;
-  min-height: 100%;
+.ag-row:hover {
+  cursor: hand;
 }
 
 .vertical-center {

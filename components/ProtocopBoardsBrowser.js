@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Button, Table, Glyphicon } from 'react-bootstrap';
+import ProtocopBoardsTable from './ProtocopBoardsTable';
 
 const shortid = require('shortid');
 
@@ -52,16 +53,10 @@ class ProtocopBoardsBrowser extends React.Component {
       <div key={shortid.generate()}>
         <h5>{'Blackboards in this Collection'}</h5>
         <p>{'Select one to explore.'}</p>
-        <Table striped bordered condensed hover>
-          {/* <thead>
-            <tr>
-              <th>Name</th>
-            </tr>
-          </thead> */}
-          <tbody>
-            {this.generateBoardsRows(boards, true)}
-          </tbody>
-        </Table>
+        <ProtocopBoardsTable
+          boards={boards}
+          callbackRowClick={this.props.callbackLoadBoard}
+        />
       </div>,
     ];
   }
