@@ -87,7 +87,7 @@ class ProtocopBoard extends React.Component {
         { !showBoard && showBoardsBrowser &&
           <div id="ProtocopBoard_noboard">
             <div className="row">
-              <div className="col-md-10 col-md-offset-1">
+              <div className="col-md-12">
                 <h4>
                   {'Your blackboards are listed below. Select one to explore or start a new one.'}
                 </h4>

@@ -1,7 +1,7 @@
 'use babel';
 
 import React from 'react';
-import { Navbar, Button, Glyphicon } from 'react-bootstrap';
+import { Navbar } from 'react-bootstrap';
 
 class ProtocopBoardMenu extends React.Component {
   constructor(props) {
@@ -18,13 +18,6 @@ class ProtocopBoardMenu extends React.Component {
     return (
       <Navbar>
         <Navbar.Collapse>
-          <Navbar.Header>
-            <Navbar.Form pullLeft>
-              <Button className="btn" type="button" onClick={this.props.callbackToggleSidebar}>
-                <Glyphicon glyph="menu-hamburger" />
-              </Button>
-            </Navbar.Form>
-          </Navbar.Header>
           <Navbar.Brand>
             <a href="#" onClick={this.props.callbackBacktoList}>PROTOCOP</a>
           </Navbar.Brand>

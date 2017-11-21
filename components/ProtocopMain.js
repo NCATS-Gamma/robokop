@@ -1,8 +1,6 @@
 'use babel';
 
 import React from 'react';
-import Sidebar from 'react-sidebar';
-import ProtocopSideBar from './ProtocopSideBar';
 import ProtocopNewBoard from './ProtocopNewBoard';
 import ProtocopBoard from './ProtocopBoard';
 
@@ -74,42 +72,28 @@ class ProtocopMain extends React.Component {
     }
     return (
       <div id="ProtocopMain" className={`container ${hidden}`}>
-        <Sidebar
-          sidebar={
-            <ProtocopSideBar
-              callbacks={this.props.callbacks}
-              callbackLoadBoard={this.callbackLoadBoard}
-              boards={this.props.boards}
-            />
-          }
-          open={this.state.sidebarVisible}
-          onSetOpen={this.toggleSidebar}
-          sidebarClassName={'sidebar'}
-          styles={this.sidebarStyles}
-        >
-          { this.state.visible.new &&
-          <ProtocopNewBoard
-            callbackCancel={this.callbackCancelNewEditor}
-            callbackCreate={this.callbackCreateNew}
-          />
-          }
-          { this.state.visible.board &&
-          <ProtocopBoard
-            boards={this.props.boards}
-            boardsBuilding={this.props.boardsBuilding}
-            board={this.props.board}
-            boardGraph={this.props.boardGraph}
-            boardConstructionGraph={this.props.boardConstructionGraph}
-            boardQuery={this.props.boardQuery}
-            boardRanking={this.props.boardRanking}
-            callbacks={this.props.callbacks}
-            callbackLoadBoard={this.callbackLoadBoard}
-            callbackBacktoList={this.callbackBacktoList}
-            callbackBlackboardNewUi={this.callbackOpenNewEditor}
-            callbackToggleSidebar={this.toggleSidebar}
-          />
-          }
-        </Sidebar>
+        { this.state.visible.new &&
+        <ProtocopNewBoard
+          callbackCancel={this.callbackCancelNewEditor}
+          callbackCreate={this.callbackCreateNew}
+        />
+        }
+        { this.state.visible.board &&
+        <ProtocopBoard
+          boards={this.props.boards}
+          boardsBuilding={this.props.boardsBuilding}
+          board={this.props.board}
+          boardGraph={this.props.boardGraph}
+          boardConstructionGraph={this.props.boardConstructionGraph}
+          boardQuery={this.props.boardQuery}
+          boardRanking={this.props.boardRanking}
+          callbacks={this.props.callbacks}
+          callbackLoadBoard={this.callbackLoadBoard}
+          callbackBacktoList={this.callbackBacktoList}
+          callbackBlackboardNewUi={this.callbackOpenNewEditor}
+          callbackToggleSidebar={this.toggleSidebar}
+        />
+        }
       </div>
     );
   }
