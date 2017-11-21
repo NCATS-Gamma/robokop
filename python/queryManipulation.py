@@ -9,26 +9,31 @@ def networkx2struct(graph):
 
 def nodeStruct(node):
     props = node[-1]
-    nodeGood = {\
-        'id':node[0],\
-        'type':props['node_type'],\
-        'name':props['name']}
-    return nodeGood
+    props['type'] = props['node_type']
+    props.pop('type', None)
+    return {**props,\
+        'id':node[0]}
 
 def edgeStruct(edge):
     props = edge[-1]
-    edgeGood = {\
+
+    # rename source to reference
+    props['reference'] = props['source']
+    props.pop('source', None)
+
+    # add similarity if not present
+    props['similarity'] = props['similarity'] if 'similarity' in props else []
+
+    # reformat pmids and rename to publications
+    props['publications'] = list(map(lambda x: int(x[5:]), props['pmids']))
+    props.pop('pmids', None)
+
+    # add scoring if not present
+    props['scoring'] = props['scoring'] if 'scoring' in props else []
+    
+    return {**props,\
         'to':edge[1],\
-        'from':edge[0],\
-        'reference':props['source'],\
-        'function':props['function'],\
-        'type':props['type'],\
-        'id':props['id'],\
-        'similarity':props['similarity'] if 'similarity' in props else [],\
-        'publications':list(map(lambda x: int(x[5:]), props['pmids']))}
-    if 'scoring' in props:
-        edgeGood.update({'scoring':props['scoring']})
-    return edgeGood
+        'from':edge[0]}
 
 def addNameNodeToQuery(query):
 
