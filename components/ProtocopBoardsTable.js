@@ -1,6 +1,7 @@
 'use babel';
 
 import React from 'react';
+import { FormControl } from 'react-bootstrap';
 import { AgGridReact, AgGridColumn } from 'ag-grid-react';
 
 class ProtocopBoardsTable extends React.Component {
@@ -8,11 +9,12 @@ class ProtocopBoardsTable extends React.Component {
     super(props);
 
     this.state = {
-      filterText: '',
+      quickFilterText: '',
     };
 
     this.onClick = this.onClick.bind(this);
     this.onGridReady = this.onGridReady.bind(this);
+    this.onFilterTextChange = this.onFilterTextChange.bind(this);
   }
 
   onGridReady(params) {
@@ -29,10 +31,18 @@ class ProtocopBoardsTable extends React.Component {
       this.props.callbackRowClick(board);
     }
   }
-
+  onFilterTextChange(event) {
+    this.setState({ quickFilterText: event.target.value });
+  }
   render() {
     return (
       <div>
+        <FormControl
+          id="filterText"
+          type="text"
+          placeholder="Search"
+          onChange={this.onFilterTextChange}
+        />
         {/* <div className="row">
           <div className="col-md-4">
             {'Filter:'}
@@ -48,6 +58,8 @@ class ProtocopBoardsTable extends React.Component {
                 columnDefs={[{ headerName: 'Blackboard Name', field: 'name', suppressMenu: true }]}
                 rowData={this.props.boards}
                 enableFiltering
+                
+                quickFilterText={this.state.quickFilterText}
                 suppressMovableColumns
                 defaultColDef={{ width: 100, headerComponentParams: { template: '' }}}
                 rowSelection="single"
