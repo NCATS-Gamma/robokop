@@ -250,7 +250,7 @@ class Application extends React.Component {
     // Update list of boards to include a board in progress
     // this.mainComponent.callbackOpenNewEditor();
     this.onMessageProgress('Starting blackboard builder...', 'Please wait.');
-    
+
     // Instantly update our knowledge of this new board.
     const boardsBuilding = this.state.boardsBuilding;
     boardsBuilding.push(newBoardInformation);
@@ -314,7 +314,13 @@ class Application extends React.Component {
 
     const postData = { id: this.state.board.id };
     $.post(this.getUrl('blackboard/rank'), postData, (data) => {
-      this.setState({ boardRanking: data.ranking }, this.offMessage);
+      const boardRanking = data.ranking;
+      if (boardRanking.length === 0) {
+        this.callbacks.onMessageOkRetainReturn('We were unable to find any answers for this blackboard.', 'The blackboard does not have a complete path for the specified query.', 'Ok');
+        this.setState({ boardRanking: [] }, this.offMessage);
+      } else {
+        this.setState({ boardRanking }, this.offMessage);
+      }
     }).fail((err) => {
       this.callbacks.onMessageOkRetainReturn('There was a problem communicating with the webserver ....', err.responseText, 'Ok');
     });

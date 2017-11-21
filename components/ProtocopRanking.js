@@ -6,7 +6,6 @@ import ProtocopSubGraphViewer from './ProtocopSubGraphViewer';
 import ProtocopSubGraphExplorer from './ProtocopSubGraphExplorer';
 
 const shortid = require('shortid');
-//const shell = require('electron').shell;
 
 class ProtocopRanking extends React.Component {
   constructor(props) {
@@ -97,8 +96,9 @@ class ProtocopRanking extends React.Component {
   }
   render() {
     const noRank = this.props.ranking == null;
+    const noAnswers = !noRank && this.props.ranking.length === 0;
     const graph = this.props.graph;
-
+    
     // const isSummary = !(graph == null) && Object.prototype.hasOwnProperty.call(graph, 'node_count');
     const isGraph = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'nodes'));
     let isEmpty = false;
@@ -107,9 +107,25 @@ class ProtocopRanking extends React.Component {
     } else { // isSummary
       isEmpty = graph.node_count === 0;
     }
+
+    const showNoAnswers = noAnswers;
+    const showEmptyGraph = !noAnswers && isEmpty;
+    const showEvalButton = !noAnswers && !isEmpty && noRank;
+    const showAnswers = !noAnswers && !isEmpty && !noRank;
+
     return (
       <div id="ProtocopRanking" className="col-md-12">
-        { isEmpty &&
+        { showNoAnswers &&
+          <div id="ProtocopRanking_NoRank" className="col-md-12">
+            <div className="row">
+              <div className="col-md-6 col-md-offset-3">
+                <h2>{'No answers.'}</h2>
+                <p>{'We couldn\'t find a path through this blackboard to answer the question.'}</p>
+              </div>
+            </div>
+          </div>
+        }
+        { showEmptyGraph &&
           <div id="ProtocopRanking_NoRank" className="col-md-12">
             <div className="row">
               <div className="col-md-6 col-md-offset-3">
@@ -119,7 +135,7 @@ class ProtocopRanking extends React.Component {
             </div>
           </div>
         }
-        { noRank && !isEmpty &&
+        { showEvalButton &&
           <div id="ProtocopRanking_NoRank" className="col-md-12">
             <div className="row">
               <div className="col-md-6 col-md-offset-3">
@@ -138,7 +154,7 @@ class ProtocopRanking extends React.Component {
             </div>
           </div>
         }
-        { !noRank &&
+        { showAnswers && 
           <div>
             <div id="ProtocopRanking_Buttons" className="col-md-12" style={this.styles.buttonRow}>
               <h5>Potential answers have been ranked and are shown below.
