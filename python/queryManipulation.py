@@ -17,15 +17,15 @@ def nodeStruct(node):
 def edgeStruct(edge):
     props = edge[-1]
 
-    # rename source to reference
-    props['reference'] = props['source']
+    # rename source to reference, adding if not present
+    props['reference'] = props['source'] if 'source' in props else []
     props.pop('source', None)
 
     # add similarity if not present
     props['similarity'] = props['similarity'] if 'similarity' in props else []
 
-    # reformat pmids and rename to publications
-    props['publications'] = list(map(lambda x: int(x[5:]), props['pmids']))
+    # reformat pmids and rename to publications, adding if not present
+    props['publications'] = list(map(lambda x: int(x[5:]), props['pmids'])) if 'pmids' in props else []
     props.pop('pmids', None)
 
     # add scoring if not present
