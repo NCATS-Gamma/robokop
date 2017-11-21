@@ -12,6 +12,7 @@ import networkx as nx
 import numpy as np
 import json
 import os
+import time
 import scipy.sparse as sparse
 from scipy.sparse.linalg.eigen.arpack import ArpackNoConvergence
 
@@ -125,18 +126,37 @@ class ProtocopRank:
 
     def rank(self, sub_graph_list):
         """ Primary method to generate a sorted list and scores for a set of subgraphs """
+        # sub_graph_list is a list of lists of dicts with fields 'id' and 'bound'
+
         if not sub_graph_list:
             return ([],[])
 
-        min_nodes = max(0,min([nx.number_of_nodes(sg) for sg in sub_graph_list])-1)
+        min_nodes = max(0, min([len(sg) for sg in sub_graph_list])-1)
         
+        print('set_weights()... ', end='')
+        start = time.time()
         self.set_weights()
-        scores_prod = [self.score(sg,method='prod')**(1/min_nodes) for sg in sub_graph_list]
+        print(time.time()-start, ' seconds elapsed.')
 
+        print("score(method='prod')... ", end='')
+        start = time.time()
+        scores_prod = [self.score(sg, method='prod')**(1/min_nodes) for sg in sub_graph_list]
+        print(time.time()-start, ' seconds elapsed.')
+
+        print("compute_hitting_times()... ", end='')
+        start = time.time()
         hitting_times = [self.compute_hitting_time(sg) for sg in sub_graph_list]
+        print(time.time()-start, ' seconds elapsed.')
 
+        print("modify_weights()... ", end='')
+        start = time.time()
         self.modify_weights()
-        scores_naga = [self.score(sg,method='naga')**(1/min_nodes) for sg in sub_graph_list]
+        print(time.time()-start, ' seconds elapsed.')
+
+        print("score(method='naga')... ", end='')
+        start = time.time()
+        scores_naga = [self.score(sg, method='naga')**(1/min_nodes) for sg in sub_graph_list]
+        print(time.time()-start, ' seconds elapsed.')
         
         min_hit = min(hitting_times)
         scores_hit = [min_hit/h for h in hitting_times]
@@ -144,22 +164,36 @@ class ProtocopRank:
 
         ranked_sub_graph_list = sub_graph_list
 
-        sorted_inds, sorted_scores = zip(*sorted(enumerate(ranking_scores), key = lambda elem: elem[1],reverse=True))
+        sorted_inds, sorted_scores = zip(*sorted(enumerate(ranking_scores), key = lambda elem: elem[1], reverse=True))
         ranked_sub_graph_list = [sub_graph_list[i] for i in sorted_inds]
 
         # add extra computed metadata in self.G to subgraph for display
-        ranked_sub_graph_list = [self.G.subgraph(sub_graph.nodes()) for sub_graph in ranked_sub_graph_list]
-        scoring_info = [{'rank_score':ranking_scores[i],'score_hit':scores_hit[i],'score_naga':scores_naga[i],'score_prod':scores_prod[i],'hit_time':hitting_times[i]} for i in sorted_inds]
+        print("Extracting subgraphs... ", end='')
+        start = time.time()
+        ranked_sub_graph_list = [self.G.subgraph([s['id'] for s in sub_graph]) for sub_graph in ranked_sub_graph_list]
+        print(time.time()-start, ' seconds elapsed.')
+
+        scoring_info = [{\
+            'rank_score':ranking_scores[i],\
+            'score_hit':scores_hit[i],\
+            'score_naga':scores_naga[i],\
+            'score_prod':scores_prod[i],\
+            'hit_time':hitting_times[i]}\
+            for i in sorted_inds]
 
         return (scoring_info, ranked_sub_graph_list)
 
     def compute_hitting_time(self, sub_graph):
-        
-        sg_nodes = sub_graph.nodes(data=True)
-        sg_nodes = [n for n in sg_nodes if n[-1]['node_type'][0:5]!='NAME.']
-        
+        # sub_graph is a list of dicts with fields 'id' and 'bound'
+
         # get updated weights
-        sub_graph_update = self.G.subgraph([s[0] for s in sg_nodes])
+        sub_graph_update = self.G.subgraph([s['id'] for s in sub_graph])
+        
+        sg_nodes = sub_graph_update.nodes(data=True)
+        sg_nodes = [n for n in sg_nodes if n[-1]['node_type'][0:5]!='NAME.']
+
+        # get updated weights
+        sub_graph_update = sub_graph_update.subgraph([s[0] for s in sg_nodes])
         
         # calculate hitting time of last node from first node
         L = nx.laplacian_matrix(sub_graph_update.to_undirected())
@@ -175,11 +209,13 @@ class ProtocopRank:
     def score(self, sub_graph, method='naga'):
         """ Assign a score to a specific subGraph
         sub_graph is a sub_graph of self.G with specification of bounded and unbounded nodes."""
+        # sub_graph is a list of dicts with fields 'id' and 'bound'
         
-        sub_graph_update = self.G.subgraph(sub_graph.nodes())
+        sub_graph_update = self.G.subgraph([s['id'] for s in sub_graph])
         edges = list(sub_graph_update.edges(keys=True,data=True))
 
-        nodes_bound = nx.get_node_attributes(self.G,'bound')
+        # nodes_bound = nx.get_node_attributes(self.G,'bound')
+        nodes_bound = {n['id']:n['bound'] for n in sub_graph}
         
         result_count = self.count_result_templates()
         
@@ -206,7 +242,10 @@ class ProtocopRank:
                 
                 # return the count of instances of this template, as well as the total weights of all
                 # facts corresponding to this template
-                edge_bound = (nodes_bound[from_node], nodes_bound[to_node], edge[-1]['bound'])
+
+                # TODO: deal with bound edges, whatever that means
+                # False below was once edge[-1]['bound']
+                edge_bound = (nodes_bound[from_node], nodes_bound[to_node], False)
                 edge_template = self.factTemplate(edge, edge_bound)
                 [template_count, template_weight] = self.eval_fact_template(edge_template,field='num_pubs')
                 

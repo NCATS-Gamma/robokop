@@ -1,5 +1,6 @@
 """A collection of utility function."""
 
+from copy import deepcopy
 def networkx2struct(graph):
     """Converts a networkX graph to a primitive dictionary with the
         necessary information for protocop-ui
@@ -8,31 +9,30 @@ def networkx2struct(graph):
             'edges': [edgeStruct(edge) for edge in graph.edges(data=True)]}
 
 def nodeStruct(node):
-    props = node[-1]
-    try:
-        props['type'] = props['node_type']
-        props.pop('node_type', None)
-    except:
-        print(props)
+    props = deepcopy(node[-1])
 
-    return {**props, 'id':node[0]}
+    # rename node_type to type, adding if not present
+    props['type'] = props.pop('node_type', [])
+
+    return {**props,\
+        'id':node[0]}
 
 def edgeStruct(edge):
-    props = edge[-1]
+    props = deepcopy(edge[-1])
 
     # rename source to reference, adding if not present
-    props['reference'] = props['source'] if 'source' in props else []
-    props.pop('source', None)
+    props['reference'] = props.pop('source', [])
 
     # add similarity if not present
-    props['similarity'] = props['similarity'] if 'similarity' in props else []
+    if 'similarity' not in props:
+        props['similarity'] = []
 
     # reformat pmids and rename to publications, adding if not present
-    props['publications'] = list(map(lambda x: int(x[5:]), props['pmids'])) if 'pmids' in props else []
-    props.pop('pmids', None)
-
+    props['publications'] = list(map(lambda x: int(x[5:]), props.pop('pmids', [])))
+    
     # add scoring if not present
-    props['scoring'] = props['scoring'] if 'scoring' in props else []
+    if 'scoring' not in props:
+        props['scoring'] = []
     
     return {**props,\
         'to':edge[1],\

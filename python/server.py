@@ -42,6 +42,8 @@ if os.path.isfile(collection_location) is False:
     init_database.commit()
     init_database.close()
 
+# loaded networkx graph
+global query_graph
 
 # Flush the building table every time we start the server
 init_table_name = 'building'
@@ -92,7 +94,7 @@ def fetch_table_entries(database, table, condition=''):
     # Vulnerable to SQL injection. Hard to see why a user would want to do this since everything is open,
     # but by inserting code into the query name, for example, one could gain access to the database.
     #####################################################################################################
-    
+
     conn = sqlite3.connect(database)
     cursor = conn.cursor()
 
@@ -210,6 +212,7 @@ def blackboard_build():
 @app.route('/blackboard/load', methods=['POST'])
 def blackboard_load():
     """Deliver all of the information we have about a blackboard given an id."""
+    global query_graph
     try:
         board_id = request.form.get('id')
         global collection_location
@@ -222,14 +225,14 @@ def blackboard_load():
 
         # Contact Neo4j to get the large graph of this backboard
         database = Neo4jDatabase()
-        out = database.getNodesByLabel(board_id)
+        query_graph = database.getNodesByLabel(board_id)
         # Sometimes the grpah is too large and we get a summary dict
         # Usually though we get a networkx list
-        if isinstance(out, dict):
-            graph = out
+        if isinstance(query_graph, dict):
+            graph = query_graph
         else:
             # Turn the networkx list into a struct for jsonifying
-            graph = networkx2struct(out[0])
+            graph = networkx2struct(query_graph)
 
         return jsonify({'graph': graph,\
             'query': query,\
@@ -249,7 +252,7 @@ def blackboard_rank():
     """
     try:
         board_id = request.form.get('id')
-        global collection_location
+        global collection_location, query_graph
 
         condition = "id='{}'".format(board_id)
         rows = fetch_table_entries(collection_location, 'blackboards', condition)
@@ -258,7 +261,7 @@ def blackboard_rank():
 
         # Query and Score will contact Neo4j
         # We just need to specify the query
-        ranking_data = queryAndScore({'query':query})
+        ranking_data = queryAndScore({'query':query, 'graph':query_graph})
 
         return jsonify({'ranking': ranking_data})
 
