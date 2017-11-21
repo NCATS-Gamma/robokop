@@ -17,6 +17,26 @@ class ProtocopRank:
         self._result_count = -1
 
     def set_weights(self):
+        self.set_weights_pubs()
+        # self.set_weights_symm() # Uncomment this to make initial weight based on chemotext2 instead of publications
+
+    def set_weights_symm(self):
+        """ Initialize weights on the graph based on metadata.
+            Uses chemotext2 edge similarity.
+        """
+        
+        symm = nx.get_edge_attributes(self.G, 'similarity')
+        
+        # apply logistic function to publications to get weights
+        # weights = {edge:1/(1 + np.exp((0.25-symm[edge])/(0.125))) for edge in symm}
+        weights = {edge:1/(1 + np.exp((0.25-symm[edge])/(0.125))) for edge in symm}
+        nx.set_edge_attributes(self.G, values=weights, name='weight')
+        
+        # initialize scoring info
+        # scoring_info = {edge:{'num_pubs':pub_counts[edge], 'pub_weight': weights[edge]} for edge in pub_counts}
+        # nx.set_edge_attributes(self.G, values=scoring_info, name = 'scoring')
+
+    def set_weights_pubs(self):
         """ Initialize weights on the graph based on metadata.
             Currently just counts # of publications and applies a hand tuned logistic.
         """
@@ -165,7 +185,7 @@ class ProtocopRank:
                 continue
 
             # sum weights along other edges connecting these nodes
-            edge_weight = sum([e['weight'] for (key, e) in self.G[from_node][to_node].items()])
+            edge_weight = sum([e['weight'] if 'weight' in e else 0 for (key, e) in self.G[from_node][to_node].items()])
 
             if method=='prod':
                 edge_proba = edge_weight
