@@ -31,7 +31,7 @@ class ProtocopConstructionGraphViewer extends React.Component {
         hierarchical: {
           enabled: true,
           levelSeparation: 70,
-          nodeSpacing: 70,
+          nodeSpacing: 200,
           direction: 'UD',
           parentCentralization: false,
         },

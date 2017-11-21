@@ -10,4 +10,8 @@ export default {
   CL: { tag: 'CL', name: 'Cell', color: '#c5b0d5' },
   UBERON: { tag: 'UBERON', name: 'Anatomy', color: '#daac96' },
   PHAROSDISEASE: { tag: 'PHAROS.DISEASE', name: 'Disease', color: '#ff9896' },
+  HP: { tag: 'HP', name: 'Phenotype', color: '#9edae5' },
+  PUBCHEM: { tag: 'PUBCHEM', name: 'Substance', color: '#aec7e8' },
+  CTD: { tag: 'CTD', name: 'Substance', color: '#aec7e8' },
+  NCBIGENE: { tag: 'NCBIGENE', name: 'Gene', color: '#98df8a' },
 };
