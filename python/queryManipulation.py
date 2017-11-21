@@ -10,7 +10,7 @@ def networkx2struct(graph):
 def nodeStruct(node):
     props = node[-1]
     props['type'] = props['node_type']
-    props.pop('type', None)
+    props.pop('node_type', None)
     return {**props,\
         'id':node[0]}
 
