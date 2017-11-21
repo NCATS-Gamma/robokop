@@ -42,9 +42,6 @@ if os.path.isfile(collection_location) is False:
     init_database.commit()
     init_database.close()
 
-# loaded networkx graph
-global query_graph
-
 # Flush the building table every time we start the server
 init_table_name = 'building'
 init_database = sqlite3.connect(collection_location)
@@ -212,7 +209,6 @@ def blackboard_build():
 @app.route('/blackboard/load', methods=['POST'])
 def blackboard_load():
     """Deliver all of the information we have about a blackboard given an id."""
-    global query_graph
     try:
         board_id = request.form.get('id')
         global collection_location
@@ -252,7 +248,7 @@ def blackboard_rank():
     """
     try:
         board_id = request.form.get('id')
-        global collection_location, query_graph
+        global collection_location
 
         condition = "id='{}'".format(board_id)
         rows = fetch_table_entries(collection_location, 'blackboards', condition)
@@ -261,7 +257,7 @@ def blackboard_rank():
 
         # Query and Score will contact Neo4j
         # We just need to specify the query
-        ranking_data = queryAndScore({'query':query, 'graph':query_graph})
+        ranking_data = queryAndScore({'query':query, 'board_id':board_id})
 
         return jsonify({'ranking': ranking_data})
 

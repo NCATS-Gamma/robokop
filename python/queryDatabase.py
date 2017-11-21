@@ -8,7 +8,9 @@ from queryManipulation import *
 def queryAndScore(data):
 
     query = data['query']
-    G = data['graph']
+    
+    database = Neo4jDatabase()
+    G = database.getNodesByLabel(data['board_id'])
     #   query = addNameNodeToQuery(query)
     
     d = Neo4jDatabase()
