@@ -8,24 +8,23 @@ from queryManipulation import *
 def queryAndScore(data):
 
     query = data['query']
-    #   query = addNameNodeToQuery(query)
-    
+
     d = Neo4jDatabase()
-    
+
     # query graph, neo4j to networkx subgraphs
     G, subgraphs = d.query(query) # conditions lists
     del d
-    
+
     # compute scores with NAGA, export to json
     pr = ProtocopRank(G)
     score_struct = pr.report_scores_dict(subgraphs)
-    
+
     score_struct = list(map(lambda x: {\
         'nodes':[nodeStruct(node) for node in x['nodes']],\
         'edges':[edgeStruct(edge) for edge in x['edges']],\
         'score':x['score']},
         score_struct))
-        
+
     for i in range(len(score_struct)):
         score_struct[i]['edges'] = mergeMultiEdges(score_struct[i]['edges'])
         score_struct[i]['info'] = {
@@ -78,9 +77,21 @@ def mergeEdges(edges):
         edge = edges[types.index('Result')] # there should be at most one Result edge between any two nodes
     else:
         edge = edges[0]
+    
     edge['publications'] = pubs
     edge['scoring']['num_pubs'] = len(pubs)
     # make sure we get chemotext2 similarity
     if 'chemotext2' in references:
         edge['similarity'] = edges[references.index('chemotext2')]['similarity']
+
+    if 'cdw' in references:
+        cdw_edge = edges[references.index('cdw')]
+        edge['cdw'] = {'target_counts': cdw_edge['target_counts'],\
+                       'shared_counts': cdw_edge['shared_counts'],\
+                       'source_counts': cdw_edge['source_counts'],\
+                       'expected_counts': cdw_edge['expected_counts']\
+                       }
+    else:
+        edge['cdw'] = {}
+
     return edge
