@@ -90,7 +90,7 @@ class ProtocopNewBoard extends React.Component {
           {
             id: shortid.generate(),
             type: CardTypes.NAMEDNODETYPE,
-            name: 'Ebola',
+            name: 'Ebola Virus Disease',
             nodeType: NodeTypes.DISEASE.tag,
             displayType: NodeTypes.DISEASE.tag,
             numNodesMin: 0,
@@ -193,7 +193,7 @@ class ProtocopNewBoard extends React.Component {
 
   callbackCreate() {
     const newBoardInfo = {
-      id: this.state.name.split(" ").join("_"),
+      id: this.state.name.split(" ").join("_") + '_' + shortid.generate().replace('-','_');
       name: this.state.name,
       description: this.state.description,
       query: this.state.query,
