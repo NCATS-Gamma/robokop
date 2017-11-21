@@ -166,12 +166,12 @@ class ProtocopSubGraphExplorer extends React.Component {
 
     return ([
       <div>
-        <h4>{'CDW returned the following counts for this relationship:'}</h4>
+        <h4>{'Carolina Data Warehouse results:'}</h4>
         <ul>
-          <li>{`${nodeFrom.name}: ${cdw.source_counts}`}</li>
-          <li>{`${nodeTo.name}: ${cdw.target_counts}`}</li>
-          <li>{`Co-occurance: ${cdw.shared_counts}`}</li>
-          <li>{`Expectation: ${cdw.expected_counts.toFixed(2)}`}</li>
+          <li>{`Number of cases with ${nodeFrom.name}: ${cdw.source_counts}`}</li>
+          <li>{`Number of cases with ${nodeTo.name}: ${cdw.target_counts}`}</li>
+          <li>{`Number of cases with both: ${cdw.shared_counts}`}</li>
+          <li>{`Expected number of cases with both (assuming independence): ${cdw.expected_counts.toFixed(2)}`}</li>
         </ul>
       </div>, true]
     );
@@ -205,12 +205,13 @@ class ProtocopSubGraphExplorer extends React.Component {
       const subgraph = this.props.subgraphs[this.props.selectedSubgraphIndex];
       const subgraphName = subgraph.info.name;
 
-      const nEdges = subgraph.edges.length;
-      const nEdgesSupport = subgraph.edges.reduce((total, e) => total + !(e.type === 'Result'), 0);
-      const nEdgesPrimary = nEdges - nEdgesSupport;
+      const nEdgesSupport = subgraph.edges.reduce((total, e) => total + (e.type === 'Support'), 0);
+      const nEdgesPrimary = subgraph.edges.reduce((total, e) => total + (e.type === 'Result'), 0);
+      // const nEdges = subgraph.edges.length;
+      // const nEdgesPrimary = nEdges - nEdgesSupport;
 
       const edgesPrimary = subgraph.edges.filter(e => (e.type === 'Result'));
-      const edgesSupport = subgraph.edges.filter(e => !(e.type === 'Result'));
+      const edgesSupport = subgraph.edges.filter(e => (e.type === 'Support'));
       const nPubsPrimary = edgesPrimary.reduce((total, e) => total + e.publications.length, 0);
       const nPubsSupport = edgesSupport.reduce((total, e) => total + e.publications.length, 0);
 
