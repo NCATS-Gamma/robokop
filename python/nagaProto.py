@@ -1,3 +1,12 @@
+"""
+ProtocopRank is the base class for ranking subgraphs for a given query.
+The constructor takes a networkx multi-digraph.
+The primary methods are rank(subgraphs) and score(subgraph)
+The most typical use case is:
+    pr = ProtocopRank(G) # Where G is a networkX MultiDiGraph()
+    score_struct = pr.report_scores_dict(subgraphs) #  subgraphs is a list of networkX MultiDiGraph()
+"""
+
 import random
 import networkx as nx
 import numpy as np

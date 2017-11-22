@@ -61,11 +61,6 @@ class ProtocopSubGraphExplorer extends React.Component {
   generateChemotextContent(subgraph, edgeId) {
     const edge = subgraph.edges.filter(e => e.id === edgeId)[0];
     
-    // console.log(edgeId)
-    // console.log(edge)
-    // console.log(subgraph.nodes)
-    // //console.log(nodeTo)
-
     const publications = _.cloneDeep(edge.publications);
     let publicationString = 'No publications were';
     if (publications.length === 1) {
@@ -112,7 +107,7 @@ class ProtocopSubGraphExplorer extends React.Component {
       ];
     }
 
-    return (
+    return ([
       <div className="row" key={shortid.generate()}>
         <div className="col-md-12">
           <div className="row">
@@ -126,14 +121,9 @@ class ProtocopSubGraphExplorer extends React.Component {
             </div>
           </div>
         </div>
-      </div>
-    );
-
-    // console.log(subgraph);
-    // console.log(edge);
-    // console.log(nodeFrom);
-    // console.log(nodeTo);
-    // return (<h4>{'Chemotext Information would go here'} {edgeId} </h4>);
+      </div>,
+      publications.length>0,
+    ]);
   }
   generateChemotext2Content(subgraph, edgeId) {
     const edge = subgraph.edges.filter(e => e.id === edgeId)[0];
@@ -147,8 +137,8 @@ class ProtocopSubGraphExplorer extends React.Component {
     } else {
       simMeasure = sim;
     }
-    
-    return (
+
+    return ([
       <div className="row" key={shortid.generate()}>
         <div className="col-md-12">
           {noSim &&
@@ -158,11 +148,33 @@ class ProtocopSubGraphExplorer extends React.Component {
             <h4>{`ChemoText 2 returned a similarity measure of ${simMeasure.toFixed(4)}`}</h4>
           }
         </div>
-      </div>
+      </div>, 
+      !noSim,
+    ]
     );
   }
   generateCdwContent(subgraph, edgeId) {
-    return (<h4>{'CDW Information would go here'} {edgeId}</h4>);
+    const edge = subgraph.edges.filter(e => e.id === edgeId)[0];
+    const cdw = edge.cdw;
+    const hasData = !(cdw == null) && !_.isEmpty(cdw);
+    if (!hasData) {
+      return [(<h4>{'No CDW information found for this edge.'}</h4>), false];
+    }
+
+    const nodeFrom = subgraph.nodes.filter(n => n.id === edge.from)[0];
+    const nodeTo = subgraph.nodes.filter(n => n.id === edge.to)[0];
+
+    return ([
+      <div>
+        <h4>{'Carolina Data Warehouse results:'}</h4>
+        <ul>
+          <li>{`Number of cases with ${nodeFrom.name}: ${cdw.source_counts}`}</li>
+          <li>{`Number of cases with ${nodeTo.name}: ${cdw.target_counts}`}</li>
+          <li>{`Number of cases with both: ${cdw.shared_counts}`}</li>
+          <li>{`Expected number of cases with both (assuming independence): ${cdw.expected_counts.toFixed(2)}`}</li>
+        </ul>
+      </div>, true]
+    );
   }
   render() {
     const edge = this.props.selectedEdge;
@@ -182,20 +194,24 @@ class ProtocopSubGraphExplorer extends React.Component {
     // Default content for tabs.
     let generalEdgeContent = (<h4>{'No content yet.'}</h4>);
     let chemotextContent = (<h4>{'No content yet.'}</h4>);
+    let hasChemotext = false;
     let chemotext2Content = (<h4>{'No content yet.'}</h4>);
+    let hasChemotext2 = false;
     let cdwContent = (<h4>{'No content yet.'}</h4>);
+    let hasCdw = false;
 
     const subgraphs = this.props.subgraphs;
     if (!(subgraphs == null) && Array.isArray(subgraphs)) {
       const subgraph = this.props.subgraphs[this.props.selectedSubgraphIndex];
       const subgraphName = subgraph.info.name;
 
-      const nEdges = subgraph.edges.length;
-      const nEdgesSupport = subgraph.edges.reduce((total, e) => total + !(e.type === 'Result'), 0);
-      const nEdgesPrimary = nEdges - nEdgesSupport;
+      const nEdgesSupport = subgraph.edges.reduce((total, e) => total + (e.type === 'Support'), 0);
+      const nEdgesPrimary = subgraph.edges.reduce((total, e) => total + (e.type === 'Result'), 0);
+      // const nEdges = subgraph.edges.length;
+      // const nEdgesPrimary = nEdges - nEdgesSupport;
 
       const edgesPrimary = subgraph.edges.filter(e => (e.type === 'Result'));
-      const edgesSupport = subgraph.edges.filter(e => !(e.type === 'Result'));
+      const edgesSupport = subgraph.edges.filter(e => (e.type === 'Support'));
       const nPubsPrimary = edgesPrimary.reduce((total, e) => total + e.publications.length, 0);
       const nPubsSupport = edgesSupport.reduce((total, e) => total + e.publications.length, 0);
 
@@ -252,9 +268,15 @@ class ProtocopSubGraphExplorer extends React.Component {
       if (!splash) {
         // Update content tabs.
         generalEdgeContent = this.generateGeneralEdgeContent(subgraph, edge);
-        chemotextContent = this.generateChemotextContent(subgraph, edge);
-        chemotext2Content = this.generateChemotext2Content(subgraph, edge);
-        cdwContent = this.generateCdwContent(subgraph);
+        const chemotextOutput = this.generateChemotextContent(subgraph, edge);
+        chemotextContent = chemotextOutput[0];
+        hasChemotext = chemotextOutput[1];
+        const chemotext2Output = this.generateChemotext2Content(subgraph, edge);
+        chemotext2Content = chemotext2Output[0];
+        hasChemotext2 = chemotext2Output[1];
+        const cdwContentOutput = this.generateCdwContent(subgraph, edge);
+        cdwContent = cdwContentOutput[0];
+        hasCdw = cdwContentOutput[1];
       }
     }
 
@@ -266,23 +288,23 @@ class ProtocopSubGraphExplorer extends React.Component {
         <div className="row">
           <div className="col-md-12" style={{ paddingTop: '5px' }}>
             { splash &&
-              <h4> Click on an edge in the answer graph for more information.</h4>
+              <h4>{'Click on an edge in the answer graph for more information.'}</h4>
             }
             { !splash &&
               <div>
                 {generalEdgeContent}
                 <Tabs activeKey={this.state.tabKey} onSelect={this.handleTabSelect} id="ProtocopSubGraphTabs">
-                  <Tab eventKey={1} title="ChemoText - Publications">
+                  <Tab eventKey={1} title="ChemoText - Publications" disabled={!hasChemotext}>
                     <div style={{ paddingLeft: '10px', paddingRight: '10px' }}>
                       {chemotextContent}
                     </div>
                   </Tab>
-                  <Tab eventKey={2} title="ChemoText 2 - Text Similarity">
+                  <Tab eventKey={2} title="ChemoText 2 - Text Similarity" disabled={!hasChemotext2}>
                     <div style={{ paddingLeft: '10px', paddingRight: '10px' }}>
                       {chemotext2Content}
                     </div>
                   </Tab>
-                  <Tab eventKey={3} title="CDW">
+                  <Tab eventKey={3} title="CDW" disabled={!hasCdw}>
                     <div style={{ paddingLeft: '10px', paddingRight: '10px' }}>
                       {cdwContent}
                     </div>

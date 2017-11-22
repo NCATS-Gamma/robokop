@@ -1,10 +1,10 @@
-import os
-from nagaProto import ProtocopRank
-import json
-import networkx as nx
-from copy import deepcopy
+"""A collection of utility function."""
 
+from copy import deepcopy
 def networkx2struct(graph):
+    """Converts a networkX graph to a primitive dictionary with the
+        necessary information for protocop-ui
+    """
     return {'nodes': [nodeStruct(node) for node in graph.nodes(data=True)],
             'edges': [edgeStruct(edge) for edge in graph.edges(data=True)]}
 
@@ -13,7 +13,7 @@ def nodeStruct(node):
 
     # rename node_type to type, adding if not present
     props['type'] = props.pop('node_type', [])
-    
+
     return {**props,\
         'id':node[0]}
 

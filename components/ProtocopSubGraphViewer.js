@@ -99,13 +99,14 @@ class ProtocopSubGraphViewer extends React.Component {
     function createTooltip(edge) {
       const defaultNames = {
         num_pubs: { name: 'Publications', precision: 0 },
-        pub_weight: { name: 'Confidence', precision: 4 },
+        // pub_weight: { name: 'Confidence', precision: 4 },
         spect_weight: { name: 'Support Confidence', precision: 4 },
         edge_proba: { name: 'Combined Weight', precision: 4 },
         // proba_query: { name: 'Importance', precision: 4 },
         // proba_info: { name: 'Informativeness', precision: 4 },
       };
-      const defaultOrder = ['num_pubs', 'pub_weight', 'spect_weight', 'edge_proba'];
+      // const defaultOrder = ['num_pubs', 'pub_weight', 'spect_weight', 'edge_proba'];
+      const defaultOrder = ['num_pubs', 'spect_weight', 'edge_proba'];
       const innerHtml = defaultOrder.reduce((sum, k) => {
         if (_.hasIn(edge.scoring, k)) {
           return (
@@ -118,9 +119,16 @@ class ProtocopSubGraphViewer extends React.Component {
         }
         return sum;
       }, '');
+      let edgeTypeString = 'Supporting';
+      if (edge.type === 'Result') {
+        edgeTypeString = 'Primary';
+      } 
+      if (edge.type === 'Lookup') {
+        edgeTypeString = 'Lookup';
+      } 
       return (
         `<div class="vis-tooltip-inner">
-          <div><span class="title">${edge.type === 'Result' || edge.type === 'Lookup' ? 'Primary' : 'Supporting'} Edge Type</span></div>
+          <div><span class="title">${edgeTypeString} Edge</span></div>
           ${innerHtml}
         </div>`
       );
