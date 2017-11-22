@@ -3,13 +3,17 @@ import sys
 import time
 import json
 import sqlite3
+import logging
 
-# import userquery
-# from queryDatabase import addNameNodeToQuery
-# from builder import run_query
-# from greent import node_types
-# from greent.rosetta import Rosetta
-# from builder import KnowledgeGraph
+build = True
+
+import userquery
+from queryDatabase import addNameNodeToQuery
+from greent.rosetta import Rosetta
+from builder import KnowledgeGraph
+from greent.graph_components import KNode
+from lookup_utils import lookup_disease_by_name, lookup_drug_by_name, lookup_phenotype_by_name
+from userquery import UserQuery
 
 def runBuilderQuery(database_file, board_id):
     """Given a board id, create a knowledge graph though querying external data sources.
@@ -19,12 +23,9 @@ def runBuilderQuery(database_file, board_id):
        e.g. asdfly,sdhjdhl,sdflch"""
 
     # initialize rosetta
-    # rosetta = Rosetta()
+    rosetta = Rosetta()
 
-    if ',' in board_id:
-        board_ids = board_id.split(',')
-    else:
-        board_ids = [board_id]
+    board_ids = board_id.split(',')
 
     for board_id in board_ids:
         condition = "id='{}'".format(board_id)
@@ -34,23 +35,31 @@ def runBuilderQuery(database_file, board_id):
         board_description = rows[0][2]
         board_query = json.loads(rows[0][3])
         
-        # convert query to the required form
-        # query = boardQueryToRenciQuery(board_query)
+        try:
+            # convert query to the required form
+            query = boardQueryToRenciQuery(board_query, rosetta)
 
-        # build knowledge graph
-        # kgraph = KnowledgeGraph(query, rosetta)
+            # build knowledge graph
+            kgraph = KnowledgeGraph(query, rosetta)
 
-        # get construction/source graph
-        # sgraph = getSourceGraph(kgraph)
-        sgraph = {'nodes': [], 'edges': []}
+            # get construction/source graph
+            sgraph = getSourceGraph(kgraph)
 
-        # export graph to Neo4j
-        result_name = board_id
-        supports = ['chemotext', 'chemotext2'] # you can add chemotext2 here, but it's really slow
-
-        time.sleep(15)
-
-        # exportBioGraph(kgraph, result_name, supports=supports)
+            # export graph to Neo4j
+            supports = ['chemotext']
+            # supports = ['chemotext', 'chemotext2'] # chemotext2 is really slow
+            exportBioGraph(kgraph, board_id, supports=supports)
+        except:
+            # Set flag in building table to indicated finsihed
+            table_name = 'building'
+            database = sqlite3.connect(database_file)
+            cursor = database.cursor()
+            # insert blackboard information into database
+            cursor.execute('''UPDATE {}
+                SET finished = ?
+                WHERE {}'''.format(table_name, condition), ("Failed",))
+            database.commit()
+            database.close()
         
         # insert blackboard information into blackboards (indicating that it is finished)
         table_name = 'blackboards'
@@ -91,7 +100,7 @@ def fetch_table_entries(database, table, condition):
     conn.close()
     return rows
 
-def boardQueryToRenciQuery(board_query):
+def boardQueryToRenciQuery(board_query, rosetta):
     if not board_query[0]['nodeSpecType'] == 'Named Node':
         raise TypeError('First node should be named.')
     board_query = [dict(n, **{'leadingEdge': board_query[i-1]['meta']})\
@@ -101,26 +110,44 @@ def boardQueryToRenciQuery(board_query):
         if not n['nodeSpecType'] == 'Unspecified Nodes']
     two_sided = board_query[-1]['nodeSpecType'] == 'Named Node'
 
-    def buildOneSidedQuery(bq):
-        bq = addNameNodeToQuery(bq)
-        query = userquery.OneSidedLinearUserQuery(bq[0]['label'], bq[0]['type'].replace(' ', ''))
-        for transition in bq[1:]:
-            query.add_transition(transition['type'].replace(' ', ''),\
-                min_path_length=transition['leadingEdge']['numNodesMin']+1,\
-                max_path_length=transition['leadingEdge']['numNodesMax']+1)
-        return query
-
+    begin, end = 0, -1
+    ids = [None, None]
+    for i in (begin, end):
+        if board_query[i]['nodeSpecType'] == 'Named Node':
+            lookup_fcn = lookup_disease_by_name if board_query[i]['type'] == 'Disease'\
+                else lookup_phenotype_by_name if board_query[i]['type'] == 'Phenotype'\
+                else lookup_drug_by_name if board_query[i]['type'] == 'Substance'\
+                else None
+            ids[i] = lookup_fcn(board_query[i]['label'], rosetta.core )
+    # if len(disease_ids) == 0:
+    #     sys.exit(1)
+    start_name = board_query[0]['label']
+    end_name = board_query[-1]['label']
+    start_type = board_query[0]['type']
+    end_type = board_query[-1]['type']
+    def type2nametype(node_type):
+        name_type = 'NAME.DISEASE' if node_type == 'Disease' or node_type == 'Phenotype' or node_type == 'GeneticCondition'\
+            else 'NAME.DRUG' if node_type == 'Substance'\
+            else None
+        if not name_type:
+            raise ValueError('Unsupported named node type.')
+        return name_type
+    start_name_type = type2nametype(start_type)
+    end_name_type = type2nametype(end_type)
+    start_name_node = KNode( '{}.{}'.format(start_name_type, start_name), start_name_type)
+    end_name_node = KNode( '{}.{}'.format(end_name_type, end_name), end_name_type)
+    query = UserQuery(ids[0], start_type, start_name_node)
     if two_sided:
-        types = [n['type'] for n in board_query]
-        if 'Anatomy' not in types:
-            raise TypeError('Two-sided queries must contain an Anatomy node.')
-        boundary = types.index('Anatomy')
-        # TODO: this may break if the anatomy node is at either end
-        lquery = buildOneSidedQuery(board_query[:boundary+1])
-        rquery = buildOneSidedQuery(board_query[-1:boundary-1:-1])
-        query = userquery.TwoSidedLinearUserQuery(lquery, rquery)
+        middlybits = board_query[1:-1]
     else:
-        query = buildOneSidedQuery(board_query)
+        middlybits = board_query[1:]
+    for transition in middlybits:
+        query.add_transition(transition['type'].replace(' ', ''),\
+            min_path_length=transition['leadingEdge']['numNodesMin']+1,\
+            max_path_length=transition['leadingEdge']['numNodesMax']+1)
+    if two_sided:
+        query.add_transition(end_type, end_values = ids[-1])
+        query.add_end_lookup_node(end_name_node)
     return query
 
 def getSourceGraph(kgraph):
@@ -129,8 +156,8 @@ def getSourceGraph(kgraph):
     construction_graph = []
     for cypher in cyphers:
         programs = kgraph.rosetta.type_graph.db.query(cypher, data_contents=True)
-        if not programs.rows:
-            return None
+        # programs = kgraph.rosetta.type_graph.get_transitions(cypher)
+        # chain = programs[0]
         program = programs.rows[0]
         chain = program[0]
         for link in program[1:]:
@@ -159,47 +186,32 @@ def getSourceGraph(kgraph):
             'type':e['predicate'],
             'id':e['op'],
             'publications':''} for i, e in enumerate(chain[1::2])]
+        # unique edges
+        edges = {e['id']:e for e in edges}
+        edges = [edges[k] for k in edges]
         construction_graph += [{
             'nodes': nodes,
             'edges': edges
         }]
-    def uniqueDictByField(d, k): return list({e[k]:e for e in d}.values())
+    def uniqueDictByField(d, k):
+        return list({e[k]:e for e in d}.values())
     construction_graph = {
         'nodes': uniqueDictByField([n for g in construction_graph for n in g['nodes']], 'id'),
-        'edges': [e for g in construction_graph for e in g['edges']]
+        'edges': uniqueDictByField([e for g in construction_graph for e in g['edges']], 'id')
     }
     return construction_graph
 
 def exportBioGraph(kgraph, result_name, supports=[]):
-    # now the actual graph builder
+    logger = logging.getLogger('application')
+    logger.setLevel(level = logging.DEBUG)
+
     kgraph.execute()
+    kgraph.print_types()
     kgraph.prune()
     kgraph.enhance()
     kgraph.support(supports)
     kgraph.export(result_name)
 
-import zmq
-class Communicator:
-    #   Hello World client in Python
-    #   Connects REQ socket to tcp://localhost:5555
-    #   Sends "Hello" to server
-    def __init__(self):
-        context = zmq.Context()
-        #  Socket to talk to server
-        self.socket = context.socket(zmq.REQ)
-        self.socket.connect("tcp://localhost:5555")
-
-    def askFor(self, question):
-        self.socket.send(question.encode('utf-8'))
-        answer = self.socket.recv().decode('utf-8')
-        answer = json.loads(answer) if question[-5:]=='_json' else answer
-        return answer
-
-    def sendStatus(self, message):
-        self.socket.send(message.encode('utf-8'))
-        # we have to get a reply, because that's how this kind of zmq socket works
-        # there may be a better one to use for this purpose
-        reply = self.socket.recv()
-
 if __name__ == "__main__":
     runBuilderQuery(*sys.argv[1:])
+    print('Done.')
