@@ -192,8 +192,11 @@ class ProtocopNewBoard extends React.Component {
   }
 
   callbackCreate() {
+    var board_id = this.state.name.split(" ").join("_")
+    board_id += '_' + shortid.generate().replace(new RegExp(/[-]/, 'g'), '_');
+    board_id = board_id.replace(new RegExp(/[^a-zA-Z_]/, 'g'), '');
     const newBoardInfo = {
-      id: this.state.name.split(" ").join("_") + '_' + shortid.generate().replace('-','_');
+      id: board_id,
       name: this.state.name,
       description: this.state.description,
       query: this.state.query,
