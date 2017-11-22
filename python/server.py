@@ -190,7 +190,7 @@ def blackboard_build():
         ###############
         # Start subprocess to run builder
         ###############
-        # os.environ['PYTHONPATH'] = '../../greent:../../protocop/builder'
+        os.environ['PYTHONPATH'] = '../greent:../protocop/builder'
         proc = subprocess.Popen(["python", 'python/runBuilderQuery.py', collection_location, board_id])
 
         # Notes:
