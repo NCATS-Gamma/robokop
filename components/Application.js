@@ -241,7 +241,7 @@ class Application extends React.Component {
         this.setState({ boardsBuilding }, this.collectionLoadBackground);
       }
     }).fail((err) => {
-      console.log('Failed to get the list of in process blackboards from the server.');
+      console.log('Failed to get the list of in process blackboards from the server.', err);
       // this.callbacks.onMessageOkRetainReturn('There was a problem communicating with the webserver ....', err.responseText, 'Ok');
     });
   }
