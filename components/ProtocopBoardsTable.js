@@ -22,6 +22,15 @@ class ProtocopBoardsTable extends React.Component {
     this.columnApi = params.columnApi;
 
     this.gridApi.sizeColumnsToFit();
+
+
+    const sort = [
+      {
+        colId: 'name',
+        sort: 'asc',
+      },
+    ];
+    this.gridApi.setSortModel(sort);
   }
   onClick() {
     const selectedRow = this.gridApi.getSelectedRows();
@@ -58,6 +67,7 @@ class ProtocopBoardsTable extends React.Component {
                 columnDefs={[{ headerName: 'Blackboard Name', field: 'name', suppressMenu: true }]}
                 rowData={this.props.boards}
                 enableFiltering
+                enableSorting
                 
                 quickFilterText={this.state.quickFilterText}
                 suppressMovableColumns
