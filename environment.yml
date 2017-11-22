@@ -11,6 +11,7 @@ dependencies:
   - neo4j-driver
   - flask
   - gunicorn
+  - eventlet
 - nltk
 - networkx=1.11
 - nb_conda
