@@ -11,13 +11,10 @@ def queryAndScore(data):
     
     database = Neo4jDatabase()
     G = database.getNodesByLabel(data['board_id'])
-    #   query = addNameNodeToQuery(query)
-    
-    d = Neo4jDatabase()
 
     # query graph, neo4j to networkx subgraphs
-    subgraphs = d.query(query) # conditions lists
-    del d
+    subgraphs = database.query(query) # conditions lists
+    del database
 
     # compute scores with NAGA, export to json
     pr = ProtocopRank(G)
