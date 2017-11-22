@@ -186,14 +186,18 @@ class ProtocopNewBoard extends React.Component {
         ];
         this.editorComponent.child.decoratedComponentInstance.setQuery(newQuery);
         this.setState({ name: 'Question 2: IMATINIB to Asthma', description: 'The clinical outcome pathway of Imatinib for the treatment of Asthma.' });
+        break;
       default:
         break;
     }
   }
 
   callbackCreate() {
+    let boardId = this.state.name.split(' ').join('_');
+    boardId = `${boardId}_${shortid.generate().replace(new RegExp(/[-]/, 'g'), '_')}`;
+    boardId = boardId.replace(new RegExp(/[^a-zA-Z_]/, 'g'), '');
     const newBoardInfo = {
-      id: this.state.name.split(' ').join('_') + '_' + shortid.generate().replace('-', '_'),
+      id: boardId,
       name: this.state.name,
       description: this.state.description,
       query: this.state.query,
