@@ -114,11 +114,11 @@ class Neo4jDatabase:
                 node_conds += [[{'prop':'name', 'val':n['type']+'.'+n['label'], 'op':'=', 'cond':True},\
                     {'prop':'name', 'val':n['label'], 'op':'=', 'cond':True}]]
             if n['isBoundType']:
-                node_conds += [[{'prop':'node_type', 'val':n['type'].replace(' ',''), 'op':'=', 'cond':True}]]
+                node_conds += [[{'prop':'node_type', 'val':n['type'].replace(' ', ''), 'op':'=', 'cond':True}]]
             node_conditions += [node_conds]
 
         # generate MATCH command string to get paths of the appropriate size
-        match_string = 'MATCH '+'({})-'.format(node_names[0])+'-'.join(['[{0}]-({1})'.format(edge_names[i],node_names[i+1]) for i in range(edge_count)])
+        match_string = 'MATCH '+'({})-'.format(node_names[0])+'-'.join(['[{0}]-({1})'.format(edge_names[i], node_names[i+1]) for i in range(edge_count)])
 
         # generate WHERE command string to prune paths to those containing the desired nodes/node types
         node_conditions = [[[{k:(c[k] if k!='cond'\
@@ -135,7 +135,7 @@ class Neo4jDatabase:
         where_string = 'WHERE '+' AND '.join(node_cond_strings + edge_cond_strings)
 
         # add bound fields and return map
-        return_string = 'RETURN ['+', '.join(['{{id:{0}.id, bound:{1}}}'.format(n, 'True' if b else 'False') for n, b in zip(node_names, node_bound)])+'] as nodes'
+        return_string = 'RETURN DISTINCT ['+', '.join(['{{id:{0}.id, bound:{1}}}'.format(n, 'True' if b else 'False') for n, b in zip(node_names, node_bound)])+'] as nodes'
 
         # return subgraphs matching query
         query_string = ' '.join([match_string, where_string, return_string])
