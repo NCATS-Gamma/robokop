@@ -18,9 +18,11 @@ sed -i -e 's/localhost/tyrosine.ncats.io/' config.json
 # webpack
 npm run webpack
 
-# start python server in separate process
-nohup python python/server.py &
+# start python server with nohup so that we can exit the ssh session
+# nohup python python/server.py # start the python server as a single thread
+nohup gunicorn -c serverConfig.py python.wsgi:app
 
 # detach from docker container and close ssh session
 [CTRL-P], [CTRL-Q]
 exit
+

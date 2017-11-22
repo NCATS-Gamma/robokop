@@ -18,20 +18,15 @@ app = Flask(__name__, static_folder='../static')
 # Set default static folder to point to parent static folder where all
 # static assets can be stored and linked
 
-# Our local config is in the main directory
-# We will use this host and port if we are running from python and not gunicorn
-config_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),'..')
-json_file = os.path.join(config_dir,'config.json')
-with open(json_file, 'rt') as json_in:
-    local_config = json.load(json_in)
-
-# # We need to have the following config parameters
-# local_config['host'] = 'localhost'
-# local_config['port'] = 5000
-
 # We will use a local sqlite DB
+# We will hold a global reference to the path
 global collection_location
-collection_location = os.path.abspath(os.path.join('./blackboards.db'))
+collection_location = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'..','blackboards.db'))
+# Since we start gunicorn / the server from the root directory and not the python dir
+# It's in the directory above this files.
+
+# If we don't have a blackboards.db for somereason.
+# Initialize one
 if os.path.isfile(collection_location) is False:
     print("Initializing Empty Blackboards DB")
     init_table_name = 'blackboards'
@@ -45,7 +40,7 @@ if os.path.isfile(collection_location) is False:
 
 # Flush the building table every time we start the server
 # This only removes our knowledge of boards being constructed
-# When those boards finish they will still show up on the next app launch
+# When those boards finish they will still show up on the next page refresh
 init_table_name = 'building'
 init_database = sqlite3.connect(collection_location)
 init_cursor = init_database.cursor()
@@ -271,4 +266,17 @@ def blackboard_rank():
         raise InvalidUsage('Failed to set run query.', 410)
 
 if __name__ == '__main__':
+    # If 
+
+    # Our local config is in the main directory
+    # We will use this host and port if we are running from python and not gunicorn
+    config_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),'..')
+    json_file = os.path.join(config_dir,'config.json')
+    with open(json_file, 'rt') as json_in:
+        local_config = json.load(json_in)
+
+    # # We need to have the following config parameters
+    # local_config['host'] = 'localhost'
+    # local_config['port'] = 5000
+
     app.run(host=local_config['serverHost'], port=local_config['port'], debug=False, use_reloader=False)

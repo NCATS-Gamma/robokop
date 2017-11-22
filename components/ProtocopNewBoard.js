@@ -193,7 +193,7 @@ class ProtocopNewBoard extends React.Component {
 
   callbackCreate() {
     const newBoardInfo = {
-      id: this.state.name.split(" ").join("_") + '_' + shortid.generate().replace('-','_');
+      id: this.state.name.split(' ').join('_') + '_' + shortid.generate().replace('-', '_'),
       name: this.state.name,
       description: this.state.description,
       query: this.state.query,
