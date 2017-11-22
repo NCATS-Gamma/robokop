@@ -16,3 +16,4 @@ with open(json_file, 'rt') as json_in:
 
 bind = '{}:{}'.format(local_config['serverHost'], local_config['port'])
 workers = 4
+worker_class = 'eventlet'
