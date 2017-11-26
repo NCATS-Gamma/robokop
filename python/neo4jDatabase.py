@@ -1,16 +1,18 @@
-from neo4j.v1 import GraphDatabase, basic_auth
-import os, json, time
+import os
+import json
+import time
 import networkx as nx
-from networkx.readwrite import json_graph
-
 from queryManipulation import *
+from neo4j.v1 import GraphDatabase, basic_auth
 
 class Neo4jDatabase:
 
-    def __init__(self):
+    def __init__(self, clientHost='127.0.0.1'):
         # connect to neo4j database
-        self.driver = GraphDatabase.driver("bolt://localhost:7687", auth=basic_auth("python", "pyword"))
+        self.driver = GraphDatabase.driver("bolt://"+clientHost+":7687", auth=basic_auth("python", "pyword"))
+        print('Initialized driver.')
         self.session = self.driver.session()
+        print('Started session.')
         self.json_suffix = '_json'
         print('Connected to database.')
 
@@ -61,16 +63,18 @@ class Neo4jDatabase:
         return labels
 
     def getNodesByLabel(self, label):
-
         match_string = 'MATCH (n:{})'.format(label)
         return_string = 'RETURN [n{.*}] as nodes'
         query_string = ' '.join([match_string, return_string])
+        print('Getting nodes by label.')
         result = list(self.session.run(query_string))
+
         match_string = 'MATCH (n:{})'.format(label)
         support_string = 'WITH collect(n) as nodes CALL apoc.path.subgraphAll(nodes, {maxLevel:0}) YIELD relationships as rels ' + \
             'UNWIND rels as r '
         return_string = 'RETURN [r{.*, start:startNode(r).id, end:endNode(r).id, type:type(r), id:id(r)}] as rels'
         query_string = ' '.join([match_string, support_string, return_string])
+        print('Getting edges by label.')
         result += list(self.session.run(query_string))
 
         return self.n2n(result)

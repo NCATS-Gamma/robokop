@@ -1,6 +1,6 @@
 {
   "serverHost": "0.0.0.0",
-  "clientHost": "localhost",
+  "clientHost": "127.0.0.1",
   "neo4jPort": 7474,
   "port": 5000
 }
