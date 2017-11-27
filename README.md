@@ -1,4 +1,4 @@
-# PROTOCOP Ranking and Userinterface
+# PROTOCOP Ranking and User Interface
 
 The answer ranking and user interface modules for PROTOCOP, a submission for the NCATS Reasoner.
 
