@@ -1,9 +1,9 @@
 """Flask web server thread"""
 import os
 import json
-
 import sqlite3
 import subprocess
+import logging
 
 from flask import Flask, jsonify, request, render_template
 
@@ -22,6 +22,15 @@ app = Flask(__name__, static_folder='../static')
 # We will hold a global reference to the path
 global collection_location
 collection_location = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'..','blackboards.db'))
+
+# Our local config is in the main directory
+# We will use this host and port if we are running from python and not gunicorn
+global local_config
+config_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),'..')
+json_file = os.path.join(config_dir,'config.json')
+with open(json_file, 'rt') as json_in:
+    local_config = json.load(json_in)
+
 # Since we start gunicorn / the server from the root directory and not the python dir
 # It's in the directory above this files.
 
@@ -102,6 +111,10 @@ def fetch_table_entries(database, table, condition=''):
 
 @app.route('/collection/load', methods=['POST'])
 def collection_load():
+    logger = logging.getLogger('application')
+    logger.setLevel(level = logging.DEBUG)
+    logger.error('Loading collection...')
+    
     """Delivers the list of all available boards"""
     try:
         global collection_location # Location of the sqllite db file
@@ -206,6 +219,11 @@ def blackboard_build():
 
 @app.route('/blackboard/load', methods=['POST'])
 def blackboard_load():
+    global local_config
+    logger = logging.getLogger('application')
+    logger.setLevel(level = logging.DEBUG)
+    logger.error('Loading blackboard...')
+
     """Deliver all of the information we have about a blackboard given an id."""
     try:
         board_id = request.form.get('id')
@@ -218,7 +236,7 @@ def blackboard_load():
         construction_graph = json.loads(rows[0][4])
 
         # Contact Neo4j to get the large graph of this backboard
-        database = Neo4jDatabase()
+        database = Neo4jDatabase(local_config['clientHost'])
         query_graph = database.getNodesByLabel(board_id)
         # Sometimes the grpah is too large and we get a summary dict
         # Usually though we get a networkx list
@@ -266,17 +284,4 @@ def blackboard_rank():
         raise InvalidUsage('Failed to set run query.', 410)
 
 if __name__ == '__main__':
-    # If 
-
-    # Our local config is in the main directory
-    # We will use this host and port if we are running from python and not gunicorn
-    config_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),'..')
-    json_file = os.path.join(config_dir,'config.json')
-    with open(json_file, 'rt') as json_in:
-        local_config = json.load(json_in)
-
-    # # We need to have the following config parameters
-    # local_config['host'] = 'localhost'
-    # local_config['port'] = 5000
-
     app.run(host=local_config['serverHost'], port=local_config['port'], debug=False, use_reloader=False)
