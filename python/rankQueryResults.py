@@ -1,6 +1,7 @@
 import argparse
 import json
 import sqlite3
+import os
 from queryDatabase import queryAndScore
 
 def loadQuery(database_file, board_id):
@@ -30,7 +31,7 @@ def loadAndRank(database_file, board_id, output=None, results_count=10):
 
 if __name__ == '__main__':
 
-    default_database = '../blackboards.db'
+    default_database = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'..','blackboards.db'))
     default_query_id = 'Query1_Ebola_Virus_Disease_cdw_chemotext2_chemotext'
     default_n = 10
 
