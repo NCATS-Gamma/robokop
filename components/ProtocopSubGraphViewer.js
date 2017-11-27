@@ -135,7 +135,7 @@ class ProtocopSubGraphViewer extends React.Component {
     }
     // Adds vis.js specific tags primarily to style graph as desired
     const g = _.cloneDeep(graph);
-    const undefinedColor = '#aaa';
+    const undefinedColor = '#f2f2f2';
     const nodeTypeColorMap = {};
     Object.keys(NodeTypes).forEach(k => (nodeTypeColorMap[NodeTypes[k].tag] = NodeTypes[k].color));
 

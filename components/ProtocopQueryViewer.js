@@ -32,7 +32,7 @@ class ProtocopQueryViewer extends React.Component {
 
   addTagsToGraph(graph) {
     // Adds vis.js specific tags primarily to style graph as desired
-    const undefinedColor = '#aaa';
+    const undefinedColor = '#f2f2f2';
     let nodeTypeColorMap = {};
     Object.keys(NodeTypes).forEach(k => (nodeTypeColorMap[NodeTypes[k].tag] = NodeTypes[k].color));
     graph.nodes = graph.nodes.map((n) => {
