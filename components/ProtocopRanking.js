@@ -26,17 +26,17 @@ class ProtocopRanking extends React.Component {
         paddingLeft: '2px',
         paddingRight: '2px',
         height: '100%',
-        overflow: 'scroll',
+        overflow: 'auto',
       },
       graph: {
         paddingLeft: '0',
         paddingRight: '0',
         height: '100%',
-        overflow: 'scroll',
+        overflow: 'auto',
       },
       explorer: {
         height: '100%',
-        overflow: 'scroll',
+        overflow: 'auto',
       },
     };
     this.state = {

@@ -19,13 +19,13 @@ class ProtocopGraph extends React.Component {
         paddingTop: 0,
         paddingBottom: 20,
         maxHeight: '200px',
-        overflowY: 'scroll',
+        overflowY: 'auto',
       },
       graph: {
         paddingTop: 0,
         paddingBottom: 20,
         maxHeight: '500px',
-        overflowY: 'scroll',
+        overflowY: 'auto',
       },
     };
 

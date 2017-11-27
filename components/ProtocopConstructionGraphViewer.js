@@ -125,6 +125,7 @@ class ProtocopConstructionGraphViewer extends React.Component {
               graph={graph}
               options={this.graphOptions}
               events={{}}
+              style={{ width: '100%' }}
               getNetwork={(network) => { this.network = network; }} // Store network reference in the component
             />
           </div>
