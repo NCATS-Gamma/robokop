@@ -193,6 +193,7 @@ class ProtocopSubGraphViewer extends React.Component {
             <Graph
               key={shortid.generate()} // Forces component remount
               graph={graph}
+              style={{ width: '100%' }}
               options={this.graphOptions}
               events={{ click: this.clickCallback }}
               getNetwork={(network) => { this.network = network; }} // Store network reference in the component

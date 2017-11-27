@@ -154,6 +154,7 @@ class ProtocopGraphViewer extends React.Component {
               <Graph
                 graph={graph}
                 options={this.graphOptions}
+                style={{ width: '100%' }}
                 events={{ selectNode: this.nodeSelectCallback, selectEdge: this.edgeSelectCallback }}
                 getNetwork={(network) => { this.network = network; }} // Store network reference in the component
               />
