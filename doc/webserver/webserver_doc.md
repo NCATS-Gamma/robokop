@@ -2,10 +2,6 @@
 
 The PROTOCOP UI is web-based with a `Flask` server running inside of `gunicorn` within a Docker container. The user interface is written using React and the build process uses webpack. This document contains a list of steps that were used to install the software.
 
-
-## ssh to NCATS server
-`ssh tyrosine.ncats.io`
-
 ## Install docker
 https://docs.docker.com/engine/installation/linux/docker-ce/debian/#install-docker-ce-1
 
@@ -17,7 +13,7 @@ https://docs.docker.com/engine/installation/linux/docker-ce/debian/#install-dock
 
 ## Set correct server self-address
 `cd protocop-rank`
-`sed -i -e 's/localhost/tyrosine.ncats.io/' config.json`
+`sed -i -e 's/127.0.0.1/$(curl ipinfo.io/ip)/' config.json`
 
 ## Build the user interface with webpack
 `npm run webpack`
@@ -28,4 +24,3 @@ https://docs.docker.com/engine/installation/linux/docker-ce/debian/#install-dock
 ## Detach from docker container and close ssh session
 `[CTRL-P], [CTRL-Q]`
 `exit`
-
