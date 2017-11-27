@@ -1,6 +1,6 @@
 # PROTOCOP - Web Server Setup Instructions
 
-The PROTOCOP UI is web based with a `Flask` server running inside of `gunicorn` within a docker container. The user interface is written using React and the build process uses webpack. This document contains a list of steps that were used to install the software.
+The PROTOCOP UI is web-based with a `Flask` server running inside of `gunicorn` within a Docker container. The user interface is written using React and the build process uses webpack. This document contains a list of steps that were used to install the software.
 
 
 ## ssh to NCATS server
@@ -25,7 +25,7 @@ https://docs.docker.com/engine/installation/linux/docker-ce/debian/#install-dock
 ## Start Flask server inside of gunicorn
 `nohup gunicorn -c serverConfig.py python.wsgi:app`
 
-## Setach from docker container and close ssh session
+## Detach from docker container and close ssh session
 `[CTRL-P], [CTRL-Q]`
 `exit`
 
