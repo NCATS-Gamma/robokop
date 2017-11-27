@@ -102,12 +102,12 @@ class ProtocopBoardsBrowser extends React.Component {
     return (
       <div className="row">
         <div className="col-md-8">
-          <div style={{ height: '100%', overflowY: 'scroll' }}>
+          <div style={{ height: '100%', overflowY: 'auto' }}>
             {boardsFrag}
           </div>
         </div>
         <div className="col-md-4">
-          <div style={{ height: '100%', overflowY: 'scroll' }}>
+          <div style={{ height: '100%', overflowY: 'auto' }}>
             {boardsBuildingFrag}
           </div>
         </div>
