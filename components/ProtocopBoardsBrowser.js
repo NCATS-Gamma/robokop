@@ -89,7 +89,7 @@ class ProtocopBoardsBrowser extends React.Component {
           </tbody>
         </Table>
         <Button bsStyle={'default'} bsSize={'large'} onClick={this.props.callbackBlackboardNewUi}>
-            {'Start another Blackboard'}
+          {'Start another Blackboard'}
         </Button>
       </div>,
     ];
@@ -102,7 +102,7 @@ class ProtocopBoardsBrowser extends React.Component {
     return (
       <div className="row">
         <div className="col-md-8">
-          <div style={{ height: '100%', overflowY: 'auto' }}>
+          <div style={{ height: '100%', overflowY: 'none' }}>
             {boardsFrag}
           </div>
         </div>
