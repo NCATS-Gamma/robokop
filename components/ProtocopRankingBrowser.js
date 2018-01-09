@@ -13,7 +13,7 @@ class ProtocopRankingBrowser extends React.Component {
 
     this.styles = {
       mainContent: {
-        height: '75vh',
+        height: '70vh',
         border: '1px solid #d1d1d1',
         overflow: 'hidden',
         borderTopLeftRadius: '5px',

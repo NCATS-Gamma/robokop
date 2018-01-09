@@ -1,18 +1,29 @@
 'use babel';
 
 import React from 'react';
-import { ButtonGroup, Button, Glyphicon } from 'react-bootstrap';
+import { ButtonGroup, Button, Glyphicon, Tabs, Tab } from 'react-bootstrap';
 import ProtocopRankingBrowser from './ProtocopRankingBrowser';
+import ProtocopRankingSelector from './ProtocopRankingSelector';
 
 class ProtocopRanking extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      tabKey: 1,
+    };
 
     this.styles = {
       buttonRow: {
         padding: 5,
       },
     };
+
+    this.handleTabSelect = this.handleTabSelect.bind(this);
+  }
+
+  handleTabSelect(tabKey) {
+    this.setState({ tabKey });
   }
 
   render() {
@@ -121,9 +132,18 @@ class ProtocopRanking extends React.Component {
                 </span>
               </h5>
             </div>
-            <ProtocopRankingBrowser
-              ranking={this.props.ranking}
-            />
+            <Tabs activeKey={this.state.tabKey} onSelect={this.handleTabSelect} id="ProtocopRankingTabs">
+              <Tab eventKey={1} title="List Explorer">
+                <ProtocopRankingBrowser
+                  ranking={this.props.ranking}
+                />
+              </Tab>
+              <Tab eventKey={2} title="Interactive">
+                <ProtocopRankingSelector
+                  ranking={this.props.ranking}
+                />
+              </Tab>
+            </Tabs>
           </div>
         }
       </div>

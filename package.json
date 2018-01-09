@@ -77,7 +77,7 @@
     "build": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --prune --platform=darwin --arch=x64 --overwrite --asar=true --icon=images/logo.icns",
     "buildFromWin:win": "electron-packager . AdaptiveAlarms --out=dist --ignore='^/dist$' --prune --platform=win32 --arch=x64 --overwrite --asar=true --icon=images/logo.icns",
     "buildFromWin:mac": "electron-packager . AdaptiveAlarms --out=dist --ignore='^/dist$' --prune --platform=darwin --arch=x64 --overwrite --asar=true --icon=images/logo.icns",
-    "prestart": "babel components --out-dir components-lib",
+    "prestart": "npm run webpack",
     "start": "./node_modules/.bin/electron main.js",
     "webpack": "webpack",
     "test:kdm": "babel components --out-dir components-lib && ./node_modules/.bin/electron main.js -d -c '/Users/kennethmorton/Documents/code/covarRenci/blackboards.db'",
