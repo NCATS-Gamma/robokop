@@ -10,6 +10,10 @@ class ProtocopRankingSelectorGraph extends React.Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      isSelected: [],
+    };
+
     this.handleSelectChange = this.handleSelectChange.bind(this);
   }
 
@@ -24,12 +28,19 @@ class ProtocopRankingSelectorGraph extends React.Component {
         return { value: e, label: e };
       });
       const value = this.props.subgraph.nodes[ind].id;
+      const thisIsSelected = this.state.isSelected.indexOf(ind) !== -1;
+
+      let style = {};
+      if (thisIsSelected) {
+        style = { color: 'red' };
+      }
       return (
 
         <Select
           key={shortid.generate()}
           name={`node_selector_${ind}`}
           value={value}
+          style={style}
           onChange={newVal => this.handleSelectChange(ind, newVal)}
           options={opts}
         />
