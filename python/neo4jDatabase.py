@@ -124,7 +124,9 @@ class Neo4jDatabase:
             node_conditions += [node_conds]
 
         # generate MATCH command string to get paths of the appropriate size
-        match_string = 'MATCH '+'({}:{})-'.format(node_names[0], board_id)+'-'.join(['[{0}:{2}]-({1})'.format(edge_names[i], node_names[i+1], edge_types[i]) for i in range(edge_count)])
+        match_strings = ['MATCH '+'({}:{})'.format(node_names[0], board_id)]
+        match_strings += ['MATCH '+'({})-'.format(node_names[i])+'[{0}:{2}]-({1})'.format(edge_names[i], node_names[i+1], edge_types[i]) for i in range(edge_count)]
+        with_strings = ['WITH DISTINCT '+', '.join(node_names[:i+1]) for i in range(edge_count)]
 
         # generate WHERE command string to prune paths to those containing the desired nodes/node types
         node_conditions = [[[{k:(c[k] if k!='cond'\
@@ -133,17 +135,18 @@ class Neo4jDatabase:
             for c in d]\
             for d in conds]
             for conds in node_conditions]
-        node_cond_strings = ['('+' OR '.join(['{0}{1}.{2}{3}\'{4}\''.format(c['cond'], node_names[i], c['prop'], c['op'], c['val'])\
+        node_cond_strings = [['('+' OR '.join(['{0}{1}.{2}{3}\'{4}\''.format(c['cond'], node_names[i], c['prop'], c['op'], c['val'])\
             for c in d])+')'\
-            for i, conds in enumerate(node_conditions)\
-            for d in conds]
-        where_string = 'WHERE '+' AND '.join(node_cond_strings)
-
+            for d in conds]\
+            for i, conds in enumerate(node_conditions)]
+        where_strings = ['WHERE '+' AND '.join(c) for c in node_cond_strings]
+        big_string = match_strings[0]+' '+where_strings[0]+' '+' '.join([m+' '+w+' '+d for m,w,d in zip(with_strings, match_strings[1:], where_strings[1:])])
+        
         # add bound fields and return map
-        return_string = 'RETURN DISTINCT ['+', '.join(['{{id:{0}.id, bound:{1}}}'.format(n, 'True' if b else 'False') for n, b in zip(node_names, node_bound)])+'] as nodes'
+        return_string = 'RETURN ['+', '.join(['{{id:{0}.id, bound:{1}}}'.format(n, 'True' if b else 'False') for n, b in zip(node_names, node_bound)])+'] as nodes'
 
         # return subgraphs matching query
-        query_string = ' '.join([match_string, where_string, return_string])
+        query_string = ' '.join([big_string, return_string])
         # print(query_string)
         
         print('Running query... ', end='')
