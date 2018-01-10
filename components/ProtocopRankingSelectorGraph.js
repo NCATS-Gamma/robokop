@@ -3,6 +3,7 @@
 import React from 'react';
 import Select from 'react-select';
 import { Button, Glyphicon, Panel, PanelGroup, Badge } from 'react-bootstrap';
+import NodeTypes from './ProtocopQueryEditorNodeTypes';
 
 const shortid = require('shortid');
 
@@ -38,10 +39,14 @@ class ProtocopRankingSelectorGraph extends React.Component {
 
   getAllDropDowns() {
     const sgp = this.props.subgraphPossibilities;
+    const undefinedColor = '#f2f2f2';
+    const nodeTypeColorMap = {};
+    Object.keys(NodeTypes).forEach(k => (nodeTypeColorMap[NodeTypes[k].tag] = NodeTypes[k].color));
     return sgp.map((p, ind) => {
       const opts = p.map((e) => {
         return { value: e.id, label: `${e.score.toFixed(2)}: ` + e.name };
       });
+      const background = nodeTypeColorMap[p[0].type] ? nodeTypeColorMap[p[0].type] : undefinedColor;
       const value = this.props.subgraph.nodes[ind].id;
       const thisIsSelected = this.state.isSelected.indexOf(ind) !== -1;
 
@@ -50,10 +55,10 @@ class ProtocopRankingSelectorGraph extends React.Component {
       const disableButton = !thisIsSelected;
       const disableSelect = isOnlyOne || thisIsSelected;
       return (
-        <Panel key={shortid.generate()}>
+        <Panel key={shortid.generate()} style={ {backgroundColor: background} }>
           <div className="row">
             <div className="col-md-12">
-              <span style={{ fontSize: '1em' }}> {`Layer ${ind + 1}`} </span>
+              <span style={{ fontSize: '1em' }}> {p[0].type} </span>
               <Badge>{numOptions}</Badge>
               <div className="pull-right">
                 <Button disabled={disableButton} onClick={() => this.handleClear(ind)}>
