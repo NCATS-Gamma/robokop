@@ -16,10 +16,15 @@ class ProtocopRankingSelectorGraph extends React.Component {
     };
 
     this.handleSelectChange = this.handleSelectChange.bind(this);
+    this.handleClear = this.handleClear.bind(this);
+    this.handleClearAll = this.handleClearAll.bind(this);
   }
 
   handleClear(index) {
     this.handleSelectChange(index, null);
+  }
+  handleClearAll() {
+    this.props.subgraphPossibilities.forEach((p,ind) => this.handleSelectChange(ind, null));
   }
   handleSelectChange(index, selectedOption) {
     if (selectedOption !== null) {
@@ -92,10 +97,25 @@ class ProtocopRankingSelectorGraph extends React.Component {
   }
   render() {
     const dropDowns = this.getAllDropDowns();
+
+    const showReset = this.state.isSelected.length > 0;
+
     return (
-      <PanelGroup style={{paddingLeft: '10px', paddingRight: '10px', paddingTop: '10px'}}>
-        {dropDowns}
-      </PanelGroup>
+      <div>
+        <div style={{ paddingRight: '10px', paddingLeft: '10px'}}>
+          <h4>
+            {'Answer Explorer'}
+            {showReset &&
+              <span className={'pull-right'}>
+                <Glyphicon glyph="refresh" style={{ cursor: 'pointer' }} onClick={this.handleClearAll} />
+              </span>
+            }
+          </h4>
+        </div>
+        <PanelGroup style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '10px' }}>
+          {dropDowns}
+        </PanelGroup>
+      </div>
     );
   }
 }

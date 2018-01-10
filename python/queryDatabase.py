@@ -32,7 +32,7 @@ def queryAndScore(data):
             'name': constructName(score_struct[i])
         }
 
-    max_results = 5000
+    max_results = 1000
     if len(score_struct)>max_results:
         return score_struct[:max_results]
     else:
