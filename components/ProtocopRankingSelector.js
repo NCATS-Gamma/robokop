@@ -45,6 +45,7 @@ class ProtocopRankingSelector extends React.Component {
 
     this.initializeNodeSelection = this.initializeNodeSelection.bind(this);
     this.handleNodeSelectionChange = this.handleNodeSelectionChange.bind(this);
+    this.onSelectionCallback = this.onSelectionCallback.bind(this);
   }
   componentDidMount() {
     // this.updateSelectedSubGraphIndex(0);
@@ -73,6 +74,9 @@ class ProtocopRankingSelector extends React.Component {
     const selectedSubGraphIndex = isKept.indexOf(true);
     this.setState({ selectedSubGraphIndex, selectedSubGraphPossibilities: subgraphPossibilities });
   }
+  onSelectionCallback(index, selectedOption){
+    console.log(index, selectedOption);
+  }
   render() {
     return (
       <div id="ProtocopRanking_Explorer" className="col-md-12">
@@ -81,6 +85,7 @@ class ProtocopRankingSelector extends React.Component {
             <ProtocopRankingSelectorGraph
               subgraph={this.props.ranking[this.state.selectedSubGraphIndex]}
               subgraphPossibilities={this.state.selectedSubGraphPossibilities}
+              onSelectionCallback={this.onSelectionCallback}
             />
           </div>
           {/* <div className="col-md-4" style={this.styles.explorer}>

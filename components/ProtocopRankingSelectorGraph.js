@@ -14,7 +14,7 @@ class ProtocopRankingSelectorGraph extends React.Component {
   }
 
   handleChange(index, selectedOption) {
-    console.log(index, selectedOption);
+    this.props.onSelectionCallback(index, selectedOption);
   }
 
   getAllDropDowns() {
