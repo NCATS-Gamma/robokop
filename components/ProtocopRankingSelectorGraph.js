@@ -40,7 +40,7 @@ class ProtocopRankingSelectorGraph extends React.Component {
     const sgp = this.props.subgraphPossibilities;
     return sgp.map((p, ind) => {
       const opts = p.map((e) => {
-        return { value: e.id, label: `${e.score.toFixed(2)}: ` + e.name };
+        return { value: e.id, label: `${e.score.toFixed(2)}: ` + e.name, score: e.score, name: e.name };
       });
       const value = this.props.subgraph.nodes[ind].id;
       const thisIsSelected = this.state.isSelected.indexOf(ind) !== -1;
@@ -49,6 +49,7 @@ class ProtocopRankingSelectorGraph extends React.Component {
       const isOnlyOne = numOptions === 1;
       const disableButton = !thisIsSelected;
       const disableSelect = isOnlyOne || thisIsSelected;
+      // valueRenderer={opt => (<strong>{`${opt.label} - Max Score - ${opt.score.toFixed(4)}`}</strong>)}
       return (
         <Panel key={shortid.generate()}>
           <div className="row">
@@ -69,8 +70,9 @@ class ProtocopRankingSelectorGraph extends React.Component {
             options={opts}
             disabled={disableSelect}
             clearable={false}
+            valueRenderer={opt => (<div>{opt.name}<span className={'pull-right'} style={{ paddingRight: '15px' }}> {opt.score.toFixed(4)} </span></div>)}
+            optionRenderer={opt => (<div>{opt.name}<span className={'pull-right'}> {opt.score.toFixed(4)} </span></div>)}
           />
-          
         </Panel>
       );
     });
