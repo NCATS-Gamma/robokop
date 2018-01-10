@@ -10,39 +10,27 @@ class ProtocopRankingSelectorGraph extends React.Component {
   constructor(props) {
     super(props);
 
-    this.handleChange = this.handleChange.bind(this);
-    this.state = {
-      selectedValues: [],
-    };
-
-    this.getSelectedValues = this.getSelectedValues.bind(this);
+    this.handleSelectChange = this.handleSelectChange.bind(this);
   }
 
-  getSelectedValues() {
-    const selectedValues = this.props.subgraph.nodes.map(s => s.id);
-    this.setState({ selectedValues });
-  }
-  componentWillReceiveProps(newProps) {
-    this.getSelectedValues();
-  }
-  handleChange(index, selectedOption) {
+  handleSelectChange(index, selectedOption) {
     this.props.onSelectionCallback(index, selectedOption);
   }
 
   getAllDropDowns() {
     const sgp = this.props.subgraphPossibilities;
-    const selectedValues = this.state.selectedValues;
     return sgp.map((p, ind) => {
       const opts = p.map((e) => {
         return { value: e, label: e };
       });
-      const value = selectedValues[ind];
+      const value = this.props.subgraph.nodes[ind].id;
       return (
+
         <Select
           key={shortid.generate()}
           name={`node_selector_${ind}`}
           value={value}
-          onChange={newVal => this.handleChange(ind, newVal)}
+          onChange={newVal => this.handleSelectChange(ind, newVal)}
           options={opts}
         />
       );
