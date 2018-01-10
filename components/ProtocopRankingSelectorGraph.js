@@ -35,7 +35,6 @@ class ProtocopRankingSelectorGraph extends React.Component {
       );
     });
   }
-
   render() {
     const dropDowns = this.getAllDropDowns();
     const bigList = dropDowns.map(s => (<p id={shortid.generate()}>{s}</p>));

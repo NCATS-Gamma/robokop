@@ -6,7 +6,6 @@ import { AgGridReact, AgGridColumn } from 'ag-grid-react';
 import ProtocopRankingSelectorGraph from './ProtocopRankingSelectorGraph';
 // import ProtocopSubGraphViewer from './ProtocopSubGraphViewer';
 // import ProtocopSubGraphExplorer from './ProtocopSubGraphExplorer';
-
 const shortid = require('shortid');
 
 class ProtocopRankingSelector extends React.Component {
@@ -42,11 +41,14 @@ class ProtocopRankingSelector extends React.Component {
       tableData: [{}],
       selectedSubGraphIndex: 0,
       selectedSubGraphPossibilities: [],
+      nodeSelection: [],
+      nodeCell: []
     };
 
     this.setTableData = this.setTableData.bind(this);
     this.updateSelectedSubGraphIndex = this.updateSelectedSubGraphIndex.bind(this);
     this.getSubGraphPossibilities = this.getSubGraphPossibilities.bind(this);
+    this.updateNodeSelection = this.updateNodeSelection.bind(this);
 
     this.onTableClick = this.onTableClick.bind(this);
     this.onGridReady = this.onGridReady.bind(this);
@@ -100,12 +102,42 @@ class ProtocopRankingSelector extends React.Component {
         score,
       };
     });
-    this.setState({ tableData });
+    const nodeSelection = this.props.ranking[0].nodes.map(n => null);
+    this.setState({ tableData, nodeSelection });
   }
-  updateSelectedSubGraphIndex(ind) {
-    const newPossibilities = this.getSubGraphPossibilities(ind);
-    this.setState({ selectedSubGraphIndex: ind, selectedSubGraphPossibilities: newPossibilities });
+
+  updateSelectedSubGraphIndex(subGraphIndex) {
+    // const nodeSelection = this.props.ranking[0].nodes.map((n, nInd) => {
+    //   if (nInd==subGraphIndex) {return n.id}
+    //   else {return null}
+    // })
+    // this.setState({nodeSelection})
+    // const newPossibilities = this.getSubGraphPossibilities(subGraphIndex);
+    // this.setState({ selectedSubGraphIndex: subGraphIndex, selectedSubGraphPossibilities: newPossibilities });
+    this.setState({ selectedSubGraphIndex: subGraphIndex})
   }
+  
+  updateNodeSelection(nodeSelection) {
+    
+    // find all paths such that nodes match selection template
+    const isKept = this.props.ranking.map(s => {
+      return s.nodes.reduce((keep, n, ind) => {
+        return keep && ((nodeSelection[ind] == null) || (nodeSelection[ind] === n.id))
+      },true)
+    })
+
+    // convert isKept into ranked lists of nodes
+    const nodeCell = this.props.ranking[0].nodes.map((n, ind) => {
+      const theseNodes = this.props.ranking.map(s => s.nodes[ind].id).filter((id,ind) => {return isKept[ind]})
+      return theseNodes.filter((val,ind,self) => {return self.indexOf(val)==ind})
+    })
+
+    // then update the selectedSubGraphIndex to be the 'highest' one left
+    const selectedSubGraphIndex = isKept.indexOf(true)
+    this.setState({selectedSubGraphIndex, nodeCell})
+    
+  }
+
   getSubGraphPossibilities(ind) {
     const subgraph = this.props.ranking[ind];
     return subgraph.nodes.map(s => {
@@ -142,7 +174,8 @@ class ProtocopRankingSelector extends React.Component {
           <div className={'col-md-10'} style={this.styles.graph}>
             <ProtocopRankingSelectorGraph
               subgraph={this.props.ranking[this.state.selectedSubGraphIndex]}
-              subgraphPossibilities={this.state.selectedSubGraphPossibilities}
+              // subgraphPossibilities={this.state.selectedSubGraphPossibilities}
+              nodeCell={this.state.nodeCell}
             />
           </div>
           {/* <div className="col-md-4" style={this.styles.explorer}>
