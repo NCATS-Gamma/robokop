@@ -11,15 +11,18 @@ class ProtocopRankingSelectorGraph extends React.Component {
   }
   render() {
 
-    const sgp = this.props.subgraphPossibilities;
+    const sgp = this.props.nodeCell;
     
-    const bigList = sgp.map(p => {
-      return (
-        <p id={shortid.generate()}>
-          {p.reduce((out, o) => out + ', ' + o, '')}
-        </p>
-      );
-    });
+    // const bigList = sgp.map(p => {
+    //   return (
+    //     <p id={shortid.generate()}>
+    //       {p.reduce((out, o) => {
+    //         return out + o.reduce((line,nid) => line + ', ','')
+    //     }, '')}
+    //     </p>
+    //   );
+    // });
+    const bigList = ''
 
     return (
       <div>
