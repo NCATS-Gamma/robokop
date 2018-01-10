@@ -95,7 +95,7 @@ class ProtocopRankingBrowser extends React.Component {
     return (
       <div id="ProtocopRanking_Explorer" className="col-md-12">
         <div className="row" style={this.styles.mainContent}>
-          <div className={'col-md-2'} style={this.styles.listGroup}>
+          <div className={'col-md-3'} style={this.styles.listGroup}>
             {this.getListGroup()}
           </div>
           <div className={'col-md-3'} style={this.styles.graph}>
@@ -104,7 +104,7 @@ class ProtocopRankingBrowser extends React.Component {
               callbackOnGraphClick={this.onGraphClick}
             />
           </div>
-          <div className="col-md-7" style={this.styles.explorer}>
+          <div className={'col-md-6'} style={this.styles.explorer}>
             <ProtocopSubGraphExplorer
               subgraphs={this.props.ranking}
               selectedSubgraphIndex={this.state.selectedSubGraphIndex}

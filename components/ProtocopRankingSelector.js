@@ -69,11 +69,11 @@ class ProtocopRankingSelector extends React.Component {
     // convert isKept into ranked lists of nodes
     const subgraphPossibilities = this.props.ranking[0].nodes.map((n, ind) => {
       const theseNodes = this.props.ranking.map(s => {
-        const n = s.nodes[ind]
-        n.score = s.score.rank_score
-        return n
-      }).filter((id, ind2) => isKept[ind2])
-      const nodeIds = theseNodes.map(n => n.id)
+        const n = s.nodes[ind];
+        n.score = s.score.rank_score;
+        return n;
+      }).filter((id, ind2) => isKept[ind2]);
+      const nodeIds = theseNodes.map(n => n.id);
       return theseNodes.filter((val, ind3) => nodeIds.indexOf(val.id) === ind3);
     });
 
@@ -113,7 +113,7 @@ class ProtocopRankingSelector extends React.Component {
               callbackOnGraphClick={this.onGraphClick}
             />
           </div>
-          <div className="col-md-6" style={this.styles.explorer}>
+          <div className={'col-md-6'} style={this.styles.explorer}>
             <ProtocopSubGraphExplorer
               subgraphs={this.props.ranking}
               selectedSubgraphIndex={this.state.selectedSubGraphIndex}
