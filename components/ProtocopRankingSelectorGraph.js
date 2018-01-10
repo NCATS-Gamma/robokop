@@ -53,16 +53,24 @@ class ProtocopRankingSelectorGraph extends React.Component {
       const numOptions = opts.length;
       const isOnlyOne = numOptions === 1;
       const disableButton = !thisIsSelected;
-      const disableSelect = isOnlyOne || thisIsSelected;
+      const disableSelect = thisIsSelected;
+
+      let style = { border: `2px solid ${background}` };
+      if (thisIsSelected) {
+        style = { border: '2px solid' };
+      }
+      
       return (
-        <Panel key={shortid.generate()} style={ {backgroundColor: background} }>
+        <Panel key={shortid.generate()} style={{ backgroundColor: background }}>
           <div className="row">
-            <div className="col-md-12">
-              <span style={{ fontSize: '1em' }}> {p[0].type} </span>
+            <div className="col-md-12" style={{ paddingBottom: '5px' }}>
+              <strong style={{ fontSize: '1em' }}> {p[0].type} </strong>
+              {!thisIsSelected &&
               <Badge>{numOptions}</Badge>
+              }
                 {!disableButton &&
                   <div className="pull-right">
-                    <Glyphicon glyph="refresh" onClick={() => this.handleClear(ind)} />
+                    <Glyphicon glyph="refresh" style={{ cursor: 'pointer' }} onClick={() => this.handleClear(ind)} />
                   </div>
                 }
               </div>
@@ -74,6 +82,7 @@ class ProtocopRankingSelectorGraph extends React.Component {
             options={opts}
             disabled={disableSelect}
             clearable={false}
+            style={style}
             valueRenderer={opt => (<div>{opt.name}<span className={'pull-right'} style={{ paddingRight: '15px' }}> {opt.score.toFixed(4)} </span></div>)}
             optionRenderer={opt => (<div>{opt.name}<span className={'pull-right'}> {opt.score.toFixed(4)} </span></div>)}
           />
@@ -84,7 +93,7 @@ class ProtocopRankingSelectorGraph extends React.Component {
   render() {
     const dropDowns = this.getAllDropDowns();
     return (
-      <PanelGroup>
+      <PanelGroup style={{paddingLeft: '10px', paddingRight: '10px', paddingTop: '10px'}}>
         {dropDowns}
       </PanelGroup>
     );
