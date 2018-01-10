@@ -21,7 +21,7 @@ class ProtocopRankingSelectorGraph extends React.Component {
     const sgp = this.props.subgraphPossibilities;
     return sgp.map((p, ind) => {
       const opts = p.map((e) => {
-        return { value: e.id, label: e.name };
+        return { value: e.id, label: `${e.score.toFixed(2)}: ` + e.name };
       });
       const value = this.props.subgraph.nodes[ind].id;
       return (
