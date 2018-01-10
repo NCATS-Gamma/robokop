@@ -9,7 +9,6 @@ const shortid = require('shortid');
 const _ = require('lodash');
 const seedrandom = require('seedrandom');
 
-
 class ProtocopSubGraphViewer extends React.Component {
   constructor(props) {
     super(props);
@@ -17,7 +16,7 @@ class ProtocopSubGraphViewer extends React.Component {
     this.addTagsToGraph = this.addTagsToGraph.bind(this);
     this.setNetworkCallbacks = this.setNetworkCallbacks.bind(this);
     this.clickCallback = event => this.props.callbackOnGraphClick(event);
-
+    
     this.styles = {
       supportEdgeColors: {
         color: '#aaa',
@@ -87,7 +86,7 @@ class ProtocopSubGraphViewer extends React.Component {
 
   // Bind network fit callbacks to resize graph and cancel fit callbacks on start of zoom/pan
   setNetworkCallbacks() {
-    this.network.once('afterDrawing', () => this.network.fit());
+    this.network.on('afterDrawing', () => this.network.fit());
     this.network.on('doubleClick', () => this.network.fit());
     this.network.on('zoom', () => this.network.off('afterDrawing'));
     this.network.on('dragStart', () => this.network.off('afterDrawing'));
@@ -196,7 +195,7 @@ class ProtocopSubGraphViewer extends React.Component {
               style={{ width: '100%' }}
               options={this.graphOptions}
               events={{ click: this.clickCallback }}
-              getNetwork={(network) => { this.network = network; }} // Store network reference in the component
+              getNetwork={(network) => { this.network = network }} // Store network reference in the component
             />
           </div>
         </div>
