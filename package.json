@@ -47,7 +47,7 @@
     "react-dom-factories": "^1.0.2",
     "react-graph-vis": "^1.0.2",
     "react-notifications": "^1.4.3",
-    "react-select": "1.0.0-rc.5",
+    "react-select": "^1.0.0-rc.5",
     "react-sidebar": "^2.3.2",
     "request-promise": "^4.2.2",
     "seedrandom": "^2.4.3",

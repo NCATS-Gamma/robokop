@@ -26,10 +26,10 @@ class ProtocopRankingSelectorGraph extends React.Component {
       const initValue = p[0];
       return (
         <Select
-          id={shortid.generate()}
+          key={shortid.generate()}
           name={`node_selector_${ind}`}
           value={initValue}
-          onChange={this.handleChange}
+          onChange={newVal => this.handleChange(ind, newVal)}
           options={opts}
         />
       );
@@ -37,7 +37,7 @@ class ProtocopRankingSelectorGraph extends React.Component {
   }
   render() {
     const dropDowns = this.getAllDropDowns();
-    const bigList = dropDowns.map(s => (<p id={shortid.generate()}>{s}</p>));
+    const bigList = dropDowns.map(s => (<p key={shortid.generate()}>{s}</p>));
     return (
       <div>
         {bigList}
