@@ -78,7 +78,7 @@ class ProtocopRankingSelector extends React.Component {
 
     if (Array.isArray(selectedRow) && selectedRow.length > 0) {
       const board = selectedRow[0];
-      this.updateSelectedSubGraphIndex(board.index);
+      this.updateSelectedSubGraphIndex(board.index)
       console.log('Clicked', board);
       // this.props.callbackRowClick(board);
     }
