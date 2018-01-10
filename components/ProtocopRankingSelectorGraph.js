@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Select from 'react-select';
-// import { ButtonGroup, Button, Glyphicon, PanelGroup, Panel } from 'react-bootstrap';
+import { Button, Glyphicon, Panel, PanelGroup, Badge } from 'react-bootstrap';
 
 const shortid = require('shortid');
 
@@ -17,7 +17,22 @@ class ProtocopRankingSelectorGraph extends React.Component {
     this.handleSelectChange = this.handleSelectChange.bind(this);
   }
 
+  handleClear(index) {
+    this.handleSelectChange(index, null);
+  }
   handleSelectChange(index, selectedOption) {
+    if (selectedOption !== null) {
+      const isSelected = this.state.isSelected;
+      isSelected.push(index);
+      this.setState({ isSelected });
+    } else {
+      const isSelected = this.state.isSelected;
+      const indexIndex = isSelected.indexOf(index);
+      if (indexIndex > -1) {
+        isSelected.splice(indexIndex, 1);
+      }
+      this.setState({ isSelected });
+    }
     this.props.onSelectionCallback(index, selectedOption);
   }
 
@@ -30,29 +45,42 @@ class ProtocopRankingSelectorGraph extends React.Component {
       const value = this.props.subgraph.nodes[ind].id;
       const thisIsSelected = this.state.isSelected.indexOf(ind) !== -1;
 
-      let style = {};
-      if (thisIsSelected) {
-        style = { color: 'red' };
-      }
+      const numOptions = opts.length;
+      const isOnlyOne = numOptions === 1;
+      const disableButton = !thisIsSelected;
+      const disableSelect = isOnlyOne || thisIsSelected;
       return (
-
-        <Select
-          key={shortid.generate()}
-          name={`node_selector_${ind}`}
-          value={value}
-          style={style}
-          onChange={newVal => this.handleSelectChange(ind, newVal)}
-          options={opts}
-        />
+        <Panel key={shortid.generate()}>
+          <div className="row">
+            <div className="col-md-12">
+              <span style={{ fontSize: '1em' }}> {`Layer ${ind + 1}`} </span>
+              <Badge>{numOptions}</Badge>
+              <div className="pull-right">
+                <Button disabled={disableButton} onClick={() => this.handleClear(ind)}>
+                  <Glyphicon glyph="refresh" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          <Select
+            name={`node_selector_${ind}`}
+            value={value}
+            onChange={newVal => this.handleSelectChange(ind, newVal)}
+            options={opts}
+            disabled={disableSelect}
+            clearable={false}
+          />
+          
+        </Panel>
       );
     });
   }
   render() {
     const dropDowns = this.getAllDropDowns();
     return (
-      <div>
+      <PanelGroup>
         {dropDowns}
-      </div>
+      </PanelGroup>
     );
   }
 }
