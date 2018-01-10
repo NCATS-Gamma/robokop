@@ -66,7 +66,8 @@ class ProtocopRankingSelector extends React.Component {
     // convert isKept into ranked lists of nodes
     const subgraphPossibilities = this.props.ranking[0].nodes.map((n, ind) => {
       const theseNodes = this.props.ranking.map(s => s.nodes[ind]).filter((id, ind2) => isKept[ind2])
-      return theseNodes.filter((val, ind3, self) => self.indexOf(val) === ind3);
+      const nodeIds = theseNodes.map(n => n.id)
+      return theseNodes.filter((val, ind3) => nodeIds.indexOf(val.id) === ind3);
     });
 
     // then update the selectedSubGraphIndex to be the 'highest' one left
