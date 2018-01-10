@@ -37,7 +37,6 @@ class ProtocopRankingSelector extends React.Component {
       },
     };
     this.state = {
-      tableData: [{}],
       selectedSubGraphIndex: 0,
       selectedSubGraphPossibilities: [],
       nodeSelection: [],
@@ -66,7 +65,7 @@ class ProtocopRankingSelector extends React.Component {
 
     // convert isKept into ranked lists of nodes
     const subgraphPossibilities = this.props.ranking[0].nodes.map((n, ind) => {
-      const theseNodes = this.props.ranking.map(s => s.nodes[ind].id).filter((id, ind2) => isKept[ind2])
+      const theseNodes = this.props.ranking.map(s => s.nodes[ind]).filter((id, ind2) => isKept[ind2])
       return theseNodes.filter((val, ind3, self) => self.indexOf(val) === ind3);
     });
 
@@ -77,7 +76,8 @@ class ProtocopRankingSelector extends React.Component {
   onSelectionCallback(index, selectedOption){
     console.log(index, selectedOption);
     const nodeSelection = this.state.nodeSelection;
-    nodeSelection[index] = selectedOption.value
+    if (selectedOption == null) {nodeSelection[index] = null}
+    else {nodeSelection[index] = selectedOption.value}
     this.handleNodeSelectionChange(nodeSelection);
     this.setState({ nodeSelection });
   }
