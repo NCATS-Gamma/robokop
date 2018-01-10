@@ -49,19 +49,18 @@ class ProtocopRankingSelectorGraph extends React.Component {
       const isOnlyOne = numOptions === 1;
       const disableButton = !thisIsSelected;
       const disableSelect = isOnlyOne || thisIsSelected;
-      // valueRenderer={opt => (<strong>{`${opt.label} - Max Score - ${opt.score.toFixed(4)}`}</strong>)}
       return (
         <Panel key={shortid.generate()}>
           <div className="row">
-            <div className="col-md-12">
+            <div className="col-md-12" style={{ paddingBottom: '5px' }}>
               <span style={{ fontSize: '1em' }}> {`Layer ${ind + 1}`} </span>
               <Badge>{numOptions}</Badge>
-              <div className="pull-right">
-                <Button disabled={disableButton} onClick={() => this.handleClear(ind)}>
-                  <Glyphicon glyph="refresh" />
-                </Button>
+                {!disableButton &&
+                  <div className="pull-right">
+                    <Glyphicon glyph="refresh" onClick={() => this.handleClear(ind)} />
+                  </div>
+                }
               </div>
-            </div>
           </div>
           <Select
             name={`node_selector_${ind}`}

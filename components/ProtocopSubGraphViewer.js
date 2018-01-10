@@ -16,7 +16,7 @@ class ProtocopSubGraphViewer extends React.Component {
     this.addTagsToGraph = this.addTagsToGraph.bind(this);
     this.setNetworkCallbacks = this.setNetworkCallbacks.bind(this);
     this.clickCallback = event => this.props.callbackOnGraphClick(event);
-    
+
     this.styles = {
       supportEdgeColors: {
         color: '#aaa',
