@@ -79,10 +79,15 @@ class ProtocopRankingSelector extends React.Component {
 
     // then update the selectedSubGraphIndex to be the 'highest' one left
     const selectedSubGraphIndex = isKept.indexOf(true);
+
+    if (selectedSubGraphIndex !== this.state.selectedSubGraphIndex) {
+      this.setState({ selectedSubGraphEdge: null });
+    }
+
     this.setState({ selectedSubGraphIndex, selectedSubGraphPossibilities: subgraphPossibilities });
+
   }
   onSelectionCallback(index, selectedOption){
-    console.log(index, selectedOption);
     const nodeSelection = this.state.nodeSelection;
     if (selectedOption == null) {nodeSelection[index] = null}
     else {nodeSelection[index] = selectedOption.value}
