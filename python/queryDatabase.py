@@ -13,7 +13,7 @@ def queryAndScore(data):
     G = database.getNodesByLabel(data['board_id'])
 
     # query graph, neo4j to networkx subgraphs
-    subgraphs = database.query(query) # conditions lists
+    subgraphs = database.query(query, data['board_id']) # conditions lists
     del database
 
     # compute scores with NAGA, export to json

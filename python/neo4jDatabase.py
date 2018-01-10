@@ -66,7 +66,7 @@ class Neo4jDatabase:
         match_string = 'MATCH (n:{})'.format(label)
         return_string = 'RETURN [n{.*}] as nodes'
         query_string = ' '.join([match_string, return_string])
-        print('Getting nodes by label.')
+        print('Getting nodes by label... ', end='')
         result = list(self.session.run(query_string))
 
         match_string = 'MATCH (n:{})'.format(label)
@@ -74,13 +74,13 @@ class Neo4jDatabase:
             'UNWIND rels as r '
         return_string = 'RETURN [r{.*, start:startNode(r).id, end:endNode(r).id, type:type(r), id:id(r)}] as rels'
         query_string = ' '.join([match_string, support_string, return_string])
-        print('Getting edges by label.')
+        print("Done.")
         result += list(self.session.run(query_string))
 
         return self.n2n(result)
 
 
-    def query(self, input):
+    def query(self, input, board_id):
         if isinstance(input, str):
             # load query (as series of node and edge conditions) from json files
             # condition tuple format:
@@ -99,13 +99,15 @@ class Neo4jDatabase:
             else dict(n,**{'leadingEdge':{'numNodesMin':1,'numNodesMax':1}})\
             for i, n in enumerate(query)\
             if not n['nodeSpecType']=='Unspecified Nodes']
+        edge_types = ['Lookup' if n['nodeSpecType']=='Named Node' else 'Result' for n in nodes]
+        edge_types.pop(1)
 
         node_count = len(nodes)
         edge_count = node_count-1
 
         # generate internal node and edge variable names
         node_names = ['n{:d}'.format(i) for i in range(node_count)]
-        edge_names = ['r{0:d}{1:d}'.format(i,i+1) for i in range(edge_count)]
+        edge_names = ['r{0:d}{1:d}'.format(i, i+1) for i in range(edge_count)]
 
         # define bound nodes (no edges are bound)
         node_bound = [n['isBoundName'] for n in nodes]
@@ -122,7 +124,7 @@ class Neo4jDatabase:
             node_conditions += [node_conds]
 
         # generate MATCH command string to get paths of the appropriate size
-        match_string = 'MATCH '+'({})-'.format(node_names[0])+'-'.join(['[{0}]-({1})'.format(edge_names[i], node_names[i+1]) for i in range(edge_count)])
+        match_string = 'MATCH '+'({}:{})-'.format(node_names[0], board_id)+'-'.join(['[{0}:{2}]-({1})'.format(edge_names[i], node_names[i+1], edge_types[i]) for i in range(edge_count)])
 
         # generate WHERE command string to prune paths to those containing the desired nodes/node types
         node_conditions = [[[{k:(c[k] if k!='cond'\
@@ -135,8 +137,7 @@ class Neo4jDatabase:
             for c in d])+')'\
             for i, conds in enumerate(node_conditions)\
             for d in conds]
-        edge_cond_strings = ["(type({0})='Result' OR type({0})='Lookup')".format(r) for r in edge_names]
-        where_string = 'WHERE '+' AND '.join(node_cond_strings + edge_cond_strings)
+        where_string = 'WHERE '+' AND '.join(node_cond_strings)
 
         # add bound fields and return map
         return_string = 'RETURN DISTINCT ['+', '.join(['{{id:{0}.id, bound:{1}}}'.format(n, 'True' if b else 'False') for n, b in zip(node_names, node_bound)])+'] as nodes'
