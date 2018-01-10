@@ -76,6 +76,10 @@ class ProtocopRankingSelector extends React.Component {
   }
   onSelectionCallback(index, selectedOption){
     console.log(index, selectedOption);
+    const nodeSelection = this.state.nodeSelection;
+    nodeSelection[index] = selectedOption.value
+    this.handleNodeSelectionChange(nodeSelection);
+    this.setState({ nodeSelection });
   }
   render() {
     return (
