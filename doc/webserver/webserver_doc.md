@@ -19,7 +19,7 @@ https://docs.docker.com/engine/installation/linux/docker-ce/debian/#install-dock
 `npm run webpack`
 
 ## Start Flask server inside of gunicorn
-`nohup gunicorn -c serverConfig.py python.wsgi:app`
+`nohup gunicorn -c serverConfig.py python.wsgi:app &`
 
 ## Detach from docker container and close ssh session
 `[CTRL-P], [CTRL-Q]`
