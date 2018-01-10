@@ -3,8 +3,9 @@
 import React from 'react';
 import { ButtonGroup, Button, Glyphicon, PanelGroup, Panel } from 'react-bootstrap';
 import ProtocopRankingSelectorGraph from './ProtocopRankingSelectorGraph';
-// import ProtocopSubGraphViewer from './ProtocopSubGraphViewer';
-// import ProtocopSubGraphExplorer from './ProtocopSubGraphExplorer';
+import ProtocopSubGraphViewer from './ProtocopSubGraphViewer';
+import ProtocopSubGraphExplorer from './ProtocopSubGraphExplorer';
+
 const shortid = require('shortid');
 
 class ProtocopRankingSelector extends React.Component {
@@ -39,12 +40,14 @@ class ProtocopRankingSelector extends React.Component {
     this.state = {
       selectedSubGraphIndex: 0,
       selectedSubGraphPossibilities: [],
+      selectedSubGraphEdge: null,
       nodeSelection: [],
     };
 
     this.initializeNodeSelection = this.initializeNodeSelection.bind(this);
     this.handleNodeSelectionChange = this.handleNodeSelectionChange.bind(this);
     this.onSelectionCallback = this.onSelectionCallback.bind(this);
+    this.onGraphClick = this.onGraphClick.bind(this);
   }
   componentDidMount() {
     // this.updateSelectedSubGraphIndex(0);
@@ -86,15 +89,35 @@ class ProtocopRankingSelector extends React.Component {
     this.handleNodeSelectionChange(nodeSelection);
     this.setState({ nodeSelection });
   }
+  onGraphClick(event) {
+    if (event.edges.length !== 0) { // Clicked on an Edge
+      this.setState({ selectedSubGraphEdge: event.edges[0] });
+    } else { // Reset things since something else was clicked
+      this.setState({ selectedSubGraphEdge: null });
+    }
+  }
   render() {
     return (
       <div id="ProtocopRanking_Explorer" className="col-md-12">
         <div className="row" style={this.styles.mainContent}>
-          <div className={'col-md-4'} style={this.styles.graph}>
+          <div className={'col-md-3'} style={this.styles.graph}>
             <ProtocopRankingSelectorGraph
               subgraph={this.props.ranking[this.state.selectedSubGraphIndex]}
               subgraphPossibilities={this.state.selectedSubGraphPossibilities}
               onSelectionCallback={this.onSelectionCallback}
+            />
+          </div>
+          <div className={'col-md-3'} style={this.styles.graph}>
+            <ProtocopSubGraphViewer
+              subgraph={this.props.ranking[this.state.selectedSubGraphIndex]}
+              callbackOnGraphClick={this.onGraphClick}
+            />
+          </div>
+          <div className="col-md-6" style={this.styles.explorer}>
+            <ProtocopSubGraphExplorer
+              subgraphs={this.props.ranking}
+              selectedSubgraphIndex={this.state.selectedSubGraphIndex}
+              selectedEdge={this.state.selectedSubGraphEdge}
             />
           </div>
           {/* <div className="col-md-4" style={this.styles.explorer}>
