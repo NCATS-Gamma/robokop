@@ -85,7 +85,7 @@ class ProtocopBoard extends React.Component {
           </div>
         }
         { !showBoard && showBoardsBrowser &&
-          <div id="ProtocopBoard_noboard">
+          <div id="ProtocopBoard_noboard" style={{ height: '75vh' }}>
             <div className="row">
               <div className="col-md-12">
                 <h4>

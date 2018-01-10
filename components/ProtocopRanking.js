@@ -119,7 +119,7 @@ class ProtocopRanking extends React.Component {
 
     const showNoAnswers = noAnswers;
     const showEmptyGraph = !noAnswers && isEmpty;
-    const showTooBigEvalButton = !noAnswers && !isEmpty && isTooBig;
+    const showTooBigEvalButton = !noAnswers && !isEmpty && noRank && isTooBig;
     const showEvalButton = !noAnswers && !isEmpty && noRank && !isTooBig;
     const showAnswers = !noAnswers && !isEmpty && !noRank;
 
