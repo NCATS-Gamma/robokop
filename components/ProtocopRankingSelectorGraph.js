@@ -10,10 +10,10 @@ class ProtocopRankingSelectorGraph extends React.Component {
   constructor(props) {
     super(props);
 
-    this.handleChange = this.handleChange.bind(this);
+    this.handleSelectChange = this.handleSelectChange.bind(this);
   }
 
-  handleChange(index, selectedOption) {
+  handleSelectChange(index, selectedOption) {
     this.props.onSelectionCallback(index, selectedOption);
   }
 
@@ -23,13 +23,14 @@ class ProtocopRankingSelectorGraph extends React.Component {
       const opts = p.map((e) => {
         return { value: e.id, label: e.name };
       });
-      const initValue = p[0];
+      const value = this.props.subgraph.nodes[ind].id;
       return (
+
         <Select
           key={shortid.generate()}
           name={`node_selector_${ind}`}
-          value={initValue}
-          onChange={newVal => this.handleChange(ind, newVal)}
+          value={value}
+          onChange={newVal => this.handleSelectChange(ind, newVal)}
           options={opts}
         />
       );
@@ -37,10 +38,9 @@ class ProtocopRankingSelectorGraph extends React.Component {
   }
   render() {
     const dropDowns = this.getAllDropDowns();
-    const bigList = dropDowns.map(s => (<p key={shortid.generate()}>{s}</p>));
     return (
       <div>
-        {bigList}
+        {dropDowns}
       </div>
     );
   }
