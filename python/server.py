@@ -5,7 +5,7 @@ import sqlite3
 import subprocess
 import logging
 
-from flask import Flask, jsonify, request, render_template, send_from_directory
+from flask import Flask, jsonify, request, render_template
 
 from queryDatabase import queryAndScore, networkx2struct
 # queryAndScore is the entry point for finding and ranking paths
@@ -288,4 +288,3 @@ if __name__ == '__main__':
         port=local_config['port'],\
         debug=False,\
         use_reloader=False)
-        # ssl_context='adhoc'
