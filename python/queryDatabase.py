@@ -1,7 +1,7 @@
 import os
 from neo4jDatabase import Neo4jDatabase
 import sys
-sys.path.insert(0, 'python/ranking')
+sys.path.insert(0, '../robokop-rank')
 from nagaProto import ProtocopRank
 import json
 import networkx as nx

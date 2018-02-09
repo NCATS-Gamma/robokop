@@ -5,7 +5,7 @@ import sqlite3
 import subprocess
 import logging
 
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, send_from_directory
 
 from queryDatabase import queryAndScore, networkx2struct
 # queryAndScore is the entry point for finding and ranking paths
@@ -201,7 +201,7 @@ def blackboard_build():
         ###############
         # Start subprocess to run builder
         ###############
-        os.environ['PYTHONPATH'] = '../greent:../protocop/builder'
+        os.environ['PYTHONPATH'] = '../robokop-interfaces:../robokop-build/builder'
         proc = subprocess.Popen(["python", 'python/runBuilderQuery.py', collection_location, board_id])
 
         # Notes:
@@ -284,4 +284,8 @@ def blackboard_rank():
         raise InvalidUsage('Failed to set run query.', 410)
 
 if __name__ == '__main__':
-    app.run(host=local_config['serverHost'], port=local_config['port'], debug=False, use_reloader=False)
+    app.run(host=local_config['serverHost'],\
+        port=local_config['port'],\
+        debug=False,\
+        use_reloader=False)
+        # ssl_context='adhoc'
