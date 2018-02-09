@@ -175,7 +175,7 @@ class Application extends React.Component {
     this.setState({ visible: visibleState });
   }
   getUrl(ext) {
-    const out = `http://${this.props.host}:${this.props.port}/${ext}`;
+    const out = `//${this.props.host}/${ext}`;
     return out;
   }
   collectionLoad() {
