@@ -7,6 +7,7 @@ export default {
   ANATOMY: { tag: 'Anatomy', name: 'Anatomy', color: '#e5d8bd' },
   PHENOTYPE: { tag: 'Phenotype', name: 'Phenotype', color: '#fddaec' },
   DISEASE: { tag: 'Disease', name: 'Disease', color: '#fbb4ae' },
+  PATHWAY: { tag: 'Pathway', name: 'Pathway', color: '#b3de69' },
 };
 
 // -- New colors --
@@ -19,6 +20,7 @@ export default {
 // #e5d8bd - Brown
 // #fddaec - Pink - Used to replace teal
 // #f2f2f2 - Silver
+// #b3de69 - Darker green
 
 // -- Old colors --
 // aec7e8 - Blue

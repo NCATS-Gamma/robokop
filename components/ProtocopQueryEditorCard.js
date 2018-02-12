@@ -5,11 +5,11 @@ import { DragSource, DropTarget } from 'react-dnd'
 import CardTypes from './ProtocopQueryEditorCardTypes';
 import NodeTypes from './ProtocopQueryEditorNodeTypes';
 
-import {Creatable} from 'react-select';
+import Select from 'react-select';
 
 const _ = require('lodash');
 const shortid = require('shortid');
-var Select = require('react-select');
+//var Select = require('react-select');
 
 const styles = {
   cardBar: {
