@@ -4,15 +4,11 @@ import json
 import sqlite3
 import subprocess
 import logging
-
 from flask import Flask, jsonify, request, render_template
-
-from queryDatabase import queryAndScore, networkx2struct
-# queryAndScore is the entry point for finding and ranking paths
-# networkx2struct is a method to translate networkx graphs into somethign for the ui
-from neo4jDatabase import Neo4jDatabase
-# Needed to read in a large Graph from neoj
-
+from Question import Question
+from Neo4jDatabase import Neo4jDatabase
+from Graph import Graph
+from Question import Question
 
 app = Flask(__name__, static_folder='../static')
 # Set default static folder to point to parent static folder where all
@@ -244,7 +240,7 @@ def blackboard_load():
             graph = query_graph
         else:
             # Turn the networkx list into a struct for jsonifying
-            graph = networkx2struct(query_graph)
+            graph = Graph.networkx2struct(query_graph)
 
         return jsonify({'graph': graph,\
             'query': query,\
@@ -273,7 +269,9 @@ def blackboard_rank():
 
         # Query and Score will contact Neo4j
         # We just need to specify the query
-        ranking_data = queryAndScore({'query':query, 'board_id':board_id})
+        question = Question(query, board_id)
+        ranking_data = question.answer()
+        # ranking_data = queryAndScore({'query':query, 'board_id':board_id})
 
         return jsonify({'ranking': ranking_data})
 
