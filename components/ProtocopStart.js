@@ -18,16 +18,16 @@ class ProtocopStart extends React.Component {
       <div id="ProtocopStart" className={`container-fluid ${hidden}`}>
         <div className="row">
           <div className="col-md-10 col-md-offset-1 text-center">
-            <h1>{'PROTOCOP'}</h1>
+            <h1>{'ROBOKOP'}</h1>
           </div>
         </div>
         <div className="row">
           <div className="col-md-8 col-md-offset-2 ">
-            <p>{'This is PROTOCOP. The Prototype version of ROBOKOP'}</p>
+            <p>{'This is ROBOKOP. The reasoner formerly known as PROTOCOP'}</p>
             <p>
               {
                 '\
-                In PROTOCOP, answers to your questions are stored in knowledge graphs that we call "blackboards."\
+                In ROBOKOP, answers to your questions are stored in knowledge graphs that we call "blackboards."\
                 All of the currently available blackboards are stored in a collection.\
                 '
               }

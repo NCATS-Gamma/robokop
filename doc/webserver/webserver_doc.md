@@ -1,6 +1,6 @@
-# PROTOCOP - Web Server Setup Instructions
+# ROBOKOP - Web Server Setup Instructions
 
-The PROTOCOP UI is web-based with a `Flask` server running inside of `gunicorn` within a Docker container. The user interface is written using React and the build process uses webpack. This document contains a list of steps that were used to install the software.
+The ROBOKOP UI is web-based with a `Flask` server running inside of `gunicorn` within a Docker container. The user interface is written using React and the build process uses webpack. This document contains a list of steps that were used to install the software.
 
 ## Install docker
 https://docs.docker.com/engine/installation/linux/docker-ce/debian/#install-docker-ce-1
@@ -9,7 +9,9 @@ https://docs.docker.com/engine/installation/linux/docker-ce/debian/#install-dock
 `docker pull patrickkwang/reasoner-prototype`
 
 ## Run docker image, opening ports 5000, 7474, and 7687
-`docker run -it -p 7474:7474 -p 7687:7687 -p 5000:5000 patrickkwang/reasoner-prototype bash`
+`docker run -it -p 7474:7474 -p 7687:7687 -p 80:80 patrickkwang/reasoner-prototype bash`
+## OR
+`docker run -it -p 7474:7474 -p 7687:7687 -p 9000:9000 patrickkwang/reasoner-prototype bash`
 
 ## Set correct server self-address
 `cd protocop-rank`

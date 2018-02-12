@@ -245,7 +245,7 @@ class ProtocopNewBoard extends React.Component {
           <div className="col-md-10 col-md-offset-1" style={this.styles.top}>
             <h2>{'Start a New Blackboard'}</h2>
             <p>
-              {'In PROTOCOP, blackboards are created using the interface below. In a future version of ROBOCOP, natural language will be accepted.'}
+              {'In ROBOKOP, blackboards are created using the interface below.'}
               <br />
               {'To get started quickly, try one of these templates:'}
             </p>
