@@ -1,11 +1,12 @@
-import os
-from neo4jDatabase import Neo4jDatabase
+'''
+Methods for querying database and manipulating resulting subgraphs
+'''
+
 import sys
+from neo4jDatabase import Neo4jDatabase
+from queryManipulation import nodeStruct, edgeStruct
 sys.path.insert(0, '../robokop-rank')
 from nagaProto import ProtocopRank
-import json
-import networkx as nx
-from queryManipulation import *
 
 def queryAndScore(data):
 
@@ -43,15 +44,15 @@ def queryAndScore(data):
 def constructName(ranking_data):
     ''' Construct short name summarizing each subgraph. '''
     names = []
-    for n in ranking_data['nodes']:
-        names.append(n['name'])
+    for node in ranking_data['nodes']:
+        names.append(node['name'])
 
     short_name = ''
-    for iN, n in enumerate(names):
-        if iN > 0:
+    for name_idx, name in enumerate(names):
+        if name_idx > 0:
             #short_name = short_name + '→'
             short_name = short_name + ' » '
-        short_name = short_name + n[0:min(len(n),4)]
+        short_name = short_name + name[0:min(len(name), 4)]
 
     return short_name
 
@@ -61,9 +62,9 @@ def mergeMultiEdges(edges):
     # add weights
     # concatenate publications
 
-    d = set([(e['from'],e['to']) for e in edges])
+    edge_list = set([(e['from'],e['to']) for e in edges])
     pruned = []
-    for key in d:
+    for key in edge_list:
         edge_group = [e for e in edges if (e['from'], e['to']) == key]
         edge = mergeEdges(edge_group)
         pruned += [edge]
@@ -75,12 +76,12 @@ def mergeEdges(edges):
     pubs = [b for a in pubs for b in a] # flatten list
     types = [e['type'] for e in edges]
     references = [e['reference'] for e in edges]
-    
+
     if 'Result' in types:
         edge = edges[types.index('Result')] # there should be at most one Result edge between any two nodes
     else:
         edge = edges[0]
-    
+
     edge['publications'] = pubs
     edge['scoring']['num_pubs'] = len(pubs)
     # make sure we get chemotext2 similarity
