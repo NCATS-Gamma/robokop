@@ -1,10 +1,10 @@
 {
-  "name": "protocop-ui",
-  "productName": "Protocop",
+  "name": "robokop",
+  "productName": "ROBOKOP",
   "version": "0.0.1",
-  "description": "Protocop",
+  "description": "Reasoning Over Biomedical Objects linked in Knowledge-Oriented Pathways",
   "main": "main.js",
-  "author": "PROTOCOP Team",
+  "author": "Gamma Team",
   "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.26.0",

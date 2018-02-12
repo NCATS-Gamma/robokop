@@ -1,6 +1,6 @@
-# PROTOCOP Ranking and User Interface
+# ROBOKOP Ranking and User Interface
 
-The answer ranking and user interface modules for PROTOCOP, a submission for the NCATS Reasoner.
+The answer ranking and user interface modules for ROBOKOP, a submission for the NCATS Reasoner.
 
 ![Example Knowledge graph](./cover.png?raw=true)
 

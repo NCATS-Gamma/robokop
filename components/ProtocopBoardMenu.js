@@ -19,7 +19,7 @@ class ProtocopBoardMenu extends React.Component {
       <Navbar>
         <Navbar.Collapse>
           <Navbar.Brand>
-            <a href="#" onClick={this.props.callbackBacktoList}>PROTOCOP</a>
+            <a href="#" onClick={this.props.callbackBacktoList}>ROBOKOP</a>
           </Navbar.Brand>
           <Navbar.Text>
             <Navbar.Link href="#" onClick={this.props.callbackBacktoList}>Blackboards</Navbar.Link>
