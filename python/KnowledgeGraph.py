@@ -1,10 +1,8 @@
 import time
 from neo4j.v1 import GraphDatabase, basic_auth
-from Question import Question
-from Answer import Answer
 from Graph import Graph
 
-class Neo4jDatabase:
+class KnowledgeGraph:
 
     def __init__(self, clientHost='127.0.0.1'):
         # connect to neo4j database
@@ -63,6 +61,21 @@ class Neo4jDatabase:
         return labels
 
     def getNodesByLabel(self, label):
+
+        query_graph = self.getGraphByLabel(label)
+
+        # Sometimes the grpah is too large and we get a summary dict
+        # Usually though we get a networkx list
+        if isinstance(query_graph, dict):
+            graph = query_graph
+        else:
+            # Turn the networkx list into a struct for jsonifying
+            graph = Graph.networkx2struct(query_graph)
+
+        return graph
+
+    def getGraphByLabel(self, label):
+            
         match_string = 'MATCH (n:{})'.format(label)
         return_string = 'RETURN [n{.*}] as nodes'
         query_string = ' '.join([match_string, return_string])
@@ -76,12 +89,13 @@ class Neo4jDatabase:
         query_string = ' '.join([match_string, support_string, return_string])
         print("Done.")
         result += list(self.session.run(query_string))
+        query_graph = Graph.n2n(result)
 
-        return Graph.n2n(result)
+        return query_graph
 
 
     def query(self, question):
-        query_string = question.query()
+        query_string = question.cypher()
         
         print('Running query... ', end='')
         start = time.time()

@@ -7,7 +7,7 @@ class Graph:
         self.nodes = None
 
     @staticmethod
-    def n2n(self, records):
+    def n2n(records):
         graph = nx.MultiDiGraph()
         for record in records:
             if 'nodes' in record:
@@ -22,7 +22,7 @@ class Graph:
         return graph
 
     @staticmethod
-    def neo4j2networkx(self, records):
+    def neo4j2networkx(records):
         # parse neo4j output into networkx graphs
         subgraphs = []
         for record in records:

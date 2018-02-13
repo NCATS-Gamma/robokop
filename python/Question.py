@@ -1,14 +1,15 @@
 import os
+import sys
 import json
 from Graph import Graph
-from Neo4jDatabase import Neo4jDatabase
+from KnowledgeGraph import KnowledgeGraph
 sys.path.insert(0, '../robokop-rank')
 from nagaProto import ProtocopRank
 from Answer import Answer
 
 class Question:
-    def __init__(self, dictionary, id):
-        self.id = id
+    def __init__(self, dictionary, question_id):
+        self.id = question_id
         self.dictionary = dictionary
         if isinstance(self.dictionary, str):
             # load query (as series of node and edge conditions) from json files
@@ -19,11 +20,10 @@ class Question:
 
     def answer(self):
         
-        database = Neo4jDatabase()
-
-        subgraphs = database.query(self.query())
-
-        G = database.getNodesByLabel(self.id)
+        # get all subgraphs relevant to the question from the knowledge graph
+        database = KnowledgeGraph()
+        subgraphs = database.query(self)
+        G = database.getGraphByLabel(self.id)
         del database
 
         # compute scores with NAGA, export to json
@@ -48,7 +48,7 @@ class Question:
         else:
             return score_struct
 
-    def query(self):
+    def cypher(self):
 
         if self.dictionary[-1]['nodeSpecType'] == 'Named Node':
             query = self.addNameNodeToQuery(self.addNameNodeToQuery(self.dictionary[::-1])[::-1])

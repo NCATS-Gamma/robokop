@@ -6,9 +6,7 @@ import subprocess
 import logging
 from flask import Flask, jsonify, request, render_template
 from Question import Question
-from Neo4jDatabase import Neo4jDatabase
-from Graph import Graph
-from Question import Question
+from KnowledgeGraph import KnowledgeGraph
 
 app = Flask(__name__, static_folder='../static')
 # Set default static folder to point to parent static folder where all
@@ -232,15 +230,8 @@ def blackboard_load():
         construction_graph = json.loads(rows[0][4])
 
         # Contact Neo4j to get the large graph of this backboard
-        database = Neo4jDatabase(local_config['clientHost'])
-        query_graph = database.getNodesByLabel(board_id)
-        # Sometimes the grpah is too large and we get a summary dict
-        # Usually though we get a networkx list
-        if isinstance(query_graph, dict):
-            graph = query_graph
-        else:
-            # Turn the networkx list into a struct for jsonifying
-            graph = Graph.networkx2struct(query_graph)
+        database = KnowledgeGraph(local_config['clientHost'])
+        graph = database.getNodesByLabel(board_id)
 
         return jsonify({'graph': graph,\
             'query': query,\
