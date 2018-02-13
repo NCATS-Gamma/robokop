@@ -7,7 +7,8 @@ import logging
 
 from flask import Flask, jsonify, request, render_template
 
-from queryDatabase import queryAndScore, networkx2struct
+from queryDatabase import queryAndScore
+from queryManipulation import networkx2struct
 # queryAndScore is the entry point for finding and ranking paths
 # networkx2struct is a method to translate networkx graphs into somethign for the ui
 from neo4jDatabase import Neo4jDatabase
