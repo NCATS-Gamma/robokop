@@ -2,7 +2,15 @@ class Answer:
     def __init__(self):
         self.id = None
         self.name = None
-        self.description = None
+
+class AnswerSet:
+    '''
+    An "answer" to a Question.
+    Contains a ranked list of paths through the Knowledge Graph.
+    '''
+
+    def __init__(self):
+        self.answers = None
 
     @staticmethod
     def constructName(ranking_data):

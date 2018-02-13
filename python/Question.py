@@ -1,13 +1,21 @@
 import os
 import sys
 import json
-from Graph import Graph
+from UniversalGraph import UniversalGraph
 from KnowledgeGraph import KnowledgeGraph
 sys.path.insert(0, '../robokop-rank')
 from nagaProto import ProtocopRank
-from Answer import Answer
+from Answer import AnswerSet
 
 class Question:
+    '''
+    Represents a question such as "What genetic condition provides protection against disease X?"
+
+    methods:
+    * answer() - a struct containing the ranked answer paths
+    * cypher() - the appropriate Cypher query for the Knowledge Graph
+    '''
+
     def __init__(self, dictionary, question_id):
         self.id = question_id
         self.dictionary = dictionary
@@ -19,10 +27,16 @@ class Question:
                 self.dictionary = json.load(infile)
 
     def answer(self):
-        
+        '''
+        Answer the question.
+
+        Returns the answer struct, something along the lines of:
+        https://docs.google.com/document/d/1O6_sVSdSjgMmXacyI44JJfEVQLATagal9ydWLBgi-vE
+        '''
+
         # get all subgraphs relevant to the question from the knowledge graph
         database = KnowledgeGraph()
-        subgraphs = database.query(self)
+        subgraphs = database.query(self) # list of lists of nodes with 'id' and 'bound'
         G = database.getGraphByLabel(self.id)
         del database
 
@@ -30,16 +44,18 @@ class Question:
         pr = ProtocopRank(G)
         score_struct = pr.report_scores_dict(subgraphs)
 
+        graph = UniversalGraph(nodes=score_struct[0]['nodes'], edges=score_struct[0]['edges'])
+        graph.merge_multiedges()
         score_struct = list(map(lambda x: {\
-            'nodes':[Graph.nodeStruct(node) for node in x['nodes']],\
-            'edges':[Graph.edgeStruct(edge) for edge in x['edges']],\
+            'nodes':graph.nodes,\
+            'edges':graph.edges,\
             'score':x['score']},
             score_struct))
 
         for i in range(len(score_struct)):
-            score_struct[i]['edges'] = Graph.mergeMultiEdges(score_struct[i]['edges'])
+            # score_struct[i]['edges'] = UniversalGraph.mergeMultiEdges(score_struct[i]['edges'])
             score_struct[i]['info'] = {
-                'name': Answer.constructName(score_struct[i])
+                'name': AnswerSet.constructName(score_struct[i])
             }
 
         max_results = 1000
@@ -49,6 +65,11 @@ class Question:
             return score_struct
 
     def cypher(self):
+        '''
+        Generate a Cypher query to extract the portion of the Knowledge Graph necessary to answer the question.
+
+        Returns the query as a string.
+        '''
 
         if self.dictionary[-1]['nodeSpecType'] == 'Named Node':
             query = self.addNameNodeToQuery(self.addNameNodeToQuery(self.dictionary[::-1])[::-1])
@@ -76,13 +97,13 @@ class Question:
         edge_bound = [False for e in range(edge_count)]
 
         node_conditions = []
-        for n in nodes:
+        for node in nodes:
             node_conds = []
-            if n['isBoundName']:
-                node_conds += [[{'prop':'name', 'val':n['type']+'.'+n['label'], 'op':'=', 'cond':True},\
-                    {'prop':'name', 'val':n['label'], 'op':'=', 'cond':True}]]
-            if n['isBoundType']:
-                node_conds += [[{'prop':'node_type', 'val':n['type'].replace(' ', ''), 'op':'=', 'cond':True}]]
+            if node['isBoundName']:
+                node_conds += [[{'prop':'name', 'val':node['type']+'.'+node['label'], 'op':'=', 'cond':True},\
+                    {'prop':'name', 'val':node['label'], 'op':'=', 'cond':True}]]
+            if node['isBoundType']:
+                node_conds += [[{'prop':'node_type', 'val':node['type'].replace(' ', ''), 'op':'=', 'cond':True}]]
             node_conditions += [node_conds]
 
         # generate MATCH command string to get paths of the appropriate size

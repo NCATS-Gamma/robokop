@@ -1,6 +1,6 @@
 import time
 from neo4j.v1 import GraphDatabase, basic_auth
-from Graph import Graph
+from UniversalGraph import UniversalGraph
 
 class KnowledgeGraph:
 
@@ -70,7 +70,10 @@ class KnowledgeGraph:
             graph = query_graph
         else:
             # Turn the networkx list into a struct for jsonifying
-            graph = Graph.networkx2struct(query_graph)
+            graph = UniversalGraph(query_graph)
+            graph = {'nodes': graph.nodes,
+                     'edges': graph.edges}
+            # TODO: this might not be used, and probably doesn't work
 
         return graph
 
@@ -89,7 +92,7 @@ class KnowledgeGraph:
         query_string = ' '.join([match_string, support_string, return_string])
         print("Done.")
         result += list(self.session.run(query_string))
-        query_graph = Graph.n2n(result)
+        query_graph = UniversalGraph.record2networkx(result)
 
         return query_graph
 

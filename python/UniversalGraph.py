@@ -1,13 +1,24 @@
 from copy import deepcopy
 import networkx as nx
 
-class Graph:
-    def __init__(self):
-        self.edges = None
-        self.nodes = None
+class UniversalGraph:
+    '''
+    For now, this just encapsulates utilities for manipulating different graph forms:
+    * Neo4j
+    * networkx
+    * JS object
+    * ...
+    '''
+
+    def __init__(self, networkx_graph=None, nodes=None, edges=None):
+        if networkx_graph is not None:
+            nodes = networkx_graph.nodes(data=True)
+            edges = networkx_graph.edges(data=True)
+        self.edges = [self.edge_from_networkx(edge) for edge in edges]
+        self.nodes = [self.node_from_networkx(node) for node in nodes]
 
     @staticmethod
-    def n2n(records):
+    def record2networkx(records):
         graph = nx.MultiDiGraph()
         for record in records:
             if 'nodes' in record:
@@ -25,28 +36,22 @@ class Graph:
     def neo4j2networkx(records):
         # parse neo4j output into networkx graphs
         subgraphs = []
-        for record in records:
-            subgraph = self.n2n([record])
-            subgraphs += [subgraph]
-        if len(subgraphs) > 0:
-            G = subgraphs[0]
-        else:
+        if len(records)==0:
             G = nx.MultiDiGraph()
+            return G, subgraphs
 
+        for record in records:
+            subgraph = UniversalGraph.record2networkx([record])
+            subgraphs += [subgraph]
+        
+        G = subgraphs[0]
         for subgraph in subgraphs[1:]:
             G = nx.compose(G, subgraph)
+
         return G, subgraphs
 
     @staticmethod
-    def networkx2struct(graph):
-        """Converts a networkX graph to a primitive dictionary with the
-            necessary information for protocop-ui
-        """
-        return {'nodes': [Graph.nodeStruct(node) for node in graph.nodes(data=True)],
-                'edges': [Graph.edgeStruct(edge) for edge in graph.edges(data=True)]}
-
-    @staticmethod
-    def nodeStruct(node):
+    def node_from_networkx(node):
         props = deepcopy(node[-1])
 
         # rename node_type to type, adding if not present
@@ -56,7 +61,7 @@ class Graph:
             'id':node[0]}
 
     @staticmethod
-    def edgeStruct(edge):
+    def edge_from_networkx(edge):
         props = deepcopy(edge[-1])
 
         # rename source to reference, adding if not present
@@ -77,23 +82,24 @@ class Graph:
             'to':edge[1],\
             'from':edge[0]}
 
-    @staticmethod
-    def mergeMultiEdges(edges):
+    def merge_multiedges(self):
         ''' Find edges between the same nodes and merge them. '''
         # expect edges in edgeStruct format
         # add weights
         # concatenate publications
 
+        edges = self.edges
         edge_list = set([(e['from'],e['to']) for e in edges])
         pruned = []
         for key in edge_list:
             edge_group = [e for e in edges if (e['from'], e['to']) == key]
-            edge = Graph.mergeEdges(edge_group)
+            edge = UniversalGraph.merge_edges(edge_group)
             pruned += [edge]
-        return pruned
+        self.edges = pruned
+        return self
 
     @staticmethod
-    def mergeEdges(edges):
+    def merge_edges(edges):
         ''' Merge edges into a single edge. '''
         pubs = [e['publications'] for e in edges]
         pubs = [b for a in pubs for b in a] # flatten list
