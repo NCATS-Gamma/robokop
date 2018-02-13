@@ -19,6 +19,11 @@ class UniversalGraph:
 
     @staticmethod
     def record2networkx(records):
+        '''
+        Returns a networkx graph corresponding to the Neo4j Record:
+        http://neo4j.com/docs/api/java-driver/current/org/neo4j/driver/v1/Record.html
+        '''
+
         graph = nx.MultiDiGraph()
         for record in records:
             if 'nodes' in record:
@@ -34,6 +39,10 @@ class UniversalGraph:
 
     @staticmethod
     def neo4j2networkx(records):
+        '''
+        Returns a networkx graph merging the list of Neo4j records.
+        '''
+
         # parse neo4j output into networkx graphs
         subgraphs = []
         if len(records)==0:
@@ -52,6 +61,7 @@ class UniversalGraph:
 
     @staticmethod
     def node_from_networkx(node):
+        ''' Return a dictionary for a single networkx-style node '''
         props = deepcopy(node[-1])
 
         # rename node_type to type, adding if not present
@@ -62,6 +72,7 @@ class UniversalGraph:
 
     @staticmethod
     def edge_from_networkx(edge):
+        ''' Return a dictionary for a single networkx-style edge '''
         props = deepcopy(edge[-1])
 
         # rename source to reference, adding if not present
