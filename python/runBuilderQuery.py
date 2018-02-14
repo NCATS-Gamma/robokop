@@ -44,7 +44,9 @@ def runBuilderQuery(database_file, board_id):
             supports = ['chemotext']
             # supports = ['chemotext', 'chemotext2'] # chemotext2 is really slow
             exportBioGraph(kgraph, board_id, supports=supports)
-        except:
+            
+        except Exception as err:
+            print(err)
             # Set flag in building table to indicated finsihed
             table_name = 'building'
             database = sqlite3.connect(database_file)
@@ -153,34 +155,37 @@ def getSourceGraph(kgraph):
         programs = kgraph.rosetta.type_graph.db.query(cypher, data_contents=True)
         # programs = kgraph.rosetta.type_graph.get_transitions(cypher)
         # chain = programs[0]
-        program = programs.rows[0]
-        chain = program[0]
-        for link in program[1:]:
-            chain += link[1:]
+        nodes = []
+        edges = []
+        for program in programs.rows:
+            chain = program[0]
 
-        # something like this:
-        """[{'iri': 'http://identifiers.org/name/disease', 'name': 'NAME.DISEASE'},
-            {'op': 'tkba.name_to_doid', 'predicate': 'NAME_TO_ID', 'synonym': False, 'enabled': True},
-            {'iri': 'http://identifiers.org/doid', 'name': 'DOID'},
-            {'op': 'disease_ontology.doid_to_pharos', 'predicate': 'SYNONYM', 'synonym': True, 'enabled': True},
-            {'iri': 'http://pharos.nih.gov/identifier/', 'name': 'PHAROS'},
-            {'op': 'pharos.disease_get_gene', 'predicate': 'DISEASE_GENE', 'synonym': False, 'enabled': True},
-            {'iri': 'http://identifiers.org/hgnc', 'name': 'HGNC'},
-            {'op': 'biolink.gene_get_genetic_condition', 'predicate': 'GENE_TO_GENETIC_CONDITION', 'synonym': False, 'enabled': True},
-            {'iri': 'http://identifiers.org/doid/gentic_condition', 'name': 'DOID.GENETIC_CONDITION'}]"""
+            # chain looks something like this:
+            """[{'iri': 'http://identifiers.org/name/disease', 'name': 'NAME.DISEASE'},
+                {'op': 'tkba.name_to_doid', 'predicate': 'NAME_TO_ID', 'synonym': False, 'enabled': True},
+                {'iri': 'http://identifiers.org/doid', 'name': 'DOID'},
+                {'op': 'disease_ontology.doid_to_pharos', 'predicate': 'SYNONYM', 'synonym': True, 'enabled': True},
+                {'iri': 'http://pharos.nih.gov/identifier/', 'name': 'PHAROS'},
+                {'op': 'pharos.disease_get_gene', 'predicate': 'DISEASE_GENE', 'synonym': False, 'enabled': True},
+                {'iri': 'http://identifiers.org/hgnc', 'name': 'HGNC'},
+                {'op': 'biolink.gene_get_genetic_condition', 'predicate': 'GENE_TO_GENETIC_CONDITION', 'synonym': False, 'enabled': True},
+                {'iri': 'http://identifiers.org/doid/gentic_condition', 'name': 'DOID.GENETIC_CONDITION'}]"""
 
-        node_count = (len(chain)-1)/2
-        edge_count = node_count + 1
-        nodes = [{'id':n['name'],
-            'name':n['name'],
-            'type':n['iri']} for n in chain[::2]]
-        edges = [{'from':chain[i*2]['name'],
-            'to':chain[i*2+2]['name'],
-            'reference':e['op'].split('.')[0],
-            'function':e['op'].split('.')[1],
-            'type':e['predicate'],
-            'id':e['op'],
-            'publications':''} for i, e in enumerate(chain[1::2])]
+            nodes += [{'id':n['name'],
+                'name':n['name'],
+                'type':n['iri']} for n in chain[::2]]
+            edges += [{'from':chain[i*2]['name'],
+                'to':chain[i*2+2]['name'],
+                'reference':e['op'].split('.')[0],
+                'function':e['op'].split('.')[1],
+                'type':e['predicate'],
+                'id':e['op'],
+                'publications':''} for i, e in enumerate(chain[1::2])]
+
+        # unique nodes
+        nodes = {n['id']:n for n in nodes}
+        nodes = [nodes[k] for k in nodes]
+
         # unique edges
         edges = {e['id']:e for e in edges}
         edges = [edges[k] for k in edges]
