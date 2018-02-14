@@ -15,10 +15,7 @@ class KnowledgeGraph:
         print('Connected to database.')
 
     def getQueries(self):
-        label_string = 'MATCH (n) RETURN distinct labels(n) as labels'
-        result = list(self.session.run(label_string))
-        non_query_labels = ['Type', 'Concept', 'fail']
-        labels = [l for r in result if not any(i in r['labels'] for i in non_query_labels) for l in r['labels']]
+        labels = self.getLabels()
         queries = []
         for label in labels:
             if label[:7] == 'Query1_':
@@ -56,7 +53,8 @@ class KnowledgeGraph:
 
     def getLabels(self):
         result = list(self.session.run('MATCH (n) RETURN distinct labels(n) as labels'))
-        non_query_labels = ['Type', 'Concept', 'fail']
+        non_query_labels = ['Type', 'Concept', 'fail',\
+            'GeneticCondition','Disease','NAMEDISEASE','Gene','Cell','Anatomy','Phenotype','Substance','NAMEDRUG','BiologicalProcess','Pathway']
         labels = [l for r in result if not any(i in r['labels'] for i in non_query_labels) for l in r['labels']]
         return labels
 
