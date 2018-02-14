@@ -1,14 +1,9 @@
 """Launches the Builder service"""
 import sys
-import time
 import json
 import sqlite3
 import logging
-
-build = True
-
 import userquery
-from queryDatabase import addNameNodeToQuery
 from greent.rosetta import Rosetta
 from builder import KnowledgeGraph
 from greent.graph_components import KNode
