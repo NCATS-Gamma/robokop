@@ -37,7 +37,7 @@ class Application extends React.Component {
       boardRanking: null,
 
       buildingPolling: false,
-      buildingPollingInterval: 20000, // in ms (every 5s seems sufficient)
+      buildingPollingInterval: 5000, // in ms
       buildingPollingJob: {}, // This is the output of setInterval
     };
 
@@ -187,6 +187,7 @@ class Application extends React.Component {
         boards: data.boards,
       };
       this.setState(newData, this.onMain);
+      this.blackboardsBuildingPoll();
     }).fail((err) => {
       this.callbacks.onMessageOkRetainReturn('There was a problem communicating with the webserver ....', err.responseText, 'Ok');
     });
