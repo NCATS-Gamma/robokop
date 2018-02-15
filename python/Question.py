@@ -42,7 +42,9 @@ class Question:
 
         # compute scores with NAGA, export to json
         pr = ProtocopRank(G)
-        score_struct = pr.report_scores_dict(subgraphs)
+        score_struct, _ = pr.report_scores_dict(subgraphs)
+        score_struct = score_struct[:2]
+        print(score_struct)
 
         out_struct = []
         for s in score_struct:
@@ -54,6 +56,7 @@ class Question:
                 'score':s['score']},
                 ]
         score_struct = out_struct
+        print(score_struct)
 
         for i in range(len(score_struct)):
             # score_struct[i]['edges'] = UniversalGraph.mergeMultiEdges(score_struct[i]['edges'])
