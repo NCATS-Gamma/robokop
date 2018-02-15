@@ -91,6 +91,8 @@ class Question:
                 edge = dict(graph.edges[i])
                 edge['start'] = '{}'.format(i)
                 edge['end'] = '{}'.format(i+1)
+                edge['from'] = '{}'.format(i)
+                edge['to'] = '{}'.format(i+1)
                 edges += [edge,]
             graph.edges = edges
 
