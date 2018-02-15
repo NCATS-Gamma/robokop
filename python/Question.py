@@ -44,13 +44,16 @@ class Question:
         pr = ProtocopRank(G)
         score_struct = pr.report_scores_dict(subgraphs)
 
-        graph = UniversalGraph(nodes=score_struct[0]['nodes'], edges=score_struct[0]['edges'])
+        out_struct = []
+        for s in score_struct:
+            graph = UniversalGraph(nodes=s['nodes'], edges=s['edges'])
         graph.merge_multiedges()
-        score_struct = list(map(lambda x: {\
-            'nodes':graph.nodes,\
+            out_struct += [
+                {'nodes':graph.nodes,\
             'edges':graph.edges,\
-            'score':x['score']},
-            score_struct))
+                'score':s['score']},
+                ]
+        score_struct = out_struct
 
         for i in range(len(score_struct)):
             # score_struct[i]['edges'] = UniversalGraph.mergeMultiEdges(score_struct[i]['edges'])
