@@ -7,6 +7,23 @@ sys.path.insert(0, '../robokop-rank')
 from nagaProto import ProtocopRank
 from Answer import AnswerSet
 
+class Node:
+    '''
+    Represents a node *specification*
+    Properties may be None, indicating unspecified
+    '''
+    def __init__(self):
+        self.type = None # e.g. gene, pathway, etc.
+        self.name = None # e.g. asthma, metformin, etc.
+
+class Edge:
+    '''
+    Represents an edge *specification*
+    Properties may be None, indicating unspecified
+    '''
+    def __init__(self):
+        self.type = None # e.g. is_associated_with, causes, etc.
+
 class Question:
     '''
     Represents a question such as "What genetic condition provides protection against disease X?"
@@ -18,6 +35,9 @@ class Question:
 
     def __init__(self, dictionary, question_id):
         self.id = question_id
+        self.description = None
+        self.nodes = None # list of nodes
+        self.edges = None # list of edges
         self.dictionary = dictionary
         if isinstance(self.dictionary, str):
             # load query (as series of node and edge conditions) from json files
@@ -159,6 +179,8 @@ class Question:
 
         # return subgraphs matching query
         query_string = ' '.join([big_string, return_string])
+
+        # print(query_string)
         return query_string
     
     @staticmethod
