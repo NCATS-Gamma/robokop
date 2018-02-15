@@ -47,10 +47,10 @@ class Question:
         out_struct = []
         for s in score_struct:
             graph = UniversalGraph(nodes=s['nodes'], edges=s['edges'])
-        graph.merge_multiedges()
+            graph.merge_multiedges()
             out_struct += [
                 {'nodes':graph.nodes,\
-            'edges':graph.edges,\
+                'edges':graph.edges,\
                 'score':s['score']},
                 ]
         score_struct = out_struct
