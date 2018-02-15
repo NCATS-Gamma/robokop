@@ -42,16 +42,42 @@ class Question:
 
         # compute scores with NAGA, export to json
         pr = ProtocopRank(G)
-        score_struct = pr.report_scores_dict(subgraphs)
+        (score_struct, subgraphs) = pr.report_scores_dict(subgraphs) # returned subgraphs are sorted by rank
+
+        score_struct = score_struct[:10]
+        subgraphs = subgraphs[:10]
 
         out_struct = []
-        for s in score_struct:
-            graph = UniversalGraph(nodes=s['nodes'], edges=s['edges'])
+        for substruct, subgraph in zip(score_struct, subgraphs):
+            graph = UniversalGraph(nodes=substruct['nodes'], edges=substruct['edges'])
             graph.merge_multiedges()
+            graph_ids = [node['id'] for node in graph.nodes]
+            struct_ids = [node['id'] for node in subgraph]
+            graph_idx = [graph_ids.index(node_id) for node_id in struct_ids]
+            nodes = []
+            for i in range(len(graph_idx)):
+                node = dict(graph.nodes[graph_idx[i]]) # this just creates a pointer otherwise
+                node['id'] = '{}'.format(i)
+                nodes += [node,]
+            graph.nodes = nodes
+
+            edge_start_ids = [edge['start'] for edge in graph.edges]
+            edge_idx = []
+            for i in range(len(graph_idx)-1):
+                edge_idx += [edge_start_ids.index(struct_ids[i]),]
+
+            edges = []
+            for i in edge_idx:
+                edge = dict(graph.edges[i])
+                edge['start'] = '{}'.format(i)
+                edge['end'] = '{}'.format(i+1)
+                edges += [edge,]
+            graph.edges = edges
+
             out_struct += [
                 {'nodes':graph.nodes,\
                 'edges':graph.edges,\
-                'score':s['score']},
+                'score':substruct['score']},
                 ]
         score_struct = out_struct
 
