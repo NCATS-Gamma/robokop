@@ -62,10 +62,7 @@ class Question:
 
         # compute scores with NAGA, export to json
         pr = ProtocopRank(G)
-        (score_struct, subgraphs) = pr.report_scores_dict(subgraphs) # returned subgraphs are sorted by rank
-
-        score_struct = score_struct[:10]
-        subgraphs = subgraphs[:10]
+        score_struct, subgraphs = pr.report_scores_dict(subgraphs) # returned subgraphs are sorted by rank
 
         out_struct = []
         for substruct, subgraph in zip(score_struct, subgraphs):
