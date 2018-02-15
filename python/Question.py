@@ -7,6 +7,23 @@ sys.path.insert(0, '../robokop-rank')
 from nagaProto import ProtocopRank
 from Answer import AnswerSet
 
+class Node:
+    '''
+    Represents a node *specification*
+    Properties may be None, indicating unspecified
+    '''
+    def __init__(self):
+        self.type = None # e.g. gene, pathway, etc.
+        self.name = None # e.g. asthma, metformin, etc.
+
+class Edge:
+    '''
+    Represents an edge *specification*
+    Properties may be None, indicating unspecified
+    '''
+    def __init__(self):
+        self.type = None # e.g. is_associated_with, causes, etc.
+
 class Question:
     '''
     Represents a question such as "What genetic condition provides protection against disease X?"
@@ -18,6 +35,9 @@ class Question:
 
     def __init__(self, dictionary, question_id):
         self.id = question_id
+        self.description = None
+        self.nodes = None # list of nodes
+        self.edges = None # list of edges
         self.dictionary = dictionary
         if isinstance(self.dictionary, str):
             # load query (as series of node and edge conditions) from json files
@@ -42,18 +62,18 @@ class Question:
 
         # compute scores with NAGA, export to json
         pr = ProtocopRank(G)
-        score_struct, _ = pr.report_scores_dict(subgraphs)
-        score_struct = score_struct[:2]
-        print(score_struct)
+        score_struct, subgraphs = pr.report_scores_dict(subgraphs) # returned subgraphs are sorted by rank
 
         out_struct = []
-        for s in score_struct:
-            graph = UniversalGraph(nodes=s['nodes'], edges=s['edges'])
+        for substruct, subgraph in zip(score_struct, subgraphs):
+            graph = UniversalGraph(nodes=substruct['nodes'], edges=substruct['edges'])
             graph.merge_multiedges()
+            graph.to_answer_walk(subgraph)
+
             out_struct += [
                 {'nodes':graph.nodes,\
                 'edges':graph.edges,\
-                'score':s['score']},
+                'score':substruct['score']},
                 ]
         score_struct = out_struct
         print(score_struct)
@@ -129,13 +149,15 @@ class Question:
             for d in conds]\
             for i, conds in enumerate(node_conditions)]
         where_strings = ['WHERE '+' AND '.join(c) for c in node_cond_strings]
-        big_string = match_strings[0]+' '+where_strings[0]+' '+' '.join([m+' '+w+' '+d for m,w,d in zip(with_strings, match_strings[1:], where_strings[1:])])
+        big_string = match_strings[0]+' '+where_strings[0]+' '+' '.join([w+' '+m+' '+d for w,m,d in zip(with_strings, match_strings[1:], where_strings[1:])])
         
         # add bound fields and return map
         return_string = 'RETURN ['+', '.join(['{{id:{0}.id, bound:{1}}}'.format(n, 'True' if b else 'False') for n, b in zip(node_names, node_bound)])+'] as nodes'
 
         # return subgraphs matching query
         query_string = ' '.join([big_string, return_string])
+
+        # print(query_string)
         return query_string
     
     @staticmethod
