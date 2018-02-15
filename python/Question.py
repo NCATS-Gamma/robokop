@@ -68,30 +68,7 @@ class Question:
         for substruct, subgraph in zip(score_struct, subgraphs):
             graph = UniversalGraph(nodes=substruct['nodes'], edges=substruct['edges'])
             graph.merge_multiedges()
-            graph_ids = [node['id'] for node in graph.nodes]
-            struct_ids = [node['id'] for node in subgraph]
-            graph_idx = [graph_ids.index(node_id) for node_id in struct_ids]
-            nodes = []
-            for i in range(len(graph_idx)):
-                node = dict(graph.nodes[graph_idx[i]]) # this just creates a pointer otherwise
-                node['id'] = '{}'.format(i)
-                nodes += [node,]
-            graph.nodes = nodes
-
-            edge_start_ids = [edge['start'] for edge in graph.edges]
-            edge_idx = []
-            for i in range(len(graph_idx)-1):
-                edge_idx += [edge_start_ids.index(struct_ids[i]),]
-
-            edges = []
-            for i in edge_idx:
-                edge = dict(graph.edges[i])
-                edge['start'] = '{}'.format(i)
-                edge['end'] = '{}'.format(i+1)
-                edge['from'] = '{}'.format(i)
-                edge['to'] = '{}'.format(i+1)
-                edges += [edge,]
-            graph.edges = edges
+            graph.to_answer_walk(subgraph)
 
             out_struct += [
                 {'nodes':graph.nodes,\

@@ -17,6 +17,33 @@ class UniversalGraph:
         self.edges = [self.edge_from_networkx(edge) for edge in edges]
         self.nodes = [self.node_from_networkx(node) for node in nodes]
 
+    def to_answer_walk(self, node_sequence):
+        graph_ids = [node['id'] for node in self.nodes]
+        struct_ids = [node['id'] for node in node_sequence]
+        graph_idx = [graph_ids.index(node_id) for node_id in struct_ids]
+        nodes = []
+        for i, g in enumerate(graph_idx):
+            node = dict(self.nodes[g]) # this just creates a pointer otherwise
+            node['id'] += '_{:02d}'.format(i)
+            nodes += [node,]
+        self.nodes = nodes
+        node_ids = [node['id'] for node in self.nodes]
+        edges = []
+        for edge in self.edges:
+            start_node_ids = [node_id for node_id in node_ids if node_id[:-3]==edge['start']]
+            end_node_ids = [node_id for node_id in node_ids if node_id[:-3]==edge['end']]
+            node_pairs = [(start_node_id, end_node_id)\
+                for end_node_id in end_node_ids\
+                for start_node_id in start_node_ids]
+            for i, node_pair in enumerate(node_pairs):
+                edge = dict(edge)
+                edge['from'] = node_pair[0]
+                edge['to'] = node_pair[1]
+                edge['id'] = '{}_{:02d}'.format(edge['id'], i)
+                edges += [edge,]
+        self.edges = edges
+        return self
+
     @staticmethod
     def record2networkx(records):
         '''
