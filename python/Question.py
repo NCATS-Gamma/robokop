@@ -152,7 +152,7 @@ class Question:
             for d in conds]\
             for i, conds in enumerate(node_conditions)]
         where_strings = ['WHERE '+' AND '.join(c) for c in node_cond_strings]
-        big_string = match_strings[0]+' '+where_strings[0]+' '+' '.join([m+' '+w+' '+d for m,w,d in zip(with_strings, match_strings[1:], where_strings[1:])])
+        big_string = match_strings[0]+' '+where_strings[0]+' '+' '.join([w+' '+m+' '+d for w,m,d in zip(with_strings, match_strings[1:], where_strings[1:])])
         
         # add bound fields and return map
         return_string = 'RETURN ['+', '.join(['{{id:{0}.id, bound:{1}}}'.format(n, 'True' if b else 'False') for n, b in zip(node_names, node_bound)])+'] as nodes'
