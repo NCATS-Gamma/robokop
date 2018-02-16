@@ -14,8 +14,8 @@ export default {
   PUBCHEM: { tag: 'PUBCHEM', name: 'Substance', color: '#b3cde3' },
   CTD: { tag: 'CTD', name: 'Substance', color: '#b3cde3' },
   NCBIGENE: { tag: 'NCBIGENE', name: 'Gene', color: '#ccebc5' },
-  KEGG_PATH: { tag: 'KEGG-path', name: 'Pathway', color: '#fed9a6' },
-  REACT: { tag: 'REACT', name: 'Pathway', color: '#fed9a6' },
+  KEGG_PATH: { tag: 'KEGG-path', name: 'Pathway', color: '#b3de69' },
+  REACT: { tag: 'REACT', name: 'Pathway', color: '#b3de69' },
 };
 
 // -- New colors --
