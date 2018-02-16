@@ -76,7 +76,6 @@ class Question:
                 'score':substruct['score']},
                 ]
         score_struct = out_struct
-        print(score_struct)
 
         for i in range(len(score_struct)):
             # score_struct[i]['edges'] = UniversalGraph.mergeMultiEdges(score_struct[i]['edges'])
