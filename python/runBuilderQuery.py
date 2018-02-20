@@ -100,6 +100,9 @@ def fetch_table_entries(database, table, condition):
 def boardQueryToRenciQuery(board_query, rosetta):
     if not board_query[0]['nodeSpecType'] == 'Named Node':
         raise TypeError('First node should be named.')
+    # convert unspecified nodes to 'leadingEdge' property of subsequent nodes
+    # add 0-node 'leadingEdge' where unspecified
+    # remove unspecified nodes
     board_query = [dict(n, **{'leadingEdge': board_query[i-1]['meta']})\
         if i > 0 and board_query[i-1]['nodeSpecType'] == 'Unspecified Nodes'\
         else dict(n, **{'leadingEdge': {'numNodesMin': 0, 'numNodesMax': 0}})\
@@ -130,9 +133,7 @@ def boardQueryToRenciQuery(board_query, rosetta):
             raise ValueError('Unsupported named node type.')
         return name_type
     start_name_type = type2nametype(start_type)
-    end_name_type = type2nametype(end_type)
     start_name_node = KNode( '{}.{}'.format(start_name_type, start_name), start_name_type)
-    end_name_node = KNode( '{}.{}'.format(end_name_type, end_name), end_name_type)
     query = UserQuery(ids[0], start_type, start_name_node)
     if two_sided:
         middlybits = board_query[1:-1]
@@ -143,6 +144,8 @@ def boardQueryToRenciQuery(board_query, rosetta):
             min_path_length=transition['leadingEdge']['numNodesMin']+1,\
             max_path_length=transition['leadingEdge']['numNodesMax']+1)
     if two_sided:
+        end_name_type = type2nametype(end_type)
+        end_name_node = KNode( '{}.{}'.format(end_name_type, end_name), end_name_type)
         query.add_transition(end_type, end_values = ids[-1])
         query.add_end_lookup_node(end_name_node)
     return query
