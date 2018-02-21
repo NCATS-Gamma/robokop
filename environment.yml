@@ -10,6 +10,7 @@ dependencies:
 - pip:
   - neo4j-driver
   - flask
+  - flask-security
   - gunicorn
   - eventlet
 - nltk
