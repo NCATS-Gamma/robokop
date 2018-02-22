@@ -6,58 +6,19 @@ import subprocess
 import logging
 from datetime import datetime
 
-from Question import Question
-from KnowledgeGraph import KnowledgeGraph
+from question import Question
+from knowledgegraph import KnowledgeGraph
 from Storage import Storage
 
 from flask import Flask, jsonify, request, render_template, url_for, redirect
 from flask_security import Security, SQLAlchemySessionUserDatastore
-from flask_mail import Mail
 from flask_login import LoginManager, login_required
-from flask_sqlalchemy import SQLAlchemy
 from flask_security.core import current_user
 
-from flask_security import UserMixin, RoleMixin
-from sqlalchemy.orm import relationship, backref
-from sqlalchemy import Boolean, DateTime, Column, Integer, \
-                       String, ForeignKey
+from setup import app, db
+from user import User, Role
 
-app = Flask(__name__, static_folder='../pack', template_folder='../templates')
-# Set default static folder to point to parent static folder where all
-# static assets can be stored and linked
-app.config.from_pyfile('robokop-flask-config.py')
-
-mail = Mail(app)
-db = SQLAlchemy(app)
 storage = Storage(db)
-
-class RolesUsers(db.Model):
-  __tablename__ = 'roles_users'
-  id = Column(Integer, primary_key=True)
-  user_id = Column('user_id', Integer, ForeignKey('user.id'))
-  role_id = Column('role_id', Integer, ForeignKey('role.id'))
-
-class Role(db.Model, RoleMixin):
-  __tablename__ = 'role'
-  id = Column(Integer, primary_key=True)
-  name = Column(String, unique=True)
-  description = Column(String)
-
-class User(db.Model, UserMixin):
-  __tablename__ = 'user'
-  id = Column(Integer, primary_key=True)
-  email = Column(String, unique=True)
-  username = Column(String)
-  password = Column(String)
-  last_login_at = Column(DateTime)
-  current_login_at = Column(DateTime)
-  last_login_ip = Column(String)
-  current_login_ip = Column(String)
-  login_count = Column(Integer)
-  active = Column(Boolean)
-  confirmed_at = Column(DateTime)
-  roles = relationship('Role', secondary='roles_users',
-                        backref=backref('users', lazy='dynamic'))
 
 # Setup flask-security with user tables
 user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)

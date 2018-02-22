@@ -3,11 +3,11 @@ import sys
 import json
 import hashlib
 import warnings
-from UniversalGraph import UniversalGraph
-from KnowledgeGraph import KnowledgeGraph
+from universalgraph import UniversalGraph
+from knowledgegraph import KnowledgeGraph
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-rank'))
 from nagaProto import ProtocopRank
-from Answer import Answer, AnswerSet
+from answer import Answer, AnswerSet
 
 from sqlalchemy.types import JSON
 from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey, func

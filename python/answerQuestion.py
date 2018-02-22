@@ -10,8 +10,8 @@ engine.execute('drop table if exists {}'.format('answer'))
 engine.execute('drop table if exists {}'.format('answer_set'))
 engine.execute('drop table if exists {}'.format('question'))
 
-from Question import Question
-from Answer import Answer, AnswerSet
+from question import Question
+from answer import Answer, AnswerSet
 
 from base import Base
 Base.metadata.create_all(engine)

@@ -1,6 +1,6 @@
 import time
 from neo4j.v1 import GraphDatabase, basic_auth
-from UniversalGraph import UniversalGraph
+from universalgraph import UniversalGraph
 
 class KnowledgeGraph:
 
