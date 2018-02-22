@@ -6,7 +6,8 @@ import subprocess
 import logging
 from datetime import datetime
 
-from question import Question, list_questions
+from question import Question, list_questions, get_question_by_id
+from answer import get_answerset_by_id
 from knowledgegraph import KnowledgeGraph
 from Storage import Storage
 
@@ -157,17 +158,16 @@ def question(question_id):
 @app.route('/q/<question_id>/data', methods=['GET'])
 def question_data(question_id):
     """Data for a question"""
-    
+
     user = getAuthData()
 
-    question = storage.getQuestion(question_id)
-    question_graph = storage.getQuestionGraph(question_id)
+    question = get_question_by_id(question_id)
+    question = question.toJSON()
 
     now_str = datetime.now().__str__()
     return jsonify({'timestamp': now_str,\
         'user': user,\
-        'question': question,\
-        'questionGraph': question_graph})
+        'question': question})
   
 # Answer Set
 @app.route('/a/<answerset_id>')
@@ -178,11 +178,12 @@ def answerset(answerset_id):
 @app.route('/a/<answerset_id>/data', methods=['GET'])
 def answerset_data(answerset_id):
     """Data for an answerset """
-    
+
     user = getAuthData()
-    answerset = storage.getAnswerSet(answerset_id)
-    answerset_graph = storage.getAnswerSetGraph(answerset_id)
-    answerset_feedback = storage.getAnswerSetFeedback(user, answerset_id)
+    print(answerset_id)
+    answerset = get_answerset_by_id(1).toJSON()
+    answerset_graph = None #storage.getAnswerSetGraph(answerset_id)
+    answerset_feedback = None #storage.getAnswerSetFeedback(user, answerset_id)
 
     now_str = datetime.now().__str__()
     return jsonify({'timestamp': now_str,\
