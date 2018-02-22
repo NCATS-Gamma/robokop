@@ -5,8 +5,7 @@ SECRET_KEY = 'covar-renci-ncats-secret'
 DEFAULT_MAIL_SENDER = 'robokopteam@gmail.com'
 SECURITY_EMAIL_SENDER = 'robokopteam@gmail.com'
 
-db_path = os.path.join(os.path.dirname(__file__), '..', 'robokop.db')
-db_uri = 'sqlite:///{}'.format(db_path)
+db_uri = 'postgresql://patrick@localhost:5432/robokop'
 SQLALCHEMY_DATABASE_URI = db_uri
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 

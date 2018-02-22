@@ -4,7 +4,8 @@ import argparse
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 
-engine = create_engine('postgresql://patrick@localhost:5432/robokop')
+from robokop_flask_config  import SQLALCHEMY_DATABASE_URI
+engine = create_engine(SQLALCHEMY_DATABASE_URI)
 
 # TODO: remove this after testing
 # engine.execute('drop table if exists {}'.format('answer'))

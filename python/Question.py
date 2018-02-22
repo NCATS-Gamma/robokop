@@ -17,7 +17,8 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-engine = create_engine('postgresql://patrick@localhost:5432/robokop')
+from robokop_flask_config import SQLALCHEMY_DATABASE_URI
+engine = create_engine(SQLALCHEMY_DATABASE_URI)
 
 from base import Base
 
