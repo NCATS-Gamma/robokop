@@ -15,7 +15,7 @@ class QuestionList extends React.Component {
       ready: false,
       timestamp: null,
       user: {},
-      questions: [{ name: 'Question Name', id: 'anId' }],
+      questions: [{ name: 'Question Name', id: 'undefined' }],
     };
 
     this.onQuestionRowClick = this.onQuestionRowClick.bind(this);
@@ -28,11 +28,10 @@ class QuestionList extends React.Component {
       questions: data.questions,
       ready: true,
     }));
-    this.onQuestionRowClick(this.state.questions[0]);
   }
 
   onQuestionRowClick(question) {
-    window.open(this.appConfig.urls.question(question.id));
+    window.open(this.appConfig.urls.question(question.id), '_self');
   }
 
   renderLoading() {

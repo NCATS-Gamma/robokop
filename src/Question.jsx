@@ -2,6 +2,7 @@ import React from 'react';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
+import Loading from './components/Loading';
 
 class Question extends React.Component {
   constructor(props) {
@@ -22,9 +23,7 @@ class Question extends React.Component {
 
   renderLoading() {
     return (
-      <div>
-        <h1>{'Loading...'}</h1>
-      </div>
+      <Loading />
     );
   }
   renderLoaded(){
