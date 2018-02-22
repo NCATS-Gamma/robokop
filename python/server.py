@@ -27,7 +27,7 @@ security = Security(app, user_datastore)
 # Create a user to test with
 @app.before_first_request
 def init():
-  storage.boot(user_datastore)
+    storage.boot(user_datastore)
 
 # Flask Server code below
 ################################################################################
@@ -56,189 +56,189 @@ def handle_invalid_usage(error):
     return response
 
 def getAuthData():
-  """ Return relevant information from flask-login current_user"""
-  # is_authenticated
-  #   This property should return True if the user is authenticated, i.e. they have provided valid credentials. (Only authenticated users will fulfill the criteria of login_required.)
-  # is_active
-  #   This property should return True if this is an active user - in addition to being authenticated, they also have activated their account, not been suspended, or any condition your application has for rejecting an account. Inactive accounts may not log in (without being forced of course).
-  # is_anonymous
-  #   This property should return True if this is an anonymous user. (Actual users should return False instead.)
+    """ Return relevant information from flask-login current_user"""
+    # is_authenticated
+    #   This property should return True if the user is authenticated, i.e. they have provided valid credentials. (Only authenticated users will fulfill the criteria of login_required.)
+    # is_active
+    #   This property should return True if this is an active user - in addition to being authenticated, they also have activated their account, not been suspended, or any condition your application has for rejecting an account. Inactive accounts may not log in (without being forced of course).
+    # is_anonymous
+    #   This property should return True if this is an anonymous user. (Actual users should return False instead.)
 
-  is_authenticated = current_user.is_authenticated
-  is_active = current_user.is_active
-  is_anonymous = current_user.is_anonymous
-  if is_anonymous:
-    username = "Anonymous"
-    is_admin = False
-  else:
-    username = current_user.username
-    is_admin = current_user.has_role('admin')
+    is_authenticated = current_user.is_authenticated
+    is_active = current_user.is_active
+    is_anonymous = current_user.is_anonymous
+    if is_anonymous:
+        username = "Anonymous"
+        is_admin = False
+    else:
+        username = current_user.username
+        is_admin = current_user.has_role('admin')
 
-  return {'is_authenticated': is_authenticated,\
-          'is_active': is_active,\
-          'is_anonymous': is_anonymous,\
-          'is_admin': is_admin,\
-          'username': username}
+    return {'is_authenticated': is_authenticated,\
+            'is_active': is_active,\
+            'is_anonymous': is_anonymous,\
+            'is_admin': is_admin,\
+            'username': username}
 
 @app.route('/')
 def landing():
-  """Initial contact. Give the initial page."""
-  return render_template('landing.html')
+    """Initial contact. Give the initial page."""
+    return render_template('landing.html')
 
 @app.route('/landing/data', methods=['GET'])
 def landing_data():
-  """Data for the landing page."""
+    """Data for the landing page."""
 
-  user = getAuthData()
+    user = getAuthData()
 
-  now_str = datetime.now().__str__()
-  return jsonify({'timestamp': now_str,\
-    'user': user})
+    now_str = datetime.now().__str__()
+    return jsonify({'timestamp': now_str,\
+        'user': user})
 
 # Account information
 @app.route('/account')
 @login_required
 def account():
-  """Deliver user info page"""
-  return render_template('account.html')
+    """Deliver user info page"""
+    return render_template('account.html')
 
 @app.route('/account/data', methods=['GET'])
 @login_required
 def account_data():
-  """Data for the current user"""
+    """Data for the current user"""
 
-  user = getAuthData()
+    user = getAuthData()
 
-  now_str = datetime.now().__str__()
-  return jsonify({'timestamp': now_str,\
-    'user': user})
+    now_str = datetime.now().__str__()
+    return jsonify({'timestamp': now_str,\
+        'user': user})
 
 # New Question
 @app.route('/q/new')
 def new():
-  """Deliver new question"""
-  return render_template('questionNew.html')
+    """Deliver new question"""
+    return render_template('questionNew.html')
 
 @app.route('/q/new/data', methods=['GET'])
 def new_data():
-  """Data for the new question"""
+    """Data for the new question"""
 
-  user = getAuthData()
+    user = getAuthData()
 
-  now_str = datetime.now().__str__()
-  return jsonify({'timestamp': now_str,\
-    'user': user})
+    now_str = datetime.now().__str__()
+    return jsonify({'timestamp': now_str,\
+        'user': user})
 
 # QuestionList
 @app.route('/questions')
 def questions():
-  """Initial contact. Give the initial page."""
-  return render_template('questions.html')
+    """Initial contact. Give the initial page."""
+    return render_template('questions.html')
 
 @app.route('/questions/data', methods=['GET'])
 def questions_data():
-  """Data for the list of questions """
+    """Data for the list of questions """
 
-  user = getAuthData()
-  question_list = storage.getQuestionList()
-  question_list_user = storage.getQuestionListUser(user['username'])
+    user = getAuthData()
+    question_list = storage.getQuestionList()
+    question_list_user = storage.getQuestionListUser(user['username'])
 
-  now_str = datetime.now().__str__()
-  return jsonify({'timestamp': now_str,\
-    'user': user,\
-    'questionsUser': question_list_user,\
-    'questions': question_list})
+    now_str = datetime.now().__str__()
+    return jsonify({'timestamp': now_str,\
+        'user': user,\
+        'questionsUser': question_list_user,\
+        'questions': question_list})
 
 # Question
 @app.route('/q/<question_id>')
 def question(question_id):
-  """Deliver user info page"""
-  return render_template('question.html', question_id=question_id)
+    """Deliver user info page"""
+    return render_template('question.html', question_id=question_id)
 
 @app.route('/q/<question_id>/data', methods=['GET'])
 def question_data(question_id):
-  """Data for a question"""
-  
-  user = getAuthData()
+    """Data for a question"""
+    
+    user = getAuthData()
 
-  question = storage.getQuestion(question_id)
-  question_graph = storage.getQuestionGraph(question_id)
+    question = storage.getQuestion(question_id)
+    question_graph = storage.getQuestionGraph(question_id)
 
-  now_str = datetime.now().__str__()
-  return jsonify({'timestamp': now_str,\
-    'user': user,\
-    'question': question,\
-    'questionGraph': question_graph})
+    now_str = datetime.now().__str__()
+    return jsonify({'timestamp': now_str,\
+        'user': user,\
+        'question': question,\
+        'questionGraph': question_graph})
   
 # Answer Set
 @app.route('/a/<answerset_id>')
 def answerset(answerset_id):
-  """Deliver answerset page for a given id"""
-  return render_template('answerset.html', answerset_id=answerset_id)
+    """Deliver answerset page for a given id"""
+    return render_template('answerset.html', answerset_id=answerset_id)
 
 @app.route('/a/<answerset_id>/data', methods=['GET'])
 def answerset_data(answerset_id):
-  """Data for an answerset """
-  
-  user = getAuthData()
-  answerset = storage.getAnswerSet(answerset_id)
-  answerset_graph = storage.getAnswerSetGraph(answerset_id)
-  answerset_feedback = storage.getAnswerSetFeedback(user, answerset_id)
+    """Data for an answerset """
+    
+    user = getAuthData()
+    answerset = storage.getAnswerSet(answerset_id)
+    answerset_graph = storage.getAnswerSetGraph(answerset_id)
+    answerset_feedback = storage.getAnswerSetFeedback(user, answerset_id)
 
-  now_str = datetime.now().__str__()
-  return jsonify({'timestamp': now_str,\
-    'user': user,\
-    'answerset': answerset,\
-    'answerset_graph': answerset_graph,\
-    'answerset_feedback': answerset_feedback})
+    now_str = datetime.now().__str__()
+    return jsonify({'timestamp': now_str,\
+        'user': user,\
+        'answerset': answerset,\
+        'answerset_graph': answerset_graph,\
+        'answerset_feedback': answerset_feedback})
 
 # Answer
 @app.route('/a/<answerset_id>/<answer_id>')
 def answer(answerset_id, answer_id):
-  """Deliver answerset page for a given id"""
-  return render_template('answer.html', answerset_id=answerset_id, answer_id=answer_id)
+    """Deliver answerset page for a given id"""
+    return render_template('answer.html', answerset_id=answerset_id, answer_id=answer_id)
 
 @app.route('/a/<answerset_id>/<answer_id>/data', methods=['GET'])
 def answer_data(answerset_id, answer_id):
-  """Data for an answer """
-  
-  user = getAuthData()
-  answer = storage.getAnswer(answer_id)
-  
-  now_str = datetime.now().__str__()
-  return jsonify({'timestamp': now_str,\
-    'user': user,\
-    'answer': answer})
+    """Data for an answer """
+    
+    user = getAuthData()
+    answer = storage.getAnswer(answer_id)
+    
+    now_str = datetime.now().__str__()
+    return jsonify({'timestamp': now_str,\
+        'user': user,\
+        'answer': answer})
 
 # Admin
 @app.route('/admin')
 def admin():
-  """Deliver admin page"""
-  user = getAuthData()
+    """Deliver admin page"""
+    user = getAuthData()
 
-  if user['is_admin']:
-    return render_template('admin.html')
-  else:
-    return redirect(url_for('security.login', next=request.url))
+    if user['is_admin']:
+        return render_template('admin.html')
+    else:
+        return redirect(url_for('security.login', next=request.url))
 
 @app.route('/admin/data', methods=['GET'])
 def admin_data():
-  """Data for admin display """
-  
-  user = getAuthData()
-  
-  if not user['is_admin']:
-    return redirect(url_for('security.login', next='/admin'))
-  else:
-    now_str = datetime.now().__str__()
-    users = storage.getUserList()
-    questions = storage.getQuestionList()
-    answersets = storage.getAnswerSetList()
+    """Data for admin display """
+    
+    user = getAuthData()
+    
+    if not user['is_admin']:
+        return redirect(url_for('security.login', next='/admin'))
+    else:
+        now_str = datetime.now().__str__()
+        users = storage.getUserList()
+        questions = storage.getQuestionList()
+        answersets = storage.getAnswerSetList()
 
-    return jsonify({'timestamp': now_str,\
-      'users': users,\
-      'questions': questions,\
-      'answersets': answersets})
+        return jsonify({'timestamp': now_str,\
+            'users': users,\
+            'questions': questions,\
+            'answersets': answersets})
 
 ################################################################################
 ##### Account Editing ##########################################################
