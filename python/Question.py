@@ -3,7 +3,7 @@ import sys
 import json
 from UniversalGraph import UniversalGraph
 from KnowledgeGraph import KnowledgeGraph
-sys.path.insert(0, '../robokop-rank')
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-rank'))
 from nagaProto import ProtocopRank
 from Answer import AnswerSet
 
