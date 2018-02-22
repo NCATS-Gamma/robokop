@@ -29,6 +29,16 @@ class QuestionList extends React.Component {
       <Loading/>
     );
   }
+  renderQuestions(){
+    return this.state.questions.map((q) => {
+      return [
+        <li>
+          <a href={this.appConfig.urls.question(q.id)}>Go!</a> {`${JSON.stringify(q)}`}
+        </li>
+        ,
+      ];
+    });
+  }
   renderLoaded(){
     return (
       <div>
@@ -37,7 +47,7 @@ class QuestionList extends React.Component {
           user={this.state.user}
         />
         <h1>{'Question List'}</h1>
-        <h3>{`Questions: ${JSON.stringify(this.state.questions)}`}</h3>
+        <ul>{this.renderQuestions()}</ul>
         <h3>{`Time: ${this.state.timestamp}`}</h3>
       </div>
     );
