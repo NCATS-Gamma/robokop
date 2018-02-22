@@ -13,8 +13,6 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# from Question import Question
-
 from robokop_flask_config import SQLALCHEMY_DATABASE_URI
 engine = create_engine(SQLALCHEMY_DATABASE_URI)
 
@@ -31,11 +29,7 @@ class AnswerSet(Base):
     # timestamp = Column(DateTime, default=func.now())
     timestamp = Column(String)
     filename = Column(String)
-    question_hash = Column(String, ForeignKey('question.hash'))
-
-    # question = relationship(
-    #     Question,
-    #     backref=backref('answer_sets'))
+    question_hash = Column(String)
 
     def __init__(self, *args, **kwargs):
         self.id = None

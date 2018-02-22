@@ -38,7 +38,7 @@ class Question(Base):
     notes = Column(String)
     nodes = Column(JSON)
     edges = Column(JSON)
-    hash = Column(String, unique=True)
+    hash = Column(String)
 
     def __init__(self, *args, **kwargs):
         '''
