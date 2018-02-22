@@ -4,11 +4,12 @@ import argparse
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 
-# TODO: remove this after testing
 engine = create_engine('postgresql://patrick@localhost:5432/robokop')
-engine.execute('drop table if exists {}'.format('answer'))
-engine.execute('drop table if exists {}'.format('answer_set'))
-engine.execute('drop table if exists {}'.format('question'))
+
+# TODO: remove this after testing
+# engine.execute('drop table if exists {}'.format('answer'))
+# engine.execute('drop table if exists {}'.format('answer_set'))
+# engine.execute('drop table if exists {}'.format('question'))
 
 from question import Question
 from answer import Answer, AnswerSet
