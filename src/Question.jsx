@@ -3,6 +3,7 @@ import React from 'react';
 import AppConfig from './AppConfig';
 import Loading from './components/Loading';
 import Header from './components/Header';
+import Loading from './components/Loading';
 
 
 class Question extends React.Component {
