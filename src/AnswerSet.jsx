@@ -1,5 +1,8 @@
 import React from 'react';
 
+import appConfig from './appConfig';
+import Header from './components/Header';
+
 class Answerset extends React.Component {
   constructor(props) {
     super(props);
@@ -14,7 +17,7 @@ class Answerset extends React.Component {
   }
 
   componentDidMount() {
-    this.appConfig.answerSetData( (data) => this.setState({timestamp: data.timestamp, user: data.user, ready: true}));
+    this.appConfig.answersetData(this.props.answerset_id, (data) => this.setState({timestamp: data.timestamp, user: data.user, ready: true}));
   }
 
   renderLoading() {
