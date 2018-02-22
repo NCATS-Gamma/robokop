@@ -11,8 +11,12 @@ dependencies:
   - neo4j-driver
   - flask
   - flask-security
+  - flask-sqlalchemy
   - gunicorn
   - eventlet
+  - psycopg2
+  - psycopg2-binary
+  - bcrypt
 - nltk
 - networkx=1.11
 - nb_conda
