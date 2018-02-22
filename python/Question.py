@@ -195,8 +195,7 @@ class Question(Base):
 
         # generate MATCH command string to get paths of the appropriate size
         match_strings = ['MATCH '+'({}:{})'.format(node_names[0], self.id)]
-        match_strings += ['MATCH '+'({})-'.format(node_names[i])+'[{0}:{2}]-({1})'.format(edge_names[i], node_names[i+1], edge_types[i]) for i in range(edge_count)]
-        with_strings = ['WITH DISTINCT '+', '.join(node_names[:i+1]) for i in range(edge_count)]
+        match_strings += ['MATCH '+'({})-'.format(node_names[i])+'[{0}:{2}*{3}..{4}]-({1})'.format(edge_names[i], node_names[i+1], edge_types[i], self.edges[i]['length'][0], self.edges[i]['length'][-1]) for i in range(edge_count)]
 
         # generate WHERE command string to prune paths to those containing the desired nodes/node types
         node_conditions = [[[{k:(c[k] if k!='cond'\
