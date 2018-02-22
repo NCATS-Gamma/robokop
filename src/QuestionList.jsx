@@ -15,7 +15,7 @@ class QuestionList extends React.Component {
       ready: false,
       timestamp: null,
       user: {},
-      questions: [{ name: 'Question Name', id: 'anId' }],
+      questions: [{ name: 'Question Name', id: 'undefined' }],
     };
 
     this.onQuestionRowClick = this.onQuestionRowClick.bind(this);
