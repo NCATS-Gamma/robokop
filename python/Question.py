@@ -33,18 +33,59 @@ class Question:
     * cypher() - the appropriate Cypher query for the Knowledge Graph
     '''
 
-    def __init__(self, dictionary, question_id):
-        self.id = question_id
-        self.description = None
-        self.nodes = None # list of nodes
-        self.edges = None # list of edges
-        self.dictionary = dictionary
-        if isinstance(self.dictionary, str):
-            # load query (as series of node and edge conditions) from json files
-            # condition tuple format:
-            # property name, comparison operator, property value, condition should be ____
-            with open(os.path.join(self.dictionary, 'query.json')) as infile:
-                self.dictionary = json.load(infile)
+    def __init__(self, *args, **kwargs):
+        '''
+        keyword arguments: id, user, notes, natural_question, nodes, edges
+        q = Question(kw0=value, ...)
+        q = Question(struct, ...)
+        '''
+
+        # initialize all properties
+        self.user = None
+        self.id = None
+        self.notes = None
+        self.natural_question = None
+        self.nodes = [] # list of nodes
+        self.edges = [] # list of edges
+        self.hash = None
+
+        # apply json properties to existing attributes
+        attributes = self.__dict__.keys()
+        if args:
+            struct = args[0]
+            for key in struct:
+                if key in attributes:
+                    setattr(self, key, struct[key])
+                else:
+                    warnings.warn("JSON field {} ignored.".format(key))
+
+        # override any json properties with the named ones
+        for key in kwargs:
+            if key in attributes:
+                setattr(self, key, kwargs[key])
+            else:
+                warnings.warn("Keyword argument {} ignored.".format(key))
+    @staticmethod
+    def dictionary_to_graph(dictionary):
+        '''
+        Convert struct from blackboards database to nodes and edges structs
+        '''
+
+        # add named node on the front (the first node must be named in order to build)
+        query = Question.add_name_node_to_query(dictionary)
+        if dictionary[-1]['nodeSpecType'] == 'Named Node':
+            query = Question.add_name_node_to_query(query[::-1])[::-1]
+
+        # convert to list of nodes (with conditions) as edges with lengths
+        nodes = [dict(n, **{"id":i}) for i, n in enumerate(query)\
+            if not n['nodeSpecType'] == 'Unspecified Nodes']
+        edges = [dict(start=i-1, end=i, length=[query[i-1]['meta']['numNodesMin']+1, query[i-1]['meta']['numNodesMax']+1])\
+            if i > 0 and query[i-1]['nodeSpecType'] == 'Unspecified Nodes'\
+            else dict(start=i-1, end=i, length=[1])\
+            for i, n in enumerate(query)\
+            if i > 0 and not n['nodeSpecType'] == 'Unspecified Nodes']
+
+        return nodes, edges
 
     def answer(self):
         '''
@@ -96,21 +137,10 @@ class Question:
         Returns the query as a string.
         '''
 
-        if self.dictionary[-1]['nodeSpecType'] == 'Named Node':
-            query = self.addNameNodeToQuery(self.addNameNodeToQuery(self.dictionary[::-1])[::-1])
-        else:
-            query = self.addNameNodeToQuery(self.dictionary)
-
-        # convert to list of nodes (with conditions) as edges with lengths
-        nodes = [dict(n,**{'leadingEdge':query[i-1]['meta']})\
-            if i>0 and query[i-1]['nodeSpecType']=='Unspecified Nodes'\
-            else dict(n,**{'leadingEdge':{'numNodesMin':1,'numNodesMax':1}})\
-            for i, n in enumerate(query)\
-            if not n['nodeSpecType']=='Unspecified Nodes']
-        edge_types = ['Lookup' if n['nodeSpecType']=='Named Node' else 'Result' for n in nodes]
+        edge_types = ['Lookup' if n['nodeSpecType'] == 'Named Node' else 'Result' for n in self.nodes]
         edge_types.pop(1)
 
-        node_count = len(nodes)
+        node_count = len(self.nodes)
         edge_count = node_count-1
 
         # generate internal node and edge variable names
@@ -118,11 +148,11 @@ class Question:
         edge_names = ['r{0:d}{1:d}'.format(i, i+1) for i in range(edge_count)]
 
         # define bound nodes (no edges are bound)
-        node_bound = [n['isBoundName'] for n in nodes]
+        node_bound = [n['isBoundName'] for n in self.nodes]
         edge_bound = [False for e in range(edge_count)]
 
         node_conditions = []
-        for node in nodes:
+        for node in self.nodes:
             node_conds = []
             if node['isBoundName']:
                 node_conds += [[{'prop':'name', 'val':node['type']+'.'+node['label'], 'op':'=', 'cond':True},\
@@ -160,40 +190,36 @@ class Question:
         return query_string
     
     @staticmethod
-    def addNameNodeToQuery(query):
+    def add_name_node_to_query(query):
+        '''
+        Adds name node to the beginning of a query
+        based on the "label" specified in the leading "named node"
+        '''
 
-        firstNode = query[0]
-        name_type = 'NAME.DISEASE' if firstNode['type'] == 'Disease' or firstNode['type'] == 'Phenotype'\
-            else 'NAME.DRUG' if firstNode['type'] == 'Substance'\
+        first_node = query[0]
+        name_type = 'NAME.DISEASE' if first_node['type'] == 'Disease' or first_node['type'] == 'Phenotype'\
+            else 'NAME.DRUG' if first_node['type'] == 'Substance'\
             else 'idk'
-        zerothNode = {
+        zeroth_node = {
             "id": "namenode",
             "nodeSpecType": "Named Node",
             "type": name_type,
-            "label": firstNode['label'],
+            "label": first_node['label'],
             "isBoundName": True,
             "isBoundType": True,
             "meta": {
-                "name": firstNode['meta']['name']
+                "name": first_node['meta']['name']
             },
-            "leadingEdge": {
-                'numNodesMin': 0,
-                'numNodesMax': 0
-            },
-            "color": firstNode['color']
+            "color": first_node['color']
         }
-        firstNode = {
-            "id": firstNode['id'],
+        first_node = {
+            "id": first_node['id'],
             "nodeSpecType": "Node Type",
-            "type": firstNode['type'],
-            "label": firstNode['type'],
+            "type": first_node['type'],
+            "label": first_node['type'],
             "isBoundName": False,
             "isBoundType": True,
             "meta": {},
-            "leadingEdge": {
-                'numNodesMin': 0,
-                'numNodesMax': 0
-            },
-            "color": firstNode['color']
+            "color": first_node['color']
         }
-        return [zerothNode, firstNode] + query[1:]
+        return [zeroth_node, first_node] + query[1:]

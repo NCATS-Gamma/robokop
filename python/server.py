@@ -257,10 +257,15 @@ def blackboard_rank():
         rows = fetch_table_entries(collection_location, 'blackboards', condition)
 
         query = json.loads(rows[0][3])
+        nodes, edges = Question.dictionary_to_graph(query)
+        struct = {"nodes":nodes,
+                  "edges":edges,
+                  "id":board_id,
+                  "natural_question":"NA",
+                  "user":"patrick",
+                  "notes":""}
 
-        # Query and Score will contact Neo4j
-        # We just need to specify the query
-        question = Question(query, board_id)
+        question = Question(struct)
         ranking_data = question.answer()
         # ranking_data = queryAndScore({'query':query, 'board_id':board_id})
 
