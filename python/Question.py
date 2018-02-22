@@ -258,3 +258,8 @@ class Question(Base):
             "color": first_node['color']
         }
         return [zeroth_node, first_node] + query[1:]
+
+def list_questions():
+    session = sessionmaker(bind=engine)
+    s = session()
+    return s.query(Question).all()

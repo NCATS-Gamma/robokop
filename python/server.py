@@ -6,7 +6,7 @@ import subprocess
 import logging
 from datetime import datetime
 
-from question import Question
+from question import Question, list_questions
 from knowledgegraph import KnowledgeGraph
 from Storage import Storage
 
@@ -140,13 +140,12 @@ def questions_data():
     """Data for the list of questions """
 
     user = getAuthData()
-    question_list = storage.getQuestionList()
-    question_list_user = storage.getQuestionListUser(user['username'])
+    question_list = list_questions()
+    question_list = [q.toJSON() for q in question_list]
 
     now_str = datetime.now().__str__()
     return jsonify({'timestamp': now_str,\
         'user': user,\
-        'questionsUser': question_list_user,\
         'questions': question_list})
 
 # Question
