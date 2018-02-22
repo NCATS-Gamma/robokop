@@ -176,3 +176,13 @@ class Answer(Base):
             short_name = short_name + name[0:min(len(name), 4)]
 
         return short_name
+
+def list_answersets():
+    session = sessionmaker(bind=engine)
+    s = session()
+    return s.query(AnswerSet).all()
+
+def get_answerset_by_id(id):
+    session = sessionmaker(bind=engine)
+    s = session()
+    return s.query(AnswerSet).filter(AnswerSet.id == id).first()
