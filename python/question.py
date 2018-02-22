@@ -38,6 +38,7 @@ class Question(Base):
     notes = Column(String)
     nodes = Column(JSON)
     edges = Column(JSON)
+    name = Column(String)
     hash = Column(String, unique=True)
 
     def __init__(self, *args, **kwargs):
@@ -51,6 +52,7 @@ class Question(Base):
         self.user = None
         self.id = None
         self.notes = None
+        self.name = None
         self.natural_question = None
         self.nodes = [] # list of nodes
         self.edges = [] # list of edges
