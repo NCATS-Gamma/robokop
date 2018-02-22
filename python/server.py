@@ -4,55 +4,69 @@ import json
 import sqlite3
 import subprocess
 import logging
-from flask import Flask, jsonify, request, render_template
+from datetime import datetime
+
 from Question import Question
 from KnowledgeGraph import KnowledgeGraph
+from Storage import Storage
 
-app = Flask(__name__, static_folder='../static')
+from flask import Flask, jsonify, request, render_template, url_for, redirect
+from flask_security import Security, SQLAlchemySessionUserDatastore
+from flask_mail import Mail
+from flask_login import LoginManager, login_required
+from flask_sqlalchemy import SQLAlchemy
+from flask_security.core import current_user
+
+from flask_security import UserMixin, RoleMixin
+from sqlalchemy.orm import relationship, backref
+from sqlalchemy import Boolean, DateTime, Column, Integer, \
+                       String, ForeignKey
+
+app = Flask(__name__, static_folder='../pack', template_folder='../templates')
 # Set default static folder to point to parent static folder where all
 # static assets can be stored and linked
+app.config.from_pyfile('robokop-flask-config.py')
 
-# We will use a local sqlite DB
-# We will hold a global reference to the path
-global collection_location
-collection_location = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'..','blackboards.db'))
+mail = Mail(app)
+db = SQLAlchemy(app)
+storage = Storage(db)
 
-# Our local config is in the main directory
-# We will use this host and port if we are running from python and not gunicorn
-global local_config
-config_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),'..')
-json_file = os.path.join(config_dir,'config.json')
-with open(json_file, 'rt') as json_in:
-    local_config = json.load(json_in)
+class RolesUsers(db.Model):
+  __tablename__ = 'roles_users'
+  id = Column(Integer, primary_key=True)
+  user_id = Column('user_id', Integer, ForeignKey('user.id'))
+  role_id = Column('role_id', Integer, ForeignKey('role.id'))
 
-# Since we start gunicorn / the server from the root directory and not the python dir
-# It's in the directory above this files.
+class Role(db.Model, RoleMixin):
+  __tablename__ = 'role'
+  id = Column(Integer, primary_key=True)
+  name = Column(String, unique=True)
+  description = Column(String)
 
-# If we don't have a blackboards.db for somereason.
-# Initialize one
-if os.path.isfile(collection_location) is False:
-    print("Initializing Empty Blackboards DB")
-    init_table_name = 'blackboards'
-    init_database = sqlite3.connect(collection_location)
-    init_cursor = init_database.cursor()
-    init_cursor.execute('''CREATE TABLE IF NOT EXISTS {}
-            (id text, name text, description text, query_json text, finished text)'''\
-            .format(init_table_name))
-    init_database.commit()
-    init_database.close()
+class User(db.Model, UserMixin):
+  __tablename__ = 'user'
+  id = Column(Integer, primary_key=True)
+  email = Column(String, unique=True)
+  username = Column(String)
+  password = Column(String)
+  last_login_at = Column(DateTime)
+  current_login_at = Column(DateTime)
+  last_login_ip = Column(String)
+  current_login_ip = Column(String)
+  login_count = Column(Integer)
+  active = Column(Boolean)
+  confirmed_at = Column(DateTime)
+  roles = relationship('Role', secondary='roles_users',
+                        backref=backref('users', lazy='dynamic'))
 
-# Flush the building table every time we start the server
-# This only removes our knowledge of boards being constructed
-# When those boards finish they will still show up on the next page refresh
-init_table_name = 'building'
-init_database = sqlite3.connect(collection_location)
-init_cursor = init_database.cursor()
-init_cursor.execute('''DROP TABLE IF EXISTS {};'''.format(init_table_name))
-init_cursor.execute('''CREATE TABLE IF NOT EXISTS {}
-    (id text, name text, description text, query_json text, finished text)'''\
-    .format(init_table_name))
-init_database.commit()
-init_database.close()
+# Setup flask-security with user tables
+user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
+security = Security(app, user_datastore)
+
+# Create a user to test with
+@app.before_first_request
+def init():
+  storage.boot(user_datastore)
 
 # Flask Server code below
 ################################################################################
@@ -80,204 +94,278 @@ def handle_invalid_usage(error):
     response.status_code = error.status_code
     return response
 
+def getAuthData():
+  """ Return relevant information from flask-login current_user"""
+  # is_authenticated
+  #   This property should return True if the user is authenticated, i.e. they have provided valid credentials. (Only authenticated users will fulfill the criteria of login_required.)
+  # is_active
+  #   This property should return True if this is an active user - in addition to being authenticated, they also have activated their account, not been suspended, or any condition your application has for rejecting an account. Inactive accounts may not log in (without being forced of course).
+  # is_anonymous
+  #   This property should return True if this is an anonymous user. (Actual users should return False instead.)
+
+  is_authenticated = current_user.is_authenticated
+  is_active = current_user.is_active
+  is_anonymous = current_user.is_anonymous
+  if is_anonymous:
+    username = "Anonymous"
+    is_admin = False
+  else:
+    username = current_user.username
+    is_admin = current_user.has_role('admin')
+
+  return {'is_authenticated': is_authenticated,\
+          'is_active': is_active,\
+          'is_anonymous': is_anonymous,\
+          'is_admin': is_admin,\
+          'username': username}
+
 @app.route('/')
-def initialize():
-    """Initial contact. Give the initial page."""
-    return render_template('index.html')
+def landing():
+  """Initial contact. Give the initial page."""
+  return render_template('landing.html')
+
+@app.route('/landing/data', methods=['GET'])
+def landing_data():
+  """Data for the landing page."""
+
+  user = getAuthData()
+
+  now_str = datetime.now().__str__()
+  return jsonify({'timestamp': now_str,\
+    'user': user})
+
+# Account information
+@app.route('/account')
+@login_required
+def account():
+  """Deliver user info page"""
+  return render_template('account.html')
+
+@app.route('/account/data', methods=['GET'])
+@login_required
+def account_data():
+  """Data for the current user"""
+
+  user = getAuthData()
+
+  now_str = datetime.now().__str__()
+  return jsonify({'timestamp': now_str,\
+    'user': user})
+
+# New Question
+@app.route('/q/new')
+def new():
+  """Deliver new question"""
+  return render_template('questionNew.html')
+
+@app.route('/q/new/data', methods=['GET'])
+def new_data():
+  """Data for the new question"""
+
+  user = getAuthData()
+
+  now_str = datetime.now().__str__()
+  return jsonify({'timestamp': now_str,\
+    'user': user})
+
+# QuestionList
+@app.route('/questions')
+def questions():
+  """Initial contact. Give the initial page."""
+  return render_template('questions.html')
+
+@app.route('/questions/data', methods=['GET'])
+def questions_data():
+  """Data for the list of questions """
+
+  user = getAuthData()
+  question_list = storage.getQuestionList()
+  question_list_user = storage.getQuestionListUser(user['username'])
+
+  now_str = datetime.now().__str__()
+  return jsonify({'timestamp': now_str,\
+    'user': user,\
+    'questionsUser': question_list_user,\
+    'questions': question_list})
+
+# Question
+@app.route('/q/<question_id>')
+def question(question_id):
+  """Deliver user info page"""
+  return render_template('question.html', question_id=question_id)
+
+@app.route('/q/<question_id>/data', methods=['GET'])
+def question_data(question_id):
+  """Data for a question"""
+  
+  user = getAuthData()
+
+  question = storage.getQuestion(question_id)
+  question_graph = storage.getQuestionGraph(question_id)
+
+  now_str = datetime.now().__str__()
+  return jsonify({'timestamp': now_str,\
+    'user': user,\
+    'question': question,\
+    'questionGraph': question_graph})
+  
+# Answer Set
+@app.route('/a/<answerset_id>')
+def answerset(answerset_id):
+  """Deliver answerset page for a given id"""
+  return render_template('answerset.html', answerset_id=answerset_id)
+
+@app.route('/a/<answerset_id>/data', methods=['GET'])
+def answerset_data(answerset_id):
+  """Data for an answerset """
+  
+  user = getAuthData()
+  answerset = storage.getAnswerSet(answerset_id)
+  answerset_graph = storage.getAnswerSetGraph(answerset_id)
+  answerset_feedback = storage.getAnswerSetFeedback(user, answerset_id)
+
+  now_str = datetime.now().__str__()
+  return jsonify({'timestamp': now_str,\
+    'user': user,\
+    'answerset': answerset,\
+    'answerset_graph': answerset_graph,\
+    'answerset_feedback': answerset_feedback})
+
+# Answer
+@app.route('/a/<answerset_id>/<answer_id>')
+def answer(answerset_id, answer_id):
+  """Deliver answerset page for a given id"""
+  return render_template('answer.html', answerset_id=answerset_id, answer_id=answer_id)
+
+@app.route('/a/<answerset_id>/<answer_id>/data', methods=['GET'])
+def answer_data(answerset_id, answer_id):
+  """Data for an answer """
+  
+  user = getAuthData()
+  answer = storage.getAnswer(answer_id)
+  
+  now_str = datetime.now().__str__()
+  return jsonify({'timestamp': now_str,\
+    'user': user,\
+    'answer': answer})
+
+# Admin
+@app.route('/admin')
+def admin():
+  """Deliver admin page"""
+  user = getAuthData()
+
+  if user['is_admin']:
+    return render_template('admin.html')
+  else:
+    return redirect(url_for('security.login', next=request.url))
+
+@app.route('/admin/data', methods=['GET'])
+def admin_data():
+  """Data for admin display """
+  
+  user = getAuthData()
+  
+  if not user['is_admin']:
+    return redirect(url_for('security.login', next='/admin'))
+  else:
+    now_str = datetime.now().__str__()
+    users = storage.getUserList()
+    questions = storage.getQuestionList()
+    answersets = storage.getAnswerSetList()
+
+    return jsonify({'timestamp': now_str,\
+      'users': users,\
+      'questions': questions,\
+      'answersets': answersets})
+
+################################################################################
+##### Account Editing ##########################################################
+################################################################################
+@app.route('/account/edit', methods=['POST'])
+@login_required
+def accountEdit():
+    """Edit account information (if request is for current_user)"""
+
+################################################################################
+##### New Question #############################################################
+################################################################################
+@app.route('/q/new/update', methods=['POST'])
+def question_new_update():
+    """Initiate a process for a new question"""
+
+@app.route('/q/new/search', methods=['POST'])
+def question_new_search():
+    """Validate/provide suggestions for a search term"""
+
+@app.route('/q/new/validate', methods=['POST'])
+def question_new_validate():
+    """Validate a machine question to ensure it could possibly be executed"""
+
+@app.route('/q/new/translate', methods=['POST'])
+def question_new_translate():
+    """Translate a natural language question into a machine question"""
+
+################################################################################
+##### Question Editing, Forking ################################################
+################################################################################
+@app.route('/q/edit', methods=['POST'])
+def question_edit():
+    """Edit the properties of a question"""
+
+@app.route('/q/fork', methods=['POST'])
+def question_fork():
+    """Fork a question to form a new question owned by current_user """
+
+@app.route('/q/delete', methods=['POST'])
+def question_delete():
+    """Delete question (if owned by current_user)"""
+
+################################################################################
+##### Answer Feedback ##########################################################
+################################################################################
+@app.route('/a/feedback', methods=['POST'])
+def answer_feedback():
+    """Set feedback for a specific user to a specific answer"""
+
+################################################################################
+##### Admin Interface ##########################################################
+################################################################################
+@app.route('/admin/q/delete', methods=['POST'])
+def admin_question_delete():
+    """Delete question (if current_user is admin)"""
+
+@app.route('/admin/q/edit', methods=['POST'])
+def admin_question_edit():
+    """Edit question (if current_user is admin)"""
+
+@app.route('/admin/u/delete', methods=['POST'])
+def admin_user_delete():
+    """Delete user (if current_user is admin)"""
+
+@app.route('/admin/u/edit', methods=['POST'])
+def admin_user_edit():
+    """Delete Edit (if current_user is admin)"""
+
+@app.route('/admin/a/delete', methods=['POST'])
+def admin_answerset_delete():
+    """Delete Answerset (if current_user is admin)"""
 
 
-def fetch_table_entries(database, table, condition=''):
-    """Helper function to grab a SQL Lite table entries"""
-    #####################################################################################################
-    # Vulnerable to SQL injection. Hard to see why a user would want to do this since everything is open,
-    # but by inserting code into the query name, for example, one could gain access to the database.
-    #####################################################################################################
-
-    conn = sqlite3.connect(database)
-    cursor = conn.cursor()
-
-    condition_string = ' WHERE {}'.format(condition) if condition else ''
-    cursor.execute('SELECT * FROM {}'.format(table) + condition_string)
-
-    rows = cursor.fetchall()
-    conn.close()
-    return rows
-
-@app.route('/collection/load', methods=['POST'])
-def collection_load():
-    logger = logging.getLogger('application')
-    logger.setLevel(level = logging.DEBUG)
-    logger.error('Loading collection...')
-    
-    """Delivers the list of all available boards"""
-    try:
-        global collection_location # Location of the sqllite db file
-
-        # At this point collections are just specialized directory structures
-        conn = sqlite3.connect(collection_location)
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM blackboards')
-        rows = cursor.fetchall()
-        conn.close()
-
-        boards = []
-        for row in rows:
-            boards.append({
-                'id': row[0],
-                'name': row[1],
-                'description': row[2],
-            })
-
-        return jsonify({'boards': boards})
-
-    except Exception as ex:
-        print(ex)
-        raise InvalidUsage("Unspecified exception {0}".format(ex), 410)
-    except:
-        raise InvalidUsage('Failed to load blackboard collection.', 410)
-
-@app.route('/building/load', methods=['GET'])
-def building_load():
-    """Delivers a list of the boards currently under construction"""
-    try:
-        global collection_location # Location of the sqllite db file
-        
-        conn = sqlite3.connect(collection_location)
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM building')
-        rows = cursor.fetchall()
-        conn.close()
-        
-        boards = []
-        for row in rows:
-            if row[4] == "False":
-                boards.append({
-                    'id': row[0],
-                    'name': row[1],
-                    'description': row[2],
-                })
-        
-        return jsonify({'boards': boards})
-
-    except Exception as ex:
-        print(ex)
-        raise InvalidUsage("Unspecified exception {0}".format(ex), 410)
-    except:
-        raise InvalidUsage('Failed to fetch blackboards under construction.', 410)
-
-@app.route('/blackboard/build', methods=['POST'])
-def blackboard_build():
-    """Initiates the builder process from a board_id"""
-    try:
-        global collection_location
-
-        board_id = request.form.get('id')
-        board_name = request.form.get('name')
-        board_description = request.form.get('description')
-        board_query = request.form.get('query')
-        
-        ###############
-        # Put this new board request into the building table
-        ###############
-        # open database
-        table_name = 'building'
-        database = sqlite3.connect(collection_location)
-        cursor = database.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS {}
-                (id text, name text, description text, query_json text, finished text)'''\
-                .format(table_name))
-        # insert blackboard information into database
-        cursor.execute("INSERT INTO {} VALUES (?,?,?,?,?)".format(table_name),\
-            (board_id, board_name, board_description, board_query, "False"))
-        database.commit()
-        database.close()
-
-        ###############
-        # Start subprocess to run builder
-        ###############
-        os.environ['PYTHONPATH'] = '../robokop-interfaces:../robokop-build/builder'
-        proc = subprocess.Popen(["python", 'python/runBuilderQuery.py', collection_location, board_id])
-
-        # Notes:
-        # At this point we throw out the proc and loose the ability to control it.
-        #   Ultimiately, we should have a process manager
-        # We communicate here through the database. This isn't ideal but it's functional at this scale.
-
-        return jsonify({'failure': False})
-
-    except Exception as ex:
-        print(ex)
-        raise InvalidUsage("Unspecified exception {0}".format(ex), 410)
-    except:
-        raise InvalidUsage('Failed to initiate builder.', 410)
-
-@app.route('/blackboard/load', methods=['POST'])
-def blackboard_load():
-    global local_config
-    logger = logging.getLogger('application')
-    logger.setLevel(level = logging.DEBUG)
-    logger.error('Loading blackboard...')
-
-    """Deliver all of the information we have about a blackboard given an id."""
-    try:
-        board_id = request.form.get('id')
-        global collection_location
-
-        condition = "id='{}'".format(board_id)
-        rows = fetch_table_entries(collection_location, 'blackboards', condition)
-
-        query = json.loads(rows[0][3])
-        construction_graph = json.loads(rows[0][4])
-
-        # Contact Neo4j to get the large graph of this backboard
-        database = KnowledgeGraph(local_config['clientHost'])
-        graph = database.getNodesByLabel(board_id)
-
-        return jsonify({'graph': graph,\
-            'query': query,\
-            'constructionGraph': construction_graph})
-
-    except Exception as ex:
-        print(ex)
-        raise InvalidUsage("Unspecified exception {0}".format(ex), 410)
-    except:
-        raise InvalidUsage('Failed to load blackboard.', 410)
-
-@app.route('/blackboard/rank', methods=['POST'])
-def blackboard_rank():
-    """
-    Given a board ID find the paths through the graph that match the query
-    Then rank those paths. Return a list of paths with subgraphs and scores
-    """
-    try:
-        board_id = request.form.get('id')
-        global collection_location
-
-        condition = "id='{}'".format(board_id)
-        rows = fetch_table_entries(collection_location, 'blackboards', condition)
-
-        query = json.loads(rows[0][3])
-        nodes, edges = Question.dictionary_to_graph(query)
-        struct = {"nodes":nodes,
-                  "edges":edges,
-                  "id":board_id,
-                  "natural_question":"NA",
-                  "user":"patrick",
-                  "notes":""}
-
-        question = Question(struct)
-        ranking_data = question.answer()
-        # ranking_data = queryAndScore({'query':query, 'board_id':board_id})
-
-        return jsonify({'ranking': repr(ranking_data)})
-
-    except Exception as ex:
-        print(ex)
-        raise InvalidUsage("Unspecified exception {0}".format(ex), 410)
-    except:
-        raise InvalidUsage('Failed to set run query.', 410)
+################################################################################
+##### Run Webserver ############################################################
+################################################################################
 
 if __name__ == '__main__':
+    # Our local config is in the main directory
+    
+    # We will use this host and port if we are running from python and not gunicorn
+    global local_config
+    config_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),'..')
+    json_file = os.path.join(config_dir,'config.json')
+    with open(json_file, 'rt') as json_in:
+        local_config = json.load(json_in)
+        
     app.run(host=local_config['serverHost'],\
         port=local_config['port'],\
         debug=False,\

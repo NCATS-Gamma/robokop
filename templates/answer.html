@@ -1,0 +1,13 @@
+<head>
+  <title>ROBOKOP - Answer - {{answerset_id}}/{{answer_id}}</title>
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div id="reactEntry"></div>
+  </div>
+  <script type="text/javascript" src="{{ url_for('static', filename='bundle.js') }}"></script>
+  <script type="text/javascript">
+    robokop.answer("{{ answerset_id }}", "{{ answer_id }}");
+  </script>
+</body>
