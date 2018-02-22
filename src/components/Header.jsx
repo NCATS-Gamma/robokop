@@ -21,7 +21,7 @@ class Header extends React.Component {
   getNotLoggedInFrag() {
     return (
       <NavItem eventKey={3} href={this.appConfig.urls.login}>
-        {'Log In'}
+        Log In
       </NavItem>
     );
   }
@@ -45,7 +45,7 @@ class Header extends React.Component {
       <Navbar inverse>
         <Navbar.Header>
           <Navbar.Brand>
-            <a href="/">Robokop</a>
+            <a href={this.appConfig.urls.landing}>Robokop</a>
           </Navbar.Brand>
         </Navbar.Header>
         <Nav>

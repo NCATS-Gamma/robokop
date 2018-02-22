@@ -26,7 +26,7 @@ class Question extends React.Component {
       <Loading />
     );
   }
-  renderLoaded(){
+  renderLoaded() {
     return (
       <div>
         <Header
