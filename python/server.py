@@ -7,7 +7,7 @@ import logging
 from datetime import datetime
 
 from question import Question, list_questions, get_question_by_id
-from answer import get_answerset_by_id
+from answer import get_answerset_by_id, get_answersets_by_question_hash
 from knowledgegraph import KnowledgeGraph
 from Storage import Storage
 
@@ -162,12 +162,13 @@ def question_data(question_id):
     user = getAuthData()
 
     question = get_question_by_id(question_id)
-    question = question.toJSON()
+    answerset_list = get_answersets_by_question_hash(question.hash)
 
     now_str = datetime.now().__str__()
-    return jsonify({'timestamp': now_str,\
-        'user': user,\
-        'question': question})
+    return jsonify({'timestamp': now_str,
+                    'user': user,
+                    'question': question.toJSON(),
+                    'answerset_list': answerset_list})
   
 # Answer Set
 @app.route('/a/<answerset_id>')

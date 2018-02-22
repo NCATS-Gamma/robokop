@@ -181,3 +181,12 @@ def get_answerset_by_id(id):
     session = sessionmaker(bind=engine)
     s = session()
     return s.query(AnswerSet).filter(AnswerSet.id == id).first()
+
+def get_answersets_by_question_hash(hash):
+    session = sessionmaker(bind=engine)
+    s = session()
+    asets = s.query(AnswerSet)\
+        .filter(AnswerSet.question_hash == hash)\
+        .with_entities(AnswerSet.id, AnswerSet.timestamp)\
+        .all()
+    return [{"id":aset[0], "timestamp":aset[1]} for aset in asets]
