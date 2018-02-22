@@ -32,7 +32,7 @@ if __name__ == '__main__':
     # get AnswerSet
     answerSet = question.answer()
 
-    print(repr(question))
-    print(repr(answerSet))
+    print(question.toJSON())
+    print(answerSet.toJSON())
     for answer in answerSet:
-        print(repr(answer))
+        print(answer.toJSON())

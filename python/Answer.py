@@ -69,13 +69,10 @@ class AnswerSet(Base):
     def __str__(self):
         return "<ROBOKOP Answer Set id={}>".format(self.id)
 
-    def __repr__(self):
+    def toJSON(self):
         keys = [str(column).split('.')[-1] for column in self.__table__.columns]
         struct = {key:getattr(self, key) for key in keys}
-        return json.dumps(\
-            {
-                **struct
-            })
+        return json.dumps(struct)
 
     def add(self, answer):
         '''
@@ -160,13 +157,10 @@ class Answer(Base):
     def __str__(self):
         return "<ROBOKOP Answer id={}>".format(self.id)
 
-    def __repr__(self):
+    def toJSON(self):
         keys = [str(column).split('.')[-1] for column in self.__table__.columns]
         struct = {key:getattr(self, key) for key in keys}
-        return json.dumps(\
-            {
-                **struct
-            })
+        return json.dumps(struct)
 
     def construct_name(self):
         ''' Construct short name summarizing each subgraph. '''
