@@ -39,7 +39,7 @@ class Question(Base):
     nodes = Column(JSON)
     edges = Column(JSON)
     name = Column(String)
-    hash = Column(String, unique=True)
+    hash = Column(String)
 
     def __init__(self, *args, **kwargs):
         '''

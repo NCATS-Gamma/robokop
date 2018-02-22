@@ -13,8 +13,6 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# from Question import Question
-
 from robokop_flask_config import SQLALCHEMY_DATABASE_URI
 engine = create_engine(SQLALCHEMY_DATABASE_URI)
 
@@ -31,11 +29,7 @@ class AnswerSet(Base):
     # timestamp = Column(DateTime, default=func.now())
     timestamp = Column(String)
     filename = Column(String)
-    question_hash = Column(String, ForeignKey('question.hash'))
-
-    # question = relationship(
-    #     Question,
-    #     backref=backref('answer_sets'))
+    question_hash = Column(String)
 
     def __init__(self, *args, **kwargs):
         self.id = None
@@ -187,3 +181,12 @@ def get_answerset_by_id(id):
     session = sessionmaker(bind=engine)
     s = session()
     return s.query(AnswerSet).filter(AnswerSet.id == id).first()
+
+def get_answersets_by_question_hash(hash):
+    session = sessionmaker(bind=engine)
+    s = session()
+    asets = s.query(AnswerSet)\
+        .filter(AnswerSet.question_hash == hash)\
+        .with_entities(AnswerSet.id, AnswerSet.timestamp)\
+        .all()
+    return [{"id":aset[0], "timestamp":aset[1]} for aset in asets]
