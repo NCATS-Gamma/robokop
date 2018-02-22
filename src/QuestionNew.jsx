@@ -1,13 +1,13 @@
 import React from 'react';
 
-import appConfig from './appConfig';
+import AppConfig from './AppConfig';
 import Header from './components/Header';
 
 class QuestionNew extends React.Component {
   constructor(props) {
     super(props);
     // We only read the communications config on creation
-    this.appConfig = new appConfig(props.config);
+    this.appConfig = new AppConfig(props.config);
 
     this.state = {
       ready: false,
