@@ -104,6 +104,10 @@ class Question:
         m = hashlib.md5()
         m.update(json.dumps(json_spec).encode('utf-8'))
         return m.hexdigest()
+
+    def __str__(self):
+        return "<ROBOKOP Question id={}>".format(self.id)
+
     def answer(self):
         '''
         Answer the question.
@@ -115,11 +119,11 @@ class Question:
         # get all subgraphs relevant to the question from the knowledge graph
         database = KnowledgeGraph()
         subgraphs = database.query(self) # list of lists of nodes with 'id' and 'bound'
-        G = database.getGraphByLabel(self.id)
+        answer_set_subgraph = database.getGraphByLabel(self.id)
         del database
 
         # compute scores with NAGA, export to json
-        pr = ProtocopRank(G)
+        pr = ProtocopRank(answer_set_subgraph)
         score_struct, subgraphs = pr.report_scores_dict(subgraphs) # returned subgraphs are sorted by rank
 
         aset = AnswerSet(question_hash=self.compute_hash())
@@ -136,12 +140,6 @@ class Question:
             aset += answer #substruct['score'])
 
         return aset
-
-        max_results = 1000
-        if len(score_struct)>max_results:
-            return score_struct[:max_results]
-        else:
-            return score_struct
 
     def cypher(self):
         '''
