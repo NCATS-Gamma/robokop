@@ -269,7 +269,7 @@ def blackboard_rank():
         ranking_data = question.answer()
         # ranking_data = queryAndScore({'query':query, 'board_id':board_id})
 
-        return jsonify({'ranking': ranking_data})
+        return jsonify({'ranking': repr(ranking_data)})
 
     except Exception as ex:
         print(ex)

@@ -1,11 +1,13 @@
 import os
 import sys
 import json
+import hashlib
+import warnings
 from UniversalGraph import UniversalGraph
 from KnowledgeGraph import KnowledgeGraph
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-rank'))
 from nagaProto import ProtocopRank
-from Answer import AnswerSet
+from Answer import Answer, AnswerSet
 
 class Node:
     '''
@@ -65,6 +67,8 @@ class Question:
                 setattr(self, key, kwargs[key])
             else:
                 warnings.warn("Keyword argument {} ignored.".format(key))
+
+        self.hash = self.compute_hash()
     @staticmethod
     def dictionary_to_graph(dictionary):
         '''
@@ -87,6 +91,19 @@ class Question:
 
         return nodes, edges
 
+    def compute_hash(self):
+        '''
+        Generate an MD5 hash of the machine readable question interpretation
+        i.e. the nodes and edges attributes
+        '''
+
+        json_spec = {
+            "nodes":self.nodes,
+            "edges":self.edges
+        }
+        m = hashlib.md5()
+        m.update(json.dumps(json_spec).encode('utf-8'))
+        return m.hexdigest()
     def answer(self):
         '''
         Answer the question.
@@ -105,24 +122,20 @@ class Question:
         pr = ProtocopRank(G)
         score_struct, subgraphs = pr.report_scores_dict(subgraphs) # returned subgraphs are sorted by rank
 
-        out_struct = []
+        aset = AnswerSet(question_hash=self.compute_hash())
         for substruct, subgraph in zip(score_struct, subgraphs):
             graph = UniversalGraph(nodes=substruct['nodes'], edges=substruct['edges'])
             graph.merge_multiedges()
             graph.to_answer_walk(subgraph)
 
-            out_struct += [
-                {'nodes':graph.nodes,\
-                'edges':graph.edges,\
-                'score':substruct['score']},
-                ]
-        score_struct = out_struct
+            node_ids = [node['id'] for node in graph.nodes]
+            edge_ids = [edge['id'] for edge in graph.edges]
+            answer = Answer(nodes=node_ids,\
+                    edges=edge_ids,\
+                    score=0)
+            aset += answer #substruct['score'])
 
-        for i in range(len(score_struct)):
-            # score_struct[i]['edges'] = UniversalGraph.mergeMultiEdges(score_struct[i]['edges'])
-            score_struct[i]['info'] = {
-                'name': AnswerSet.constructName(score_struct[i])
-            }
+        return aset
 
         max_results = 1000
         if len(score_struct)>max_results:
