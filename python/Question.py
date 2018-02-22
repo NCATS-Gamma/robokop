@@ -198,12 +198,18 @@ class Question(Base):
         match_strings += ['MATCH '+'({})-'.format(node_names[i])+'[{0}:{2}*{3}..{4}]-({1})'.format(edge_names[i], node_names[i+1], edge_types[i], self.edges[i]['length'][0], self.edges[i]['length'][-1]) for i in range(edge_count)]
 
         # generate WHERE command string to prune paths to those containing the desired nodes/node types
-        node_conditions = [[[{k:(c[k] if k!='cond'\
+        node_conditions = [
+            [
+                [
+                    {
+                        k:(c[k] if k != 'cond'\
             else '' if c[k]\
-            else 'NOT ') for k in c}\
-            for c in d]\
-            for d in conds]
-            for conds in node_conditions]
+                        else 'NOT ')\
+                        for k in c
+                    } for c in d
+                ] for d in conds
+            ] for conds in node_conditions
+        ]
         node_cond_strings = [['('+' OR '.join(['{0}{1}.{2}{3}\'{4}\''.format(c['cond'], node_names[i], c['prop'], c['op'], c['val'])\
             for c in d])+')'\
             for d in conds]\
