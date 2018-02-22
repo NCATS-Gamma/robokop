@@ -17,7 +17,7 @@ class Question extends React.Component {
   }
 
   componentDidMount() {
-    this.appConfig.questionData( (data) => this.setState({timestamp: data.timestamp, user: data.user, ready: true}));
+    this.appConfig.questionData(this.props.id, (data) => this.setState({timestamp: data.timestamp, user: data.user, ready: true}));
   }
 
   renderLoading() {
