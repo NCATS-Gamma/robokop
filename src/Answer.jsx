@@ -1,6 +1,6 @@
 import React from 'react';
 
-class Answerset extends React.Component {
+class Answer extends React.Component {
   constructor(props) {
     super(props);
     // We only read the communications config on creation
@@ -31,7 +31,7 @@ class Answerset extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        <h1>{'Answer Set'}</h1>
+        <h1>{'Answer'}</h1>
         <h3>{`Time: ${this.state.timestamp}`}</h3>
       </div>
     );
@@ -46,4 +46,4 @@ class Answerset extends React.Component {
   }
 }
 
-export default Answerset;
+export default Answer;

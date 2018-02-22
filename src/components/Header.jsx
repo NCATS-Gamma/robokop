@@ -17,17 +17,17 @@ class Header extends React.Component {
 
   getNotLoggedInFrag() {
     return (
-      <NavItem eventKey={3} href="/login">
-        Login
+      <NavItem eventKey={3} href={this.appConfig.urls.login}>
+        {'Log In'}
       </NavItem>
     )
   }
   getLoggedInFrag(user) {
     return (
       <NavDropdown eventKey={3} title={user.username} id="basic-nav-dropdown">
-        <MenuItem eventKey={3.1} href='/account'>Account</MenuItem>
+        <MenuItem eventKey={3.1} href={this.appConfig.urls.account}>{'Account'}</MenuItem>
         <MenuItem divider />
-        <MenuItem eventKey={3.2} href='/logout'>Log Out</MenuItem>
+        <MenuItem eventKey={3.2} href={this.appConfig.urls.logout}>{'Log Out'}</MenuItem>
       </NavDropdown>
     )
   }
@@ -39,18 +39,18 @@ class Header extends React.Component {
     const hasStatus = data.status ? true : false;
 
     return (
-      <Navbar>
+      <Navbar inverse>
         <Navbar.Header>
           <Navbar.Brand>
-            <a href="/">Robokop</a>
+            <a href="/">{'Robokop'}</a>
           </Navbar.Brand>
         </Navbar.Header>
         <Nav>
-          <NavItem eventKey={1} href="/questions">
-            Questions
+          <NavItem eventKey={1} href={this.appConfig.urls.questionList}>
+            {'Questions'}
           </NavItem>
-          <NavItem eventKey={2} href="/new">
-            New Question
+          <NavItem eventKey={2} href={this.appConfig.urls.questionNew}>
+            {'New Question'}
           </NavItem>
           {hasStatus && 
             <Navbar.Text>

@@ -4,10 +4,11 @@ import ReactDOM from 'react-dom';
 import Landing from './Landing';
 import Account from './Account';
 import Admin from './Admin';
-import NewQuestion from './NewQuestion';
+import QuestionNew from './QuestionNew';
 import Question from './Question';
 import QuestionList from './QuestionList';
-import AnswerSet from './AnswerSet';
+import Answerset from './Answerset';
+import Answer from './Answer';
 
 // Import static css, image, and font assets so that they can be found by webpack.
 import 'bootstrap/dist/css/bootstrap.css'; // path search within node_modules
@@ -43,8 +44,8 @@ const robokop = {
     />,
     document.getElementById('reactEntry'));
   },
-  new: () => {
-    ReactDOM.render(<NewQuestion
+  questionNew: () => {
+    ReactDOM.render(<QuestionNew
       config={config}
     />,
     document.getElementById('reactEntry'));
@@ -56,10 +57,18 @@ const robokop = {
     />,
     document.getElementById('reactEntry'));
   },
-  answerSet: (answersetId) => {
-    ReactDOM.render(<AnswerSet
+  answerset: (answersetId) => {
+    ReactDOM.render(<Answerset
       config={config}
       id={answersetId}
+    />,
+    document.getElementById('reactEntry'));
+  },
+  answer: (answersetId, answerId) => {
+    ReactDOM.render(<Answer
+      config={config}
+      setId={answersetId}
+      id={answerId}
     />,
     document.getElementById('reactEntry'));
   },

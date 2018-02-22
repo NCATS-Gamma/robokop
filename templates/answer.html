@@ -1,5 +1,5 @@
 <head>
-  <title>ROBOKOP - Account</title>
+  <title>ROBOKOP - Answer - {{answerset_id}}/{{answer_id}}</title>
 </head>
 
 <body>
@@ -8,6 +8,6 @@
   </div>
   <script type="text/javascript" src="{{ url_for('static', filename='bundle.js') }}"></script>
   <script type="text/javascript">
-    robokop.account();
+    robokop.answer("{{ answerset_id }}", "{{ answer_id }}");
   </script>
 </body>

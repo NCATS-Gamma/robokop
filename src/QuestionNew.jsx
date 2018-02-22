@@ -3,7 +3,7 @@ import React from 'react';
 import appConfig from './appConfig';
 import Header from './components/Header';
 
-class NewQuestion extends React.Component {
+class QuestionNew extends React.Component {
   constructor(props) {
     super(props);
     // We only read the communications config on creation
@@ -17,7 +17,7 @@ class NewQuestion extends React.Component {
   }
 
   componentDidMount() {
-    this.appConfig.newData( (data) => this.setState({timestamp: data.timestamp, user: data.user, ready: true}));
+    this.appConfig.questionNewData( (data) => this.setState({timestamp: data.timestamp, user: data.user, ready: true}));
   }
 
   renderLoading() {
@@ -49,4 +49,4 @@ class NewQuestion extends React.Component {
   }
 }
 
-export default NewQuestion;
+export default QuestionNew;

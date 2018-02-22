@@ -79,7 +79,7 @@ class Storage:
     with open(file_name) as f:
       return json.load(f)
 
-  def getAnswerSet(self, answer_set_id):
+  def getAnswerSet(self, answerset_id):
     file_name = os.path.join(os.path.dirname(os.path.realpath(__file__)),'..','toyData','answerSet.json')
     with open(file_name) as f:
       return json.load(f)
@@ -89,8 +89,13 @@ class Storage:
     with open(file_name) as f:
       return json.load(f)
 
-  def getAnswerGraph(self, answer_id):
+  def getAnswerSetGraph(self, answer_id):
     file_name = os.path.join(os.path.dirname(os.path.realpath(__file__)),'..','toyData','as0001_ozone_gene.json')
+    with open(file_name) as f:
+      return json.load(f)
+
+  def getAnswerSetFeedback(self, user, answer_id):
+    file_name = os.path.join(os.path.dirname(os.path.realpath(__file__)),'..','toyData','answerSetFeedback.json')
     with open(file_name) as f:
       return json.load(f)
 

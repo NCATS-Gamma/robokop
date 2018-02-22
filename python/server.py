@@ -125,7 +125,7 @@ def landing():
   return render_template('landing.html')
 
 @app.route('/landing/data', methods=['GET'])
-def landingData():
+def landing_data():
   """Data for the landing page."""
 
   user = getAuthData()
@@ -143,7 +143,7 @@ def account():
 
 @app.route('/account/data', methods=['GET'])
 @login_required
-def accountData():
+def account_data():
   """Data for the current user"""
 
   user = getAuthData()
@@ -153,13 +153,13 @@ def accountData():
     'user': user})
 
 # New Question
-@app.route('/new')
+@app.route('/q/new')
 def new():
   """Deliver new question"""
-  return render_template('new.html')
+  return render_template('questionNew.html')
 
-@app.route('/new/data', methods=['GET'])
-def newData():
+@app.route('/q/new/data', methods=['GET'])
+def new_data():
   """Data for the new question"""
 
   user = getAuthData()
@@ -170,12 +170,12 @@ def newData():
 
 # QuestionList
 @app.route('/questions')
-def questionList():
+def questions():
   """Initial contact. Give the initial page."""
   return render_template('questions.html')
 
 @app.route('/questions/data', methods=['GET'])
-def questionListData():
+def questions_data():
   """Data for the list of questions """
 
   user = getAuthData()
@@ -195,39 +195,59 @@ def question(question_id):
   return render_template('question.html', question_id=question_id)
 
 @app.route('/q/<question_id>/data', methods=['GET'])
-def questionData(question_id):
+def question_data(question_id):
   """Data for a question"""
   
   user = getAuthData()
 
   question = storage.getQuestion(question_id)
-  questionGraph = storage.getQuestionGraph(question_id)
+  question_graph = storage.getQuestionGraph(question_id)
 
   now_str = datetime.now().__str__()
   return jsonify({'timestamp': now_str,\
     'user': user,\
     'question': question,\
-    'questionGraph': questionGraph})
+    'questionGraph': question_graph})
   
-# Answer
-@app.route('/a/<answer_set_id>')
-def answerSet(answer_set_id):
+# Answer Set
+@app.route('/a/<answerset_id>')
+def answerset(answerset_id):
   """Deliver answerset page for a given id"""
-  return render_template('answerset.html', answer_set_id=answer_set_id)
+  return render_template('answerset.html', answerset_id=answerset_id)
 
-@app.route('/a/<answer_set_id>/data', methods=['GET'])
-def answerSetData(answer_set_id):
+@app.route('/a/<answerset_id>/data', methods=['GET'])
+def answerset_data(answerset_id):
   """Data for an answerset """
   
   user = getAuthData()
-  answer_set = storage.getAnswerSet(answer_set_id)
-  answer_set_graph = storage.getAnswerGraph(answer_set_id)
+  answerset = storage.getAnswerSet(answerset_id)
+  answerset_graph = storage.getAnswerSetGraph(answerset_id)
+  answerset_feedback = storage.getAnswerSetFeedback(user, answerset_id)
 
   now_str = datetime.now().__str__()
   return jsonify({'timestamp': now_str,\
     'user': user,\
-    'answerSet': answer_set,\
-    'answerSetGraph': answer_set_graph})
+    'answerset': answerset,\
+    'answerset_graph': answerset_graph,\
+    'answerset_feedback': answerset_feedback})
+
+# Answer
+@app.route('/a/<answerset_id>/<answer_id>')
+def answer(answerset_id, answer_id):
+  """Deliver answerset page for a given id"""
+  return render_template('answer.html', answerset_id=answerset_id, answer_id=answer_id)
+
+@app.route('/a/<answerset_id>/<answer_id>/data', methods=['GET'])
+def answer_data(answerset_id, answer_id):
+  """Data for an answer """
+  
+  user = getAuthData()
+  answer = storage.getAnswer(answer_id)
+  
+  now_str = datetime.now().__str__()
+  return jsonify({'timestamp': now_str,\
+    'user': user,\
+    'answer': answer})
 
 # Admin
 @app.route('/admin')
@@ -241,7 +261,7 @@ def admin():
     return redirect(url_for('security.login', next=request.url))
 
 @app.route('/admin/data', methods=['GET'])
-def adminData():
+def admin_data():
   """Data for admin display """
   
   user = getAuthData()
@@ -252,12 +272,12 @@ def adminData():
     now_str = datetime.now().__str__()
     users = storage.getUserList()
     questions = storage.getQuestionList()
-    answer_sets = storage.getAnswerSetList()
+    answersets = storage.getAnswerSetList()
 
     return jsonify({'timestamp': now_str,\
       'users': users,\
       'questions': questions,\
-      'answerSets': answer_sets})
+      'answersets': answersets})
 
 ################################################################################
 ##### Account Editing ##########################################################
@@ -270,59 +290,65 @@ def accountEdit():
 ################################################################################
 ##### New Question #############################################################
 ################################################################################
-@app.route('/new/start', methods=['POST'])
-def newStart():
+@app.route('/q/new/update', methods=['POST'])
+def question_new_update():
     """Initiate a process for a new question"""
 
-@app.route('/new/search', methods=['POST'])
-def newSearch():
+@app.route('/q/new/search', methods=['POST'])
+def question_new_search():
     """Validate/provide suggestions for a search term"""
 
-@app.route('/new/validate', methods=['POST'])
-def newValidate():
+@app.route('/q/new/validate', methods=['POST'])
+def question_new_validate():
     """Validate a machine question to ensure it could possibly be executed"""
 
-@app.route('/new/translate', methods=['POST'])
-def newTranslate():
+@app.route('/q/new/translate', methods=['POST'])
+def question_new_translate():
     """Translate a natural language question into a machine question"""
 
 ################################################################################
 ##### Question Editing, Forking ################################################
 ################################################################################
 @app.route('/q/edit', methods=['POST'])
-def questionEdit():
+def question_edit():
     """Edit the properties of a question"""
 
 @app.route('/q/fork', methods=['POST'])
-def questionFork():
+def question_fork():
     """Fork a question to form a new question owned by current_user """
 
 @app.route('/q/delete', methods=['POST'])
-def questionDelete():
+def question_delete():
     """Delete question (if owned by current_user)"""
+
+################################################################################
+##### Answer Feedback ##########################################################
+################################################################################
+@app.route('/a/feedback', methods=['POST'])
+def answer_feedback():
+    """Set feedback for a specific user to a specific answer"""
 
 ################################################################################
 ##### Admin Interface ##########################################################
 ################################################################################
-
 @app.route('/admin/q/delete', methods=['POST'])
-def adminQuestionDelete():
+def admin_question_delete():
     """Delete question (if current_user is admin)"""
 
 @app.route('/admin/q/edit', methods=['POST'])
-def adminQuestionEdit():
+def admin_question_edit():
     """Edit question (if current_user is admin)"""
 
 @app.route('/admin/u/delete', methods=['POST'])
-def adminUserDelete():
+def admin_user_delete():
     """Delete user (if current_user is admin)"""
 
 @app.route('/admin/u/edit', methods=['POST'])
-def adminUserEdit():
+def admin_user_edit():
     """Delete Edit (if current_user is admin)"""
 
 @app.route('/admin/a/delete', methods=['POST'])
-def adminAnswersetEdit():
+def admin_answerset_delete():
     """Delete Answerset (if current_user is admin)"""
 
 

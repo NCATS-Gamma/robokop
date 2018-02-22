@@ -1,6 +1,7 @@
 import React from 'react';
 
 import appConfig from './appConfig';
+import Loading from './components/Loading';
 import Header from './components/Header';
 
 class QuestionList extends React.Component {
@@ -25,9 +26,7 @@ class QuestionList extends React.Component {
 
   renderLoading() {
     return (
-      <div>
-        <h1>{'Loading...'}</h1>
-      </div>
+      <Loading/>
     );
   }
   renderLoaded(){
