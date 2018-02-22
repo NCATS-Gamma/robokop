@@ -12,11 +12,10 @@ class AnswerSet:
     def __init__(self):
         self.answers = None
 
-    @staticmethod
-    def constructName(ranking_data):
+    def construct_name(self):
         ''' Construct short name summarizing each subgraph. '''
         names = []
-        for node in ranking_data['nodes']:
+        for node in self.nodes:
             names.append(node['name'])
 
         short_name = ''
