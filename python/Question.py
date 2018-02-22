@@ -121,7 +121,7 @@ class Question(Base):
     def toJSON(self):
         keys = [str(column).split('.')[-1] for column in self.__table__.columns]
         struct = {key:getattr(self, key) for key in keys}
-        return json.dumps(struct)
+        return struct
 
     def commit(self):
         Session.object_session(self).commit()
@@ -263,3 +263,8 @@ def list_questions():
     session = sessionmaker(bind=engine)
     s = session()
     return s.query(Question).all()
+
+def get_question_by_id(id):
+    session = sessionmaker(bind=engine)
+    s = session()
+    return s.query(Question).filter(Question.id == id).first()
