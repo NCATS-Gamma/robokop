@@ -1,7 +1,9 @@
 import React from 'react';
 
 import AppConfig from './AppConfig';
+import Loading from './components/Loading';
 import Header from './components/Header';
+
 
 class Question extends React.Component {
   constructor(props) {
@@ -17,17 +19,19 @@ class Question extends React.Component {
   }
 
   componentDidMount() {
-    this.appConfig.questionData( this.props.id, (data) => this.setState({timestamp: data.timestamp, user: data.user, ready: true}));
+    this.appConfig.questionData(this.props.id, data => this.setState({
+      timestamp: data.timestamp,
+      user: data.user,
+      ready: true,
+    }));
   }
 
   renderLoading() {
     return (
-      <div>
-        <h1>{'Loading...'}</h1>
-      </div>
+      <Loading />
     );
   }
-  renderLoaded(){
+  renderLoaded() {
     return (
       <div>
         <Header
