@@ -9,24 +9,19 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..
 from nagaProto import ProtocopRank
 from Answer import Answer, AnswerSet
 
-class Node:
-    '''
-    Represents a node *specification*
-    Properties may be None, indicating unspecified
-    '''
-    def __init__(self):
-        self.type = None # e.g. gene, pathway, etc.
-        self.name = None # e.g. asthma, metformin, etc.
+from sqlalchemy.types import JSON
+from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey, func
+from sqlalchemy.orm import relationship, backref
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm.session import Session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-class Edge:
-    '''
-    Represents an edge *specification*
-    Properties may be None, indicating unspecified
-    '''
-    def __init__(self):
-        self.type = None # e.g. is_associated_with, causes, etc.
+engine = create_engine('postgresql://patrick@localhost:5432/robokop')
 
-class Question:
+from base import Base
+
+class Question(Base):
     '''
     Represents a question such as "What genetic condition provides protection against disease X?"
 
@@ -34,6 +29,15 @@ class Question:
     * answer() - a struct containing the ranked answer paths
     * cypher() - the appropriate Cypher query for the Knowledge Graph
     '''
+
+    __tablename__ = 'question'
+    id = Column(String, primary_key=True)
+    user = Column(String) #, ForeignKey('user.id')
+    natural_question = Column(String)
+    notes = Column(String)
+    nodes = Column(JSON)
+    edges = Column(JSON)
+    hash = Column(String, unique=True)
 
     def __init__(self, *args, **kwargs):
         '''
@@ -69,6 +73,12 @@ class Question:
                 warnings.warn("Keyword argument {} ignored.".format(key))
 
         self.hash = self.compute_hash()
+
+        session = sessionmaker(bind=engine)
+        s = session()
+        s.add(self)
+        self.commit()
+
     @staticmethod
     def dictionary_to_graph(dictionary):
         '''
@@ -107,6 +117,17 @@ class Question:
 
     def __str__(self):
         return "<ROBOKOP Question id={}>".format(self.id)
+
+    def __repr__(self):
+        keys = [str(column).split('.')[-1] for column in self.__table__.columns]
+        struct = {key:getattr(self, key) for key in keys}
+        return json.dumps(\
+            {
+                **struct
+            })
+
+    def commit(self):
+        Session.object_session(self).commit()
 
     def answer(self):
         '''
