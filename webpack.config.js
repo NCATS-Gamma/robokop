@@ -45,6 +45,18 @@ const config = {
         test: /\.(ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,
         loader: 'file-loader',
       },
+      {
+        test: /react-icons\/(.)*(.js)$/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            cacheDirectory: true,
+            babelrc: false,
+            presets: ['babel-preset-env', 'babel-preset-react'].map(require.resolve),
+            plugins: ['transform-decorators-legacy', 'transform-object-rest-spread', 'transform-export-extensions'],
+          },
+        },
+      },
     ],
   },
 

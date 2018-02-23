@@ -47,30 +47,33 @@ class Header extends React.Component {
           <Navbar.Brand>
             <a href="/">Robokop</a>
           </Navbar.Brand>
+          <Navbar.Toggle />
         </Navbar.Header>
-        <Nav>
-          <NavItem eventKey={1} href={this.appConfig.urls.questionList}>
-            Questions
-          </NavItem>
-          {isAuth &&
-          <NavItem eventKey={2} href={this.appConfig.urls.questionNew}>
-            New Question
-          </NavItem>
-          }
-          {hasStatus &&
-            <Navbar.Text>
-              {data.status}
-            </Navbar.Text>
-          }
-        </Nav>
-        <Nav pullRight>
-          {isAuth &&
-            this.getLoggedInFrag(data.user)
-          }
-          {!isAuth &&
-            this.getNotLoggedInFrag()
-          }
-        </Nav>
+        <Navbar.Collapse>
+          <Nav>
+            <NavItem eventKey={1} href={this.appConfig.urls.questionList}>
+              Questions
+            </NavItem>
+            {isAuth &&
+            <NavItem eventKey={2} href={this.appConfig.urls.questionNew}>
+              New Question
+            </NavItem>
+            }
+            {hasStatus &&
+              <Navbar.Text>
+                {data.status}
+              </Navbar.Text>
+            }
+          </Nav>
+          <Nav pullRight>
+            {isAuth &&
+              this.getLoggedInFrag(data.user)
+            }
+            {!isAuth &&
+              this.getNotLoggedInFrag()
+            }
+          </Nav>
+        </Navbar.Collapse>
       </Navbar>
     );
   }

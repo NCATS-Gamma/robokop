@@ -2,6 +2,9 @@ import React from 'react';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
+import Loading from './components/Loading';
+
+import QuestionNewPres from './components/questionNew/QuestionNewPres';
 
 class QuestionNew extends React.Component {
   constructor(props) {
@@ -11,31 +14,43 @@ class QuestionNew extends React.Component {
 
     this.state = {
       ready: false,
-      timestamp: null,
       user: {},
     };
+
+    this.onCreate = this.onCreate.bind(this);
+    this.onCancel = this.onCancel.bind(this);
   }
 
   componentDidMount() {
-    this.appConfig.questionNewData( (data) => this.setState({timestamp: data.timestamp, user: data.user, ready: true}));
+    this.appConfig.questionNewData(data => this.setState({
+      user: data.user,
+      ready: true,
+    }));
+  }
+
+  onCreate() {
+    console.log('Create the thing here');
+  }
+  onCancel() {
+    window.history.back();
   }
 
   renderLoading() {
     return (
-      <div>
-        <h1>{'Loading...'}</h1>
-      </div>
+      <Loading />
     );
   }
-  renderLoaded(){
+  renderLoaded() {
     return (
       <div>
         <Header
           config={this.props.config}
           user={this.state.user}
         />
-        <h1>{'New Question'}</h1>
-        <h3>{`Time: ${this.state.timestamp}`}</h3>
+        <QuestionNewPres
+          callbackCreate={this.onCreate}
+          callbackCancel={this.onCancel}
+        />
       </div>
     );
   }
