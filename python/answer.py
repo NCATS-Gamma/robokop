@@ -11,6 +11,9 @@ from sqlalchemy.orm import relationship, backref
 
 from setup import db
 
+from sqlalchemy import event
+from sqlalchemy import DDL
+
 class AnswerSet(db.Model):
     '''
     An "answer" to a Question.
@@ -25,7 +28,6 @@ class AnswerSet(db.Model):
     question_hash = Column(String)
 
     def __init__(self, *args, **kwargs):
-        self.id = None
         self.answers = []
         self.timestamp = time.strftime('%Y%m%d_%H%M%S')
         self.question_hash = None
@@ -90,6 +92,12 @@ class AnswerSet(db.Model):
 
     def len(self):
         return len(self.answers)
+
+event.listen(
+    AnswerSet.__table__,
+    "after_create",
+    DDL("ALTER SEQUENCE answer_set_id_seq RESTART WITH 1453;")
+)
 
 class Answer(db.Model):
     '''
