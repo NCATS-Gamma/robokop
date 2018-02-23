@@ -7,7 +7,8 @@ from universalgraph import UniversalGraph
 from knowledgegraph import KnowledgeGraph
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-rank'))
 from nagaProto import ProtocopRank
-from answer import Answer, AnswerSet
+from answer import Answer, AnswerSet, get_answersets_by_question_hash
+from user import User
 
 from sqlalchemy.types import JSON
 from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey, func
@@ -26,7 +27,7 @@ class Question(db.Model):
 
     __tablename__ = 'question'
     id = Column(String, primary_key=True)
-    user = Column(Integer, ForeignKey('user.id'))
+    user_id = Column(Integer, ForeignKey('user.id'))
     natural_question = Column(String)
     notes = Column(String)
     name = Column(String)
@@ -34,6 +35,12 @@ class Question(db.Model):
     edges = Column(JSON)
     name = Column(String)
     hash = Column(String)
+    
+    user = relationship(
+        User,
+        backref=backref('questions',
+                        uselist=True,
+                        cascade='delete,all'))
 
     def __init__(self, *args, **kwargs):
         '''
@@ -43,7 +50,7 @@ class Question(db.Model):
         '''
 
         # initialize all properties
-        self.user = None
+        self.user_id = None
         self.id = None
         self.notes = None
         self.name = None
@@ -96,6 +103,9 @@ class Question(db.Model):
             if i > 0 and not n['nodeSpecType'] == 'Unspecified Nodes']
 
         return nodes, edges
+
+    def answersets(self):
+        return get_answersets_by_question_hash(self.hash)
 
     def compute_hash(self):
         '''

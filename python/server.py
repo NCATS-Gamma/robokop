@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """Flask web server thread"""
 import os
 import json
@@ -18,6 +20,7 @@ from setup import app, db
 from user import User, Role
 from question import Question, list_questions, get_question_by_id
 from answer import get_answerset_by_id, get_answersets_by_question_hash, get_answer_by_id, get_answers_by_answerset
+from feedback import Feedback, get_feedback_by_answer
 
 storage = Storage(db)
 
@@ -168,8 +171,8 @@ def question_data(question_id):
     return jsonify({'timestamp': now_str,
                     'user': user,
                     'question': question.toJSON(),
-                    'answerset_list': answerset_list})
-  
+                    'answerset_list': [a.toJSON() for a in answerset_list]})
+
 # Answer Set
 @app.route('/a/<answerset_id>')
 def answerset(answerset_id):
@@ -184,16 +187,13 @@ def answerset_data(answerset_id):
     answerset = get_answerset_by_id(answerset_id)
     answers = get_answers_by_answerset(answerset)
     answerset_graph = None #storage.getAnswerSetGraph(answerset_id)
-    answerset_feedback = None #storage.getAnswerSetFeedback(user, answerset_id)
 
     now_str = datetime.now().__str__()
     return jsonify({'timestamp': now_str,\
         'user': user,\
         'answerset': answerset.toJSON(),\
-        'answers': answers,\
-        'answer_num': len(answers),\
-        'answerset_graph': answerset_graph,\
-        'answerset_feedback': answerset_feedback})
+        'answers': [a.toJSON() for a in answers],\
+        'answerset_graph': answerset_graph})
 
 # Answer
 @app.route('/a/<answerset_id>/<answer_id>')
@@ -207,11 +207,13 @@ def answer_data(answerset_id, answer_id):
     
     user = getAuthData()
     answer = get_answer_by_id(answer_id)
+    feedback = get_feedback_by_answer(answer)
     
     now_str = datetime.now().__str__()
     return jsonify({'timestamp': now_str,\
         'user': user,\
-        'answer': answer.toJSON()})
+        'answer': answer.toJSON(),\
+        'feedback': feedback})
 
 # Admin
 @app.route('/admin')

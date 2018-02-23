@@ -11,6 +11,9 @@ from sqlalchemy.orm import relationship, backref
 
 from setup import db
 
+from sqlalchemy import event
+from sqlalchemy import DDL
+
 class AnswerSet(db.Model):
     '''
     An "answer" to a Question.
@@ -25,7 +28,6 @@ class AnswerSet(db.Model):
     question_hash = Column(String)
 
     def __init__(self, *args, **kwargs):
-        self.id = None
         self.answers = []
         self.timestamp = time.strftime('%Y%m%d_%H%M%S')
         self.question_hash = None
@@ -90,6 +92,12 @@ class AnswerSet(db.Model):
 
     def len(self):
         return len(self.answers)
+
+event.listen(
+    AnswerSet.__table__,
+    "after_create",
+    DDL("ALTER SEQUENCE answer_set_id_seq RESTART WITH 1453;")
+)
 
 class Answer(db.Model):
     '''
@@ -169,9 +177,8 @@ def get_answer_by_id(id):
 def get_answers_by_answerset(answerset):
     answers = db.session.query(Answer)\
         .filter(Answer.answer_set == answerset)\
-        .with_entities(Answer.id)\
         .all()
-    return [a[0] for a in answers]
+    return answers
 
 def get_answerset_by_id(id):
     return db.session.query(AnswerSet).filter(AnswerSet.id == id).first()
@@ -179,6 +186,5 @@ def get_answerset_by_id(id):
 def get_answersets_by_question_hash(hash):
     asets = db.session.query(AnswerSet)\
         .filter(AnswerSet.question_hash == hash)\
-        .with_entities(AnswerSet.id, AnswerSet.timestamp)\
         .all()
-    return [{"id":aset[0], "timestamp":aset[1]} for aset in asets]
+    return asets

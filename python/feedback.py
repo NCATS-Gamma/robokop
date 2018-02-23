@@ -5,6 +5,7 @@ import hashlib
 import warnings
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-rank'))
 from answer import Answer, AnswerSet
+from user import User
 
 from sqlalchemy.types import JSON
 from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey, func
@@ -12,34 +13,32 @@ from sqlalchemy.orm import relationship, backref
 
 from setup import db
 
-import enum
+from sqlalchemy import Enum
 
-class Interestingness(enum.Enum):
-    one = 1
-    two = 2
-    three = 3
-    four = 4
-    five = 5
+Interestingness = Enum('one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',\
+    name='interestingness')
 
-class Correctness(enum.Enum):
-    incorrect = 1
-    doubtful = 2
-    maybe = 3
-    probably = 4
-    correct = 5
+Correctness = Enum('incorrect', 'doubtful', 'maybe', 'probably', 'correct',\
+    name='correctness')
 
 class Feedback(db.Model):
     '''
     Represents a chunk of feedback concerning a specific Answer.
     '''
 
-    __tablename__ = 'question'
-    id = Column(String, primary_key=True)
-    user = Column(Integer, ForeignKey('user.id'))
+    __tablename__ = 'feedback'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'))
     interestingness = Column(Interestingness)
     correctness = Column(Correctness)
     notes = Column(String)
+    answer_id = Column(Integer, ForeignKey('answer.id'))
 
+    user = relationship(
+        User,
+        backref=backref('feedback',
+                        uselist=True,
+                        cascade='delete,all'))
     answer = relationship(
         Answer,
         backref=backref('feedback',
@@ -53,8 +52,8 @@ class Feedback(db.Model):
         '''
 
         # initialize all properties
-        self.id = None
         self.user = None
+        self.answer = None
         self.interestingness = None
         self.correctness = None
         self.notes = None
