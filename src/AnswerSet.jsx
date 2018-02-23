@@ -1,12 +1,9 @@
 import React from 'react';
 
-import { Grid, Row, Col, FormControl, ListGroup, ListGroupItem } from 'react-bootstrap';
-
 import AppConfig from './AppConfig';
 import Header from './components/Header';
 import Loading from './components/Loading';
-
-const shortid = require('shortid');
+import AnswersetPres from './components/answerset/AnswersetPres';
 
 class Answerset extends React.Component {
   constructor(props) {
@@ -16,7 +13,6 @@ class Answerset extends React.Component {
 
     this.state = {
       ready: false,
-      timestamp: null,
       user: {},
       answerset: {},
       answers: [],
@@ -28,7 +24,6 @@ class Answerset extends React.Component {
 
   componentDidMount() {
     this.appConfig.answersetData(this.props.id, data => this.setState({
-      timestamp: data.timestamp,
       user: data.user,
       answerset: data.answerset,
       answers: data.answers,
@@ -37,26 +32,6 @@ class Answerset extends React.Component {
       answersetFeedback: data.answerset_feedback,
       ready: true,
     }));
-  }
-
-  answerListFragment(answerset, answers) {
-    const list = answers.map((a) => {
-      return (
-        <ListGroupItem key={shortid.generate()}>
-          <a href={this.appConfig.urls.answer(answerset.id, a.id)}>
-            An answer
-          </a>
-        </ListGroupItem>
-      );
-    });
-    return (
-      <div>
-        <h3> Answers </h3>
-        <ListGroup>
-          {list}
-        </ListGroup>
-      </div>
-    );
   }
 
   renderLoading() {
@@ -72,8 +47,14 @@ class Answerset extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        <h1>{'Answer Set:'}</h1>
-        {this.answerListFragment(this.state.answerset, this.state.answers)}
+        <AnswersetPres
+          answerset={this.state.answerset}
+          answers={this.state.answers}
+          answerCount={this.state.answerCount}
+          answersetGraph={this.state.answersetGraph}
+          answersetFeedback={this.state.answersetFeedback}
+          answerUrlFunc={(answerset, answer) => this.appConfig.urls.answer(answerset.id, answer.id)}
+        />
       </div>
     );
   }
