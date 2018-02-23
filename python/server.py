@@ -171,8 +171,8 @@ def question_data(question_id):
     return jsonify({'timestamp': now_str,
                     'user': user,
                     'question': question.toJSON(),
-                    'answerset_list': answerset_list})
-  
+                    'answerset_list': [a.toJSON() for a in answerset_list]})
+
 # Answer Set
 @app.route('/a/<answerset_id>')
 def answerset(answerset_id):
