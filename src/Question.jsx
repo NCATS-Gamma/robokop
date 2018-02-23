@@ -18,6 +18,7 @@ class Question extends React.Component {
       timestamp: null,
       user: {},
       question: {},
+      answersets: [],
     };
   }
 
@@ -26,6 +27,7 @@ class Question extends React.Component {
       timestamp: data.timestamp,
       user: data.user,
       question: data.question,
+      answersets: data.answerset_list,
       ready: true,
     }));
   }
@@ -45,6 +47,13 @@ class Question extends React.Component {
         <h1>Question:</h1>
         <p>
           {JSON.stringify(this.state.question)}
+        </p>
+        <h3>Answer Sets</h3>
+        <p>
+          {JSON.stringify(this.state.answersets)}
+          <a href={this.appConfig.urls.answerset(this.state.answersets[0].id)}>
+            An answerset
+          </a>
         </p>
         <h5>{`Time: ${this.state.timestamp}`}</h5>
       </div>
