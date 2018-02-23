@@ -204,12 +204,12 @@ def answer_data(answerset_id, answer_id):
     """Data for an answer """
     
     user = getAuthData()
-    answer = storage.getAnswer(answer_id)
+    answer = get_answer_by_id(answer_id)
     
     now_str = datetime.now().__str__()
     return jsonify({'timestamp': now_str,\
         'user': user,\
-        'answer': answer})
+        'answer': answer.toJSON()})
 
 # Admin
 @app.route('/admin')

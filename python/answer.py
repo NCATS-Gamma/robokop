@@ -163,6 +163,9 @@ class Answer(db.Model):
 def list_answersets():
     return db.session.query(AnswerSet).all()
 
+def get_answer_by_id(id):
+    return db.session.query(Answer).filter(Answer.id == id).first()
+
 def get_answerset_by_id(id):
     return db.session.query(AnswerSet).filter(AnswerSet.id == id).first()
 
