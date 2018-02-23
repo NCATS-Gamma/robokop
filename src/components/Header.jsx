@@ -52,9 +52,11 @@ class Header extends React.Component {
           <NavItem eventKey={1} href={this.appConfig.urls.questionList}>
             Questions
           </NavItem>
+          {isAuth &&
           <NavItem eventKey={2} href={this.appConfig.urls.questionNew}>
             New Question
           </NavItem>
+          }
           {hasStatus &&
             <Navbar.Text>
               {data.status}
