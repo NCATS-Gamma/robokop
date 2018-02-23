@@ -12,17 +12,10 @@ from answer import Answer, AnswerSet
 from sqlalchemy.types import JSON
 from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey, func
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm.session import Session
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-from robokop_flask_config import SQLALCHEMY_DATABASE_URI
-engine = create_engine(SQLALCHEMY_DATABASE_URI)
+from setup import db
 
-from base import Base
-
-class Question(Base):
+class Question(db.Model):
     '''
     Represents a question such as "What genetic condition provides protection against disease X?"
 
@@ -33,9 +26,10 @@ class Question(Base):
 
     __tablename__ = 'question'
     id = Column(String, primary_key=True)
-    user = Column(String) #, ForeignKey('user.id')
+    user = Column(Integer, ForeignKey('user.id'))
     natural_question = Column(String)
     notes = Column(String)
+    name = Column(String)
     nodes = Column(JSON)
     edges = Column(JSON)
     name = Column(String)
@@ -54,6 +48,7 @@ class Question(Base):
         self.notes = None
         self.name = None
         self.natural_question = None
+        self.name = None
         self.nodes = [] # list of nodes
         self.edges = [] # list of edges
         self.hash = None
@@ -77,10 +72,8 @@ class Question(Base):
 
         self.hash = self.compute_hash()
 
-        session = sessionmaker(bind=engine)
-        s = session()
-        s.add(self)
-        self.commit()
+        db.session.add(self)
+        db.session.commit()
 
     @staticmethod
     def dictionary_to_graph(dictionary):
@@ -125,9 +118,6 @@ class Question(Base):
         keys = [str(column).split('.')[-1] for column in self.__table__.columns]
         struct = {key:getattr(self, key) for key in keys}
         return struct
-
-    def commit(self):
-        Session.object_session(self).commit()
 
     def answer(self):
         '''
@@ -263,11 +253,7 @@ class Question(Base):
         return [zeroth_node, first_node] + query[1:]
 
 def list_questions():
-    session = sessionmaker(bind=engine)
-    s = session()
-    return s.query(Question).all()
+    return db.session.query(Question).all()
 
 def get_question_by_id(id):
-    session = sessionmaker(bind=engine)
-    s = session()
-    return s.query(Question).filter(Question.id == id).first()
+    return db.session.query(Question).filter(Question.id == id).first()

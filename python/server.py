@@ -181,15 +181,16 @@ def answerset_data(answerset_id):
     """Data for an answerset """
 
     user = getAuthData()
-    print(answerset_id)
-    answerset = get_answerset_by_id(1).toJSON()
+    answerset = get_answerset_by_id(answerset_id)
+    answers = get_answers_by_answerset(answerset)
     answerset_graph = None #storage.getAnswerSetGraph(answerset_id)
     answerset_feedback = None #storage.getAnswerSetFeedback(user, answerset_id)
 
     now_str = datetime.now().__str__()
     return jsonify({'timestamp': now_str,\
         'user': user,\
-        'answerset': answerset,\
+        'answerset': answerset.toJSON(),\
+        'answer_num': len(answers),\
         'answerset_graph': answerset_graph,\
         'answerset_feedback': answerset_feedback})
 
@@ -204,12 +205,12 @@ def answer_data(answerset_id, answer_id):
     """Data for an answer """
     
     user = getAuthData()
-    answer = storage.getAnswer(answer_id)
+    answer = get_answer_by_id(answer_id)
     
     now_str = datetime.now().__str__()
     return jsonify({'timestamp': now_str,\
         'user': user,\
-        'answer': answer})
+        'answer': answer.toJSON()})
 
 # Admin
 @app.route('/admin')

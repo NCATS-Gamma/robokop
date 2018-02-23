@@ -8,15 +8,16 @@ from robokop_flask_config  import SQLALCHEMY_DATABASE_URI
 engine = create_engine(SQLALCHEMY_DATABASE_URI)
 
 # TODO: remove this after testing
-# engine.execute('drop table if exists {}'.format('answer'))
-# engine.execute('drop table if exists {}'.format('answer_set'))
-# engine.execute('drop table if exists {}'.format('question'))
+engine.execute('drop table if exists {}'.format('answer'))
+engine.execute('drop table if exists {}'.format('answer_set'))
+engine.execute('drop table if exists {}'.format('question'))
 
+from user import User, Role
 from question import Question
 from answer import Answer, AnswerSet
 
-from base import Base
-Base.metadata.create_all(engine)
+from setup import db
+db.create_all()
 
 if __name__ == '__main__':
     # parse arguments
