@@ -190,6 +190,7 @@ def answerset_data(answerset_id):
     return jsonify({'timestamp': now_str,\
         'user': user,\
         'answerset': answerset.toJSON(),\
+        'answers': answers,\
         'answer_num': len(answers),\
         'answerset_graph': answerset_graph,\
         'answerset_feedback': answerset_feedback})
