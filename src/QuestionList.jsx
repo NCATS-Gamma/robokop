@@ -3,7 +3,7 @@ import React from 'react';
 import AppConfig from './AppConfig';
 import Loading from './components/Loading';
 import Header from './components/Header';
-import QuestionListTable from './components/QuestionListTable';
+import QuestionListPres from './components/questionList/QuestionListPres';
 
 class QuestionList extends React.Component {
   constructor(props) {
@@ -13,25 +13,17 @@ class QuestionList extends React.Component {
 
     this.state = {
       ready: false,
-      timestamp: null,
       user: {},
       questions: [{ name: 'Question Name', id: 'undefined' }],
     };
-
-    this.onQuestionRowClick = this.onQuestionRowClick.bind(this);
   }
 
   componentDidMount() {
     this.appConfig.questionListData(data => this.setState({
-      timestamp: data.timestamp,
       user: data.user,
       questions: data.questions,
       ready: true,
     }));
-  }
-
-  onQuestionRowClick(question) {
-    window.open(this.appConfig.urls.question(question.id), '_self');
   }
 
   renderLoading() {
@@ -46,9 +38,10 @@ class QuestionList extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        <QuestionListTable
+        <QuestionListPres
+          questionUrlFunc={q => this.appConfig.urls.question(q.id)}
           questions={this.state.questions}
-          callbackRowClick={this.onQuestionRowClick}
+          user={this.state.user}
         />
       </div>
     );
