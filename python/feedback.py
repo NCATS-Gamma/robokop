@@ -5,6 +5,7 @@ import hashlib
 import warnings
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-rank'))
 from answer import Answer, AnswerSet
+from user import User
 
 from sqlalchemy.types import JSON
 from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey, func
@@ -26,13 +27,18 @@ class Feedback(db.Model):
     '''
 
     __tablename__ = 'feedback'
-    id = Column(String, primary_key=True)
-    user = Column(Integer, ForeignKey('user.id'))
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'))
     interestingness = Column(Interestingness)
     correctness = Column(Correctness)
     notes = Column(String)
     answer_id = Column(Integer, ForeignKey('answer.id'))
 
+    user = relationship(
+        User,
+        backref=backref('feedback',
+                        uselist=True,
+                        cascade='delete,all'))
     answer = relationship(
         Answer,
         backref=backref('feedback',
@@ -46,8 +52,8 @@ class Feedback(db.Model):
         '''
 
         # initialize all properties
-        self.id = None
         self.user = None
+        self.answer = None
         self.interestingness = None
         self.correctness = None
         self.notes = None
