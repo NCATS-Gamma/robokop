@@ -17,7 +17,7 @@ class Answerset extends React.Component {
   }
 
   componentDidMount() {
-    this.appConfig.answerSetData( this.props.id, (data) => this.setState({timestamp: data.timestamp, user: data.user, ready: true}));
+    this.appConfig.answersetData( this.props.id, (data) => this.setState({timestamp: data.timestamp, user: data.user, ready: true}));
   }
 
   renderLoading() {
