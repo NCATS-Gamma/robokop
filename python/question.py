@@ -32,6 +32,7 @@ class Question(db.Model):
     name = Column(String)
     nodes = Column(JSON)
     edges = Column(JSON)
+    name = Column(String)
     hash = Column(String)
 
     def __init__(self, *args, **kwargs):
@@ -45,6 +46,7 @@ class Question(db.Model):
         self.user = None
         self.id = None
         self.notes = None
+        self.name = None
         self.natural_question = None
         self.name = None
         self.nodes = [] # list of nodes
