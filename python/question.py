@@ -29,6 +29,7 @@ class Question(db.Model):
     user = Column(Integer, ForeignKey('user.id'))
     natural_question = Column(String)
     notes = Column(String)
+    name = Column(String)
     nodes = Column(JSON)
     edges = Column(JSON)
     hash = Column(String)
@@ -45,6 +46,7 @@ class Question(db.Model):
         self.id = None
         self.notes = None
         self.natural_question = None
+        self.name = None
         self.nodes = [] # list of nodes
         self.edges = [] # list of edges
         self.hash = None
