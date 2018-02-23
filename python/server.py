@@ -6,8 +6,6 @@ import subprocess
 import logging
 from datetime import datetime
 
-from question import Question, list_questions, get_question_by_id
-from answer import get_answerset_by_id, get_answersets_by_question_hash
 from knowledgegraph import KnowledgeGraph
 from Storage import Storage
 
@@ -18,6 +16,8 @@ from flask_security.core import current_user
 
 from setup import app, db
 from user import User, Role
+from question import Question, list_questions, get_question_by_id
+from answer import get_answerset_by_id, get_answersets_by_question_hash, get_answer_by_id, get_answers_by_answerset
 
 storage = Storage(db)
 
