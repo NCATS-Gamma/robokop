@@ -8,17 +8,10 @@ import warnings
 from sqlalchemy.types import ARRAY as Array
 from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey, func
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm.session import Session
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-from robokop_flask_config import SQLALCHEMY_DATABASE_URI
-engine = create_engine(SQLALCHEMY_DATABASE_URI)
+from setup import db
 
-from base import Base
-
-class AnswerSet(Base):
+class AnswerSet(db.Model):
     '''
     An "answer" to a Question.
     Contains a ranked list of walks through the Knowledge Graph.
@@ -56,10 +49,8 @@ class AnswerSet(Base):
             else:
                 warnings.warn("Keyword argument {} ignored.".format(key))
 
-        session = sessionmaker(bind=engine)
-        s = session()
-        s.add(self)
-        self.commit()
+        db.session.add(self)
+        db.session.commit()
 
     def __str__(self):
         return "<ROBOKOP Answer Set id={}>".format(self.id)
@@ -78,7 +69,7 @@ class AnswerSet(Base):
             raise ValueError("Only Answers may be added to AnswerSets.")
 
         self.answers += [answer]
-        self.commit()
+        db.session.commit()
         return self
 
     def __iadd__(self, answer):
@@ -100,10 +91,7 @@ class AnswerSet(Base):
     def len(self):
         return len(self.answers)
 
-    def commit(self):
-        Session.object_session(self).commit()
-
-class Answer(Base):
+class Answer(db.Model):
     '''
     Represents a single answer walk
     '''
@@ -173,19 +161,13 @@ class Answer(Base):
         return short_name
 
 def list_answersets():
-    session = sessionmaker(bind=engine)
-    s = session()
-    return s.query(AnswerSet).all()
+    return db.session.query(AnswerSet).all()
 
 def get_answerset_by_id(id):
-    session = sessionmaker(bind=engine)
-    s = session()
-    return s.query(AnswerSet).filter(AnswerSet.id == id).first()
+    return db.session.query(AnswerSet).filter(AnswerSet.id == id).first()
 
 def get_answersets_by_question_hash(hash):
-    session = sessionmaker(bind=engine)
-    s = session()
-    asets = s.query(AnswerSet)\
+    asets = db.session.query(AnswerSet)\
         .filter(AnswerSet.question_hash == hash)\
         .with_entities(AnswerSet.id, AnswerSet.timestamp)\
         .all()
