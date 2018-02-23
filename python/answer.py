@@ -166,6 +166,13 @@ def list_answersets():
 def get_answer_by_id(id):
     return db.session.query(Answer).filter(Answer.id == id).first()
 
+def get_answers_by_answerset(answerset):
+    answers = db.session.query(Answer)\
+        .filter(Answer.answer_set == answerset)\
+        .with_entities(Answer.id)\
+        .all()
+    return [a[0] for a in answers]
+
 def get_answerset_by_id(id):
     return db.session.query(AnswerSet).filter(AnswerSet.id == id).first()
 
