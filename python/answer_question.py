@@ -4,20 +4,24 @@ import argparse
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 
-from robokop_flask_config  import SQLALCHEMY_DATABASE_URI
-engine = create_engine(SQLALCHEMY_DATABASE_URI)
-
-# TODO: remove this after testing
-engine.execute('drop table if exists {}'.format('answer'))
-engine.execute('drop table if exists {}'.format('answer_set'))
-engine.execute('drop table if exists {}'.format('question'))
-
 from user import User, Role
 from question import Question
 from answer import Answer, AnswerSet
+from feedback import Feedback
 
 from setup import db
-db.create_all()
+
+def answer_question(question_json_filename):
+    # get struct from json file
+    with open(question_json_filename) as f:
+        struct = json.load(f)
+
+    # construct Question
+    question = Question(struct)
+
+    # get AnswerSet
+    answer_set = question.answer()
+    return answer_set
 
 if __name__ == '__main__':
     # parse arguments
@@ -25,17 +29,10 @@ if __name__ == '__main__':
     parser.add_argument('question_json_filename')
     args = parser.parse_args()
 
-    # get struct from json file
-    with open(args.question_json_filename) as f:
-        struct = json.load(f)
-
-    # construct Question
-    question = Question(struct)
-
     # get AnswerSet
-    answerSet = question.answer()
+    answer_set = answer_question(args.question_json_filename)
 
     print(question.toJSON())
-    print(answerSet.toJSON())
-    for answer in answerSet:
+    print(answer_set.toJSON())
+    for answer in answer_set:
         print(answer.toJSON())
