@@ -186,6 +186,5 @@ def get_answerset_by_id(id):
 def get_answersets_by_question_hash(hash):
     asets = db.session.query(AnswerSet)\
         .filter(AnswerSet.question_hash == hash)\
-        .with_entities(AnswerSet.id, AnswerSet.timestamp)\
         .all()
-    return [{"id":aset[0], "timestamp":aset[1]} for aset in asets]
+    return asets
