@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """Flask web server thread"""
 import os
 import json
