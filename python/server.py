@@ -20,6 +20,7 @@ from setup import app, db
 from user import User, Role
 from question import Question, list_questions, get_question_by_id
 from answer import get_answerset_by_id, get_answersets_by_question_hash, get_answer_by_id, get_answers_by_answerset
+from feedback import Feedback, get_feedback_by_answer
 
 storage = Storage(db)
 
@@ -206,11 +207,13 @@ def answer_data(answerset_id, answer_id):
     
     user = getAuthData()
     answer = get_answer_by_id(answer_id)
+    feedback = get_feedback_by_answer(answer)
     
     now_str = datetime.now().__str__()
     return jsonify({'timestamp': now_str,\
         'user': user,\
-        'answer': answer.toJSON()})
+        'answer': answer.toJSON(),\
+        'feedback': feedback})
 
 # Admin
 @app.route('/admin')
