@@ -2,13 +2,14 @@ import os
 import sys
 import json
 import hashlib
+import datetime
 import warnings
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-rank'))
 from answer import Answer, AnswerSet
 from user import User
 
 from sqlalchemy.types import JSON
-from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey, func
+from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey
 from sqlalchemy.orm import relationship, backref
 
 from setup import db
@@ -33,6 +34,7 @@ class Feedback(db.Model):
     correctness = Column(Correctness)
     notes = Column(String)
     answer_id = Column(Integer, ForeignKey('answer.id'))
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
     user = relationship(
         User,

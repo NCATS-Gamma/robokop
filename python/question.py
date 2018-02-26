@@ -269,6 +269,9 @@ class Question(db.Model):
 def list_questions():
     return db.session.query(Question).all()
 
+def list_questions_by_hash(hash):
+    return db.session.query(Question).filter(Question.hash == hash).all()
+
 def list_questions_by_username(username, invert=False):
     if invert:
         return db.session.query(Question).join(Question.user).filter(User.username != username).all()
