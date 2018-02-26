@@ -144,16 +144,15 @@ def questions_data():
     """Data for the list of questions """
 
     user = getAuthData()
-    # question_list = list_questions()
-    # question_list = [q.toJSON() for q in question_list]
+    question_list = list_questions()
     user_question_list = list_questions_by_username(user['username'])
-    nonuser_question_list = list_questions_by_username(user['username'], invert=True)
+    # nonuser_question_list = list_questions_by_username(user['username'], invert=True)
 
     now_str = datetime.now().__str__()
     return jsonify({'timestamp': now_str,\
         'user': user,\
-        'user_questions': [q.toJSON() for q in user_question_list],\
-        'nonuser_questions': [q.toJSON() for q in nonuser_question_list]})
+        'questions': [q.toJSON() for q in question_list],\
+        'user_questions': [q.toJSON() for q in user_question_list]})
 
 # Question
 @app.route('/q/<question_id>')
