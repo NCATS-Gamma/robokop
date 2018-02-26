@@ -23,6 +23,8 @@ class Answerset extends React.Component {
   }
 
   componentDidMount() {
+    // makes the appropriate GET request from server.py,
+    // uses the result to set this.state
     this.appConfig.answersetData(this.props.id, data => this.setState({
       user: data.user,
       answerset: data.answerset,
