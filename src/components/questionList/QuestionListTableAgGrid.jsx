@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { FormControl } from 'react-bootstrap';
 import { AgGridReact, AgGridColumn } from 'ag-grid-react';
 
-class QuestionListTable extends React.Component {
+class QuestionListTableAgGrid extends React.Component {
   constructor(props) {
     super(props);
 
@@ -81,15 +81,15 @@ class QuestionListTable extends React.Component {
   }
 }
 
-QuestionListTable.defaultProps = {
+QuestionListTableAgGrid.defaultProps = {
   height: '100px',
 };
 
-QuestionListTable.propTypes = {
+QuestionListTableAgGrid.propTypes = {
   height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   questions: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })).isRequired,
   showSearch: PropTypes.bool.isRequired,
   callbackRowClick: PropTypes.func.isRequired,
 };
 
-export default QuestionListTable;
+export default QuestionListTableAgGrid;
