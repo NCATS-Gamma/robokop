@@ -19,7 +19,7 @@ from flask_security.core import current_user
 from setup import app, db
 import json_encoder
 from user import User, Role
-from question import Question, list_questions, get_question_by_id, list_questions_by_username
+from question import Question, list_questions, get_question_by_id, list_questions_by_username, list_questions_by_hash
 from answer import get_answerset_by_id, list_answersets_by_question_hash, get_answer_by_id, list_answers_by_answerset
 from feedback import Feedback, list_feedback_by_answer
 
@@ -189,6 +189,7 @@ def answerset_data(answerset_id):
     user = getAuthData()
     answerset = get_answerset_by_id(answerset_id)
     answers = list_answers_by_answerset(answerset)
+    questions = list_questions_by_hash(answerset.question_hash)
     answerset_graph = None #storage.getAnswerSetGraph(answerset_id)
 
     now_str = datetime.now().__str__()
@@ -196,6 +197,7 @@ def answerset_data(answerset_id):
         'user': user,\
         'answerset': answerset.toJSON(),\
         'answers': [a.toJSON() for a in answers],\
+        'questions': [q.toJSON() for q in questions],\
         'answerset_graph': answerset_graph})
 
 # Answer
