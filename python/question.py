@@ -7,7 +7,7 @@ from universalgraph import UniversalGraph
 from knowledgegraph import KnowledgeGraph
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-rank'))
 from nagaProto import ProtocopRank
-from answer import Answer, AnswerSet, get_answersets_by_question_hash
+from answer import Answer, AnswerSet, list_answersets_by_question_hash
 from user import User
 
 from sqlalchemy.types import JSON
@@ -105,7 +105,7 @@ class Question(db.Model):
         return nodes, edges
 
     def answersets(self):
-        return get_answersets_by_question_hash(self.hash)
+        return list_answersets_by_question_hash(self.hash)
 
     def compute_hash(self):
         '''
@@ -264,6 +264,18 @@ class Question(db.Model):
 
 def list_questions():
     return db.session.query(Question).all()
+
+def list_questions_by_username(username, invert=False):
+    if invert:
+        return db.session.query(Question).filter(User.username == username).all()
+    else:
+        return db.session.query(Question).filter(User.username != username).all()
+
+def list_questions_by_user_id(user_id, invert=False):
+    if invert:
+        return db.session.query(Question).filter(Question.user_id == user_id).all()
+    else:
+        return db.session.query(Question).filter(Question.user_id != user_id).all()
 
 def get_question_by_id(id):
     return db.session.query(Question).filter(Question.id == id).first()

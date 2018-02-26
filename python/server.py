@@ -18,9 +18,9 @@ from flask_security.core import current_user
 
 from setup import app, db
 from user import User, Role
-from question import Question, list_questions, get_question_by_id
-from answer import get_answerset_by_id, get_answersets_by_question_hash, get_answer_by_id, get_answers_by_answerset
-from feedback import Feedback, get_feedback_by_answer
+from question import Question, list_questions, get_question_by_id, list_questions_by_username
+from answer import get_answerset_by_id, list_answersets_by_question_hash, get_answer_by_id, list_answers_by_answerset
+from feedback import Feedback, list_feedback_by_answer
 
 storage = Storage(db)
 
@@ -165,7 +165,7 @@ def question_data(question_id):
     user = getAuthData()
 
     question = get_question_by_id(question_id)
-    answerset_list = get_answersets_by_question_hash(question.hash)
+    answerset_list = list_answersets_by_question_hash(question.hash)
 
     now_str = datetime.now().__str__()
     return jsonify({'timestamp': now_str,
@@ -185,7 +185,7 @@ def answerset_data(answerset_id):
 
     user = getAuthData()
     answerset = get_answerset_by_id(answerset_id)
-    answers = get_answers_by_answerset(answerset)
+    answers = list_answers_by_answerset(answerset)
     answerset_graph = None #storage.getAnswerSetGraph(answerset_id)
 
     now_str = datetime.now().__str__()
@@ -207,7 +207,7 @@ def answer_data(answerset_id, answer_id):
     
     user = getAuthData()
     answer = get_answer_by_id(answer_id)
-    feedback = get_feedback_by_answer(answer)
+    feedback = list_feedback_by_answer(answer)
     
     now_str = datetime.now().__str__()
     return jsonify({'timestamp': now_str,\

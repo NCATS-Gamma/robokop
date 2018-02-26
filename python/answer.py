@@ -174,7 +174,7 @@ def list_answersets():
 def get_answer_by_id(id):
     return db.session.query(Answer).filter(Answer.id == id).first()
 
-def get_answers_by_answerset(answerset):
+def list_answers_by_answerset(answerset):
     answers = db.session.query(Answer)\
         .filter(Answer.answer_set == answerset)\
         .all()
@@ -183,7 +183,7 @@ def get_answers_by_answerset(answerset):
 def get_answerset_by_id(id):
     return db.session.query(AnswerSet).filter(AnswerSet.id == id).first()
 
-def get_answersets_by_question_hash(hash):
+def list_answersets_by_question_hash(hash):
     asets = db.session.query(AnswerSet)\
         .filter(AnswerSet.question_hash == hash)\
         .all()

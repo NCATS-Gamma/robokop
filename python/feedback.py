@@ -89,5 +89,5 @@ class Feedback(db.Model):
 def get_feedback_by_id(id):
     return db.session.query(Feedback).filter(Feedback.id == id).first()
 
-def get_feedback_by_answer(answer):
+def list_feedback_by_answer(answer):
     return db.session.query(Feedback).filter(Feedback.answer == answer).all()
