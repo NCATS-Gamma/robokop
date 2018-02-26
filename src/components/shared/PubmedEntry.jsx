@@ -1,5 +1,7 @@
 import React from 'react';
-import { Media, Button, Glyphicon } from 'react-bootstrap';
+import { Media, Button } from 'react-bootstrap';
+
+import GoFileText from 'react-icons/go/file-text';
 
 const shortid = require('shortid');
 
@@ -20,7 +22,8 @@ class PubmedEntry extends React.Component {
       },
     };
 
-    this.defaultInfo = { id: '',
+    this.defaultInfo = {
+      id: '',
       title: 'Unable to fetch publication information',
       authors: [],
       journal: '',
@@ -90,7 +93,7 @@ class PubmedEntry extends React.Component {
       <Media>
         <Media.Left>
           <Button className="btn" type="button" disabled={linkDisable} onClick={() => window.open(linkUrl, '_blank')}>
-            <Glyphicon glyph="open-file" />
+            <GoFileText />
           </Button>
         </Media.Left>
         <Media.Body>

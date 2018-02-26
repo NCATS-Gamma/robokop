@@ -176,12 +176,12 @@ class SubGraphViewer extends React.Component {
 
   render() {
     let graph = this.props.subgraph;
-    console.log(graph);
+
     const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'nodes'));
     if (isValid) {
       graph = this.addTagsToGraph(graph);
     }
-    
+
     return (
       <div>
         { isValid &&

@@ -55,6 +55,8 @@ class Answerset extends React.Component {
           answerCount={this.state.answerCount}
           answersetGraph={this.state.answersetGraph}
           answersetFeedback={this.state.answersetFeedback}
+          questionUrlFunc={question => this.appConfig.urls.question(question.id)}
+          answersetUrlFunc={answerset => this.appConfig.urls.answerset(answerset.id)}
           answerUrlFunc={(answerset, answer) => this.appConfig.urls.answer(answerset.id, answer.id)}
         />
       </div>
