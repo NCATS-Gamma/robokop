@@ -7,6 +7,7 @@ import json
 import warnings
 from sqlalchemy.types import ARRAY as Array
 from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey, func
+from sqlalchemy.types import JSON
 from sqlalchemy.orm import relationship, backref
 
 from setup import db
@@ -106,11 +107,16 @@ class Answer(db.Model):
 
     __tablename__ = 'answer'
     id = Column(Integer, primary_key=True)
-    score = Column(Float)
+    # TODO: think about how scoring data should be handled
+    # score = Column(Float)
+    score = Column(JSON)
     natural_answer = Column(String)
     answer_set_id = Column(Integer, ForeignKey('answer_set.id'))
-    nodes = Column(Array(String))
-    edges = Column(Array(String))
+    nodes = Column(JSON)
+    edges = Column(JSON)
+    # TODO: move node/edge details to AnswerSet
+    # nodes = Column(Array(String))
+    # edges = Column(Array(String))
 
     # Use cascade='delete,all' to propagate the deletion of an AnswerSet onto its Answers
     answer_set = relationship(

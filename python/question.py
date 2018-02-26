@@ -153,11 +153,15 @@ class Question(db.Model):
             graph.merge_multiedges()
             graph.to_answer_walk(subgraph)
 
-            node_ids = [node['id'] for node in graph.nodes]
-            edge_ids = [edge['id'] for edge in graph.edges]
-            answer = Answer(nodes=node_ids,\
-                    edges=edge_ids,\
-                    score=0)
+            answer = Answer(nodes=graph.nodes,\
+                    edges=graph.edges,\
+                    score=substruct['score'])
+            # TODO: move node/edge details to AnswerSet
+            # node_ids = [node['id'] for node in graph.nodes]
+            # edge_ids = [edge['id'] for edge in graph.edges]
+            # answer = Answer(nodes=node_ids,\
+            #         edges=edge_ids,\
+            #         score=0)
             aset += answer #substruct['score'])
 
         return aset
