@@ -1,7 +1,6 @@
 import React from 'react';
 import { Alert, Button, Panel } from 'react-bootstrap';
 
-//import QuestionListTable from './QuestionListTable';
 import QuestionListTableAgGrid from './QuestionListTableAgGrid';
 
 class QuestionListPres extends React.Component {
@@ -9,6 +8,7 @@ class QuestionListPres extends React.Component {
     super(props);
 
     this.onQuestionRowClick = this.onQuestionRowClick.bind(this);
+    this.onQuestionNewClick = this.onQuestionNewClick.bind(this);
   }
 
   onQuestionRowClick(question) {
@@ -55,7 +55,7 @@ class QuestionListPres extends React.Component {
             {showMyQuestionsTable &&
               <QuestionListTableAgGrid
                 questions={this.props.userQuestions}
-                showSearch={false}
+                showSearch
                 callbackRowClick={this.onQuestionRowClick}
                 height="200px"
               />
@@ -71,9 +71,10 @@ class QuestionListPres extends React.Component {
           </Panel.Heading>
           <Panel.Body>
             <QuestionListTableAgGrid
-              questions={this.props.nonuserQuestions}
-              showSearch={true}
+              questions={this.props.questions}
+              showSearch
               callbackRowClick={this.onQuestionRowClick}
+              height="400px"
             />
           </Panel.Body>
         </Panel>

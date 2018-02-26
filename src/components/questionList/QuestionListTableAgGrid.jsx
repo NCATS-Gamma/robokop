@@ -22,7 +22,7 @@ class QuestionListTable extends React.Component {
     this.columnApi = params.columnApi;
 
     this.gridApi.sizeColumnsToFit();
-    
+
     const sort = [
       {
         colId: 'name',
@@ -53,7 +53,7 @@ class QuestionListTable extends React.Component {
           onChange={this.onFilterTextChange}
         />
         }
-        <div className="ag-theme-bootstrap" style={{ width: '100%', height: '200px' }}>
+        <div className="ag-theme-bootstrap" style={{ width: '100%', height: this.props.height }}>
           <AgGridReact
             columnDefs={[
               { headerName: 'Name', field: 'name', suppressMenu: true },
@@ -81,8 +81,12 @@ class QuestionListTable extends React.Component {
   }
 }
 
+QuestionListTable.defaultProps = {
+  height: '100px',
+};
 
 QuestionListTable.propTypes = {
+  height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   questions: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })).isRequired,
   showSearch: PropTypes.bool.isRequired,
   callbackRowClick: PropTypes.func.isRequired,

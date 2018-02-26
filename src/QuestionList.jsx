@@ -24,7 +24,7 @@ class QuestionList extends React.Component {
       ready: false,
       user: {},
       userQuestions: [],
-      nonuserQuestions: [],
+      questions: [],
     };
   }
 
@@ -32,7 +32,7 @@ class QuestionList extends React.Component {
     this.appConfig.questionListData(data => this.setState({
       user: this.appConfig.ensureUser(data.user),
       userQuestions: data.user_questions,
-      nonuserQuestions: data.nonuser_questions,
+      questions: data.questions,
       ready: true,
     }));
   }
@@ -54,7 +54,7 @@ class QuestionList extends React.Component {
           questionNewUrl={this.appConfig.urls.questionNew}
           questionUrlFunc={q => this.appConfig.urls.question(q.id)}
           userQuestions={this.state.userQuestions}
-          nonuserQuestions={this.state.nonuserQuestions}
+          questions={this.state.questions}
           user={this.state.user}
         />
       </div>
