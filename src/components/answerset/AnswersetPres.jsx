@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { Grid, Row, Col, ListGroup, ListGroupItem } from 'react-bootstrap';
+import AnswersetExplorer from './AnswersetExplorer';
 
 const shortid = require('shortid');
 
@@ -37,7 +38,10 @@ class AnswersetPres extends React.Component {
           <Row>
             <Col md={12}>
               <h1>{'Answer Set:'}</h1>
-              {this.answerListFragment(this.props.answerset, this.props.answers)}
+              <AnswersetExplorer
+                answers={this.props.answers}
+              />
+              {/*this.answerListFragment(this.props.answerset, this.props.answers)*/}
             </Col>
           </Row>
         </Grid>
