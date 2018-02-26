@@ -17,6 +17,7 @@ from flask_login import LoginManager, login_required
 from flask_security.core import current_user
 
 from setup import app, db
+import json_encoder
 from user import User, Role
 from question import Question, list_questions, get_question_by_id, list_questions_by_username
 from answer import get_answerset_by_id, list_answersets_by_question_hash, get_answer_by_id, list_answers_by_answerset

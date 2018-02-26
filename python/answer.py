@@ -4,9 +4,10 @@ Answer class
 
 import time
 import json
+import datetime
 import warnings
 from sqlalchemy.types import ARRAY as Array
-from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey, func
+from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey
 from sqlalchemy.types import JSON
 from sqlalchemy.orm import relationship, backref
 
@@ -23,14 +24,12 @@ class AnswerSet(db.Model):
 
     __tablename__ = 'answer_set'
     id = Column(Integer, primary_key=True)
-    # timestamp = Column(DateTime, default=func.now())
-    timestamp = Column(String)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
     filename = Column(String)
     question_hash = Column(String)
 
     def __init__(self, *args, **kwargs):
         self.answers = []
-        self.timestamp = time.strftime('%Y%m%d_%H%M%S')
         self.question_hash = None
         self.filename = None
         self.__idx = 0
