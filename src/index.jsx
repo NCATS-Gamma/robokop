@@ -20,8 +20,8 @@ import Answer from './Answer';
 import '../assets/css/style.css';
 
 const $ = require('jquery');
-
 window.jQuery = window.$ = $; // eslint-disable-line
+
 require('bootstrap');
 const config = require('../config.json');
 

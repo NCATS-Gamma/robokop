@@ -1,34 +1,31 @@
+import axios from 'axios';
+import axiosRetry from 'axios-retry';
+
 class AppConfig {
   constructor(config) {
     this.config = config;
 
+    this.comms = axios.create();
+    axiosRetry(this.comms, { retries: 3 }); // Retry for request timeouts, help with spotty connections.
+
     this.urls = {
       landing: this.url('landing'),
-      landingData: this.url('landing/data'),
       login: this.url('login'),
       logout: this.url('logout'),
       account: this.url('account'),
-      accountData: this.url('account/data'),
       questionList: this.url('questions'),
-      questionListData: this.url('questions/data'),
       questionNew: this.url('q/new'),
-      questionNewData: this.url('q/new/data'),
       question: questionId => this.url(`q/${questionId}`),
-      questionData: questionId => this.url(`q/${questionId}/data`),
       answerset: answersetId => this.url(`a/${answersetId}`),
-      answersetData: answersetId => this.url(`a/${answersetId}/data`),
       answer: (answersetId, answerId) => this.url(`a/${answersetId}/${answerId}`),
-      answerData: (answersetId, answerId) => this.url(`a/${answersetId}/${answerId}/data`),
     };
 
     this.urls.question = this.urls.question.bind(this);
-    this.urls.questionData = this.urls.questionData.bind(this);
     this.urls.answerset = this.urls.answerset.bind(this);
-    this.urls.answersetData = this.urls.answersetData.bind(this);
     this.urls.answer = this.urls.answer.bind(this);
-    this.urls.answerData = this.urls.answerData.bind(this);
 
     this.url = this.url.bind(this);
+
     this.landingData = this.landingData.bind(this);
     this.accountData = this.accountData.bind(this);
     this.adminData = this.adminData.bind(this);
@@ -43,20 +40,22 @@ class AppConfig {
     return `${this.config.protocol}://${this.config.clientHost}:${this.config.port}/${ext}`;
   }
 
-  landingData(fun) { this.getRequest(this.urls.landingData, fun); }
-  accountData(fun) { this.getRequest(this.urls.accountData, fun); }
-  adminData(fun) { this.getRequest(this.urls.adminData, fun); }
-  questionNewData(fun) { this.getRequest(this.urls.questionNewData, fun); }
-  questionListData(fun) { this.getRequest(this.urls.questionListData, fun); }
-  questionData(id, fun) { this.getRequest(this.urls.questionData(id), fun); }
-  answersetData(id, fun) { this.getRequest(this.urls.answersetData(id), fun); }
-  answerData(setId, id, fun) { this.getRequest(this.urls.answerData(setId, id), fun); }
+  landingData(fun) { this.getRequest(`${this.urls.landing}/data`, fun); }
+  accountData(fun) { this.getRequest(`${this.urls.account}/data`, fun); }
+  adminData(fun) { this.getRequest(`${this.urls.admin}/data`, fun); }
+  questionNewData(fun) { this.getRequest(`${this.urls.questionNew}/data`, fun); }
+  questionListData(fun) { this.getRequest(`${this.urls.questionList}/data`, fun); }
+  questionData(id, fun) { this.getRequest(`${this.urls.question(id)}/data`, fun); }
+  answersetData(id, fun) { this.getRequest(`${this.urls.answerset(id)}/data`, fun); }
+  answerData(setId, id, fun) { this.getRequest(`${this.urls.answer(setId, id)}/data`, fun); }
 
   getRequest(addr, fun) {
-    $.get(addr, data => fun(data)).fail((err) => {
-      console.log('Problem loading the page.');
+    this.comms.get(addr).then((result) => {
+      fun(result.data); // 'ok'
+    }).catch((err) => {
+      window.alert('There was a problem contacting the server.');
+      console.log('Problem with get request:');
       console.log(err);
-      // To do: retries and then forward to 404
     });
   }
 
