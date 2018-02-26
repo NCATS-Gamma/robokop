@@ -267,15 +267,15 @@ def list_questions():
 
 def list_questions_by_username(username, invert=False):
     if invert:
-        return db.session.query(Question).filter(User.username == username).all()
+        return db.session.query(Question).join(Question.user).filter(User.username != username).all()
     else:
-        return db.session.query(Question).filter(User.username != username).all()
+        return db.session.query(Question).join(Question.user).filter(User.username == username).all()
 
 def list_questions_by_user_id(user_id, invert=False):
     if invert:
-        return db.session.query(Question).filter(Question.user_id == user_id).all()
-    else:
         return db.session.query(Question).filter(Question.user_id != user_id).all()
+    else:
+        return db.session.query(Question).filter(Question.user_id == user_id).all()
 
 def get_question_by_id(id):
     return db.session.query(Question).filter(Question.id == id).first()
