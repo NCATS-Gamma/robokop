@@ -45,27 +45,35 @@ class QuestionListTable extends React.Component {
   render() {
     return (
       <div>
+        {this.props.showSearch &&
         <FormControl
           id="filterText"
           type="text"
           placeholder="Search"
           onChange={this.onFilterTextChange}
         />
-        <div className="ag-theme-bootstrap">
+        }
+        <div className="ag-theme-bootstrap" style={{ width: '100%', height: this.props.height }}>
           <AgGridReact
-            columnDefs={[{ headerName: 'Questions', field: 'name', suppressMenu: true }]}
+            columnDefs={[
+              { headerName: 'Name', field: 'name', suppressMenu: true },
+              { headerName: 'Question', field: 'natural_question', suppressMenu: true },
+              { headerName: 'Notes', field: 'notes', suppressMenu: true },
+            ]}
             rowData={this.props.questions}
             enableFiltering
             enableSorting
 
             quickFilterText={this.state.quickFilterText}
             suppressMovableColumns
-            defaultColDef={{ width: 100, headerComponentParams: { template: '' }}}
+            defaultColDef={{ width: 100, headerComponentParams: { template: '' } }}
             rowSelection="single"
             onSelectionChanged={this.onClick}
             onGridReady={this.onGridReady}
           >
             <AgGridColumn field="name" />
+            <AgGridColumn field="natural_question" />
+            <AgGridColumn field="notes" />
           </AgGridReact>
         </div>
       </div>
@@ -73,9 +81,14 @@ class QuestionListTable extends React.Component {
   }
 }
 
+QuestionListTable.defaultProps = {
+  height: '100px',
+};
 
 QuestionListTable.propTypes = {
+  height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   questions: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })).isRequired,
+  showSearch: PropTypes.bool.isRequired,
   callbackRowClick: PropTypes.func.isRequired,
 };
 
