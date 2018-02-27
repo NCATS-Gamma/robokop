@@ -17,7 +17,7 @@ class AnswersetPres extends React.Component {
   callbackQuestion(question) {
     window.open(this.props.questionUrlFunc(question), '_self');
   }
-  
+
   callbackAnswerset(answerset) {
     window.open(this.props.answersetUrlFunc(answerset), '_self');
   }
@@ -33,12 +33,14 @@ class AnswersetPres extends React.Component {
           <Col md={12}>
             <AnswersetSummary
               answerset={this.props.answerset}
+              otherAnswersets={[this.props.answerset]}
               questions={this.props.questions}
-              callbackQuestion={this.callbackQuestion}
-              callbackAnswerset={this.callbackAnswerset}
+              questionUrlFunc={this.props.questionUrlFunc}
+              answersetUrlFunc={this.props.answersetUrlFunc}
             />
           </Col>
         </Row>
+        <br />
         <Row>
           <Col md={12}>
             <AnswersetExplorer

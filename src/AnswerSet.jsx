@@ -29,6 +29,7 @@ class Answerset extends React.Component {
       user: data.user,
       answerset: data.answerset,
       answers: data.answers,
+      questions: data.questions,
       answerCount: data.answer_num,
       answersetGraph: data.answerset_graph,
       answersetFeedback: data.answerset_feedback,
@@ -52,6 +53,7 @@ class Answerset extends React.Component {
         <AnswersetPres
           answerset={this.state.answerset}
           answers={this.state.answers}
+          questions={this.state.questions}
           answerCount={this.state.answerCount}
           answersetGraph={this.state.answersetGraph}
           answersetFeedback={this.state.answersetFeedback}
