@@ -1,5 +1,7 @@
 import React from 'react';
-import { Panel, Tabs, Tab, Button, Glyphicon, ListGroup, ListGroupItem } from 'react-bootstrap';
+import { Panel, Tabs, Tab, ListGroup, ListGroupItem } from 'react-bootstrap';
+
+import GoArrowRight from 'react-icons/go/arrow-right';
 
 import PubmedEntry from '../shared/PubmedEntry';
 
@@ -39,8 +41,8 @@ class SubGraphInfo extends React.Component {
     }
     return (
       <div key={shortid.generate()} style={{ paddingBottom: '5px' }}>
-        <h3>{nodeFrom.name} <Glyphicon glyph={'arrow-right'} /> {nodeTo.name}</h3>
-        <p>{nodeFrom.id} <Glyphicon glyph={'arrow-right'} /> {nodeTo.id}</p>
+        <h3>{nodeFrom.name} <GoArrowRight /> {nodeTo.name}</h3>
+        <p>{nodeFrom.id} <GoArrowRight /> {nodeTo.id}</p>
         {finalFragment}
         <br />
       </div>
@@ -86,7 +88,12 @@ class SubGraphInfo extends React.Component {
       publicationsFragment = [
         <div key={shortid.generate()}>
           {publicationHeader}
-          <Panel key={panelId} header={'Supporting Publications'} eventKey={panelId}>
+          <Panel key={panelId} eventKey={panelId}>
+            <Panel.Heading>
+              <Panel.Title>
+                {'Supporting Publications'}
+              </Panel.Title>
+            </Panel.Heading>
             <ListGroup key={shortid.generate()} fill>
               {publicationsList}
             </ListGroup>

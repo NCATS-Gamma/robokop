@@ -84,8 +84,9 @@ class QuestionListPres extends React.Component {
 }
 
 // Props - Future Validation
-// questionUrlFunc
-// userQuestions
-// nonuserQuestions
+// questionNewUrl - string url
+// questionUrlFunc - function that takes a question and returns the url
+// userQuestions - array of questions owned by this user
+// questions - array of questions
 
 export default QuestionListPres;

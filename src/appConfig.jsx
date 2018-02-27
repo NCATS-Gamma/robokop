@@ -24,6 +24,12 @@ class AppConfig {
     this.urls.answerset = this.urls.answerset.bind(this);
     this.urls.answer = this.urls.answer.bind(this);
 
+    this.api = {
+      questionUpdate: this.url('q/edit'),
+      questionDelete: this.url('q/delete'),
+      questionFork: this.url('q/fork'),
+    };
+
     this.url = this.url.bind(this);
 
     this.landingData = this.landingData.bind(this);
@@ -56,6 +62,22 @@ class AppConfig {
       window.alert('There was a problem contacting the server.');
       console.log('Problem with get request:');
       console.log(err);
+    });
+  }
+
+  questionDelete(question, user, successFunction, failureFunction) {
+    // Make specific post data for this action
+    const data = { question_id: question.id, user: user.username };
+
+    // Make the post request
+    this.postRequest(this.api.questionDelete, data, successFunction, failureFunction);
+  }
+
+  postRequest(addr, data, successFunction, failureFunction) {
+    this.comms.post(addr, data).then((result) => {
+      successFunction(result.data);
+    }).catch((err) => {
+      failureFunction(err);
     });
   }
 

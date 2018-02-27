@@ -1,5 +1,5 @@
 import React from 'react';
-import { ButtonGroup, Button, Glyphicon, PanelGroup, Panel } from 'react-bootstrap';
+import { PanelGroup, Panel } from 'react-bootstrap';
 import SubGraphViewer from './SubGraphViewer';
 import SubGraphInfo from './SubGraphInfo';
 
@@ -70,18 +70,24 @@ class AnswersetList extends React.Component {
         <Panel
           key={shortid.generate()}
           bsStyle={bsStyle}
-          header={`${ind + 1} - ${'TODO:short answer names'}`}
           onClick={() => this.updateSelectedSubGraphIndex(ind)}
           style={{ cursor: 'pointer' }}
         >
-          {`Score: ${cScore}`}
+          <Panel.Heading>
+            <Panel.Title>
+              {`${ind + 1} - ${'TODO:short answer names'}`}
+            </Panel.Title>
+          </Panel.Heading>
+          <Panel.Body>
+            {`Score: ${cScore}`}
+          </Panel.Body>
         </Panel>
         // </ListGroupItem>
       );
     });
 
     return (
-      <PanelGroup key={shortid.generate()}>
+      <PanelGroup id="Answers" key={shortid.generate()}>
         {listEntries}
       </PanelGroup>
     );
