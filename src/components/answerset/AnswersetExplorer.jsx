@@ -1,6 +1,6 @@
 import React from 'react';
 import { ButtonGroup, Button, Glyphicon, Tabs, Tab } from 'react-bootstrap';
-// import ProtocopRankingSelector from './ProtocopRankingSelector';
+import AnswersetInteractive from './AnswersetInteractive';
 import AnswersetList from './AnswersetList'
 
 class AnswersetExplorer extends React.Component {
@@ -55,9 +55,9 @@ class AnswersetExplorer extends React.Component {
               />
             </Tab>
             <Tab eventKey={2} title="Interactive">
-              {/* <ProtocopRankingSelector
-                ranking={this.props.ranking}
-              /> */}
+              <AnswersetInteractive
+                answers={this.props.answers}
+              />
             </Tab>
           </Tabs>
         </div>
