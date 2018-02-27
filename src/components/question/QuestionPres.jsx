@@ -1,38 +1,30 @@
 import React from 'react';
 
-import { Grid, Row, Col, FormControl, ListGroup, ListGroupItem } from 'react-bootstrap';
+import { Grid, Row, Col, FormControl } from 'react-bootstrap';
+
+import QuestionMetaEditor from './QuestionMetaEditor';
+import QuestionGraphViewer from '../shared/QuestionGraphViewer';
+import AnswersetTableAgGrid from './AnswersetTableAgGrid';
+import QuestionToolbar from './QuestionToolbar';
+import KnowledgeGraphFetchAndView from './KnowledgeGraphFetchAndView';
 
 const shortid = require('shortid');
 
 class QuestionPres extends React.Component {
-  timestampReadable(ts) {
-    return ts;
+  constructor(props) {
+    super(props);
+
+    this.callbackAnswerset = this.callbackAnswerset.bind(this);
   }
-  answersetFragment(answersets) {
-    const list = answersets.map((a) => {
-      return (
-        <ListGroupItem key={shortid.generate()}>
-          <a href={this.props.answerUrlFunc(a)}>
-            {a.timestamp}
-          </a>
-        </ListGroupItem>
-      );
-    });
-    return (
-      <div>
-        <h3> Answer Sets </h3>
-        <ListGroup>
-          {list}
-        </ListGroup>
-      </div>
-    );
+
+  callbackAnswerset(answerset) {
+    window.open(this.props.answersetUrlFunc(answerset),'_self')
   }
 
   render() {
     const natural = this.props.question.natural_question;
     const {
       name,
-      user,
       notes,
       hash,
     } = this.props.question;
@@ -42,35 +34,47 @@ class QuestionPres extends React.Component {
       nodes: this.props.question.nodes,
     };
 
+    const userOwnsThisQuestion = this.props.question.user === this.props.user; // Fix Me
+
     return (
       <Grid>
         <Row>
           <Col md={6}>
-            <h2>{name}</h2>
-            <h4>{natural}</h4>
-            <h5>{user}</h5>
-            <p>{hash}</p>
-            <FormControl
-              componentClass="textarea"
-              placeholder="Notes"
-              inputRef={(ref) => { this.notesRef = ref; }}
-              data={notes}
+            <QuestionMetaEditor
+              callbackUpdate={this.props.callbackUpdateMeta}
+              question={this.props.question}
             />
-            {this.answersetFragment(this.props.answersets)}
           </Col>
           <Col md={6}>
-            <div style={{ background: 'tomato' }}>
-              <h2>Construction Plan:</h2>
-              <h4>{`${construction.nodes.length} Concepts`}</h4>
-              <h4>{`${construction.edges.length} Edges`}</h4>
-            </div>
+            <QuestionGraphViewer
+              graph={construction}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col md={6}>
+            <AnswersetTableAgGrid
+              answersets={this.props.answersets}
+              callbackRowClick={this.callbackAnswerset}
+            />
+          </Col>
+          <Col md={6}>
+            <QuestionToolbar
+              question={this.props.question}
+              enableDelete={userOwnsThisQuestion}
+              callbackUpdate={this.props.callbackUpdate}
+              callbackFork={this.props.callbackFork}
+              callbackDelete={this.props.callbackDelete}
+            />
           </Col>
         </Row>
         <Row>
           <Col md={12}>
-            <div style={{ background: 'tomato' }}>
-              <h2>Snap shot of sub-knowledge graph</h2>
-            </div>
+            <KnowledgeGraphFetchAndView
+              height="500px"
+              width="500px"
+              callbackFetch={this.props.callbackFetchGraph}
+            />
           </Col>
         </Row>
       </Grid>

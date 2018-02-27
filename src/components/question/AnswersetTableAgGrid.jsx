@@ -29,8 +29,8 @@ class AnswersetTableAgGrid extends React.Component {
     const selectedRow = this.gridApi.getSelectedRows();
 
     if (Array.isArray(selectedRow) && selectedRow.length > 0) {
-      const question = selectedRow[0];
-      this.props.callbackRowClick(question);
+      const answerset = selectedRow[0];
+      this.props.callbackRowClick(answerset);
     }
   }
   render() {
@@ -40,17 +40,15 @@ class AnswersetTableAgGrid extends React.Component {
           <AgGridReact
             columnDefs={[
               {
-                headerName: 'Time',
+                headerName: 'Available Answer Sets',
                 field: 'timestamp',
                 suppressMenu: true,
-                valueGetter: params => params.data.toString(),
+                valueGetter: params => Date(params.data).toLocaleString(),
               },
             ]}
-            rowData={this.props.questions}
-            enableFiltering
+            rowData={this.props.answersets}
             enableSorting
 
-            quickFilterText={this.state.quickFilterText}
             suppressMovableColumns
             defaultColDef={{ width: 100, headerComponentParams: { template: '' } }}
             rowSelection="single"
@@ -71,9 +69,8 @@ AnswersetTableAgGrid.defaultProps = {
 
 AnswersetTableAgGrid.propTypes = {
   height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  questions: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })).isRequired,
-  showSearch: PropTypes.bool.isRequired,
+  answersets: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })).isRequired,
   callbackRowClick: PropTypes.func.isRequired,
 };
 
-export default QuestionListTable;
+export default AnswersetTableAgGrid;

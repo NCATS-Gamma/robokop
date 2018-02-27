@@ -21,6 +21,13 @@ class Question extends React.Component {
       question: {},
       answersets: [],
     };
+
+    this.callbackUpdateMeta = this.callbackUpdateMeta.bind(this);
+    this.callbackRedo = this.callbackRedo.bind(this);
+    this.callbackFork = this.callbackFork.bind(this);
+    this.callbackDelete = this.callbackDelete.bind(this);
+    this.callbackFetchGraph = this.callbackFetchGraph.bind(this);
+
   }
 
   componentDidMount() {
@@ -30,6 +37,32 @@ class Question extends React.Component {
       answersets: data.answerset_list,
       ready: true,
     }));
+  }
+
+  callbackUpdateMeta(newMeta) {
+    const q = this.state.question;
+    const u = this.state.user;
+    console.log('Send post request to update question data.');
+  }
+  callbackRedo() {
+    const q = this.state.question;
+    const u = this.state.user;
+    console.log('Initiate getting another answerset for this question. Then show a message. Then hide the message. What about in progress stuff?');
+  }
+  callbackFork() {
+    const q = this.state.question;
+    const u = this.state.user;
+    console.log('Fork question for user. Then show a message. Redirect to new question page');
+  }
+  callbackDelete() {
+    const q = this.state.question;
+    const u = this.state.user;
+    console.log('Delete this question if possible. Then show a message. Redirect to questions.');
+  }
+  callbackFetchGraph() {
+    const q = this.state.question;
+    console.log('Fetch a subKG for this question, then return it');
+    return { nodes: [], edges: [] }
   }
 
   renderLoading() {
@@ -45,7 +78,12 @@ class Question extends React.Component {
           user={this.state.user}
         />
         <QuestionPres
-          answerUrlFunc={a => this.appConfig.urls.answerset(a.id)}
+          callbackUpdateMeta={this.callbackUpdateMeta}
+          callbackRedo={this.callbackRedo}
+          callbackFork={this.callbackFork}
+          callbackDelete={this.callbackDelete}
+          callbackFetchGraph={this.callbackFetchGraph}
+          answersetUrlFunc={a => this.appConfig.urls.answerset(a.id)}
           question={this.state.question}
           answersets={this.state.answersets}
         />
