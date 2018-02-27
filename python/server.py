@@ -6,6 +6,7 @@ import json
 import sqlite3
 import subprocess
 import logging
+import time
 from datetime import datetime
 
 from knowledgegraph import KnowledgeGraph
@@ -291,6 +292,9 @@ def question_fork():
 @app.route('/q/delete', methods=['POST'])
 def question_delete():
     """Delete question (if owned by current_user)"""
+    time.sleep(1)
+    return jsonify({"success": True})
+    # raise InvalidUsage('You are not authorized to do that.', 400)
 
 ################################################################################
 ##### Answer Feedback ##########################################################
