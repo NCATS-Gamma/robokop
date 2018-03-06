@@ -58,6 +58,9 @@ class QuestionPres extends React.Component {
               callbackRowClick={this.callbackAnswerset}
             />
           </Col>
+          <Button bsStyle="default" onClick={this.props.callbackNewAnswerset}>
+            New Answers!
+          </Button>
           <Col md={6}>
             <QuestionToolbar
               question={this.props.question}
