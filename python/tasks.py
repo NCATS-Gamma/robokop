@@ -4,6 +4,7 @@ from setup import app, mail
 from celery import Celery
 from flask_mail import Message
 from question import get_question_by_id
+from flask_security.core import current_user
 
 # set up Celery
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
@@ -31,5 +32,12 @@ def answer_question(question_id):
 
     question = get_question_by_id(question_id)
     question.answer()
+    
+    with app.app_context():
+        msg = Message("ROBOKOP: Answers Ready",
+                      sender="robokop@sandboxa74aec7033c545a6aa4e43bdf8271f0b.mailgun.org",
+                      recipients=[current_user.email],
+                      body="Your question answers are ready. <link>")
+        mail.send(msg)
 
     logger.info("Done answering.")
