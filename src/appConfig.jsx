@@ -38,6 +38,7 @@ class AppConfig {
     this.questionNewData = this.questionNewData.bind(this);
     this.questionListData = this.questionListData.bind(this);
     this.questionData = this.questionData.bind(this);
+    this.questionSubgraph = this.questionSubgraph.bind(this);
     this.answersetData = this.answersetData.bind(this);
     this.answersetNew = this.answersetNew.bind(this);
     this.answerData = this.answerData.bind(this);
@@ -53,6 +54,7 @@ class AppConfig {
   questionNewData(fun) { this.getRequest(`${this.urls.questionNew}/data`, fun); }
   questionListData(fun) { this.getRequest(`${this.urls.questionList}/data`, fun); }
   questionData(id, fun) { this.getRequest(`${this.urls.question(id)}/data`, fun); }
+  questionSubgraph(id, fun) { this.getRequest(`${this.urls.question(id)}/subgraph`, fun); }
   answersetData(id, fun) { this.getRequest(`${this.urls.answerset(id)}/data`, fun); }
   answersetNew(qid) { this.postRequest(`${this.urls.question(qid)}/go`, null, function(){}, function(){}); }
   answerData(setId, id, fun) { this.getRequest(`${this.urls.answer(setId, id)}/data`, fun); }

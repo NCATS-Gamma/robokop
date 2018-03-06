@@ -22,6 +22,7 @@ class Question extends React.Component {
       user: {},
       question: {},
       answersets: [],
+      subgraph: null,
     };
 
     this.callbackNewAnswerset = this.callbackNewAnswerset.bind(this);
@@ -101,10 +102,9 @@ class Question extends React.Component {
       },
     );
   }
-  callbackFetchGraph() {
+  callbackFetchGraph(afterDoneFun) {
     const q = this.state.question;
-    console.log('Fetch a subKG for this question, then return it');
-    return { nodes: [], edges: [] };
+    this.appConfig.questionSubgraph(this.props.id, (data) => this.setState({ subgraph: data }, afterDoneFun()));
   }
   dialogConfirm(callbackToDo, inputOptions) {
     const defaultOptions = {
@@ -208,6 +208,7 @@ class Question extends React.Component {
           answersetUrlFunc={a => this.appConfig.urls.answerset(a.id)}
           question={this.state.question}
           answersets={this.state.answersets}
+          subgraph={this.state.subgraph}
         />
         <Dialog ref={(el) => { this.dialog = el; }} />
       </div>

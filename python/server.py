@@ -188,6 +188,15 @@ def question_data(question_id):
                     'question': question.toJSON(),
                     'answerset_list': [a.toJSON() for a in answerset_list]})
 
+@app.route('/q/<question_id>/subgraph', methods=['GET'])
+def question_subgraph(question_id):
+    """Data for a question"""
+
+    question = get_question_by_id(question_id)
+    subgraph = question.relevant_subgraph()
+
+    return jsonify(subgraph)
+
 @app.route('/q/<question_id>/go', methods=['POST'])
 def question_answer(question_id):
     """Data for a question"""

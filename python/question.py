@@ -129,6 +129,15 @@ class Question(db.Model):
         struct = {key:getattr(self, key) for key in keys}
         return struct
 
+    def relevant_subgraph(self):
+        # get the subgraph relevant to the question from the knowledge graph
+        database = KnowledgeGraph()
+        subgraph_networkx = database.getGraphByLabel(self.id)
+        del database
+        subgraph = UniversalGraph(subgraph_networkx)
+        return {"nodes":subgraph.nodes,\
+            "edges":subgraph.edges}
+
     def answer(self):
         '''
         Answer the question.
