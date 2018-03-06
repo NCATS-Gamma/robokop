@@ -29,7 +29,7 @@ from question import Question, list_questions, get_question_by_id, list_question
 from answer import get_answerset_by_id, list_answersets_by_question_hash, get_answer_by_id, list_answers_by_answerset
 from feedback import Feedback, list_feedback_by_answer
 
-from tasks import answer_question
+from tasks import answer_question, update_kg
 
 # set up logger
 logger = logging.getLogger("robokop")
@@ -198,9 +198,17 @@ def question_subgraph(question_id):
 
 @app.route('/q/<question_id>/go', methods=['POST'])
 def question_answer(question_id):
-    """Data for a question"""
+    """Answer a question"""
 
     answer_question.delay(question_id)
+
+    return 'Done.'
+
+@app.route('/q/<question_id>/update', methods=['POST'])
+def question_update(question_id):
+    """Update the knowledge graph for a question"""
+
+    update_kg.delay(question_id)
 
     return 'Done.'
 

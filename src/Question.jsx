@@ -27,7 +27,7 @@ class Question extends React.Component {
 
     this.callbackNewAnswerset = this.callbackNewAnswerset.bind(this);
     this.callbackUpdateMeta = this.callbackUpdateMeta.bind(this);
-    this.callbackRedo = this.callbackRedo.bind(this);
+    this.callbackUpdateKG = this.callbackUpdateKG.bind(this);
     this.callbackFork = this.callbackFork.bind(this);
     this.callbackDelete = this.callbackDelete.bind(this);
     this.callbackFetchGraph = this.callbackFetchGraph.bind(this);
@@ -51,15 +51,16 @@ class Question extends React.Component {
     this.appConfig.answersetNew(q.id);
   }
 
+  callbackUpdateKG() {
+    const q = this.state.question;
+    // Send post request to update question data.
+    this.appConfig.updateKG(q.id);
+  }
+
   callbackUpdateMeta(newMeta) {
     const q = this.state.question;
     const u = this.state.user;
     console.log('Send post request to update question data.');
-  }
-  callbackRedo() {
-    const q = this.state.question;
-    const u = this.state.user;
-    console.log('Initiate getting another answerset for this question. Then show a message. Then hide the message. What about in progress stuff?');
   }
   callbackFork() {
     const q = this.state.question;
@@ -201,7 +202,7 @@ class Question extends React.Component {
         <QuestionPres
           callbackNewAnswerset={this.callbackNewAnswerset}
           callbackUpdateMeta={this.callbackUpdateMeta}
-          callbackRedo={this.callbackRedo}
+          callbackUpdate={this.callbackUpdateKG}
           callbackFork={this.callbackFork}
           callbackDelete={this.callbackDelete}
           callbackFetchGraph={this.callbackFetchGraph}
