@@ -1,6 +1,15 @@
 #!/usr/bin/env python
 
 """Flask web server thread"""
+
+# spin up Celery workers:
+# celery -A tasks.celery worker --loglevel=info
+
+# spin up Redis message passing:
+# redis-server
+
+# also start up Postgres and Neo4j...
+
 import os
 import json
 import sqlite3
@@ -23,6 +32,8 @@ from user import User, Role
 from question import Question, list_questions, get_question_by_id, list_questions_by_username, list_questions_by_hash
 from answer import get_answerset_by_id, list_answersets_by_question_hash, get_answer_by_id, list_answers_by_answerset
 from feedback import Feedback, list_feedback_by_answer
+
+from tasks import answer_question
 
 storage = Storage(db)
 
@@ -176,6 +187,14 @@ def question_data(question_id):
                     'user': user,
                     'question': question.toJSON(),
                     'answerset_list': [a.toJSON() for a in answerset_list]})
+
+@app.route('/q/<question_id>/go', methods=['POST'])
+def question_answer(question_id):
+    """Data for a question"""
+
+    answer_question.delay(question_id)
+
+    return 'Done.'
 
 # Answer Set
 @app.route('/a/<answerset_id>')

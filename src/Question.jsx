@@ -24,6 +24,7 @@ class Question extends React.Component {
       answersets: [],
     };
 
+    this.callbackNewAnswerset = this.callbackNewAnswerset.bind(this);
     this.callbackUpdateMeta = this.callbackUpdateMeta.bind(this);
     this.callbackRedo = this.callbackRedo.bind(this);
     this.callbackFork = this.callbackFork.bind(this);
@@ -41,6 +42,12 @@ class Question extends React.Component {
       answersets: data.answerset_list,
       ready: true,
     }));
+  }
+
+  callbackNewAnswerset() {
+    const q = this.state.question;
+    // Send post request to build new answerset.
+    this.appConfig.answersetNew(q.id);
   }
 
   callbackUpdateMeta(newMeta) {
@@ -192,6 +199,7 @@ class Question extends React.Component {
           user={this.state.user}
         />
         <QuestionPres
+          callbackNewAnswerset={this.callbackNewAnswerset}
           callbackUpdateMeta={this.callbackUpdateMeta}
           callbackRedo={this.callbackRedo}
           callbackFork={this.callbackFork}
