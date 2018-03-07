@@ -57,7 +57,7 @@ class AnswersetSummary extends React.Component {
 
   render() {
     const quest = this.props.questions[0];
-    const answerDate = Date(this.props.answerset.timestamp);
+    const answerDate = new Date(this.props.answerset.timestamp);
     return (
       <div>
         <Grid>
