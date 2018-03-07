@@ -1,0 +1,50 @@
+{
+    "version": 1,
+    "disable_existing_loggers": true,
+    "formatters": {
+        "default": {
+            "class": "logging.Formatter",
+            "format": "%(asctime)s %(name)-15s %(levelname)-8s %(processName)-10s %(message)s"
+        }
+    },
+    "handlers": {
+        "console":{
+          "level": "INFO",
+          "formatter": "default",
+          "class": "logging.StreamHandler",
+          "stream" : "ext://sys.stdout"
+        },
+        "file": {
+            "class": "logging.FileHandler",
+            "formatter": "default",
+            "level": "DEBUG",
+            "filename": "robokop.log",
+            "mode": "a",
+            "encoding": "utf-8"
+        },
+        "email": {
+            "level": "ERROR",
+            "formatter": "default",
+            "class": "logging.handlers.SMTPHandler",
+            "mailhost": ["smtp.mailgun.org", 25],
+            "fromaddr": "robokop@sandboxa74aec7033c545a6aa4e43bdf8271f0b.mailgun.org",
+            "toaddrs": ["patrick@covar.com"],
+            "subject": "ROBOKOP error log",
+            "credentials": ["postmaster@sandboxa74aec7033c545a6aa4e43bdf8271f0b.mailgun.org", "password_standin"]
+        }
+    },
+    "loggers": {
+        "robokop": {
+            "level": "DEBUG",
+            "handlers": ["console", "file", "email"]
+        },
+        "emailer": {
+            "level": "DEBUG",
+            "handlers": ["console", "file", "email"]
+        }
+    },
+    "root": {
+        "handlers": [],
+        "level": "DEBUG"
+    }
+}

@@ -2,8 +2,8 @@ import os
 
 DEBUG = True
 SECRET_KEY = 'covar-renci-ncats-secret'
-DEFAULT_MAIL_SENDER = 'robokopteam@gmail.com'
-SECURITY_EMAIL_SENDER = 'robokopteam@gmail.com'
+DEFAULT_MAIL_SENDER = 'robokop@sandboxa74aec7033c545a6aa4e43bdf8271f0b.mailgun.org'
+SECURITY_EMAIL_SENDER = 'robokop@sandboxa74aec7033c545a6aa4e43bdf8271f0b.mailgun.org'
 
 db_uri = 'postgresql://patrick@localhost:5432/robokop'
 SQLALCHEMY_DATABASE_URI = db_uri
@@ -47,9 +47,9 @@ SECURITY_EMAIL_SUBJECT_PASSWORD_CHANGE_NOTICE = 'Robokop - Your password has bee
 SECURITY_EMAIL_SUBJECT_CONFIRM = 'Robokop - Please confirm your email' # Sets the subject for the email confirmation message. Defaults to Please confirm your email
 
 # Mail Setup
-MAIL_SERVER = 'smtp.gmail.com'
-MAIL_PORT = 465
-MAIL_USE_TLS = False
-MAIL_USE_SSL = True
-MAIL_USERNAME = 'robokopteam@gmail.com'
-MAIL_PASSWORD = '!!!super_secret_password!!!'
+MAIL_SERVER = 'smtp.mailgun.org'
+MAIL_PORT = 25
+MAIL_USE_TLS = True
+MAIL_USE_SSL = False
+MAIL_USERNAME = 'postmaster@sandboxa74aec7033c545a6aa4e43bdf8271f0b.mailgun.org'
+MAIL_PASSWORD = 'password_standin'

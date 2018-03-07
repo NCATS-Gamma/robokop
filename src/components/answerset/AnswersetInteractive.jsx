@@ -1,6 +1,6 @@
 import React from 'react';
 import { ButtonGroup, Button, Glyphicon, PanelGroup, Panel } from 'react-bootstrap';
-// import ProtocopRankingSelectorGraph from './ProtocopRankingSelectorGraph';
+import AnswersetInteractiveSelector from './AnswersetInteractiveSelector';
 import SubGraphViewer from './SubGraphViewer';
 import SubGraphInfo from './SubGraphInfo';
 
@@ -56,7 +56,7 @@ class AnswersetInteractive extends React.Component {
     this.initializeNodeSelection();
   }
   initializeNodeSelection() {
-    const nodeSelection = this.props.ranking[0].nodes.map(n => null);
+    const nodeSelection = this.props.answers[0].nodes.map(n => null);
     this.handleNodeSelectionChange(nodeSelection);
     this.setState({ nodeSelection });
   }
@@ -111,11 +111,11 @@ class AnswersetInteractive extends React.Component {
       <div id="ProtocopRanking_Explorer" className="col-md-12">
         <div className="row" style={this.styles.mainContent}>
           <div className={'col-md-3'} style={this.styles.graph}>
-            {/* <ProtocopRankingSelectorGraph
+            <AnswersetInteractiveSelector
               subgraph={this.props.answers[this.state.selectedSubGraphIndex]}
               subgraphPossibilities={this.state.selectedSubGraphPossibilities}
               onSelectionCallback={this.onSelectionCallback}
-            /> */}
+            />
           </div>
           <div className={'col-md-3'} style={this.styles.graph}>
             <SubGraphViewer

@@ -65,7 +65,8 @@ class QuestionPres extends React.Component {
             <KnowledgeGraphFetchAndView
               height="500px"
               width="500px"
-              callbackFetch={this.props.callbackFetchGraph}
+              callbackFetchGraph={this.props.callbackFetchGraph}
+              subgraph={this.props.subgraph}
             />
           </Col>
         </Row>

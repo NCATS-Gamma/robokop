@@ -22,8 +22,10 @@ class Question extends React.Component {
       user: {},
       question: {},
       answersets: [],
+      subgraph: null,
     };
 
+    this.callbackNewAnswerset = this.callbackNewAnswerset.bind(this);
     this.callbackUpdateMeta = this.callbackUpdateMeta.bind(this);
     this.callbackRedo = this.callbackRedo.bind(this);
     this.callbackFork = this.callbackFork.bind(this);
@@ -41,6 +43,12 @@ class Question extends React.Component {
       answersets: data.answerset_list,
       ready: true,
     }));
+  }
+
+  callbackNewAnswerset() {
+    const q = this.state.question;
+    // Send post request to build new answerset.
+    this.appConfig.answersetNew(q.id);
   }
 
   callbackUpdateMeta(newMeta) {
@@ -94,10 +102,9 @@ class Question extends React.Component {
       },
     );
   }
-  callbackFetchGraph() {
+  callbackFetchGraph(afterDoneFun) {
     const q = this.state.question;
-    console.log('Fetch a subKG for this question, then return it');
-    return { nodes: [], edges: [] };
+    this.appConfig.questionSubgraph(this.props.id, (data) => this.setState({ subgraph: data }, afterDoneFun()));
   }
   dialogConfirm(callbackToDo, inputOptions) {
     const defaultOptions = {
@@ -192,6 +199,7 @@ class Question extends React.Component {
           user={this.state.user}
         />
         <QuestionPres
+          callbackNewAnswerset={this.callbackNewAnswerset}
           callbackUpdateMeta={this.callbackUpdateMeta}
           callbackRedo={this.callbackRedo}
           callbackFork={this.callbackFork}
@@ -200,6 +208,7 @@ class Question extends React.Component {
           answersetUrlFunc={a => this.appConfig.urls.answerset(a.id)}
           question={this.state.question}
           answersets={this.state.answersets}
+          subgraph={this.state.subgraph}
         />
         <Dialog ref={(el) => { this.dialog = el; }} />
       </div>

@@ -16,14 +16,12 @@ class KnowledgeGraphFetchAndView extends React.Component {
   }
 
   fetch() {
-    this.setState(
-      { fetching: true },
-      this.setState({ graph: this.props.callbackFetchGraph(), fetching: false }),
-    );
+    this.setState({ fetching: true });
+    this.props.callbackFetchGraph(() => this.setState({ fetching: false }));
   }
 
   render() {
-    const showGraph = !(this.state.graph === null);
+    const showGraph = !(this.props.subgraph === null);
     const showFetching = this.state.fetching;
     const showFetchButton = !showGraph && !showFetching;
     
@@ -31,7 +29,7 @@ class KnowledgeGraphFetchAndView extends React.Component {
       <div style={{ height: this.props.height, width: this.props.width }}>
         {showGraph &&
           <KnowledgeGraphViewer
-            graph={this.state.graph}
+            graph={this.props.subgraph}
           />
         }
         {showFetching &&

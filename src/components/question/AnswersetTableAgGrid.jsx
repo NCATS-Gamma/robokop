@@ -43,7 +43,7 @@ class AnswersetTableAgGrid extends React.Component {
                 headerName: 'Available Answer Sets',
                 field: 'timestamp',
                 suppressMenu: true,
-                valueGetter: params => Date(params.data).toLocaleString(),
+                valueGetter: params => new Date(params.data.timestamp).toLocaleString(),
               },
             ]}
             rowData={this.props.answersets}
