@@ -1,16 +1,17 @@
 import os
 
-DEBUG = True
-SECRET_KEY = 'covar-renci-ncats-secret'
-DEFAULT_MAIL_SENDER = 'robokop@sandboxa74aec7033c545a6aa4e43bdf8271f0b.mailgun.org'
-SECURITY_EMAIL_SENDER = 'robokop@sandboxa74aec7033c545a6aa4e43bdf8271f0b.mailgun.org'
+import robokop_setup_environ
 
-db_uri = 'postgresql://patrick@localhost:5432/robokop'
-SQLALCHEMY_DATABASE_URI = db_uri
+DEBUG = True
+SECRET_KEY = os.environ["ROBOKOP_SECRET_KEY"]
+DEFAULT_MAIL_SENDER = os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"]
+SECURITY_EMAIL_SENDER = os.environ["ROBOKOP_SECURITY_EMAIL_SENDER"]
+
+SQLALCHEMY_DATABASE_URI = 'postgresql://' + os.environ["ROBOKOP_POSTGRESQL_USER"] + '@' + os.environ["ROBOKOP_POSTGRESQL_HOST"] + ':' + os.environ["ROBOKOP_POSTGRESQL_PORT"] + '/robokop'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # Security Misc
-SECURITY_PASSWORD_SALT = 'covar-renci-ncats-secret-salt'
+SECURITY_PASSWORD_SALT = os.environ["ROBOKOP_SECURITY_PASSWORD_SALT"]
 
 # Security views
 SECURITY_LOGIN_URL = '/login' # Specifies the login URL. Defaults to /login.
@@ -47,9 +48,9 @@ SECURITY_EMAIL_SUBJECT_PASSWORD_CHANGE_NOTICE = 'Robokop - Your password has bee
 SECURITY_EMAIL_SUBJECT_CONFIRM = 'Robokop - Please confirm your email' # Sets the subject for the email confirmation message. Defaults to Please confirm your email
 
 # Mail Setup
-MAIL_SERVER = 'smtp.mailgun.org'
+MAIL_SERVER = os.environ["ROBOKOP_MAIL_SERVER"]
 MAIL_PORT = 25
 MAIL_USE_TLS = True
 MAIL_USE_SSL = False
-MAIL_USERNAME = 'postmaster@sandboxa74aec7033c545a6aa4e43bdf8271f0b.mailgun.org'
-MAIL_PASSWORD = 'password_standin'
+MAIL_USERNAME = os.environ["ROBOKOP_MAIL_USERNAME"]
+MAIL_PASSWORD = os.environ["ROBOKOP_MAIL_PASSWORD"]

@@ -25,9 +25,9 @@ class Question extends React.Component {
       subgraph: null,
     };
 
-    this.callbackNewAnswerset = this.callbackNewAnswerset.bind(this);
     this.callbackUpdateMeta = this.callbackUpdateMeta.bind(this);
     this.callbackUpdateKG = this.callbackUpdateKG.bind(this);
+    this.callbackNewAnswerset = this.callbackNewAnswerset.bind(this);
     this.callbackFork = this.callbackFork.bind(this);
     this.callbackDelete = this.callbackDelete.bind(this);
     this.callbackFetchGraph = this.callbackFetchGraph.bind(this);
@@ -79,7 +79,7 @@ class Question extends React.Component {
           text: '',
           showLoading: true,
         });
-        
+
         // Actually try to delete the question here.
         this.appConfig.questionDelete(
           q,
@@ -104,8 +104,7 @@ class Question extends React.Component {
     );
   }
   callbackFetchGraph(afterDoneFun) {
-    const q = this.state.question;
-    this.appConfig.questionSubgraph(this.props.id, (data) => this.setState({ subgraph: data }, afterDoneFun()));
+    this.appConfig.questionSubgraph(this.props.id, data => this.setState({ subgraph: data }, afterDoneFun()));
   }
   dialogConfirm(callbackToDo, inputOptions) {
     const defaultOptions = {
@@ -200,9 +199,9 @@ class Question extends React.Component {
           user={this.state.user}
         />
         <QuestionPres
-          callbackNewAnswerset={this.callbackNewAnswerset}
           callbackUpdateMeta={this.callbackUpdateMeta}
           callbackUpdate={this.callbackUpdateKG}
+          callbackNewAnswerset={this.callbackNewAnswerset}
           callbackFork={this.callbackFork}
           callbackDelete={this.callbackDelete}
           callbackFetchGraph={this.callbackFetchGraph}

@@ -66,13 +66,13 @@ class KnowledgeGraphViewer extends React.Component {
     this.setNetworkCallbacks();
   }
 
-  shouldComponentUpdate(nextProps) {
-    // Only redraw/remount component if graph components change
-    if (nextProps.showProgress === this.state.showProgress && _.isEqual(this.props.graph, nextProps.graph)) {
-      return false;
-    }
-    return true;
-  }
+  // shouldComponentUpdate(nextProps) {
+  //   // Only redraw/remount component if graph components change
+  //   if (nextProps.showProgress === this.state.showProgress && _.isEqual(this.props.graph, nextProps.graph)) {
+  //     return false;
+  //   }
+  //   return true;
+  // }
 
   componentDidUpdate() {
     this.setNetworkCallbacks();
@@ -119,13 +119,11 @@ class KnowledgeGraphViewer extends React.Component {
       // border: '1px solid #d1d1d1', boxShadow: '0px 0px 5px #c3c3c3',
       // key={shortid.generate()} // Forces component remount
       <div style={{ height: this.props.height, width: this.props.width }}>
-        <h5>{`${this.props.graph.nodes.length} Concepts`}</h5>
-        <h5>{`${this.props.graph.edges.length} Edges`}</h5>
         <div style={{ fontFamily: 'Monospace' }}>
           <Graph
             graph={graph}
             options={this.graphOptions}
-            style={{ width: '100%' }}
+            style={{ height: this.props.height, width: this.props.width }}
             events={{ selectNode: this.nodeSelectCallback, selectEdge: this.edgeSelectCallback }}
             getNetwork={(network) => { this.network = network; }} // Store network reference in the component
           />
@@ -135,10 +133,10 @@ class KnowledgeGraphViewer extends React.Component {
   }
 }
 
-KnowledgeGraphViewer.defaultProps = {
-  height: '500px',
-  width: '500px',
-};
+// KnowledgeGraphViewer.defaultProps = {
+//   height: '500px',
+//   width: '500px',
+// };
 
 
 export default KnowledgeGraphViewer;

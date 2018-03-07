@@ -8,8 +8,6 @@ import AnswersetTableAgGrid from './AnswersetTableAgGrid';
 import QuestionToolbar from './QuestionToolbar';
 import KnowledgeGraphFetchAndView from './KnowledgeGraphFetchAndView';
 
-const shortid = require('shortid');
-
 class QuestionPres extends React.Component {
   constructor(props) {
     super(props);
@@ -18,17 +16,10 @@ class QuestionPres extends React.Component {
   }
 
   callbackAnswerset(answerset) {
-    window.open(this.props.answersetUrlFunc(answerset),'_self')
+    window.open(this.props.answersetUrlFunc(answerset), '_self');
   }
 
   render() {
-    const natural = this.props.question.natural_question;
-    const {
-      name,
-      notes,
-      hash,
-    } = this.props.question;
-
     const construction = {
       edges: this.props.question.edges,
       nodes: this.props.question.nodes,
@@ -39,8 +30,21 @@ class QuestionPres extends React.Component {
     return (
       <Grid>
         <Row>
+          <Col md={12}>
+            <QuestionToolbar
+              question={this.props.question}
+              enableDelete={userOwnsThisQuestion}
+              callbackUpdate={this.props.callbackUpdate}
+              callbackNewAnswerset={this.props.callbackNewAnswerset}
+              callbackFork={this.props.callbackFork}
+              callbackDelete={this.props.callbackDelete}
+            />
+          </Col>
+        </Row>
+        <Row style={{ minHeight: '300px', paddingTop: '10px' }}>
           <Col md={6}>
             <QuestionMetaEditor
+              editable
               callbackUpdate={this.props.callbackUpdateMeta}
               question={this.props.question}
             />
@@ -52,30 +56,18 @@ class QuestionPres extends React.Component {
           </Col>
         </Row>
         <Row>
-          <Col md={6}>
+          <Col md={12}>
             <AnswersetTableAgGrid
               answersets={this.props.answersets}
               callbackRowClick={this.callbackAnswerset}
             />
           </Col>
-          <Button bsStyle="default" onClick={this.props.callbackNewAnswerset}>
-            New Answers!
-          </Button>
-          <Col md={6}>
-            <QuestionToolbar
-              question={this.props.question}
-              enableDelete={userOwnsThisQuestion}
-              callbackUpdate={this.props.callbackUpdate}
-              callbackFork={this.props.callbackFork}
-              callbackDelete={this.props.callbackDelete}
-            />
-          </Col>
         </Row>
-        <Row>
+        <Row style={{ paddingTop: '10px' }}>
           <Col md={12}>
             <KnowledgeGraphFetchAndView
-              height="500px"
-              width="500px"
+              height="750px"
+              width="750px"
               callbackFetchGraph={this.props.callbackFetchGraph}
               subgraph={this.props.subgraph}
             />

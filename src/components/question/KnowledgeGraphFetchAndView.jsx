@@ -12,6 +12,17 @@ class KnowledgeGraphFetchAndView extends React.Component {
       graph: null,
     };
 
+    this.styles = {
+      container: {
+        border: '1px solid black',
+        margin: 'auto',
+        padding: '10px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+    };
+
     this.fetch = this.fetch.bind(this);
   }
 
@@ -25,10 +36,20 @@ class KnowledgeGraphFetchAndView extends React.Component {
     const showFetching = this.state.fetching;
     const showFetchButton = !showGraph && !showFetching;
     
+    const propsStyle = { height: this.props.height, width: this.props.width };
+    const containerStyle = this.styles.container;
+    if (!showGraph) {
+      containerStyle.backgroundColor = '#eee';
+    } else {
+      containerStyle.backgroundColor = '#fff';
+    }
+
     return (
-      <div style={{ height: this.props.height, width: this.props.width }}>
+      <div style={{ ...containerStyle, ...propsStyle }}>
         {showGraph &&
           <KnowledgeGraphViewer
+            height={this.props.height}
+            width={this.props.width}
             graph={this.props.subgraph}
           />
         }

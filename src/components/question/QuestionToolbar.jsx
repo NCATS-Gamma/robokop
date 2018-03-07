@@ -1,6 +1,11 @@
 import React from 'react';
 
-import { ButtonGroup, Button } from 'react-bootstrap';
+import { ButtonToolbar, ButtonGroup, Button } from 'react-bootstrap';
+
+import GoRepoForked from 'react-icons/lib/go/repo-forked';
+import GoSync from 'react-icons/lib/go/sync';
+import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
+import GoTrashcan from 'react-icons/lib/go/trashcan';
 
 class QuestionToolbar extends React.Component {
   constructor(props) {
@@ -10,20 +15,24 @@ class QuestionToolbar extends React.Component {
 
   render() {
     return (
-      <ButtonGroup vertical>
-        <Button onClick={this.props.callbackUpdate}>Update</Button>
-        <Button onClick={this.props.callbackFork}>Fork</Button>
-        {this.props.enableDelete &&
-          <Button onClick={this.props.callbackDelete}>Delete</Button>
-      }
-      </ButtonGroup>
+      <ButtonToolbar>
+        <ButtonGroup>
+          <Button title="Fork Question" onClick={this.props.callbackFork}><GoRepoForked /></Button>
+          <Button title="Update KG and Get New Answer Set" onClick={this.props.callbackUpdate}><GoSync /></Button>
+          <Button title="Get New Answer Set" onClick={this.props.callbackNewAnswerset}><GoPlaybackPlay /></Button>
+          {this.props.enableDelete &&
+            <Button title="Delete Question" onClick={this.props.callbackDelete}><GoTrashcan /></Button>
+        }
+        </ButtonGroup>
+      </ButtonToolbar>
     );
   }
 }
 QuestionToolbar.defaultProps = {
   enableDelete: false,
-  callbackUpdate: () => {},
   callbackFork: () => {},
+  callbackUpdate: () => {},
+  callbackNewAnswerset: () => {},
   callbackDelete: () => {},
 };
 
