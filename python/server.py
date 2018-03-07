@@ -195,22 +195,32 @@ def question_subgraph(question_id):
     subgraph = question.relevant_subgraph()
 
     return jsonify(subgraph)
+    
+@app.route('/status/update/<task_id>')
+def update_status(task_id):
+    task = update_kg.AsyncResult(task_id)
+    return task.state
+    
+@app.route('/status/answer/<task_id>')
+def answer_status(task_id):
+    task = answer_question.AsyncResult(task_id)
+    return task.state
 
 @app.route('/q/<question_id>/go', methods=['POST'])
 def question_answer(question_id):
     """Answer a question"""
 
-    answer_question.delay(question_id)
+    task = answer_question.apply_async(args=[question_id])
 
-    return 'Done.'
+    return jsonify({'task_id':task.id}), 202
 
 @app.route('/q/<question_id>/update', methods=['POST'])
 def question_update(question_id):
     """Update the knowledge graph for a question"""
 
-    update_kg.delay(question_id)
+    task = update_kg.apply_async(args=[question_id])
 
-    return 'Done.'
+    return jsonify({'task_id':task.id}), 202
 
 # Answer Set
 @app.route('/a/<answerset_id>')
