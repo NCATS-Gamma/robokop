@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Grid, Row, Col } from 'react-bootstrap';
+import { Button, Grid, Row, Col } from 'react-bootstrap';
 
 import QuestionMetaEditor from './QuestionMetaEditor';
 import QuestionGraphViewer from '../shared/QuestionGraphViewer';
