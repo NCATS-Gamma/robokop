@@ -7,3 +7,9 @@ npm-debug.log
 python/__pycache__/*
 *.db
 *.bak
+*.log
+.pylintrc
+*.rdb
+*.sqlite
+bundle.js
+.vscode/
