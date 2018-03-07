@@ -7,3 +7,5 @@ npm-debug.log
 python/__pycache__/*
 *.db
 *.bak
+python/robokop_setup_environ.py
+robokop.log

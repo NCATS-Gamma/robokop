@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { ButtonGroup, Button } from 'react-bootstrap';
+import { ButtonToolbar, ButtonGroup, Button } from 'react-bootstrap';
 
 class QuestionToolbar extends React.Component {
   constructor(props) {
@@ -10,20 +10,24 @@ class QuestionToolbar extends React.Component {
 
   render() {
     return (
-      <ButtonGroup vertical>
-        <Button onClick={this.props.callbackUpdate}>Update</Button>
-        <Button onClick={this.props.callbackFork}>Fork</Button>
-        {this.props.enableDelete &&
-          <Button onClick={this.props.callbackDelete}>Delete</Button>
-      }
-      </ButtonGroup>
+      <ButtonToolbar>
+        <ButtonGroup>
+          <Button onClick={this.props.callbackFork}>Fork Question</Button>
+          <Button onClick={this.props.callbackUpdate}>Update KG and Get New Answer Set</Button>
+          <Button onClick={this.props.callbackNewAnswerset}>Get New Answer Set</Button>
+          {this.props.enableDelete &&
+            <Button onClick={this.props.callbackDelete}>Delete Question</Button>
+        }
+        </ButtonGroup>
+      </ButtonToolbar>
     );
   }
 }
 QuestionToolbar.defaultProps = {
   enableDelete: false,
-  callbackUpdate: () => {},
   callbackFork: () => {},
+  callbackUpdate: () => {},
+  callbackNewAnswerset: () => {},
   callbackDelete: () => {},
 };
 

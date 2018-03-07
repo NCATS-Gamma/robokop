@@ -30,6 +30,18 @@ class QuestionPres extends React.Component {
     return (
       <Grid>
         <Row>
+          <Col md={12}>
+            <QuestionToolbar
+              question={this.props.question}
+              enableDelete={userOwnsThisQuestion}
+              callbackUpdate={this.props.callbackUpdate}
+              callbackNewAnswerset={this.props.callbackNewAnswerset}
+              callbackFork={this.props.callbackFork}
+              callbackDelete={this.props.callbackDelete}
+            />
+          </Col>
+        </Row>
+        <Row style={{ minHeight: '300px', paddingTop: '10px' }}>
           <Col md={6}>
             <QuestionMetaEditor
               editable
@@ -44,27 +56,18 @@ class QuestionPres extends React.Component {
           </Col>
         </Row>
         <Row>
-          <Col md={6}>
+          <Col md={12}>
             <AnswersetTableAgGrid
               answersets={this.props.answersets}
               callbackRowClick={this.callbackAnswerset}
             />
           </Col>
-          <Col md={6}>
-            <QuestionToolbar
-              question={this.props.question}
-              enableDelete={userOwnsThisQuestion}
-              callbackUpdate={this.props.callbackUpdate}
-              callbackFork={this.props.callbackFork}
-              callbackDelete={this.props.callbackDelete}
-            />
-          </Col>
         </Row>
-        <Row>
+        <Row style={{ paddingTop: '10px' }}>
           <Col md={12}>
             <KnowledgeGraphFetchAndView
-              height="500px"
-              width="500px"
+              height="750px"
+              width="750px"
               callbackFetchGraph={this.props.callbackFetchGraph}
               subgraph={this.props.subgraph}
             />

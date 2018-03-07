@@ -1,10 +1,8 @@
 import React from 'react';
 
-import { Alert, FormGroup, FormControl, ControlLabel, Popover, OverlayTrigger } from 'react-bootstrap';
+import { Grid, Row, Col, Alert, FormGroup, FormControl, ControlLabel, Popover, OverlayTrigger } from 'react-bootstrap';
 
 import IoEdit from 'react-icons/io/edit';
-
-const shortid = require('shortid');
 
 class QuestionMetaEditor extends React.Component {
   constructor(props) {
@@ -38,7 +36,7 @@ class QuestionMetaEditor extends React.Component {
     this.setState({ editedNatural: true, natural: e.target.value });
   }
   onEditNotes(e) {
-    this.setState({ editedNotes: true, natural: e.target.value });
+    this.setState({ editedNotes: true, notes: e.target.value });
   }
   onSave() {
     const newMeta = {
@@ -62,16 +60,13 @@ class QuestionMetaEditor extends React.Component {
       name: newProps.question.name,
       natural: newProps.question.natural_question,
       notes: newProps.question.notes,
-      user: newProps.question.user,
     });
   }
 
   render() {
     const {
       name,
-      user,
       notes,
-      hash,
       natural,
     } = this.state;
 
@@ -114,38 +109,62 @@ class QuestionMetaEditor extends React.Component {
       </OverlayTrigger>
     );
 
-
     const edited = this.state.editedName || this.state.editedNatural || this.state.editedNotes;
 
     return (
       <div>
-        {edited &&
-          <Alert bsStyle="warning">
-            You have unsaved changes! <span onClick={this.onSave} style={{ cursor: 'pointer', textDecoration: 'underline'}}>Save Now</span>
-          </Alert>
-        }
-        <div>
-          <h2>
-            {name}
+        <Row>
+          <Col md={12}>
+            <h2 style={{ display: 'inline' }}>
+              {name}
+            </h2>
             {this.props.editable &&
-              editNameNode
+              <div style={{ display: 'inline' }}>
+                &nbsp;
+                &nbsp;
+                {editNameNode}
+              </div>
             }
-          </h2>
-        </div>
-        <h4>
-          {natural}
-          {this.props.editable &&
-            editNaturalNode
-          }
-        </h4>
-        <h5>{user}</h5>
-        <p>{hash}</p>
-        <FormControl
-          componentClass="textarea"
-          placeholder="Notes"
-          inputRef={(ref) => { this.notesRef = ref; }}
-          data={notes}
-        />
+          </Col>
+        </Row>
+        <Row>
+          <Col md={12}>
+            <h4 style={{ display: 'inline' }}>
+              {natural}
+            </h4>
+            {this.props.editable &&
+              <div style={{ display: 'inline' }}>
+                &nbsp;
+                &nbsp;
+                {editNaturalNode}
+              </div>
+            }
+          </Col>
+        </Row>
+        <Row>
+          <Col md={12}>
+            <h5>
+              User Notes:
+            </h5>
+            <FormControl
+              disabled={!this.props.editable}
+              componentClass="textarea"
+              placeholder="Notes"
+              inputRef={(ref) => { this.notesRef = ref; }}
+              data={notes}
+              onChange={this.onEditNotes}
+            />
+          </Col>
+        </Row>
+        {edited &&
+          <Row>
+            <Col md={12}>
+              <Alert bsStyle="warning">
+                You have unsaved changes! <span onClick={this.onSave} style={{ cursor: 'pointer', textDecoration: 'underline'}}>Save Now</span>
+              </Alert>
+            </Col>
+          </Row>
+        }
       </div>
     );
   }

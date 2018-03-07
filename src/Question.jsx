@@ -25,9 +25,9 @@ class Question extends React.Component {
       subgraph: null,
     };
 
-    this.callbackNewAnswerset = this.callbackNewAnswerset.bind(this);
     this.callbackUpdateMeta = this.callbackUpdateMeta.bind(this);
-    this.callbackRedo = this.callbackRedo.bind(this);
+    this.callbackUpdate = this.callbackUpdate.bind(this);
+    this.callbackNewAnswerset = this.callbackNewAnswerset.bind(this);
     this.callbackFork = this.callbackFork.bind(this);
     this.callbackDelete = this.callbackDelete.bind(this);
     this.callbackFetchGraph = this.callbackFetchGraph.bind(this);
@@ -56,7 +56,7 @@ class Question extends React.Component {
     const u = this.state.user;
     console.log('Send post request to update question data.');
   }
-  callbackRedo() {
+  callbackUpdate() {
     const q = this.state.question;
     const u = this.state.user;
     console.log('Initiate getting another answerset for this question. Then show a message. Then hide the message. What about in progress stuff?');
@@ -103,8 +103,7 @@ class Question extends React.Component {
     );
   }
   callbackFetchGraph(afterDoneFun) {
-    const q = this.state.question;
-    this.appConfig.questionSubgraph(this.props.id, (data) => this.setState({ subgraph: data }, afterDoneFun()));
+    this.appConfig.questionSubgraph(this.props.id, data => this.setState({ subgraph: data }, afterDoneFun()));
   }
   dialogConfirm(callbackToDo, inputOptions) {
     const defaultOptions = {
@@ -199,9 +198,9 @@ class Question extends React.Component {
           user={this.state.user}
         />
         <QuestionPres
-          callbackNewAnswerset={this.callbackNewAnswerset}
           callbackUpdateMeta={this.callbackUpdateMeta}
-          callbackRedo={this.callbackRedo}
+          callbackUpdate={this.callbackUpdate}
+          callbackNewAnswerset={this.callbackNewAnswerset}
           callbackFork={this.callbackFork}
           callbackDelete={this.callbackDelete}
           callbackFetchGraph={this.callbackFetchGraph}
