@@ -2,6 +2,11 @@ import React from 'react';
 
 import { ButtonToolbar, ButtonGroup, Button } from 'react-bootstrap';
 
+import GoRepoForked from 'react-icons/lib/go/repo-forked';
+import GoSync from 'react-icons/lib/go/sync';
+import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
+import GoTrashcan from 'react-icons/lib/go/trashcan';
+
 class QuestionToolbar extends React.Component {
   constructor(props) {
     super(props);
@@ -12,11 +17,11 @@ class QuestionToolbar extends React.Component {
     return (
       <ButtonToolbar>
         <ButtonGroup>
-          <Button onClick={this.props.callbackFork}>Fork Question</Button>
-          <Button onClick={this.props.callbackUpdate}>Update KG and Get New Answer Set</Button>
-          <Button onClick={this.props.callbackNewAnswerset}>Get New Answer Set</Button>
+          <Button title="Fork Question" onClick={this.props.callbackFork}><GoRepoForked /></Button>
+          <Button title="Update KG and Get New Answer Set" onClick={this.props.callbackUpdate}><GoSync /></Button>
+          <Button title="Get New Answer Set" onClick={this.props.callbackNewAnswerset}><GoPlaybackPlay /></Button>
           {this.props.enableDelete &&
-            <Button onClick={this.props.callbackDelete}>Delete Question</Button>
+            <Button title="Delete Question" onClick={this.props.callbackDelete}><GoTrashcan /></Button>
         }
         </ButtonGroup>
       </ButtonToolbar>
