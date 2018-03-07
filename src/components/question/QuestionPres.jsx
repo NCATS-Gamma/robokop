@@ -8,8 +8,6 @@ import AnswersetTableAgGrid from './AnswersetTableAgGrid';
 import QuestionToolbar from './QuestionToolbar';
 import KnowledgeGraphFetchAndView from './KnowledgeGraphFetchAndView';
 
-const shortid = require('shortid');
-
 class QuestionPres extends React.Component {
   constructor(props) {
     super(props);
@@ -18,17 +16,10 @@ class QuestionPres extends React.Component {
   }
 
   callbackAnswerset(answerset) {
-    window.open(this.props.answersetUrlFunc(answerset),'_self')
+    window.open(this.props.answersetUrlFunc(answerset), '_self');
   }
 
   render() {
-    const natural = this.props.question.natural_question;
-    const {
-      name,
-      notes,
-      hash,
-    } = this.props.question;
-
     const construction = {
       edges: this.props.question.edges,
       nodes: this.props.question.nodes,
@@ -41,6 +32,7 @@ class QuestionPres extends React.Component {
         <Row>
           <Col md={6}>
             <QuestionMetaEditor
+              editable
               callbackUpdate={this.props.callbackUpdateMeta}
               question={this.props.question}
             />

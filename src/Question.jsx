@@ -70,7 +70,7 @@ class Question extends React.Component {
           text: '',
           showLoading: true,
         });
-        
+
         // Actually try to delete the question here.
         this.appConfig.questionDelete(
           q,

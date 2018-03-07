@@ -55,7 +55,7 @@ class AppConfig {
   answersetData(id, fun) { this.getRequest(`${this.urls.answerset(id)}/data`, fun); }
   answerData(setId, id, fun) { this.getRequest(`${this.urls.answer(setId, id)}/data`, fun); }
 
-  getRequest(addr, fun) {
+  getRequest(addr, fun = () => {}) {
     this.comms.get(addr).then((result) => {
       fun(result.data); // 'ok'
     }).catch((err) => {
@@ -73,7 +73,7 @@ class AppConfig {
     this.postRequest(this.api.questionDelete, data, successFunction, failureFunction);
   }
 
-  postRequest(addr, data, successFunction, failureFunction) {
+  postRequest(addr, data, successFunction = () => {}, failureFunction = () => {}) {
     this.comms.post(addr, data).then((result) => {
       successFunction(result.data);
     }).catch((err) => {
