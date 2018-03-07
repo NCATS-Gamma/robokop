@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Grid, Row, Col, Alert, FormGroup, FormControl, ControlLabel, Popover, OverlayTrigger } from 'react-bootstrap';
 
-import IoEdit from 'react-icons/io/edit';
+import GoPencil from 'react-icons/lib/go/pencil';
 
 class QuestionMetaEditor extends React.Component {
   constructor(props) {
@@ -85,7 +85,7 @@ class QuestionMetaEditor extends React.Component {
 
     const editNameNode = (
       <OverlayTrigger trigger="click" placement="bottom" rootClose overlay={popoverEditName} container={this}>
-        <IoEdit />
+        <GoPencil />
       </OverlayTrigger>
     );
 
@@ -105,7 +105,7 @@ class QuestionMetaEditor extends React.Component {
 
     const editNaturalNode = (
       <OverlayTrigger trigger="click" placement="bottom" rootClose overlay={popoverEditNatural} container={this}>
-        <IoEdit />
+        <GoPencil />
       </OverlayTrigger>
     );
 
