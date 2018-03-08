@@ -199,6 +199,7 @@ class Question extends React.Component {
           user={this.state.user}
         />
         <QuestionPres
+          user={this.state.user}
           callbackUpdateMeta={this.callbackUpdateMeta}
           callbackUpdate={this.callbackUpdateKG}
           callbackNewAnswerset={this.callbackNewAnswerset}

@@ -71,7 +71,7 @@ class QuestionMetaEditor extends React.Component {
     } = this.state;
 
     const popoverEditName = (
-      <Popover id="popover-edit-name" title="Edit Question Name">
+      <Popover id="popover-edit-name" title="Edit Question Name" style={{ width: '500px' }}>
         <FormGroup role="form">
           <FormControl
             type="text"
@@ -90,7 +90,7 @@ class QuestionMetaEditor extends React.Component {
     );
 
     const popoverEditNatural = (
-      <Popover id="popover-edit-natural" title="Edit Question">
+      <Popover id="popover-edit-natural" title="Edit Question" style={{ width: '500px' }}>
         <FormGroup role="form">
           <ControlLabel>This will not cause a re-evaluation of your question. This is only used to correct typos etc.</ControlLabel>
           <FormControl

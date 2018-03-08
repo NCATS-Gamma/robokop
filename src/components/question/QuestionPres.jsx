@@ -20,20 +20,20 @@ class QuestionPres extends React.Component {
   }
 
   render() {
-    const construction = {
+    const questionGraph = {
       edges: this.props.question.edges,
       nodes: this.props.question.nodes,
     };
 
-    const userOwnsThisQuestion = this.props.question.user === this.props.user; // Fix Me
-
+    const userOwnsThisQuestion = this.props.question.user === this.props.user.username; // Fix Me
+    const enableEditing = userOwnsThisQuestion || this.props.user.is_admin;
     return (
       <Grid>
         <Row>
           <Col md={12}>
             <QuestionToolbar
               question={this.props.question}
-              enableDelete={userOwnsThisQuestion}
+              enableDelete={enableEditing}
               callbackUpdate={this.props.callbackUpdate}
               callbackNewAnswerset={this.props.callbackNewAnswerset}
               callbackFork={this.props.callbackFork}
@@ -44,14 +44,14 @@ class QuestionPres extends React.Component {
         <Row style={{ minHeight: '300px', paddingTop: '10px' }}>
           <Col md={6}>
             <QuestionMetaEditor
-              editable
+              editable={enableEditing}
               callbackUpdate={this.props.callbackUpdateMeta}
               question={this.props.question}
             />
           </Col>
           <Col md={6}>
             <QuestionGraphViewer
-              graph={construction}
+              graph={questionGraph}
             />
           </Col>
         </Row>
