@@ -3,7 +3,14 @@
 """Flask web server thread"""
 
 # spin up Celery workers:
-# celery -A tasks.celery worker --loglevel=info
+# one worker with 4 processes for the answer queue
+# one worker with 1 process for the update queue
+#   celery -A tasks.celery worker --loglevel=info -c 4 -n answerer@robokop -Q answer
+#   celery -A tasks.celery worker --loglevel=info -c 1 -n updater@robokop -Q update
+# here is a shortcut:
+#   celery multi start answerer@robokop updater@robokop -A tasks.celery -l info -c:1 4 -c:2 1 -Q:1 answer -Q:2 update
+# to stop them:
+#   celery multi stop answerer updater
 
 # spin up Redis message passing:
 # redis-server
@@ -14,6 +21,8 @@ import os
 import json
 import logging
 import time
+import string
+import random
 from datetime import datetime
 
 from Storage import Storage
@@ -24,12 +33,13 @@ from flask_security.core import current_user
 from flask_login import LoginManager, login_required
 
 from setup import app, db
+import logging_config
 from user import User, Role
 from question import Question, list_questions, get_question_by_id, list_questions_by_username, list_questions_by_hash
 from answer import get_answerset_by_id, list_answersets_by_question_hash, get_answer_by_id, list_answers_by_answerset
 from feedback import Feedback, list_feedback_by_answer
 
-from tasks import answer_question, update_kg
+from tasks import celery, answer_question, update_kg
 
 # set up logger
 logger = logging.getLogger("robokop")
@@ -96,6 +106,24 @@ def getAuthData():
             'is_admin': is_admin,\
             'username': username}
 
+# from celery.app.control import Inspect
+@app.route('/tasks')
+def get_tasks():
+    """Initial contact. Give the initial page."""
+    i = celery.control.inspect()
+    scheduled = i.scheduled()
+    reserved = i.reserved()
+    active = i.active()
+    answerer_queued = [(t['id'], t['args']) for t in scheduled['answerer@robokop'] + reserved['answerer@robokop']]
+    answerer_active = [(t['id'], t['args']) for t in active['answerer@robokop']]
+    updater_queued = [(t['id'], t['args']) for t in scheduled['updater@robokop'] + reserved['updater@robokop']]
+    updater_active = [(t['id'], t['args']) for t in active['updater@robokop']]
+    response = {'answerers_queued': answerer_queued,\
+        'answerers_active': answerer_active,\
+        'updaters_queued': updater_queued,\
+        'updaters_active': updater_active}
+    return str(response)
+
 @app.route('/')
 def landing():
     """Initial contact. Give the initial page."""
@@ -129,15 +157,27 @@ def account_data():
     return jsonify({'timestamp': now_str,\
         'user': user})
 
-# New Question
-@app.route('/q/new')
+# New Question Interface
+@app.route('/q/new', methods=['GET'])
 def new():
-    """Deliver new question"""
+    """Deliver new-question interface"""
     return render_template('questionNew.html')
+
+# New Question Submission
+@app.route('/q/new', methods=['POST'])
+def new_submission():
+    """Create new question"""
+    user_id = current_user.id
+    name = request.json['name']
+    description = request.json['description']
+    nodes, edges = Question.dictionary_to_graph(request.json['query'])
+    qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
+    q = Question(id=qid, user_id=user_id, name=name, description=description, nodes=nodes, edges=edges)
+    return qid, 201
 
 @app.route('/q/new/data', methods=['GET'])
 def new_data():
-    """Data for the new question"""
+    """Data for the new-question interface"""
 
     user = getAuthData()
 
@@ -185,6 +225,7 @@ def question_data(question_id):
     return jsonify({'timestamp': now_str,
                     'user': user,
                     'question': question.toJSON(),
+                    'owner': question.user.email,
                     'answerset_list': [a.toJSON() for a in answerset_list]})
 
 @app.route('/q/<question_id>/subgraph', methods=['GET'])
@@ -200,7 +241,7 @@ def question_subgraph(question_id):
 def update_status(task_id):
     task = update_kg.AsyncResult(task_id)
     return task.state
-    
+
 @app.route('/status/answer/<task_id>')
 def answer_status(task_id):
     task = answer_question.AsyncResult(task_id)
@@ -307,16 +348,10 @@ def accountEdit():
 ################################################################################
 ##### New Question #############################################################
 ################################################################################
-@app.route('/q/new/submit', methods=['POST'])
+@app.route('/q/new/update', methods=['POST'])
 def question_new_update():
-    """Create a new question"""
-    print(request.values)
-    new_id = 'Query1_Alkaptonuria_cdw_chemotext2_chemotext'
+    """Initiate a process for a new question"""
 
-    next_url = url_for('question', question_id=new_id)
-    next_url = next_url[1:] # Chop leading /
-    return jsonify({"success": True, "next_url": next_url})
-    
 @app.route('/q/new/search', methods=['POST'])
 def question_new_search():
     """Validate/provide suggestions for a search term"""
@@ -335,6 +370,15 @@ def question_new_translate():
 @app.route('/q/edit', methods=['POST'])
 def question_edit():
     """Edit the properties of a question"""
+    logger.info('Editing question %s', request.json['question_id'])
+    q = get_question_by_id(request.json['question_id'])
+    if not (current_user == q.user or current_user.has_role('admin')):
+        return "UNAUTHORIZED", 401 # not authorized
+    q.name = request.json['name']
+    q.notes = request.json['notes']
+    q.natural_question = request.json['natural_question']
+    db.session.commit()
+    return "SUCCESS", 200
 
 @app.route('/q/fork', methods=['POST'])
 def question_fork():
@@ -343,9 +387,13 @@ def question_fork():
 @app.route('/q/delete', methods=['POST'])
 def question_delete():
     """Delete question (if owned by current_user)"""
-    time.sleep(1)
-    return jsonify({"success": True})
-    # raise InvalidUsage('You are not authorized to do that.', 400)
+    logger.info('Deleting question %s', request.json['question_id'])
+    q = get_question_by_id(request.json['question_id'])
+    if not (current_user == q.user or current_user.has_role('admin')):
+        return "UNAUTHORIZED", 401 # not authorized
+    db.session.delete(q)
+    db.session.commit()
+    return "SUCCESS", 200
 
 ################################################################################
 ##### Answer Feedback ##########################################################

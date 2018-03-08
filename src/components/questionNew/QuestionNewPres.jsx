@@ -13,11 +13,7 @@ class QuestionNewPres extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      name: '',
-      description: '',
-      query: [],
-    };
+    this.state = {};
 
     this.styles = {
       top: {
@@ -25,58 +21,9 @@ class QuestionNewPres extends React.Component {
         paddingBottom: '20px',
       },
     };
-    this.handleChangeName = this.handleChangeName.bind(this);
-    this.handleChangeDescription = this.handleChangeDescription.bind(this);
-    this.handleChangeQuery = this.handleChangeQuery.bind(this);
-    this.callbackCreate = this.callbackCreate.bind(this);
     this.queryTemplateSet = this.queryTemplateSet.bind(this);
   }
 
-  handleChangeName(e) {
-    this.setState({ name: e.target.value });
-  }
-  handleChangeDescription(e) {
-    this.setState({ description: e.target.value });
-  }
-  handleChangeQuery(newQuery) {
-    // Trim off the extra meta data in the query, dependent on node type
-    const slimQuery = newQuery.map((e) => {
-      let meta = {};
-      const type = e.displayType;
-      let label = e.nodeType;
-      let isBoundType = false;
-      let isBoundName = false;
-      switch (e.type) {
-        case CardTypes.NAMEDNODETYPE:
-          isBoundType = true;
-          isBoundName = true;
-          label = e.name;
-          meta = { name: e.name };
-          break;
-        case CardTypes.NODETYPE:
-          isBoundType = true;
-          label = e.nodeType;
-          break;
-        case CardTypes.NUMNODES:
-          label = `?[${e.numNodesMin}...${e.numNodesMax}]`;
-          // type = 'Unspecified';
-          meta = { numNodesMin: e.numNodesMin, numNodesMax: e.numNodesMax };
-          break;
-        default:
-      }
-      return {
-        id: e.id,
-        nodeSpecType: e.type,
-        type,
-        label,
-        isBoundName,
-        isBoundType,
-        meta,
-      };
-    });
-
-    this.setState({ query: slimQuery });
-  }
   queryTemplateSet(templateInd) {
     let newQuery = [];
     switch (templateInd) {
@@ -192,19 +139,6 @@ class QuestionNewPres extends React.Component {
     }
   }
 
-  callbackCreate() {
-    let boardId = this.state.name.split(' ').join('_');
-    boardId = `${boardId}_${shortid.generate().replace(new RegExp(/[-]/, 'g'), '_')}`;
-    boardId = boardId.replace(new RegExp(/[^a-zA-Z0-9_]/, 'g'), '');
-    const newBoardInfo = {
-      id: boardId,
-      name: this.state.name,
-      description: this.state.description,
-      query: this.state.query,
-    };
-    this.props.callbackCreate(newBoardInfo);
-  }
-
   render() {
     const infoHelp = (
       <Popover id="infoTooltip" key={shortid.generate()} title="Blackboard Information">
@@ -279,9 +213,9 @@ class QuestionNewPres extends React.Component {
               <div className="col-md-6">
                 <FormControl
                   type="text"
-                  value={this.state.name}
+                  value={this.props.name}
                   placeholder="Blackboard name:"
-                  onChange={this.handleChangeName}
+                  onChange={this.props.handleChangeName}
                 />
               </div>
             </div>
@@ -289,9 +223,9 @@ class QuestionNewPres extends React.Component {
               <div className="col-md-6">
                 <FormControl
                   type="textarea"
-                  value={this.state.description}
+                  value={this.props.description}
                   placeholder="Blackboard description:"
-                  onChange={this.handleChangeDescription}
+                  onChange={this.props.handleChangeDescription}
                 />
               </div>
             </div>
@@ -311,7 +245,7 @@ class QuestionNewPres extends React.Component {
             </div>
             <QuestionLinearEditor
               ref={(r) => { this.editorComponent = r; }}
-              handleChange={this.handleChangeQuery}
+              handleChange={this.props.handleChangeQuery}
             />
           </div>
           <div className="col-md-5 col-md-offset-1">
@@ -321,14 +255,20 @@ class QuestionNewPres extends React.Component {
               </div>
             </div>
             <QuestionLinearGraph
-              query={this.state.query}
+              query={this.props.query}
             />
           </div>
         </div>
         <div className="row">
           <div className="col-md-5 col-md-offset-1" style={{ marginTop: '20px' }}>
+            {/* <form method="POST">
+              <input style={{display: "none"}} type="text" name="hidden_info" value="secrets secrets" />
+              <Button type="submit" bsStyle="default" bsSize="lg">
+                Create
+              </Button>
+            </form> */}
             <ButtonToolbar>
-              <Button bsStyle="default" bsSize="lg" onClick={this.callbackCreate}>
+              <Button bsStyle="default" bsSize="lg" onClick={this.props.callbackCreate}>
                 Create
               </Button>
               <Button bsStyle="default" bsSize="lg" onClick={this.props.callbackCancel}>

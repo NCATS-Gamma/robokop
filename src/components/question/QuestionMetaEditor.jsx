@@ -40,12 +40,15 @@ class QuestionMetaEditor extends React.Component {
   }
   onSave() {
     const newMeta = {
+      question_id: this.props.question.id,
       natural_question: this.state.natural,
       name: this.state.name,
       notes: this.state.notes,
     };
 
-    this.props.callbackUpdate(newMeta);
+    this.props.callbackUpdate(newMeta, () => {
+      this.setState({ editedNotes: false });
+    });
   }
 
   onPopoverSubmit() {
@@ -151,7 +154,7 @@ class QuestionMetaEditor extends React.Component {
               componentClass="textarea"
               placeholder="Notes"
               inputRef={(ref) => { this.notesRef = ref; }}
-              data={notes}
+              value={notes}
               onChange={this.onEditNotes}
             />
           </Col>
