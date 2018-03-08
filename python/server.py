@@ -344,6 +344,15 @@ def question_new_translate():
 @app.route('/q/edit', methods=['POST'])
 def question_edit():
     """Edit the properties of a question"""
+    logger.info('Editing question %s', request.json['question_id'])
+    q = get_question_by_id(request.json['question_id'])
+    if not (current_user == q.user or current_user.has_role('admin')):
+        return "UNAUTHORIZED", 401 # not authorized
+    q.name = request.json['name']
+    q.notes = request.json['notes']
+    q.natural_question = request.json['natural_question']
+    db.session.commit()
+    return "SUCCESS", 200
 
 @app.route('/q/fork', methods=['POST'])
 def question_fork():

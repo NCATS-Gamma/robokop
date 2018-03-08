@@ -40,6 +40,7 @@ class QuestionMetaEditor extends React.Component {
   }
   onSave() {
     const newMeta = {
+      question_id: this.props.question.id,
       natural_question: this.state.natural,
       name: this.state.name,
       notes: this.state.notes,

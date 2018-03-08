@@ -39,6 +39,7 @@ class AppConfig {
     this.accountData = this.accountData.bind(this);
     this.adminData = this.adminData.bind(this);
     this.questionNewData = this.questionNewData.bind(this);
+    this.questionUpdateMeta = this.questionUpdateMeta.bind(this);
     this.questionListData = this.questionListData.bind(this);
     this.questionData = this.questionData.bind(this);
     this.questionSubgraph = this.questionSubgraph.bind(this);
@@ -55,6 +56,7 @@ class AppConfig {
   accountData(fun) { this.getRequest(`${this.urls.account}/data`, fun); }
   adminData(fun) { this.getRequest(`${this.urls.admin}/data`, fun); }
   questionNew(data, fun) { this.postRequest(`${this.urls.questionNew}`, data, fun, function(err) {throw err;}); }
+  questionUpdateMeta(data, fun) { this.postRequest(`${this.api.questionUpdate}`, data, fun, function(err) {throw err;}); }
   questionNewData(fun) { this.getRequest(`${this.urls.questionNew}/data`, fun); }
   questionListData(fun) { this.getRequest(`${this.urls.questionList}/data`, fun); }
   questionData(id, fun) { this.getRequest(`${this.urls.question(id)}/data`, fun); }

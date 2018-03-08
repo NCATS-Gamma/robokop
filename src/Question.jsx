@@ -60,7 +60,7 @@ class Question extends React.Component {
   callbackUpdateMeta(newMeta) {
     const q = this.state.question;
     const u = this.state.user;
-    console.log('Send post request to update question data.');
+    this.appConfig.questionUpdateMeta(newMeta, () => {})
   }
   callbackFork() {
     const q = this.state.question;
