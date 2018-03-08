@@ -307,10 +307,16 @@ def accountEdit():
 ################################################################################
 ##### New Question #############################################################
 ################################################################################
-@app.route('/q/new/update', methods=['POST'])
+@app.route('/q/new/submit', methods=['POST'])
 def question_new_update():
-    """Initiate a process for a new question"""
+    """Create a new question"""
+    print(request.values)
+    new_id = 'Query1_Alkaptonuria_cdw_chemotext2_chemotext'
 
+    next_url = url_for('question', question_id=new_id)
+    next_url = next_url[1:] # Chop leading /
+    return jsonify({"success": True, "next_url": next_url})
+    
 @app.route('/q/new/search', methods=['POST'])
 def question_new_search():
     """Validate/provide suggestions for a search term"""

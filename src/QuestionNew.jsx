@@ -28,8 +28,17 @@ class QuestionNew extends React.Component {
     }));
   }
 
-  onCreate() {
-    console.log('Create the thing here');
+  onCreate(postData) {
+    this.appConfig.questionNewSubmit(postData);
+  }
+  onSearch(postData) {
+    this.appConfig.questionNewSearch(postData);
+  }
+  onValidate(postData) {
+    this.appConfig.questionNewValidate(postData);
+  }
+  onTranslate(postData) {
+    this.appConfig.questionNewTranslate(postData);
   }
   onCancel() {
     window.history.back();
@@ -49,6 +58,9 @@ class QuestionNew extends React.Component {
         />
         <QuestionNewPres
           callbackCreate={this.onCreate}
+          callbackSearch={this.onSearch}
+          callbackValidate={this.onValidate}
+          callbackTranslate={this.onTranslate}
           callbackCancel={this.onCancel}
         />
       </div>
