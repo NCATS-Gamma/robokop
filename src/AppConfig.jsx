@@ -51,6 +51,7 @@ class AppConfig {
   landingData(fun) { this.getRequest(`${this.urls.landing}/data`, fun); }
   accountData(fun) { this.getRequest(`${this.urls.account}/data`, fun); }
   adminData(fun) { this.getRequest(`${this.urls.admin}/data`, fun); }
+  questionNew(data, fun) { this.postRequest(`${this.urls.questionNew}`, data, fun, function(err) {throw err;}); }
   questionNewData(fun) { this.getRequest(`${this.urls.questionNew}/data`, fun); }
   questionListData(fun) { this.getRequest(`${this.urls.questionList}/data`, fun); }
   questionData(id, fun) { this.getRequest(`${this.urls.question(id)}/data`, fun); }

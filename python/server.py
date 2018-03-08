@@ -14,6 +14,8 @@ import os
 import json
 import logging
 import time
+import string
+import random
 from datetime import datetime
 
 from Storage import Storage
@@ -130,15 +132,27 @@ def account_data():
     return jsonify({'timestamp': now_str,\
         'user': user})
 
-# New Question
-@app.route('/q/new')
+# New Question Interface
+@app.route('/q/new', methods=['GET'])
 def new():
-    """Deliver new question"""
+    """Deliver new-question interface"""
     return render_template('questionNew.html')
+
+# New Question Submission
+@app.route('/q/new', methods=['POST'])
+def new_submission():
+    """Create new question"""
+    user_id = current_user.id
+    name = request.json['name']
+    description = request.json['description']
+    nodes, edges = Question.dictionary_to_graph(request.json['query'])
+    qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
+    q = Question(id=qid, user_id=user_id, name=name, description=description, nodes=nodes, edges=edges)
+    return qid, 201
 
 @app.route('/q/new/data', methods=['GET'])
 def new_data():
-    """Data for the new question"""
+    """Data for the new-question interface"""
 
     user = getAuthData()
 
@@ -201,7 +215,7 @@ def question_subgraph(question_id):
 def update_status(task_id):
     task = update_kg.AsyncResult(task_id)
     return task.state
-    
+
 @app.route('/status/answer/<task_id>')
 def answer_status(task_id):
     task = answer_question.AsyncResult(task_id)
