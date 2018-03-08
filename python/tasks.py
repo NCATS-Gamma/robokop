@@ -37,8 +37,9 @@ def wait_and_email():
                       body="I'm in a subprocess.")
         mail.send(msg)
 
-@celery.task
-def answer_question(question_id):
+@celery.task(bind=True)
+def answer_question(self, question_id):
+    self.update_state(state='ANSWERING')
     logger.info("Answering your question...")
 
     question = get_question_by_id(question_id)
@@ -54,8 +55,9 @@ def answer_question(question_id):
 
     logger.info("Done answering.")
 
-@celery.task
-def update_kg(question_id):
+@celery.task(bind=True)
+def update_kg(self, question_id):
+    self.update_state(state='UPDATING KG')
     logger.info("Updating the knowledge graph...")
 
     question = get_question_by_id(question_id)
@@ -78,17 +80,17 @@ def update_kg(question_id):
         supports = ['chemotext']
         # supports = ['chemotext', 'chemotext2'] # chemotext2 is really slow
         exportBioGraph(kgraph, "q_"+question.hash, supports=supports)
+    
+        # send completion email
+        with app.app_context():
+            msg = Message("ROBOKOP: Knowledge Graph Update Complete",
+                        sender="robokop@sandboxa74aec7033c545a6aa4e43bdf8271f0b.mailgun.org",
+                        recipients=['patrick@covar.com'], #[user.email],
+                        body="The knowledge graph has been updated with respect to your question. <link>")
+            mail.send(msg)
+
+        logger.info("Done updating.")
         
-    # send completion email
-    with app.app_context():
-        msg = Message("ROBOKOP: Knowledge Graph Update Complete",
-                      sender="robokop@sandboxa74aec7033c545a6aa4e43bdf8271f0b.mailgun.org",
-                      recipients=['patrick@covar.com'], #[user.email],
-                      body="The knowledge graph has been updated with respect to your question. <link>")
-        mail.send(msg)
-
-    logger.info("Done updating.")
-
     except:
         logger.exception("Exception while updating KG.")
 
@@ -137,22 +139,22 @@ def getSourceGraph(kgraph):
         edges = []
         for program in programs.rows:
             for chain in program:
-            # chain looks something like this:
+                # chain looks something like this:
                 """[{'name': 'Disease'},
                     {'op': 'pharos.disease_get_gene', 'predicate': 'DISEASE_GENE', 'enabled': True},
                     {'name': 'Gene'},
                     {'op': ...},
                     ...]"""
 
-            nodes += [{'id':n['name'],
+                nodes += [{'id':n['name'],
                     'name':n['name']} for n in chain[::2]]
-            edges += [{'from':chain[i*2]['name'],
-                'to':chain[i*2+2]['name'],
-                'reference':e['op'].split('.')[0],
-                'function':e['op'].split('.')[1],
-                'type':e['predicate'],
-                'id':e['op'],
-                'publications':''} for i, e in enumerate(chain[1::2])]
+                edges += [{'from':chain[i*2]['name'],
+                    'to':chain[i*2+2]['name'],
+                    'reference':e['op'].split('.')[0],
+                    'function':e['op'].split('.')[1],
+                    'type':e['predicate'],
+                    'id':e['op'],
+                    'publications':''} for i, e in enumerate(chain[1::2])]
 
         # unique nodes
         nodes = {n['id']:n for n in nodes}
