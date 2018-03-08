@@ -25,6 +25,9 @@ class AppConfig {
     this.urls.answer = this.urls.answer.bind(this);
 
     this.api = {
+      questionNewSearch: this.questionNewSearch.bind(this),
+      questionNewValidate: this.questionNewValidate.bind(this),
+      questionNewTranslate: this.questionNewTranslate.bind(this),
       questionUpdate: this.url('q/edit'),
       questionDelete: this.url('q/delete'),
       questionFork: this.url('q/fork'),
@@ -60,6 +63,20 @@ class AppConfig {
   answersetNew(qid) { this.postRequest(`${this.urls.question(qid)}/go`, null, function(){}, function(){}); }
   updateKG(qid) { this.postRequest(`${this.urls.question(qid)}/update`, null, function(){}, function(){}); }
   answerData(setId, id, fun) { this.getRequest(`${this.urls.answer(setId, id)}/data`, fun); }
+
+  open(newUrlExt) {
+    window.open(this.url(newUrlExt));
+  }
+
+  questionNewSearch(postData, successFunction, failureFunction) {
+    console.log('Lookup searchTerm');
+  }
+  questionNewValidate(postData, successFunction, failureFunction) {
+    console.log('Validate the machine question here');
+  }
+  questionNewTranslate(postData, successFunction, failureFunction) {
+    console.log('Transle the question here');
+  }
 
   getRequest(addr, fun = () => {}) {
     this.comms.get(addr).then((result) => {

@@ -92,6 +92,16 @@ class QuestionNew extends React.Component {
       window.location.href = this.appConfig.urls.question(data);
     });
   }
+    
+  onSearch(postData) {
+    this.appConfig.questionNewSearch(postData);
+  }
+  onValidate(postData) {
+    this.appConfig.questionNewValidate(postData);
+  }
+  onTranslate(postData) {
+    this.appConfig.questionNewTranslate(postData);
+  }
   onCancel() {
     window.history.back();
   }
@@ -114,6 +124,9 @@ class QuestionNew extends React.Component {
           handleChangeDescription={this.handleChangeDescription}
           handleChangeQuery={this.handleChangeQuery}
           callbackCreate={this.onCreate}
+          callbackSearch={this.onSearch}
+          callbackValidate={this.onValidate}
+          callbackTranslate={this.onTranslate}
           callbackCancel={this.onCancel}
         />
       </div>

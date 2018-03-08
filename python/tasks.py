@@ -18,8 +18,8 @@ from lookup_utils import lookup_disease_by_name, lookup_drug_by_name, lookup_phe
 from userquery import UserQuery
 
 # set up Celery
-app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
-app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+app.config['CELERY_BROKER_URL'] = os.environ["ROBOKOP_CELERY_BROKER_URL"]
+app.config['CELERY_RESULT_BACKEND'] = os.environ["ROBOKOP_CELERY_RESULT_BACKEND"]
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
 
@@ -32,7 +32,7 @@ def wait_and_email():
     time.sleep(20)
     with app.app_context():
         msg = Message("ROBOKOP: Test",
-                      sender="robokop@sandboxa74aec7033c545a6aa4e43bdf8271f0b.mailgun.org",
+                      sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
                       recipients=["patrick@covar.com"],
                       body="I'm in a subprocess.")
         mail.send(msg)
@@ -48,7 +48,7 @@ def answer_question(self, question_id):
     
     with app.app_context():
         msg = Message("ROBOKOP: Answers Ready",
-                      sender="robokop@sandboxa74aec7033c545a6aa4e43bdf8271f0b.mailgun.org",
+                      sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
                       recipients=['patrick@covar.com'], #[user.email],
                       body="Your question answers are ready. <link>")
         mail.send(msg)
@@ -80,17 +80,17 @@ def update_kg(self, question_id):
         supports = ['chemotext']
         # supports = ['chemotext', 'chemotext2'] # chemotext2 is really slow
         exportBioGraph(kgraph, "q_"+question.hash, supports=supports)
-    
+
         # send completion email
         with app.app_context():
             msg = Message("ROBOKOP: Knowledge Graph Update Complete",
-                        sender="robokop@sandboxa74aec7033c545a6aa4e43bdf8271f0b.mailgun.org",
-                        recipients=['patrick@covar.com'], #[user.email],
-                        body="The knowledge graph has been updated with respect to your question. <link>")
+                          sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
+                          recipients=['patrick@covar.com'], #[user.email],
+                          body="The knowledge graph has been updated with respect to your question. <link>")
             mail.send(msg)
 
         logger.info("Done updating.")
-        
+
     except:
         logger.exception("Exception while updating KG.")
 
