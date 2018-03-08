@@ -16,12 +16,18 @@ from builder import KnowledgeGraph, generate_name_node, lookup_identifier
 from greent.graph_components import KNode
 from lookup_utils import lookup_disease_by_name, lookup_drug_by_name, lookup_phenotype_by_name
 from userquery import UserQuery
+from kombu import Queue
 
 # set up Celery
-app.config['CELERY_BROKER_URL'] = os.environ["ROBOKOP_CELERY_BROKER_URL"]
-app.config['CELERY_RESULT_BACKEND'] = os.environ["ROBOKOP_CELERY_RESULT_BACKEND"]
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+app.config['broker_url'] = os.environ["ROBOKOP_CELERY_BROKER_URL"]
+app.config['result_backend'] = os.environ["ROBOKOP_CELERY_RESULT_BACKEND"]
+celery = Celery(app.name, broker=app.config['broker_url'])
 celery.conf.update(app.config)
+celery.conf.task_queues = (
+    Queue('answer', routing_key='answer'),
+    Queue('update', routing_key='update'),
+)
+# app.conf.task_routes = {'feed.tasks.*': {'queue': 'feeds'}}
 
 # set up logger
 logger = logging.getLogger("robokop")
@@ -37,7 +43,7 @@ def wait_and_email():
                       body="I'm in a subprocess.")
         mail.send(msg)
 
-@celery.task(bind=True)
+@celery.task(bind=True, queue='answer')
 def answer_question(self, question_id):
     self.update_state(state='ANSWERING')
     logger.info("Answering your question...")
@@ -55,7 +61,7 @@ def answer_question(self, question_id):
 
     logger.info("Done answering.")
 
-@celery.task(bind=True)
+@celery.task(bind=True, queue='update')
 def update_kg(self, question_id):
     self.update_state(state='UPDATING KG')
     logger.info("Updating the knowledge graph...")

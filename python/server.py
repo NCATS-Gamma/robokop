@@ -3,7 +3,14 @@
 """Flask web server thread"""
 
 # spin up Celery workers:
-# celery -A tasks.celery worker --loglevel=info
+# one worker with 4 processes for the answer queue
+# one worker with 1 process for the update queue
+#   celery -A tasks.celery worker --loglevel=info -c 4 -n answerer@robokop -Q answer
+#   celery -A tasks.celery worker --loglevel=info -c 1 -n updater@robokop -Q update
+# here is a shortcut:
+#   celery multi start answerer@robokop updater@robokop -A tasks.celery -l info -c:1 4 -c:2 1 -Q:1 answer -Q:2 update
+# to stop them:
+#   celery multi stop answerer updater
 
 # spin up Redis message passing:
 # redis-server
@@ -32,7 +39,7 @@ from question import Question, list_questions, get_question_by_id, list_question
 from answer import get_answerset_by_id, list_answersets_by_question_hash, get_answer_by_id, list_answers_by_answerset
 from feedback import Feedback, list_feedback_by_answer
 
-from tasks import answer_question, update_kg
+from tasks import celery, answer_question, update_kg
 
 # set up logger
 logger = logging.getLogger("robokop")
@@ -98,6 +105,24 @@ def getAuthData():
             'is_anonymous': is_anonymous,\
             'is_admin': is_admin,\
             'username': username}
+
+# from celery.app.control import Inspect
+@app.route('/tasks')
+def get_tasks():
+    """Initial contact. Give the initial page."""
+    i = celery.control.inspect()
+    scheduled = i.scheduled()
+    reserved = i.reserved()
+    active = i.active()
+    answerer_queued = [(t['id'], t['args']) for t in scheduled['answerer@robokop'] + reserved['answerer@robokop']]
+    answerer_active = [(t['id'], t['args']) for t in active['answerer@robokop']]
+    updater_queued = [(t['id'], t['args']) for t in scheduled['updater@robokop'] + reserved['updater@robokop']]
+    updater_active = [(t['id'], t['args']) for t in active['updater@robokop']]
+    response = {'answerers_queued': answerer_queued,\
+        'answerers_active': answerer_active,\
+        'updaters_queued': updater_queued,\
+        'updaters_active': updater_active}
+    return str(response)
 
 @app.route('/')
 def landing():
