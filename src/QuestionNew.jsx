@@ -92,7 +92,7 @@ class QuestionNew extends React.Component {
       window.location.href = this.appConfig.urls.question(data);
     });
   }
-    
+  
   onSearch(postData) {
     this.appConfig.questionNewSearch(postData);
   }

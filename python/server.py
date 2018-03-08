@@ -352,9 +352,13 @@ def question_fork():
 @app.route('/q/delete', methods=['POST'])
 def question_delete():
     """Delete question (if owned by current_user)"""
-    time.sleep(1)
-    return jsonify({"success": True})
-    # raise InvalidUsage('You are not authorized to do that.', 400)
+    logger.info('Deleting question %s', request.json['question_id'])
+    q = get_question_by_id(request.json['question_id'])
+    if not (current_user == q.user or current_user.has_role('admin')):
+        return "UNAUTHORIZED", 401 # not authorized
+    db.session.delete(q)
+    db.session.commit()
+    return "SUCCESS", 200
 
 ################################################################################
 ##### Answer Feedback ##########################################################
