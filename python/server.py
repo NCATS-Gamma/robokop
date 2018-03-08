@@ -200,6 +200,7 @@ def question_data(question_id):
     return jsonify({'timestamp': now_str,
                     'user': user,
                     'question': question.toJSON(),
+                    'owner': question.user.email,
                     'answerset_list': [a.toJSON() for a in answerset_list]})
 
 @app.route('/q/<question_id>/subgraph', methods=['GET'])
