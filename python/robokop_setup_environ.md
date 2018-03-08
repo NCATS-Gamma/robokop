@@ -22,6 +22,6 @@ os.environ["ROBOKOP_MAIL_SERVER"] = ''
 os.environ["ROBOKOP_MAIL_USERNAME"] = ''
 os.environ["ROBOKOP_MAIL_PASSWORD"] = ''
 
-os.environ["ROBOKOP_CELERY_BROKER_URL"] = 'redis://localhost:6379/0'
-os.environ["ROBOKOP_CELERY_RESULT_BACKEND"] = 'redis://localhost:6379/0'
+os.environ["ROBOKOP_CELERY_BROKER_URL"] = ''
+os.environ["ROBOKOP_CELERY_RESULT_BACKEND"] = ''
 ```
