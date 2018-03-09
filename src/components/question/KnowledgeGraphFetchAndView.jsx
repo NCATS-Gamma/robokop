@@ -9,12 +9,16 @@ class KnowledgeGraphFetchAndView extends React.Component {
 
     this.state = {
       fetching: false,
-      graph: null,
     };
 
     this.styles = {
+      outerContainer: {
+        padding: '10px',
+        border: '1px solid #d1d1d1',
+      },
       container: {
-        border: '1px solid black',
+        border: '1px solid #d1d1d1',
+        boxShadow: '0px 0px 5px #c3c3c3',
         margin: 'auto',
         padding: '10px',
         display: 'flex',
@@ -45,25 +49,30 @@ class KnowledgeGraphFetchAndView extends React.Component {
     }
 
     return (
-      <div style={{ ...containerStyle, ...propsStyle }}>
-        {showGraph &&
-          <KnowledgeGraphViewer
-            height={this.props.height}
-            width={this.props.width}
-            graph={this.props.subgraph}
-          />
-        }
-        {showFetching &&
-          <div>
-            <h5>Downloading Knowledge Sub Graph</h5>
-            <ProgressBar active now={100} />
+      <div>
+        <h4>Local Knowledge Graph</h4>
+        <div style={this.styles.outerContainer}>
+          <div style={{ ...containerStyle, ...propsStyle }}>
+            {showGraph &&
+              <KnowledgeGraphViewer
+                height={this.props.height}
+                width={this.props.width}
+                graph={this.props.subgraph}
+              />
+            }
+            {showFetching &&
+              <div>
+                <h5>Downloading Knowledge Sub Graph</h5>
+                <ProgressBar active now={100} />
+              </div>
+            }
+            {showFetchButton &&
+              <Button onClick={this.fetch}>
+                Get Knowledge Sub Graph
+              </Button>
+            }
           </div>
-        }
-        {showFetchButton &&
-          <Button onClick={this.fetch}>
-            Get Knowledge Sub Graph
-          </Button>
-        }
+        </div>
       </div>
     );
   }

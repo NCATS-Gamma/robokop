@@ -45,7 +45,6 @@ class QuestionNew extends React.Component {
   }
   handleChangeNotes(e) {
     this.setState({ notes: e.target.value });
-  }
   handleChangeQuery(newQuery) {
     // Trim off the extra meta data in the query, dependent on node type
     const slimQuery = newQuery.map((e) => {
@@ -94,9 +93,10 @@ class QuestionNew extends React.Component {
       query: this.state.query,
     };
 
-    this.appConfig.questionNew(newBoardInfo, data => {
-      window.location.href = this.appConfig.urls.question(data);
-    });
+    this.appConfig.questionNew(
+      newBoardInfo,
+      data => { window.location.href = this.appConfig.urls.question(data); },
+    );
   }
   
   onSearch(postData) {

@@ -1,16 +1,28 @@
 import React from 'react';
 
-import { Button, Grid, Row, Col } from 'react-bootstrap';
+import { Grid, Row, Col } from 'react-bootstrap';
 
 import QuestionMetaEditor from './QuestionMetaEditor';
 import QuestionGraphViewer from '../shared/QuestionGraphViewer';
-import AnswersetTableAgGrid from './AnswersetTableAgGrid';
+import AnswersetBrowser from './AnswersetBrowser';
 import QuestionToolbar from './QuestionToolbar';
 import KnowledgeGraphFetchAndView from './KnowledgeGraphFetchAndView';
 
 class QuestionPres extends React.Component {
   constructor(props) {
     super(props);
+
+    this.styles = {
+      questionGraphContainer: {
+        border: '1px solid #d1d1d1',
+        boxShadow: '0px 0px 5px #c3c3c3',
+        margin: 'auto',
+        padding: '10px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+    };
 
     this.callbackAnswerset = this.callbackAnswerset.bind(this);
   }
@@ -20,20 +32,20 @@ class QuestionPres extends React.Component {
   }
 
   render() {
-    const construction = {
+    const questionGraph = {
       edges: this.props.question.edges,
       nodes: this.props.question.nodes,
     };
 
-    const userOwnsThisQuestion = this.props.question.user === this.props.user; // Fix Me
-
+    const userOwnsThisQuestion = this.props.owner === this.props.user.username; // Fix Me
+    const enableEditing = userOwnsThisQuestion || this.props.user.is_admin;
     return (
       <Grid>
         <Row>
           <Col md={12}>
             <QuestionToolbar
               question={this.props.question}
-              enableDelete={userOwnsThisQuestion}
+              enableDelete={enableEditing}
               callbackUpdate={this.props.callbackUpdate}
               callbackNewAnswerset={this.props.callbackNewAnswerset}
               callbackFork={this.props.callbackFork}
@@ -41,25 +53,31 @@ class QuestionPres extends React.Component {
             />
           </Col>
         </Row>
-        <Row style={{ minHeight: '300px', paddingTop: '10px' }}>
+        <Row style={{ minHeight: '250px', paddingTop: '10px' }}>
           <Col md={6}>
             <QuestionMetaEditor
-              editable
+              editable={enableEditing}
               callbackUpdate={this.props.callbackUpdateMeta}
               question={this.props.question}
             />
           </Col>
           <Col md={6}>
-            <QuestionGraphViewer
-              graph={construction}
-            />
+            <div>
+              <h4>Machine Question</h4>
+              <div style={this.styles.questionGraphContainer}>
+                <QuestionGraphViewer
+                  graph={questionGraph}
+                />
+              </div>
+            </div>
           </Col>
         </Row>
         <Row>
           <Col md={12}>
-            <AnswersetTableAgGrid
+            <AnswersetBrowser
               answersets={this.props.answersets}
-              callbackRowClick={this.callbackAnswerset}
+              callbackAnswersetNew={this.props.callbackNewAnswerset}
+              callbackAnswersetOpen={this.callbackAnswerset}
             />
           </Col>
         </Row>

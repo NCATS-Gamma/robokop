@@ -49,6 +49,7 @@
     "react-graph-vis": "^1.0.2",
     "react-icons": "^2.2.7",
     "react-select": "^1.0.0-rc.5",
+    "react-virtualized": "^9.18.5",
     "seedrandom": "^2.4.3",
     "shortid": "^2.2.8"
   },

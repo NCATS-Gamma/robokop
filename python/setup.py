@@ -13,6 +13,3 @@ app.config.from_pyfile('robokop_flask_config.py')
 
 mail = Mail(app)
 db = SQLAlchemy(app)
-# # set up logging from config file
-# with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "logging.config.json")) as f:
-#     logging.config.dictConfig(json.load(f))
