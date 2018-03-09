@@ -45,6 +45,7 @@ class QuestionNew extends React.Component {
   }
   handleChangeNotes(e) {
     this.setState({ notes: e.target.value });
+  }
   handleChangeQuery(newQuery) {
     // Trim off the extra meta data in the query, dependent on node type
     const slimQuery = newQuery.map((e) => {
