@@ -169,10 +169,11 @@ def new_submission():
     """Create new question"""
     user_id = current_user.id
     name = request.json['name']
-    description = request.json['description']
+    natural_question = request.json['natural']
+    notes = request.json['notes']
     nodes, edges = Question.dictionary_to_graph(request.json['query'])
     qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
-    q = Question(id=qid, user_id=user_id, name=name, description=description, nodes=nodes, edges=edges)
+    q = Question(id=qid, user_id=user_id, name=name, natural_question=natural_question, notes=notes, nodes=nodes, edges=edges)
     return qid, 201
 
 @app.route('/q/new/data', methods=['GET'])

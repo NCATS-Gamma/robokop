@@ -17,14 +17,16 @@ class QuestionNew extends React.Component {
       ready: false,
       user: {},
       name: '',
-      description: '',
+      natural: '',
+      notes: '',
       query: [],
     };
 
     this.onCreate = this.onCreate.bind(this);
     this.onCancel = this.onCancel.bind(this);
     this.handleChangeName = this.handleChangeName.bind(this);
-    this.handleChangeDescription = this.handleChangeDescription.bind(this);
+    this.handleChangeNatural = this.handleChangeNatural.bind(this);
+    this.handleChangeNotes = this.handleChangeNotes.bind(this);
     this.handleChangeQuery = this.handleChangeQuery.bind(this);
   }
 
@@ -38,8 +40,11 @@ class QuestionNew extends React.Component {
   handleChangeName(e) {
     this.setState({ name: e.target.value });
   }
-  handleChangeDescription(e) {
-    this.setState({ description: e.target.value });
+  handleChangeNatural(e) {
+    this.setState({ natural: e.target.value });
+  }
+  handleChangeNotes(e) {
+    this.setState({ notes: e.target.value });
   }
   handleChangeQuery(newQuery) {
     // Trim off the extra meta data in the query, dependent on node type
@@ -84,7 +89,8 @@ class QuestionNew extends React.Component {
   onCreate() {
     const newBoardInfo = {
       name: this.state.name,
-      description: this.state.description,
+      natural: this.state.natural,
+      notes: this.state.notes,
       query: this.state.query,
     };
 
@@ -121,7 +127,8 @@ class QuestionNew extends React.Component {
         <QuestionNewPres
           query={this.state.query}
           handleChangeName={this.handleChangeName}
-          handleChangeDescription={this.handleChangeDescription}
+          handleChangeNatural={this.handleChangeNatural}
+          handleChangeNotes={this.handleChangeNotes}
           handleChangeQuery={this.handleChangeQuery}
           callbackCreate={this.onCreate}
           callbackSearch={this.onSearch}
