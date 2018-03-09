@@ -14,3 +14,4 @@ python/__pycache__/*
 bundle.js
 .vscode/
 python/robokop_setup_environ.py
+*.pid
