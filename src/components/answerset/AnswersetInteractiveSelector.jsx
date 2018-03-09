@@ -1,6 +1,9 @@
 import React from 'react';
 import Select from 'react-select';
-import { Button, Glyphicon, Panel, PanelGroup, Badge } from 'react-bootstrap';
+import { Panel, PanelGroup, Badge } from 'react-bootstrap';
+
+import GoSync from 'react-icons/lib/go/sync';
+
 import NodeTypes from '../questionNew/QuestionNewNodeTypes';
 
 const shortid = require('shortid');
@@ -73,7 +76,7 @@ class AnswersetInteractiveSelector extends React.Component {
               }
                 {!disableButton &&
                   <div className="pull-right">
-                    <Glyphicon glyph="refresh" style={{ cursor: 'pointer' }} onClick={() => this.handleClear(ind)} />
+                    <GoSync style={{ cursor: 'pointer' }} onClick={() => this.handleClear(ind)} />
                   </div>
                 }
               </div>
@@ -105,12 +108,12 @@ class AnswersetInteractiveSelector extends React.Component {
             {'Answer Explorer'}
             {showReset &&
               <span className={'pull-right'}>
-                <Glyphicon glyph="refresh" style={{ cursor: 'pointer' }} onClick={this.handleClearAll} />
+                <GoSync style={{ cursor: 'pointer' }} onClick={this.handleClearAll} />
               </span>
             }
           </h4>
         </div>
-        <PanelGroup style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '10px' }}>
+        <PanelGroup id="InteractiveAnswerSetExplorer" style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: '10px' }}>
           {dropDowns}
         </PanelGroup>
       </div>

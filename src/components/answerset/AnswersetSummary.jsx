@@ -19,7 +19,7 @@ class AnswersetSummary extends React.Component {
     if (this.props.otherAnswersets.length > 0) {
       const otherLinks = this.props.otherAnswersets.map(a => (
         <li key={shortid.generate()}>
-          <a href={this.props.answersetUrlFunc(a)}> {dateToString(Date(a.timestamp))} </a>
+          <a href={this.props.answersetUrlFunc(a)}> {dateToString(new Date(a.timestamp))} </a>
         </li>
       ));
       return (

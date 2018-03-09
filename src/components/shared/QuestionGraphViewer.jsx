@@ -1,6 +1,7 @@
 import React from 'react';
 
 import NodeTypes from '../questionNew/QuestionNewNodeTypes';
+
 const Graph = require('react-graph-vis').default;
 
 const shortid = require('shortid');

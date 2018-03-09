@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { Button, Grid, Row, Col } from 'react-bootstrap';
+import { Grid, Row, Col } from 'react-bootstrap';
 
 import QuestionMetaEditor from './QuestionMetaEditor';
 import QuestionGraphViewer from '../shared/QuestionGraphViewer';
-import AnswersetTableAgGrid from './AnswersetTableAgGrid';
+import AnswersetBrowser from './AnswersetBrowser';
 import QuestionToolbar from './QuestionToolbar';
 import KnowledgeGraphFetchAndView from './KnowledgeGraphFetchAndView';
 
@@ -12,7 +12,7 @@ class QuestionPres extends React.Component {
   constructor(props) {
     super(props);
 
-    this.styles ={
+    this.styles = {
       questionGraphContainer: {
         border: '1px solid #d1d1d1',
         boxShadow: '0px 0px 5px #c3c3c3',
@@ -74,17 +74,18 @@ class QuestionPres extends React.Component {
         </Row>
         <Row>
           <Col md={12}>
-            <AnswersetTableAgGrid
+            <AnswersetBrowser
               answersets={this.props.answersets}
-              callbackRowClick={this.callbackAnswerset}
+              callbackAnswersetNew={this.props.callbackNewAnswerset}
+              callbackAnswersetOpen={this.callbackAnswerset}
             />
           </Col>
         </Row>
         <Row style={{ paddingTop: '10px' }}>
           <Col md={12}>
             <KnowledgeGraphFetchAndView
-              height="900px"
-              width="900px"
+              height="750px"
+              width="750px"
               callbackFetchGraph={this.props.callbackFetchGraph}
               subgraph={this.props.subgraph}
             />
