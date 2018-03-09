@@ -18,6 +18,8 @@ from lookup_utils import lookup_disease_by_name, lookup_drug_by_name, lookup_phe
 from userquery import UserQuery
 from kombu import Queue
 
+from logging_config import logger
+
 # set up Celery
 app.config['broker_url'] = os.environ["ROBOKOP_CELERY_BROKER_URL"]
 app.config['result_backend'] = os.environ["ROBOKOP_CELERY_RESULT_BACKEND"]
@@ -27,10 +29,6 @@ celery.conf.task_queues = (
     Queue('answer', routing_key='answer'),
     Queue('update', routing_key='update'),
 )
-# app.conf.task_routes = {'feed.tasks.*': {'queue': 'feeds'}}
-
-# set up logger
-logger = logging.getLogger("robokop")
 
 @celery.task
 def wait_and_email():

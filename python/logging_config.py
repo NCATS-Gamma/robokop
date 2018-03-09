@@ -5,7 +5,7 @@ import os
 formatter = logging.Formatter('"%(asctime)s %(name)-15s %(levelname)-8s %(processName)-10s %(message)s"')
 
 # create console handler and set level to info
-console_handler = logging.StreamHandler("ext://sys.stdout")
+console_handler = logging.StreamHandler() #"ext://sys.stdout")
 console_handler.setLevel(logging.INFO)
 console_handler.setFormatter(formatter)
 

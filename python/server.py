@@ -33,16 +33,13 @@ from flask_security.core import current_user
 from flask_login import LoginManager, login_required
 
 from setup import app, db
-import logging_config
+from logging_config import logger
 from user import User, Role
 from question import Question, list_questions, get_question_by_id, list_questions_by_username, list_questions_by_hash
 from answer import get_answerset_by_id, list_answersets_by_question_hash, get_answer_by_id, list_answers_by_answerset
 from feedback import Feedback, list_feedback_by_answer
 
 from tasks import celery, answer_question, update_kg
-
-# set up logger
-logger = logging.getLogger("robokop")
 
 storage = Storage(db)
 
@@ -349,10 +346,6 @@ def accountEdit():
 ################################################################################
 ##### New Question #############################################################
 ################################################################################
-@app.route('/q/new/update', methods=['POST'])
-def question_new_update():
-    """Initiate a process for a new question"""
-
 @app.route('/q/new/search', methods=['POST'])
 def question_new_search():
     """Validate/provide suggestions for a search term"""
