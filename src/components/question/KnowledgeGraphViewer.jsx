@@ -115,15 +115,15 @@ class KnowledgeGraphViewer extends React.Component {
   render() {
     let graph = this.addTagsToGraph(this.props.graph);
 
+    this.graphOptions.height = this.props.height;
     return (
-      // border: '1px solid #d1d1d1', boxShadow: '0px 0px 5px #c3c3c3',
       // key={shortid.generate()} // Forces component remount
-      <div style={{ height: this.props.height, width: this.props.width }}>
+      <div style={{ height: this.props.height, width: this.props.width }} >
         <div style={{ fontFamily: 'Monospace' }}>
           <Graph
             graph={graph}
             options={this.graphOptions}
-            style={{ height: this.props.height, width: this.props.width }}
+            style={{ width: this.props.width }}
             events={{ selectNode: this.nodeSelectCallback, selectEdge: this.edgeSelectCallback }}
             getNetwork={(network) => { this.network = network; }} // Store network reference in the component
           />

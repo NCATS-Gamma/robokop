@@ -12,6 +12,18 @@ class QuestionPres extends React.Component {
   constructor(props) {
     super(props);
 
+    this.styles ={
+      questionGraphContainer: {
+        border: '1px solid #d1d1d1',
+        boxShadow: '0px 0px 5px #c3c3c3',
+        margin: 'auto',
+        padding: '10px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+    };
+
     this.callbackAnswerset = this.callbackAnswerset.bind(this);
   }
 
@@ -25,7 +37,7 @@ class QuestionPres extends React.Component {
       nodes: this.props.question.nodes,
     };
 
-    const userOwnsThisQuestion = this.props.question.user === this.props.user.username; // Fix Me
+    const userOwnsThisQuestion = this.props.owner === this.props.user.username; // Fix Me
     const enableEditing = userOwnsThisQuestion || this.props.user.is_admin;
     return (
       <Grid>
@@ -41,7 +53,7 @@ class QuestionPres extends React.Component {
             />
           </Col>
         </Row>
-        <Row style={{ minHeight: '300px', paddingTop: '10px' }}>
+        <Row style={{ minHeight: '250px', paddingTop: '10px' }}>
           <Col md={6}>
             <QuestionMetaEditor
               editable={enableEditing}
@@ -50,9 +62,14 @@ class QuestionPres extends React.Component {
             />
           </Col>
           <Col md={6}>
-            <QuestionGraphViewer
-              graph={questionGraph}
-            />
+            <div>
+              <h4>Machine Question</h4>
+              <div style={this.styles.questionGraphContainer}>
+                <QuestionGraphViewer
+                  graph={questionGraph}
+                />
+              </div>
+            </div>
           </Col>
         </Row>
         <Row>
@@ -66,8 +83,8 @@ class QuestionPres extends React.Component {
         <Row style={{ paddingTop: '10px' }}>
           <Col md={12}>
             <KnowledgeGraphFetchAndView
-              height="750px"
-              width="750px"
+              height="900px"
+              width="900px"
               callbackFetchGraph={this.props.callbackFetchGraph}
               subgraph={this.props.subgraph}
             />

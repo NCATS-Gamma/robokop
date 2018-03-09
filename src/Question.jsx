@@ -39,6 +39,7 @@ class Question extends React.Component {
   componentDidMount() {
     this.appConfig.questionData(this.props.id, data => this.setState({
       user: data.user,
+      owner: data.owner,
       question: data.question,
       answersets: data.answerset_list,
       ready: true,
@@ -200,6 +201,7 @@ class Question extends React.Component {
         />
         <QuestionPres
           user={this.state.user}
+          owner={this.state.owner}
           callbackUpdateMeta={this.callbackUpdateMeta}
           callbackUpdate={this.callbackUpdateKG}
           callbackNewAnswerset={this.callbackNewAnswerset}

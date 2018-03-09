@@ -51,10 +51,6 @@ class QuestionMetaEditor extends React.Component {
     });
   }
 
-  onPopoverSubmit() {
-    console.log('pop over submit');
-  }
-
   syncPropsAndState(newProps) {
     this.setState({
       editedName: false,
@@ -74,8 +70,9 @@ class QuestionMetaEditor extends React.Component {
     } = this.state;
 
     const popoverEditName = (
-      <Popover id="popover-edit-name" title="Edit Question Name" style={{ width: '500px' }}>
+      <Popover id="popover-edit-name" title="Edit Question Name" style={{ minWidth: '500px' }}>
         <FormGroup role="form">
+          <ControlLabel>This will change the public name of this quesiton and will impact how this question shows up in search results.</ControlLabel>
           <FormControl
             type="text"
             value={name}
@@ -93,7 +90,7 @@ class QuestionMetaEditor extends React.Component {
     );
 
     const popoverEditNatural = (
-      <Popover id="popover-edit-natural" title="Edit Question" style={{ width: '500px' }}>
+      <Popover id="popover-edit-natural" title="Edit Question" style={{ minWidth: '500px' }}>
         <FormGroup role="form">
           <ControlLabel>This will not cause a re-evaluation of your question. This is only used to correct typos etc.</ControlLabel>
           <FormControl
@@ -153,6 +150,7 @@ class QuestionMetaEditor extends React.Component {
               disabled={!this.props.editable}
               componentClass="textarea"
               placeholder="Notes"
+              style={{ minHeight: '200px' }}
               inputRef={(ref) => { this.notesRef = ref; }}
               value={notes}
               onChange={this.onEditNotes}

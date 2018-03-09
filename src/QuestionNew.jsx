@@ -38,6 +38,7 @@ class QuestionNew extends React.Component {
   handleChangeName(e) {
     this.setState({ name: e.target.value });
   }
+
   handleChangeDescription(e) {
     this.setState({ description: e.target.value });
   }
@@ -88,9 +89,10 @@ class QuestionNew extends React.Component {
       query: this.state.query,
     };
 
-    this.appConfig.questionNew(newBoardInfo, data => {
-      window.location.href = this.appConfig.urls.question(data);
-    });
+    this.appConfig.questionNew(
+      newBoardInfo,
+      data => { window.location.href = this.appConfig.urls.question(data); },
+    );
   }
   
   onSearch(postData) {
