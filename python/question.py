@@ -15,6 +15,7 @@ from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey, fun
 from sqlalchemy.orm import relationship, backref
 
 from setup import db
+from logging_config import logger
 
 class Question(db.Model):
     '''
@@ -88,12 +89,9 @@ class Question(db.Model):
         Convert struct from blackboards database to nodes and edges structs
         '''
 
-        # add named node on the front (the first node must be named in order to build)
-        query = Question.add_name_node_to_query(dictionary)
-        if dictionary[-1]['nodeSpecType'] == 'Named Node':
-            query = Question.add_name_node_to_query(query[::-1])[::-1]
+        query = dictionary
 
-        # convert to list of nodes (with conditions) as edges with lengths
+        # convert to list of nodes (with conditions) and edges with lengths
         nodes = [dict(n, **{"id":i}) for i, n in enumerate(query)\
             if not n['nodeSpecType'] == 'Unspecified Nodes']
         edges = [dict(start=i-1, end=i, length=[query[i-1]['meta']['numNodesMin']+1, query[i-1]['meta']['numNodesMax']+1])\
@@ -145,7 +143,7 @@ class Question(db.Model):
         Returns the answer struct, something along the lines of:
         https://docs.google.com/document/d/1O6_sVSdSjgMmXacyI44JJfEVQLATagal9ydWLBgi-vE
         '''
-
+        
         # get all subgraphs relevant to the question from the knowledge graph
         database = KnowledgeGraph()
         subgraphs = database.query(self) # list of lists of nodes with 'id' and 'bound'
@@ -182,22 +180,25 @@ class Question(db.Model):
         Returns the query as a string.
         '''
 
-        edge_types = ['Lookup' if n['nodeSpecType'] == 'Named Node' else 'Result' for n in self.nodes]
+        # add named node on the front (the first node must be named in order to build)
+        nodes, edges = Question.add_name_nodes_to_query(list(self.nodes), list(self.edges))
+
+        edge_types = ['Lookup' if n['nodeSpecType'] == 'Named Node' else 'Result' for n in nodes]
         edge_types.pop(1)
 
-        node_count = len(self.nodes)
-        edge_count = node_count-1
+        node_count = len(nodes)
+        edge_count = len(edges)
 
         # generate internal node and edge variable names
         node_names = ['n{:d}'.format(i) for i in range(node_count)]
         edge_names = ['r{0:d}{1:d}'.format(i, i+1) for i in range(edge_count)]
 
         # define bound nodes (no edges are bound)
-        node_bound = [n['isBoundName'] for n in self.nodes]
+        node_bound = [n['isBoundName'] for n in nodes]
         edge_bound = [False for e in range(edge_count)]
 
         node_conditions = []
-        for node in self.nodes:
+        for node in nodes:
             node_conds = []
             if node['isBoundName']:
                 node_conds += [[{'prop':'name', 'val':node['type']+'.'+node['label'], 'op':'=', 'cond':True},\
@@ -208,7 +209,7 @@ class Question(db.Model):
 
         # generate MATCH command string to get paths of the appropriate size
         match_strings = ['MATCH '+'({}:{})'.format(node_names[0], 'q_'+self.hash)]
-        match_strings += ['MATCH '+'({})-'.format(node_names[i])+'[{0}:{2}*{3}..{4}]-({1})'.format(edge_names[i], node_names[i+1], edge_types[i], self.edges[i]['length'][0], self.edges[i]['length'][-1]) for i in range(edge_count)]
+        match_strings += ['MATCH '+'({})-'.format(node_names[i])+'[{0}:{2}*{3}..{4}]-({1})'.format(edge_names[i], node_names[i+1], edge_types[i], edges[i]['length'][0], edges[i]['length'][-1]) for i in range(edge_count)]
         with_strings = ['WITH DISTINCT '+', '.join(node_names[:i+1]) for i in range(edge_count)]
 
         # generate WHERE command string to prune paths to those containing the desired nodes/node types
@@ -241,39 +242,49 @@ class Question(db.Model):
         return query_string
     
     @staticmethod
-    def add_name_node_to_query(query):
+    def add_name_nodes_to_query(nodes, edges):
         '''
         Adds name node to the beginning of a query
         based on the "label" specified in the leading "named node"
         '''
 
-        first_node = query[0]
-        name_type = 'NAME.DISEASE' if first_node['type'] == 'Disease' or first_node['type'] == 'Phenotype'\
-            else 'NAME.DRUG' if first_node['type'] == 'Substance'\
-            else 'idk'
-        zeroth_node = {
-            "id": "namenode",
-            "nodeSpecType": "Named Node",
-            "type": name_type,
-            "label": first_node['label'],
-            "isBoundName": True,
-            "isBoundType": True,
-            "meta": {
-                "name": first_node['meta']['name']
-            },
-            "color": first_node['color']
-        }
-        first_node = {
-            "id": first_node['id'],
-            "nodeSpecType": "Node Type",
-            "type": first_node['type'],
-            "label": first_node['type'],
-            "isBoundName": False,
-            "isBoundType": True,
-            "meta": {},
-            "color": first_node['color']
-        }
-        return [zeroth_node, first_node] + query[1:]
+        max_id = max([n['id'] for n in nodes])
+
+        new_nodes = []
+        new_edges = edges
+        for i, n in enumerate(nodes):
+            if n['nodeSpecType'] == 'Named Node':
+                name_type = 'NAME.DISEASE' if n['type'] == 'Disease' or n['type'] == 'Phenotype'\
+                    else 'NAME.DRUG' if n['type'] == 'Substance'\
+                    else 'idk'
+                max_id += 1
+                zeroth_node = {
+                    "id": max_id,
+                    "nodeSpecType": "Named Node",
+                    "type": name_type,
+                    "label": n['label'],
+                    "isBoundName": True,
+                    "isBoundType": True,
+                    "meta": {
+                        "name": n['meta']['name']
+                    },
+                    "color": n['color']
+                }
+                first_node = {
+                    "id": n['id'],
+                    "nodeSpecType": "Node Type",
+                    "type": n['type'],
+                    "label": n['type'],
+                    "isBoundName": False,
+                    "isBoundType": True,
+                    "meta": {},
+                    "color": n['color']
+                }
+                new_edges += [{'start':max_id, 'end':n['id'], 'length':[1]}]
+                new_nodes += [zeroth_node, first_node]
+            else:
+                new_nodes += [n]
+        return new_nodes, new_edges
 
 def list_questions():
     return db.session.query(Question).all()
