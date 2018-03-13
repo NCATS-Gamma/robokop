@@ -11,6 +11,7 @@
 #   celery multi start answerer@robokop updater@robokop -A tasks.celery -l info -c:1 4 -c:2 1 -Q:1 answer -Q:2 update
 # to stop them:
 #   celery multi stop answerer updater
+# `celery multi restart ...` seems to begin 4 processes for the updater. Avoid this.
 
 # spin up Redis message passing:
 # redis-server
