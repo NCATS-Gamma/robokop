@@ -46,6 +46,13 @@ class AppConfig {
     this.answersetData = this.answersetData.bind(this);
     this.answersetNew = this.answersetNew.bind(this);
     this.answerData = this.answerData.bind(this);
+
+    this.enableNewAnswersets = ((config.ui !== null) && (config.ui.enableNewAnswersets !== null)) ? config.ui.enableNewAnswersets : true;
+    this.enableNewQuestions = ((config.ui !== null) && (config.ui.enableNewQuestions !== null)) ? config.ui.enableNewQuestions : true;
+    this.enableQuestionRefresh = ((config.ui !== null) && (config.ui.enableQuestionRefresh !== null)) ? config.ui.enableQuestionRefresh : true;
+    this.enableQuestionEdit = ((config.ui !== null) && (config.ui.enableQuestionEdit !== null)) ? config.ui.enableQuestionEdit : true;
+    this.enableQuestionDelete = ((config.ui !== null) && (config.ui.enableQuestionDelete !== null)) ? config.ui.enableQuestionDelete : true;
+    this.enableQuestionFork = ((config.ui !== null) && (config.ui.enableQuestionFork !== null)) ? config.ui.enableQuestionFork : true;
   }
 
   url(ext) {
@@ -55,15 +62,15 @@ class AppConfig {
   landingData(fun) { this.getRequest(`${this.urls.landing}/data`, fun); }
   accountData(fun) { this.getRequest(`${this.urls.account}/data`, fun); }
   adminData(fun) { this.getRequest(`${this.urls.admin}/data`, fun); }
-  questionNew(data, fun) { this.postRequest(`${this.urls.questionNew}`, data, fun, function(err) {throw err;}); }
-  questionUpdateMeta(data, fun) { this.postRequest(`${this.api.questionUpdate}`, data, fun, function(err) {throw err;}); }
+  questionNew(data, fun) { this.postRequest(`${this.urls.questionNew}`, data, fun, (err) => { throw err; }); }
+  questionUpdateMeta(data, fun) { this.postRequest(`${this.api.questionUpdate}`, data, fun, (err) => { throw err; }); }
   questionNewData(fun) { this.getRequest(`${this.urls.questionNew}/data`, fun); }
   questionListData(fun) { this.getRequest(`${this.urls.questionList}/data`, fun); }
   questionData(id, fun) { this.getRequest(`${this.urls.question(id)}/data`, fun); }
   questionSubgraph(id, fun) { this.getRequest(`${this.urls.question(id)}/subgraph`, fun); }
   answersetData(id, fun) { this.getRequest(`${this.urls.answerset(id)}/data`, fun); }
   answersetNew(qid) { this.postRequest(`${this.urls.question(qid)}/go`, null, () => {}, () => {}); }
-  updateKG(qid) { this.postRequest(`${this.urls.question(qid)}/update`, null, () => {}, () => {}); }
+  refresh(qid) { this.postRequest(`${this.urls.question(qid)}/update`, null, () => {}, () => {}); }
   answerData(setId, id, fun) { this.getRequest(`${this.urls.answer(setId, id)}/data`, fun); }
 
   open(newUrlExt) {

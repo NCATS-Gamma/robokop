@@ -39,6 +39,7 @@ class Header extends React.Component {
     const data = this.getPropsData();
 
     const isAuth = data.user.is_authenticated;
+    const showNewQuestion = isAuth && this.appConfig.enableNewQuestions;
     const hasStatus = data.status && data.status.length > 0;
 
     return (
@@ -54,7 +55,7 @@ class Header extends React.Component {
             <NavItem eventKey={1} href={this.appConfig.urls.questionList}>
               Questions
             </NavItem>
-            {isAuth &&
+            {showNewQuestion &&
             <NavItem eventKey={2} href={this.appConfig.urls.questionNew}>
               New Question
             </NavItem>

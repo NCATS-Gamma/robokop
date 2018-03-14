@@ -15,14 +15,12 @@ class Landing extends React.Component {
 
     this.state = {
       ready: false,
-      timestamp: null,
       user: {},
     };
   }
 
   componentDidMount() {
     this.appConfig.landingData(data => this.setState({
-      timestamp: data.timestamp,
       user: data.user,
       ready: true,
     }));
@@ -37,6 +35,7 @@ class Landing extends React.Component {
   renderLoaded() {
     const user = this.appConfig.ensureUser(this.state.user);
     const showLogIn = !user.is_authenticated;
+    const shownNewQuestion = !showLogIn && this.appConfig.enableNewQuestions;
 
     return (
       <div>
@@ -52,13 +51,13 @@ class Landing extends React.Component {
           <p>
             Robokop is a biomedical reasoning system that interects with many biomedical knowledge sources to help
             find answers to questions. Robokop is one of several prototype systems under active development with
-            <a href="https://ncats.nih.gov/">NIH NCATS</a>.
+            <a href="https://ncats.nih.gov/"> NIH NCATS</a>.
           </p>
           <ButtonToolbar>
             <Button bsSize="large" href={this.appConfig.urls.questionList}>
               Browse Questions
             </Button>
-            {!showLogIn &&
+            {shownNewQuestion &&
               <Button bsSize="large" href={this.appConfig.urls.questionNew}>
                 Ask a Question
               </Button>

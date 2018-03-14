@@ -25,15 +25,19 @@ class AnswersetBrowser extends React.Component {
   }
 
   render() {
+    const { showNewButton } = this.props;
+
     return (
       <Row style={{ paddingTop: '15px' }}>
         <Col md={2}>
           <h4>Answer Sets</h4>
-          <Button bsSize="small" onClick={this.props.callbackAnswersetNew}>
-            New Answer Set
-            <br />
-            <GoPlaybackPlay />
-          </Button>
+          {showNewButton &&
+            <Button bsSize="small" onClick={this.props.callbackAnswersetNew}>
+              New Answer Set
+              <br />
+              <GoPlaybackPlay />
+            </Button>
+          }
         </Col>
         <Col md={10}>
           <AnswersetGrid

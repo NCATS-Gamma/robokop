@@ -17,19 +17,30 @@ class QuestionToolbar extends React.Component {
     return (
       <ButtonToolbar>
         <ButtonGroup>
-          <Button title="Fork Question" onClick={this.props.callbackFork}><GoRepoForked /></Button>
-          <Button title="Update KG and Get New Answer Set" onClick={this.props.callbackUpdate}><GoSync /></Button>
-          <Button title="Get New Answer Set" onClick={this.props.callbackNewAnswerset}><GoPlaybackPlay /></Button>
-          {this.props.enableDelete &&
+          {this.props.showFork &&
+            <Button title="Fork Question" onClick={this.props.callbackFork}><GoRepoForked /></Button>
+          }
+          {this.props.showRefresh &&
+            <Button title="Update KG and Get New Answer Set" onClick={this.props.callbackUpdate}><GoSync /></Button>
+          }
+          {this.props.showNewAnswerset &&
+            <Button title="Get New Answer Set" onClick={this.props.callbackNewAnswerset}><GoPlaybackPlay /></Button>
+          }
+          {this.props.showDelete &&
             <Button title="Delete Question" onClick={this.props.callbackDelete}><GoTrashcan /></Button>
-        }
+          }
         </ButtonGroup>
       </ButtonToolbar>
     );
   }
 }
+
+
 QuestionToolbar.defaultProps = {
-  enableDelete: false,
+  showFork: true,
+  showRefresh: true,
+  showNewAnswerset: true,
+  showDelete: false,
   callbackFork: () => {},
   callbackUpdate: () => {},
   callbackNewAnswerset: () => {},
