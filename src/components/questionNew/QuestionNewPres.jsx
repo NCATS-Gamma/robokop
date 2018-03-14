@@ -174,12 +174,12 @@ class QuestionNewPres extends React.Component {
       </Popover>
     );
     return (
-      <div id="ProtocopNewBoard" className="col-md-12">
+      <div id="RobokopNewQuestion" className="col-md-12">
         <div className="row">
           <div className="col-md-10 col-md-offset-1" style={this.styles.top}>
-            <h2>{'Start a New Blackboard'}</h2>
+            <h2>{'Start a New Question'}</h2>
             <p>
-              {'In ROBOKOP, blackboards are created using the interface below.'}
+              {'Questions are created using the interface below.'}
               <br />
               {'To get started quickly, try one of these templates:'}
             </p>
@@ -202,7 +202,7 @@ class QuestionNewPres extends React.Component {
             <div className="row">
               <div className="col-md-12">
                 <h5>
-                  <bold style={{ fontWeight: '600' }}>Blackboard Information:</bold>
+                  <bold style={{ fontWeight: '600' }}>Question Information:</bold>
                   <OverlayTrigger placement="right" overlay={infoHelp}>
                     <span> {'    '} <GoQuestion /> </span>
                   </OverlayTrigger>
@@ -214,7 +214,7 @@ class QuestionNewPres extends React.Component {
                 <FormControl
                   type="text"
                   value={this.props.name}
-                  placeholder="Blackboard name:"
+                  placeholder="Name"
                   onChange={this.props.handleChangeName}
                 />
               </div>
@@ -223,9 +223,19 @@ class QuestionNewPres extends React.Component {
               <div className="col-md-6">
                 <FormControl
                   type="textarea"
-                  value={this.props.description}
-                  placeholder="Blackboard description:"
-                  onChange={this.props.handleChangeDescription}
+                  value={this.props.natural}
+                  placeholder="Natural language question"
+                  onChange={this.props.handleChangeNatural}
+                />
+              </div>
+            </div>
+            <div className="row" style={{ paddingTop: '5px' }}>
+              <div className="col-md-6">
+                <FormControl
+                  type="textarea"
+                  value={this.props.notes}
+                  placeholder="Notes"
+                  onChange={this.props.handleChangeNotes}
                 />
               </div>
             </div>

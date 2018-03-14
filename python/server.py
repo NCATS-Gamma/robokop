@@ -11,6 +11,7 @@
 #   celery multi start answerer@robokop updater@robokop -A tasks.celery -l info -c:1 4 -c:2 1 -Q:1 answer -Q:2 update
 # to stop them:
 #   celery multi stop answerer updater
+# `celery multi restart ...` seems to begin 4 processes for the updater. Avoid this.
 
 # spin up Redis message passing:
 # redis-server
@@ -33,16 +34,13 @@ from flask_security.core import current_user
 from flask_login import LoginManager, login_required
 
 from setup import app, db
-import logging_config
+from logging_config import logger
 from user import User, Role
 from question import Question, list_questions, get_question_by_id, list_questions_by_username, list_questions_by_hash
 from answer import get_answerset_by_id, list_answersets_by_question_hash, get_answer_by_id, list_answers_by_answerset
 from feedback import Feedback, list_feedback_by_answer
 
 from tasks import celery, answer_question, update_kg
-
-# set up logger
-logger = logging.getLogger("robokop")
 
 storage = Storage(db)
 
@@ -169,10 +167,11 @@ def new_submission():
     """Create new question"""
     user_id = current_user.id
     name = request.json['name']
-    description = request.json['description']
+    natural_question = request.json['natural']
+    notes = request.json['notes']
     nodes, edges = Question.dictionary_to_graph(request.json['query'])
     qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
-    q = Question(id=qid, user_id=user_id, name=name, description=description, nodes=nodes, edges=edges)
+    q = Question(id=qid, user_id=user_id, name=name, natural_question=natural_question, notes=notes, nodes=nodes, edges=edges)
     return qid, 201
 
 @app.route('/q/new/data', methods=['GET'])
@@ -207,10 +206,23 @@ def questions_data():
         'user_questions': [q.toJSON() for q in user_question_list]})
 
 # Question
-@app.route('/q/<question_id>')
+@app.route('/q/<question_id>', methods=['GET'])
 def question(question_id):
     """Deliver user info page"""
     return render_template('question.html', question_id=question_id)
+
+@app.route('/q/<question_id>', methods=['POST'])
+def question_action(question_id):
+    """ run update or answer actions """
+    command = request.json['command']
+    if 'answer' in command:
+        # Answer a question
+        task = answer_question.apply_async(args=[question_id])
+        return jsonify({'task_id':task.id}), 202
+    elif 'update' in command:
+        # Update the knowledge graph for a question
+        task = update_kg.apply_async(args=[question_id])
+        return jsonify({'task_id':task.id}), 202
 
 @app.route('/q/<question_id>/data', methods=['GET'])
 def question_data(question_id):
@@ -246,22 +258,6 @@ def update_status(task_id):
 def answer_status(task_id):
     task = answer_question.AsyncResult(task_id)
     return task.state
-
-@app.route('/q/<question_id>/go', methods=['POST'])
-def question_answer(question_id):
-    """Answer a question"""
-
-    task = answer_question.apply_async(args=[question_id])
-
-    return jsonify({'task_id':task.id}), 202
-
-@app.route('/q/<question_id>/update', methods=['POST'])
-def question_update(question_id):
-    """Update the knowledge graph for a question"""
-
-    task = update_kg.apply_async(args=[question_id])
-
-    return jsonify({'task_id':task.id}), 202
 
 # Answer Set
 @app.route('/a/<answerset_id>')
@@ -348,10 +344,6 @@ def accountEdit():
 ################################################################################
 ##### New Question #############################################################
 ################################################################################
-@app.route('/q/new/update', methods=['POST'])
-def question_new_update():
-    """Initiate a process for a new question"""
-
 @app.route('/q/new/search', methods=['POST'])
 def question_new_search():
     """Validate/provide suggestions for a search term"""

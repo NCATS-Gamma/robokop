@@ -17,6 +17,7 @@ dependencies:
   - psycopg2
   - psycopg2-binary
   - bcrypt
+  - kombu
 - nltk
 - networkx=1.11
 - nb_conda

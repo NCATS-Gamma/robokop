@@ -18,6 +18,8 @@ from lookup_utils import lookup_disease_by_name, lookup_drug_by_name, lookup_phe
 from userquery import UserQuery
 from kombu import Queue
 
+from logging_config import logger
+
 # set up Celery
 app.config['broker_url'] = os.environ["ROBOKOP_CELERY_BROKER_URL"]
 app.config['result_backend'] = os.environ["ROBOKOP_CELERY_RESULT_BACKEND"]
@@ -27,10 +29,6 @@ celery.conf.task_queues = (
     Queue('answer', routing_key='answer'),
     Queue('update', routing_key='update'),
 )
-# app.conf.task_routes = {'feed.tasks.*': {'queue': 'feeds'}}
-
-# set up logger
-logger = logging.getLogger("robokop")
 
 @celery.task
 def wait_and_email():
@@ -102,32 +100,34 @@ def update_kg(self, question_id):
 
 
 def questionToRenciQuery(question, rosetta):
-    if not question.nodes[0]['nodeSpecType'] == 'Named Node':
+    idx = [i for i,n in enumerate(question.nodes) if n['nodeSpecType'] == 'Named Node']
+    if not idx: # is empty
         raise TypeError('First node should be named.')
-    two_sided = question.nodes[-1]['nodeSpecType'] == 'Named Node'
+    elif len(idx)>2:
+        raise TypeError('There should be no more than 2 named nodes.')
+    two_sided = len(idx) == 2
 
-    start_name = question.nodes[0]['label']
-    start_type = question.nodes[1]['type']
+    start_name = question.nodes[idx[0]]['label']
+    start_type = question.nodes[idx[0]]['type']
     start_identifiers = lookup_identifier(start_name, start_type, rosetta.core)
     start_node = generate_name_node(start_name, start_type)
 
     if two_sided:
-        end_name = question.nodes[-1]['label']
-        end_type = question.nodes[-2]['type']
+        end_name = question.nodes[idx[1]]['label']
+        end_type = question.nodes[idx[1]]['type']
         end_identifiers = lookup_identifier(end_name, end_type, rosetta.core)
         end_node = generate_name_node(end_name, end_type)
 
     query = UserQuery(start_identifiers, start_type, start_node)
     if two_sided:
-        middlybits = question.edges[1:-2]
+        middlybits = [e for e in question.edges if not e['start'] == question.nodes[idx[1]]['id']]
     else:
-        middlybits = question.edges[1:]
+        middlybits = question.edges
     for e in middlybits:
         query.add_transition(question.nodes[e['end']]['type'].replace(' ', ''),\
             min_path_length=e['length'][0],\
             max_path_length=e['length'][0])
     if two_sided:
-        end_type = question.nodes[-2]['type']
         query.add_transition(end_type, end_values=end_identifiers)
         query.add_end_lookup_node(end_node)
     return query
