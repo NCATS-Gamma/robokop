@@ -63,22 +63,16 @@ class AnswersetSummary extends React.Component {
         <Grid>
           <Row>
             <Col md={12}>
-              <PageHeader onClick={() => window.open(this.props.questionUrlFunc(quest), '_self')} style={{cursor: 'hand'}}>
+              <PageHeader onClick={() => window.open(this.props.questionUrlFunc(quest), '_self')} style={{ cursor: 'hand' }}>
                 {quest.name}
                 <br />
                 <small>{quest.natural_question}</small>
                 <br />
               </PageHeader>
-              {`Answer found ${dateToString(answerDate)}`}
             </Col>
           </Row>
           <Row>
-            <Col md={6}>
-              {this.getOtherAnswersetContent()}
-            </Col>
-            <Col md={6}>
-              {this.getOtherQuestionContent()}
-            </Col>
+            {`Answer found ${dateToString(answerDate)}`}
           </Row>
         </Grid>
       </div>

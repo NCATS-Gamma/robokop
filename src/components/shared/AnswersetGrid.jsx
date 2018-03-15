@@ -9,10 +9,9 @@ class AnswersetGrid extends React.Component {
 
     this.styles = {
       card: {
-        marginTop: '10px',
         borderRadius: '0.5rem',
         marginBottom: '0.5rem',
-        width: '70px',
+        width: '100px',
         fontSize: 12,
         color: 'black',
         display: 'flex',
@@ -40,13 +39,13 @@ class AnswersetGrid extends React.Component {
       '#ffed6f',
     ];
 
-    return colors[ind % colors.length]
+    return colors[ind % colors.length];
   }
 
   render() {
-    const colWidth=100;
-    const height=110;
-    const rowHeight=80;
+    const colWidth = 100;
+    // const height = 110;
+    const rowHeight = 110;
     const numColumns = this.props.answersets.length;
 
     const cellRenderer = ({
@@ -62,7 +61,7 @@ class AnswersetGrid extends React.Component {
         thisColor = this.getColor(columnIndex);
         thisOnClick = () => this.props.callbackAnswersetOpen(this.props.answersets[columnIndex]);
       }
-      const thisStyle = { backgroundColor: thisColor, height: rowHeight };
+      const thisStyle = { backgroundColor: thisColor, height: rowHeight, padding: '10px'};
 
       return (
         <div key={key} style={{ ...style, ...this.styles.card, ...thisStyle }} onClick={thisOnClick}>
@@ -71,18 +70,18 @@ class AnswersetGrid extends React.Component {
       );
     };
 
-    
     return (
       <div style={{ minHeight: this.props.height }}>
         <AutoSizer>
           {({ height, width }) => (
             <Grid
+              style={{ outline: 'none' }}
               cellRenderer={cellRenderer}
               columnCount={numColumns}
               columnWidth={colWidth}
               height={height}
               rowCount={1}
-              rowHeight={rowHeight}
+              rowHeight={height}
               width={width}
             />
           )}

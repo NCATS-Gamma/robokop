@@ -38,7 +38,8 @@ class QuestionPres extends React.Component {
     };
 
     const userOwnsThisQuestion = this.props.owner === this.props.user.username; // Fix Me
-    const enableEditing = userOwnsThisQuestion || this.props.user.is_admin;
+    const enableEditing = (userOwnsThisQuestion && this.props.enableQuestionEdit) || this.props.user.is_admin
+    const enableDelete = (userOwnsThisQuestion && this.props.enableQuestionDelete) || this.props.user.is_admin
     return (
       <Grid>
         <Row>
@@ -46,10 +47,15 @@ class QuestionPres extends React.Component {
             <QuestionToolbar
               question={this.props.question}
               enableDelete={enableEditing}
-              callbackUpdate={this.props.callbackUpdate}
+              callbackRefresh={this.props.callbackRefresh}
               callbackNewAnswerset={this.props.callbackNewAnswerset}
               callbackFork={this.props.callbackFork}
               callbackDelete={this.props.callbackDelete}
+
+              showFork={this.props.enableQuestionFork}
+              showRefresh={this.props.enableQuestionRefresh}
+              showNewAnswerset={this.props.enableNewAnswersets}
+              showDelete={enableDelete}
             />
           </Col>
         </Row>
@@ -75,6 +81,7 @@ class QuestionPres extends React.Component {
         <Row>
           <Col md={12}>
             <AnswersetBrowser
+              showNewButton={this.props.enableNewAnswersets}
               answersets={this.props.answersets}
               callbackAnswersetNew={this.props.callbackNewAnswerset}
               callbackAnswersetOpen={this.callbackAnswerset}

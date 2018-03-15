@@ -3,5 +3,13 @@
   "serverHost": "0.0.0.0",
   "clientHost": "127.0.0.1",
   "neo4jPort": 7474,
-  "port": 80
+  "port": 80,
+  "ui": {
+    "enableNewAnswersets": false,
+    "enableNewQuestions": false,
+    "enableQuestionRefresh": false,
+    "enableQuestionEdit": false,
+    "enableQuestionDelete": false,
+    "enableQuestionFork": false
+  }
 }

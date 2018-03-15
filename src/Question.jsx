@@ -26,7 +26,7 @@ class Question extends React.Component {
     };
 
     this.callbackUpdateMeta = this.callbackUpdateMeta.bind(this);
-    this.callbackUpdateKG = this.callbackUpdateKG.bind(this);
+    this.callbackRefresh = this.callbackRefresh.bind(this);
     this.callbackNewAnswerset = this.callbackNewAnswerset.bind(this);
     this.callbackFork = this.callbackFork.bind(this);
     this.callbackDelete = this.callbackDelete.bind(this);
@@ -52,10 +52,10 @@ class Question extends React.Component {
     this.appConfig.answersetNew(q.id);
   }
 
-  callbackUpdateKG() {
+  callbackRefresh() {
     const q = this.state.question;
     // Send post request to update question data.
-    this.appConfig.updateKG(q.id);
+    this.appConfig.updateRefresh(q.id);
   }
 
   callbackUpdateMeta(newMeta, fun) {
@@ -203,7 +203,7 @@ class Question extends React.Component {
           user={this.state.user}
           owner={this.state.owner}
           callbackUpdateMeta={this.callbackUpdateMeta}
-          callbackUpdate={this.callbackUpdateKG}
+          callbackRefresh={this.callbackRefresh}
           callbackNewAnswerset={this.callbackNewAnswerset}
           callbackFork={this.callbackFork}
           callbackDelete={this.callbackDelete}
@@ -212,6 +212,12 @@ class Question extends React.Component {
           question={this.state.question}
           answersets={this.state.answersets}
           subgraph={this.state.subgraph}
+          enableNewAnswersets={this.appConfig.enableNewAnswersets}
+          enableNewQuestions={this.appConfig.enableNewQuestions}
+          enableQuestionRefresh={this.appConfig.enableQuestionRefresh}
+          enableQuestionEdit={this.appConfig.enableQuestionEdit}
+          enableQuestionDelete={this.appConfig.enableQuestionDelete}
+          enableQuestionFork={this.appConfig.enableQuestionFork}
         />
         <Dialog ref={(el) => { this.dialog = el; }} />
       </div>

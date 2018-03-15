@@ -13,8 +13,8 @@ class AnswersetBrowser extends React.Component {
 
     this.styles = {
       container: {
-        border: '1px solid #d1d1d1',
-        boxShadow: '0px 0px 5px #c3c3c3',
+        // border: '1px solid #d1d1d1',
+        // boxShadow: '0px 0px 5px #c3c3c3',
         // margin: 'auto',
         // padding: '10px',
         // display: 'flex',
@@ -25,19 +25,25 @@ class AnswersetBrowser extends React.Component {
   }
 
   render() {
+    const { showNewButton } = this.props;
+
     return (
-      <Row>
+      <Row style={{ paddingTop: '15px' }}>
         <Col md={2}>
           <h4>Answer Sets</h4>
-          <Button onClick={this.props.callbackAnswersetNew} >Get Another Answer Set <br /> <GoPlaybackPlay /></Button>
+          {showNewButton &&
+            <Button bsSize="small" onClick={this.props.callbackAnswersetNew}>
+              New Answer Set
+              <br />
+              <GoPlaybackPlay />
+            </Button>
+          }
         </Col>
         <Col md={10}>
-          <div style={this.styles.container}>
-            <AnswersetGrid
-              answersets={this.props.answersets}
-              callbackAnswersetOpen={this.props.callbackAnswersetOpen}
-            />
-          </div>
+          <AnswersetGrid
+            answersets={this.props.answersets}
+            callbackAnswersetOpen={this.props.callbackAnswersetOpen}
+          />
         </Col>
       </Row>
     );
