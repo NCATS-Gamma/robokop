@@ -49,7 +49,7 @@ class ProtocopRankingSelectorGraph extends React.Component {
     Object.keys(NodeTypes).forEach(k => (nodeTypeColorMap[NodeTypes[k].tag] = NodeTypes[k].color));
     return sgp.map((p, ind) => {
       const opts = p.map((e) => {
-        return { value: e.id, label: `${e.score.toFixed(2)}: ` + e.name, score: e.score, name: e.name };
+        return { value: e.id, label: `${e.score.toFixed(2)}: ` + e.name, score: e.score, name: e.name, id: e.id };
       });
       const background = nodeTypeColorMap[p[0].type] ? nodeTypeColorMap[p[0].type] : undefinedColor;
       const value = this.props.subgraph.nodes[ind].id;
@@ -88,8 +88,8 @@ class ProtocopRankingSelectorGraph extends React.Component {
             disabled={disableSelect}
             clearable={false}
             style={style}
-            valueRenderer={opt => (<div>{opt.name}<span className={'pull-right'} style={{ paddingRight: '15px' }}> {opt.score.toFixed(4)} </span></div>)}
-            optionRenderer={opt => (<div>{opt.name}<span className={'pull-right'}> {opt.score.toFixed(4)} </span></div>)}
+            valueRenderer={opt => (<div>{`${opt.name} (${opt.id})`}<span className={'pull-right'} style={{ paddingRight: '15px' }}> {opt.score.toFixed(4)} </span></div>)}
+            optionRenderer={opt => (<div>{`${opt.name} (${opt.id})`}<span className={'pull-right'}> {opt.score.toFixed(4)} </span></div>)}
           />
         </Panel>
       );
