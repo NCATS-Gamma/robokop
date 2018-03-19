@@ -55,7 +55,7 @@ class Question extends React.Component {
   callbackRefresh() {
     const q = this.state.question;
     // Send post request to update question data.
-    this.appConfig.updateRefresh(q.id);
+    this.appConfig.refresh(q.id);
   }
 
   callbackUpdateMeta(newMeta, fun) {

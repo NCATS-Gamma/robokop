@@ -21,7 +21,7 @@ class QuestionToolbar extends React.Component {
             <Button title="Fork Question" onClick={this.props.callbackFork}><GoRepoForked /></Button>
           }
           {this.props.showRefresh &&
-            <Button title="Update KG and Get New Answer Set" onClick={this.props.callbackUpdate}><GoSync /></Button>
+            <Button title="Update KG and Get New Answer Set" onClick={this.props.callbackRefresh}><GoSync /></Button>
           }
           {this.props.showNewAnswerset &&
             <Button title="Get New Answer Set" onClick={this.props.callbackNewAnswerset}><GoPlaybackPlay /></Button>
