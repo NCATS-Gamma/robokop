@@ -51,9 +51,9 @@ RUN mkdir /home/murphy
 WORKDIR /home/murphy
 
 ## Get software
-RUN git clone https://github.com/NCATS-Gamma/robokop-rank.git
 RUN git clone https://github.com/NCATS-Gamma/robokop-interfaces.git
 RUN git clone https://github.com/NCATS-Gamma/robokop-build.git
+RUN git clone https://github.com/NCATS-Gamma/robokop-rank.git
 RUN git clone https://github.com/NCATS-Gamma/robokop.git
 
 WORKDIR /home/murphy/robokop
@@ -90,6 +90,6 @@ RUN npm run webpack
 ENV HOME=/home/murphy
 WORKDIR /home/murphy/robokop
 COPY ./startup.sh /home/murphy/startup.sh
-COPY ./setenv /home/murphy/setenv
 RUN sed -i -e 's/import robokop_setup_environ//' ./python/robokop_flask_config.py
+RUN sed -i -e 's/"\(enable.*\)": false/"\1": true/' ./config.json
 ENTRYPOINT ["../startup.sh"]
