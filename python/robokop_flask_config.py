@@ -1,13 +1,11 @@
 import os
 
-import robokop_setup_environ
-
 DEBUG = True
 SECRET_KEY = os.environ["ROBOKOP_SECRET_KEY"]
 DEFAULT_MAIL_SENDER = os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"]
 SECURITY_EMAIL_SENDER = os.environ["ROBOKOP_SECURITY_EMAIL_SENDER"]
 
-SQLALCHEMY_DATABASE_URI = 'postgresql://' + os.environ["ROBOKOP_POSTGRESQL_USER"] + '@' + os.environ["ROBOKOP_POSTGRESQL_HOST"] + ':' + os.environ["ROBOKOP_POSTGRESQL_PORT"] + '/robokop'
+SQLALCHEMY_DATABASE_URI = 'postgresql://' + os.environ["POSTGRES_USER"] + '@' + os.environ["POSTGRES_HOST"] + ':' + os.environ["POSTGRES_PORT"] + '/robokop'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # Security Misc

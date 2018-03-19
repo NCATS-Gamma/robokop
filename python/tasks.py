@@ -21,8 +21,8 @@ from kombu import Queue
 from logging_config import logger
 
 # set up Celery
-app.config['broker_url'] = os.environ["ROBOKOP_CELERY_BROKER_URL"]
-app.config['result_backend'] = os.environ["ROBOKOP_CELERY_RESULT_BACKEND"]
+app.config['broker_url'] = os.environ["CELERY_BROKER_URL"]
+app.config['result_backend'] = os.environ["CELERY_RESULT_BACKEND"]
 celery = Celery(app.name, broker=app.config['broker_url'])
 celery.conf.update(app.config)
 celery.conf.task_queues = (

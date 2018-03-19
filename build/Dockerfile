@@ -37,18 +37,6 @@ RUN apt-get install -y curl grep sed dpkg && \
 
 ENV PATH /opt/conda/bin:$PATH
 
-## Get ready to install things
-ENV INST_SCRIPTS=$HOME/install
-ADD ./src/neo4j/install/ $INST_SCRIPTS/
-RUN find $INST_SCRIPTS -name '*.sh' -exec chmod a+x {} +
-
-## Install neo4j
-RUN $INST_SCRIPTS/neo4j.sh
-RUN $INST_SCRIPTS/neo4j_conf.sh
-
-## Add apoc
-RUN $INST_SCRIPTS/apoc.sh
-
 ## Install NodeJS
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN apt-get install -y nodejs
@@ -63,20 +51,22 @@ RUN mkdir /home/murphy
 WORKDIR /home/murphy
 
 ## Get software
-RUN git clone https://github.com/NCATS-Gamma/robokop.git
 RUN git clone https://github.com/NCATS-Gamma/robokop-rank.git
-RUN git clone https://github.com/NCATS-Gamma/robokop-build.git
 RUN git clone https://github.com/NCATS-Gamma/robokop-interfaces.git
+RUN git clone https://github.com/NCATS-Gamma/robokop-build.git
+RUN git clone https://github.com/NCATS-Gamma/robokop.git
 
 WORKDIR /home/murphy/robokop
+
+RUN git checkout docker
 
 ## ugh dependency issues
 RUN sed -i -e 's/gnureadline==6.3.3/gnureadline==6.3.8/' ../robokop-build/builder/requirements.txt
 RUN sed -i -e 's/gnureadline==6.3.3/gnureadline==6.3.8/' ../robokop-interfaces/greent/requirements.txt
 
 ## Install all requirements
-RUN pip install -r ../robokop-build/builder/requirements.txt
 RUN pip install -r ../robokop-interfaces/greent/requirements.txt
+RUN pip install -r ../robokop-build/builder/requirements.txt
 RUN pip install -r ./requirements.txt
 
 ## Set up the website
@@ -86,7 +76,6 @@ RUN npm run webpack
 ## Copy Neo4j database and associated blackboards sqlite database
 # COPY ./graph.db /var/lib/neo4j/data/databases/graph.db
 # RUN chown -R neo4j:neo4j /var/lib/neo4j/data/databases/graph.db
-# COPY ./blackboards.db /home/murphy/robokop/blackboards.db
 
 ## Copy files necessary for query generation
 # COPY ./ICD_Combo_Chi2.txt     /home/murphy/robokop-build/builder/ICD_Combo_Chi2.txt
@@ -95,12 +84,12 @@ RUN npm run webpack
 # COPY ./CTD_chemicals.tsv      /home/murphy/robokop-interfaces/greent/CTD_chemicals.tsv
 # COPY ./chemotext.words.txt    /home/murphy/robokop-interfaces/greent/chemotext.words.txt
 
-EXPOSE 5000
-EXPOSE 7474
-EXPOSE 7687
+# EXPOSE 80
 
 ## Finish up
 ENV HOME=/home/murphy
 WORKDIR /home/murphy/robokop
 COPY ./startup.sh /home/murphy/startup.sh
-# ENTRYPOINT ["../startup.sh"]
+COPY ./setenv /home/murphy/setenv
+RUN sed -i -e 's/import robokop_setup_environ//' ./python/robokop_flask_config.py
+ENTRYPOINT ["../startup.sh"]
