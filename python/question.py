@@ -9,6 +9,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..
 from nagaProto import ProtocopRank
 from answer import Answer, AnswerSet, list_answersets_by_question_hash
 from user import User
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build', 'builder'))
+from greent import node_types
 
 from sqlalchemy.types import JSON
 from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey, func
@@ -254,8 +257,8 @@ class Question(db.Model):
         new_edges = edges
         for i, n in enumerate(nodes):
             if n['nodeSpecType'] == 'Named Node':
-                name_type = 'NAME.DISEASE' if n['type'] == 'Disease' or n['type'] == 'Phenotype'\
-                    else 'NAME.DRUG' if n['type'] == 'Substance'\
+                name_type = 'NAME.DISEASE' if n['type'] == node_types.DISEASE or n['type'] == node_types.PHENOTYPE\
+                    else 'NAME.DRUG' if n['type'] == node_types.DRUG\
                     else 'idk'
                 max_id += 1
                 zeroth_node = {

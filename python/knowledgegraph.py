@@ -1,6 +1,11 @@
 import time
+import os
+import sys
 from neo4j.v1 import GraphDatabase, basic_auth
 from universalgraph import UniversalGraph
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build', 'builder'))
+from greent import node_types
 
 class KnowledgeGraph:
 
@@ -53,8 +58,7 @@ class KnowledgeGraph:
 
     def getLabels(self):
         result = list(self.session.run('MATCH (n) RETURN distinct labels(n) as labels'))
-        non_query_labels = ['Type', 'Concept', 'fail',\
-            'GeneticCondition','Disease','NAMEDISEASE','Gene','Cell','Anatomy','Phenotype','Substance','NAMEDRUG','BiologicalProcess','Pathway']
+        non_query_labels = ['Type', 'Concept', 'fail'] + node_types.node_types
         labels = [l for r in result if not any(i in r['labels'] for i in non_query_labels) for l in r['labels']]
         return labels
 

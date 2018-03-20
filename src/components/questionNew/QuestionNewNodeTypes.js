@@ -1,13 +1,24 @@
+//// from greent (github.com/ncats-gamma/robokop-interfaces) 2018-03-20:
+// DRUG='chemical_substance'
+// GENE='gene'
+// PATHWAY='pathway'
+// PROCESS='biological_process'
+// CELL='cell'
+// ANATOMY='anatomical_entity'
+// PHENOTYPE='phenotypic_feature'
+// DISEASE='disease'
+// GENETIC_CONDITION='genetic_condition'
+
 export default {
-  SUBSTANCE: { tag: 'Substance', name: 'Substance', color: '#b3cde3' },
-  GENE: { tag: 'Gene', name: 'Gene', color: '#ccebc5' },
-  GENETICCONDITION: { tag: 'GeneticCondition', name: 'Genetic Condition', color: '#ffffcc' },
-  BIOLOGICALPROCESS: { tag: 'BiologicalProcess', name: 'Biological Process', color: '#fed9a6' },
-  CELL: { tag: 'Cell', name: 'Cell', color: '#decbe4' },
-  ANATOMY: { tag: 'Anatomy', name: 'Anatomy', color: '#e5d8bd' },
-  PHENOTYPE: { tag: 'Phenotype', name: 'Phenotype', color: '#fddaec' },
-  DISEASE: { tag: 'Disease', name: 'Disease', color: '#fbb4ae' },
-  PATHWAY: { tag: 'Pathway', name: 'Pathway', color: '#b3de69' },
+  DRUG: { tag: 'chemical_substance', name: 'Drug', color: '#b3cde3' },
+  GENE: { tag: 'gene', name: 'Gene', color: '#ccebc5' },
+  GENETICCONDITION: { tag: 'genetic_condition', name: 'Genetic Condition', color: '#ffffcc' },
+  BIOLOGICALPROCESS: { tag: 'biological_process', name: 'Biological Process', color: '#fed9a6' },
+  CELL: { tag: 'cell', name: 'Cell', color: '#decbe4' },
+  ANATOMY: { tag: 'anatomical_entity', name: 'Anatomy', color: '#e5d8bd' },
+  PHENOTYPE: { tag: 'phenotypic_feature', name: 'Phenotype', color: '#fddaec' },
+  DISEASE: { tag: 'disease', name: 'Disease', color: '#fbb4ae' },
+  PATHWAY: { tag: 'pathway', name: 'Pathway', color: '#b3de69' },
 };
 
 // -- New colors --
