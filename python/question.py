@@ -12,6 +12,8 @@ from user import User
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces'))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build', 'builder'))
 from greent import node_types
+from builder import setup
+from lookup_utils import lookup_identifier
 
 from sqlalchemy.types import JSON
 from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey, func
@@ -80,6 +82,13 @@ class Question(db.Model):
                 setattr(self, key, kwargs[key])
             else:
                 warnings.warn("Keyword argument {} ignored.".format(key))
+
+        # replace input node names with identifiers
+        rosetta = setup()
+        for n in self.nodes:
+            if n['nodeSpecType']=='Named Node':
+                start_identifiers = lookup_identifier(n['label'], n['type'], rosetta.core)
+                n['identifiers'] = start_identifiers
 
         self.hash = self.compute_hash()
 
@@ -183,11 +192,9 @@ class Question(db.Model):
         Returns the query as a string.
         '''
 
-        # add named node on the front (the first node must be named in order to build)
-        nodes, edges = Question.add_name_nodes_to_query(list(self.nodes), list(self.edges))
+        nodes, edges = self.nodes, self.edges
 
-        edge_types = ['Lookup' if n['nodeSpecType'] == 'Named Node' else 'Result' for n in nodes]
-        edge_types.pop(1)
+        edge_types = ['Result' for e in edges]
 
         node_count = len(nodes)
         edge_count = len(edges)
@@ -204,8 +211,7 @@ class Question(db.Model):
         for node in nodes:
             node_conds = []
             if node['isBoundName']:
-                node_conds += [[{'prop':'name', 'val':node['type']+'.'+node['label'], 'op':'=', 'cond':True},\
-                    {'prop':'name', 'val':node['label'], 'op':'=', 'cond':True}]]
+                node_conds.append([{'prop':'id', 'val':l, 'op':'=', 'cond':True} for l in node['identifiers']])
             if node['isBoundType']:
                 node_conds += [[{'prop':'node_type', 'val':node['type'].replace(' ', ''), 'op':'=', 'cond':True}]]
             node_conditions += [node_conds]

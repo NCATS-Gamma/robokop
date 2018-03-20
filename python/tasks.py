@@ -12,11 +12,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build','builder'))
 import userquery
 from greent.rosetta import Rosetta
-from builder import KnowledgeGraph, generate_name_node, lookup_identifier
+from builder import KnowledgeGraph, generate_name_node, lookup_identifier, run as run_builder
 from greent.graph_components import KNode
 from lookup_utils import lookup_disease_by_name, lookup_drug_by_name, lookup_phenotype_by_name
 from userquery import UserQuery
 from kombu import Queue
+from greent import node_types
 
 from logging_config import logger
 
@@ -70,20 +71,12 @@ def update_kg(self, question_id):
     rosetta = Rosetta()
         
     try:
-        # convert query to the required form
-        query = questionToRenciQuery(question, rosetta)
-
-        # build knowledge graph
-        kgraph = KnowledgeGraph(query, rosetta)
-
-        # # get construction/source graph
-        # sgraph = getSourceGraph(kgraph)
-        # print(sgraph)
-
-        # export graph to Neo4j
-        supports = ['chemotext']
-        # supports = ['chemotext', 'chemotext2'] # chemotext2 is really slow
-        exportBioGraph(kgraph, "q_"+question.hash, supports=supports)
+        symbol_lookup = {node_types.type_codes[a]:a for a in node_types.type_codes} # invert this dict
+        # assume the nodes are in order
+        node_string = ''.join([symbol_lookup[n['type']] for n in question.nodes])
+        start_name = question.nodes[0]['label'] if question.nodes[0]['nodeSpecType']=='Named Node' else None
+        end_name = question.nodes[-1]['label'] if question.nodes[-1]['nodeSpecType']=='Named Node' else None
+        run_builder(node_string, start_name, end_name, 'q_'+question.hash, ['chemotext'])
 
         # send completion email
         with app.app_context():
