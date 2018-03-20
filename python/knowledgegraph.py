@@ -9,10 +9,9 @@ from greent import node_types
 
 class KnowledgeGraph:
 
-    def __init__(self, clientHost='127.0.0.1'):
+    def __init__(self):
         # connect to neo4j database
-        clientHost = '127.0.0.1'
-        self.driver = GraphDatabase.driver("bolt://"+clientHost+":7687", auth=basic_auth("python", "pyword"))
+        self.driver = GraphDatabase.driver("bolt://"+os.environ["NEO4J_HOST"]+":"+os.environ["NEO4J_BOLT_PORT"], auth=basic_auth("python", "pyword"))
         print('Initialized driver.')
         self.session = self.driver.session()
         print('Started session.')
