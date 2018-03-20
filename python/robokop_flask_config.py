@@ -5,7 +5,7 @@ SECRET_KEY = os.environ["ROBOKOP_SECRET_KEY"]
 DEFAULT_MAIL_SENDER = os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"]
 SECURITY_EMAIL_SENDER = os.environ["ROBOKOP_SECURITY_EMAIL_SENDER"]
 
-SQLALCHEMY_DATABASE_URI = 'postgresql://' + os.environ["POSTGRES_USER"] + '@' + os.environ["POSTGRES_HOST"] + ':' + os.environ["POSTGRES_PORT"] + '/robokop'
+SQLALCHEMY_DATABASE_URI = 'postgresql://' + os.environ["POSTGRES_USER"] + '@' + os.environ["POSTGRES_HOST"] + ':' + os.environ["POSTGRES_PORT"] + '/' + os.environ["POSTGRES_DB"]
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # Security Misc
