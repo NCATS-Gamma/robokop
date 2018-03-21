@@ -10,7 +10,6 @@ export REDIS_PORT=6379
 export POSTGRES_HOST=172.18.0.23
 export POSTGRES_PORT=5432
 export POSTGRES_USER=murphy
-# export POSTGRES_PASSWORD=mysecretpassword
 export POSTGRES_DB=robokop
 
 export ROBOKOP_HOST=172.18.0.24
@@ -52,7 +51,6 @@ docker run \
     --env POSTGRES_DB \
     -d \
     postgres
-    # --env POSTGRES_PASSWORD \
 # docker run -it --rm --net robokop-docker-net postgres psql -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DB
 
 # Web server
@@ -74,7 +72,8 @@ docker run \
     -it \
     robokop bash
 
-# docker attach robokop-web
+# to detach:   CTRL-q, CTRL-p
+# to reattach: docker attach robokop-web
 
 # docker stop robokop-web robokop-neo4j robokop-redis robokop-postgres
 # docker rm robokop-web robokop-neo4j robokop-redis robokop-postgres
