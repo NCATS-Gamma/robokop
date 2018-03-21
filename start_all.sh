@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export NEO4J_HOST=172.18.0.21
+export NEO4J_HTTP_PORT=7474
 export NEO4J_BOLT_PORT=7687
 
 export REDIS_HOST=172.18.0.22
@@ -62,6 +63,7 @@ docker run \
     --env NEO4J_HOST \
     --env REDIS_HOST \
     --env POSTGRES_HOST \
+    --env NEO4J_HTTP_PORT \
     --env NEO4J_BOLT_PORT \
     --env REDIS_PORT \
     --env POSTGRES_PORT \
