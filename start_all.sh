@@ -7,6 +7,9 @@ export NEO4J_BOLT_PORT=7687
 export REDIS_HOST=172.18.0.22
 export REDIS_PORT=6379
 
+export CELERY_BROKER_URL="redis://$REDIS_HOST:$REDIS_PORT/0"
+export CELERY_RESULT_BACKEND="redis://$REDIS_HOST:$REDIS_PORT/0"
+
 export POSTGRES_HOST=172.18.0.23
 export POSTGRES_PORT=5432
 export POSTGRES_USER=murphy
@@ -59,11 +62,13 @@ docker run \
     --net robokop-docker-net \
     --ip $ROBOKOP_HOST \
     --env NEO4J_HOST \
-    --env REDIS_HOST \
-    --env POSTGRES_HOST \
     --env NEO4J_HTTP_PORT \
     --env NEO4J_BOLT_PORT \
+    --env REDIS_HOST \
     --env REDIS_PORT \
+    --env CELERY_BROKER_URL \
+    --env CELERY_RESULT_BACKEND \
+    --env POSTGRES_HOST \
     --env POSTGRES_PORT \
     --env POSTGRES_USER \
     --env POSTGRES_DB \
