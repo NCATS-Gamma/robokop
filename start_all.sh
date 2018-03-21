@@ -70,6 +70,7 @@ docker run \
     --env POSTGRES_USER \
     --env POSTGRES_DB \
     --publish 80:80 \
+    -v $(pwd)/shared:/home/murphy/shared \
     -it \
     robokop bash
 
