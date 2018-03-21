@@ -47,7 +47,7 @@ RUN apt-get install -yq \
 RUN pip install gnureadline
 
 ## Set up home directory
-RUN mkdir /home/murphy
+RUN useradd -m -s /bin/bash murphy
 WORKDIR /home/murphy
 
 ## Get software
@@ -70,8 +70,10 @@ RUN pip install -r ../robokop-build/builder/requirements.txt
 RUN pip install -r ./requirements.txt
 
 ## Set up the website
+RUN sed -i -e 's/"\(enable.*\)": false/"\1": true/' ./config.json
 RUN npm install
 RUN npm run webpack
+RUN sed -i -e 's/import robokop_setup_environ//' ./python/robokop_flask_config.py
 
 ## Copy Neo4j database and associated blackboards sqlite database
 # COPY ./graph.db /var/lib/neo4j/data/databases/graph.db
@@ -88,8 +90,5 @@ RUN npm run webpack
 
 ## Finish up
 ENV HOME=/home/murphy
-WORKDIR /home/murphy/robokop
 COPY ./startup.sh /home/murphy/startup.sh
-RUN sed -i -e 's/import robokop_setup_environ//' ./python/robokop_flask_config.py
-RUN sed -i -e 's/"\(enable.*\)": false/"\1": true/' ./config.json
 ENTRYPOINT ["../startup.sh"]
