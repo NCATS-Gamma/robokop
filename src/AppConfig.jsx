@@ -12,6 +12,7 @@ class AppConfig {
       landing: this.url('landing'),
       login: this.url('login'),
       logout: this.url('logout'),
+      admin: this.url('admin'),
       account: this.url('account'),
       questionList: this.url('questions'),
       questionNew: this.url('q/new'),

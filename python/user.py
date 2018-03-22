@@ -32,7 +32,16 @@ class User(db.Model, UserMixin):
     roles = relationship('Role', secondary='roles_users',
                           backref=backref('users', lazy='dynamic'))
 
+    def toJSON(self):
+        keys = [str(column).split('.')[-1] for column in self.__table__.columns]
+        struct = {key:getattr(self, key) for key in keys}
+        return struct
+
 def get_user_by_id(id):
     return db.session.query(User)\
         .filter(User.id == id)\
         .first()
+
+def list_users():
+    return db.session.query(User)\
+        .all()
