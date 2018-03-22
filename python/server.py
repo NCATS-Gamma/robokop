@@ -26,8 +26,6 @@ import string
 import random
 from datetime import datetime
 
-from Storage import Storage
-
 from flask import Flask, jsonify, request, render_template, url_for, redirect
 from flask_security import Security, SQLAlchemySessionUserDatastore
 from flask_security.core import current_user
@@ -35,14 +33,12 @@ from flask_login import LoginManager, login_required
 
 from setup import app, db
 from logging_config import logger
-from user import User, Role
+from user import User, Role, list_users
 from question import Question, list_questions, get_question_by_id, list_questions_by_username, list_questions_by_hash
-from answer import get_answerset_by_id, list_answersets_by_question_hash, get_answer_by_id, list_answers_by_answerset
+from answer import get_answerset_by_id, list_answersets_by_question_hash, get_answer_by_id, list_answers_by_answerset, list_answersets
 from feedback import Feedback, list_feedback_by_answer
 
 from tasks import celery, answer_question, update_kg
-
-storage = Storage(db)
 
 # Setup flask-security with user tables
 user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
@@ -51,7 +47,7 @@ security = Security(app, user_datastore)
 # Create a user to test with
 @app.before_first_request
 def init():
-    storage.boot(user_datastore)
+    pass
 
 # Flask Server code below
 ################################################################################
@@ -103,7 +99,7 @@ def getAuthData():
             'is_anonymous': is_anonymous,\
             'is_admin': is_admin,\
             'username': username}
-
+            
 @app.route('/status/<task_id>')
 def taskstatus(task_id):
     task = celery.AsyncResult(task_id)
@@ -253,7 +249,7 @@ def question_subgraph(question_id):
     subgraph = question.relevant_subgraph()
 
     return jsonify(subgraph)
-    
+
 # Answer Set
 @app.route('/a/<answerset_id>')
 def answerset(answerset_id):
@@ -268,7 +264,7 @@ def answerset_data(answerset_id):
     answerset = get_answerset_by_id(answerset_id)
     answers = list_answers_by_answerset(answerset)
     questions = list_questions_by_hash(answerset.question_hash)
-    answerset_graph = None #storage.getAnswerSetGraph(answerset_id)
+    answerset_graph = None
 
     now_str = datetime.now().__str__()
     return jsonify({'timestamp': now_str,\
@@ -319,9 +315,9 @@ def admin_data():
         return redirect(url_for('security.login', next='/admin'))
     else:
         now_str = datetime.now().__str__()
-        users = storage.getUserList()
-        questions = storage.getQuestionList()
-        answersets = storage.getAnswerSetList()
+        users = [u.toJSON() for u in list_users()]
+        questions = [q.toJSON() for q in list_questions()]
+        answersets = [aset.toJSON() for aset in list_answersets()]
 
         return jsonify({'timestamp': now_str,\
             'users': users,\
