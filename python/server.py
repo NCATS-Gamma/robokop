@@ -104,10 +104,15 @@ def getAuthData():
             'is_admin': is_admin,\
             'username': username}
 
+@app.route('/status/<task_id>')
+def taskstatus(task_id):
+    task = celery.AsyncResult(task_id)
+    return task.state
+
 # from celery.app.control import Inspect
 @app.route('/tasks')
 def get_tasks():
-    """Initial contact. Give the initial page."""
+    """Fetch queued/active task list"""
     i = celery.control.inspect()
     scheduled = i.scheduled()
     reserved = i.reserved()
@@ -249,16 +254,6 @@ def question_subgraph(question_id):
 
     return jsonify(subgraph)
     
-@app.route('/status/update/<task_id>')
-def update_status(task_id):
-    task = update_kg.AsyncResult(task_id)
-    return task.state
-
-@app.route('/status/answer/<task_id>')
-def answer_status(task_id):
-    task = answer_question.AsyncResult(task_id)
-    return task.state
-
 # Answer Set
 @app.route('/a/<answerset_id>')
 def answerset(answerset_id):
