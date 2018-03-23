@@ -3,6 +3,10 @@ from setup import app, db
 from user import User, Role
 from flask_security import Security, SQLAlchemySessionUserDatastore
 
+# Include these so that all the associated postgres tables get created.
+from question import Question
+from answer import Answer, AnswerSet
+
 with app.app_context():
     user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
     security = Security(app, user_datastore) # this sets some app.config
