@@ -27,7 +27,7 @@ import random
 from datetime import datetime
 
 from flask import Flask, jsonify, request, render_template, url_for, redirect
-from flask_security import Security, SQLAlchemySessionUserDatastore
+from flask_security import Security, SQLAlchemySessionUserDatastore, auth_required
 from flask_security.core import current_user
 from flask_login import LoginManager, login_required
 
@@ -146,7 +146,7 @@ def account():
     return render_template('account.html')
 
 @app.route('/account/data', methods=['GET'])
-@login_required
+@auth_required('session', 'basic')
 def account_data():
     """Data for the current user"""
 
@@ -164,6 +164,7 @@ def new():
 
 # New Question Submission
 @app.route('/q/new', methods=['POST'])
+@auth_required('session', 'basic')
 def new_submission():
     """Create new question"""
     user_id = current_user.id
@@ -213,6 +214,7 @@ def question(question_id):
     return render_template('question.html', question_id=question_id)
 
 @app.route('/q/<question_id>', methods=['POST'])
+@auth_required('session', 'basic')
 def question_action(question_id):
     """ run update or answer actions """
     command = request.json['command']
@@ -351,6 +353,7 @@ def question_new_translate():
 ##### Question Editing, Forking ################################################
 ################################################################################
 @app.route('/q/edit', methods=['POST'])
+@auth_required('session', 'basic')
 def question_edit():
     """Edit the properties of a question"""
     logger.info('Editing question %s', request.json['question_id'])
@@ -364,10 +367,12 @@ def question_edit():
     return "SUCCESS", 200
 
 @app.route('/q/fork', methods=['POST'])
+@auth_required('session', 'basic')
 def question_fork():
     """Fork a question to form a new question owned by current_user """
 
 @app.route('/q/delete', methods=['POST'])
+@auth_required('session', 'basic')
 def question_delete():
     """Delete question (if owned by current_user)"""
     logger.info('Deleting question %s', request.json['question_id'])
