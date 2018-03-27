@@ -24,8 +24,8 @@ docker network create \
 
 # Neo4J plugins
 mkdir ./neo4j_plugins
-curl https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/3.3.0.2/apoc-3.3.0.2-all.jar -o neo4j_plugins/apoc.jar
-curl https://github.com/NCATS-Gamma/robokop-neo4j-plugin/releases/download/v1.0.0/robokop-1.0.0.jar -o neo4j_plugins/robokop.jar
+curl -s https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/3.3.0.2/apoc-3.3.0.2-all.jar -o neo4j_plugins/apoc.jar
+curl -s https://github.com/NCATS-Gamma/robokop-neo4j-plugin/releases/download/v1.0.0/robokop-1.0.0.jar -o neo4j_plugins/robokop.jar
 
 # Neo4j:
 # https://hub.docker.com/_/neo4j/
