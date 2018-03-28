@@ -22,10 +22,12 @@ docker network create \
     --subnet=172.18.0.0/16 \
     robokop-docker-net
 
-# Neo4J plugins
-mkdir ./neo4j_plugins
-curl https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/3.3.0.2/apoc-3.3.0.2-all.jar -o neo4j_plugins/apoc.jar
-curl https://github.com/NCATS-Gamma/robokop-neo4j-plugin/releases/download/v1.0.0/robokop-1.0.0.jar -o neo4j_plugins/robokop.jar
+# Neo4J setup
+mkdir ./neo4j/
+mkdir ./neo4j/plugins
+mkdir ./neo4j/logs
+curl https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/3.2.3.6/apoc-3.2.3.6-all.jar -o neo4j/plugins/apoc-3.2.3.6-all.jar
+curl https://github.com/NCATS-Gamma/robokop-neo4j-plugin/releases/download/v1.0.0/robokop-1.0.0.jar -o neo4j/plugins/robokop-1.0.0.jar
 
 # Neo4j:
 # https://hub.docker.com/_/neo4j/
@@ -36,10 +38,12 @@ docker run \
     --net robokop-docker-net \
     --env NEO4J_dbms_security_auth__enabled=false \
     --env NEO4J_dbms_connectors_default__listen__address=0.0.0.0 \
-    --publish 7474:7474 \
-    -v $(pwd)/neo4j_plugins:/var/lib/neo4j/plugins \
-    -d \
-    neo4j:3.3.4
+    --publish $NEO4J_HTTP_PORT:$NEO4J_HTTP_PORT \
+    --publish $NEO4J_BOLT_PORT:$NEO4J_BOLT_PORT \
+    -v $(pwd)/neo4j/logs:/logs \
+    -v $(pwd)/neo4j/plugins:/plugins \
+    -it \
+    neo4j:3.2.6
 
 # Redis:
 # https://hub.docker.com/_/redis/
