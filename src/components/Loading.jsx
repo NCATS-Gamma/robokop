@@ -1,9 +1,9 @@
 import React from 'react';
-import { BarLoader } from 'react-css-loaders';
+import { BubbleLoader } from 'react-css-loaders';
 
 const Loading = () => (
   <div className="center-block">
-    <BarLoader />
+    <BubbleLoader />
   </div>
 );
 

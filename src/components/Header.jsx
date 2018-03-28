@@ -43,7 +43,7 @@ class Header extends React.Component {
     const hasStatus = data.status && data.status.length > 0;
 
     return (
-      <Navbar inverse>
+      <Navbar style={this.appConfig.styles.header}>
         <Navbar.Header>
           <Navbar.Brand>
             <a href="/">Robokop</a>

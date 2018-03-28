@@ -71,8 +71,8 @@ class QuestionNewPres extends React.Component {
             id: shortid.generate(),
             type: CardTypes.NAMEDNODETYPE,
             name: 'Imatinib',
-            nodeType: NodeTypes.SUBSTANCE.tag,
-            displayType: NodeTypes.SUBSTANCE.tag,
+            nodeType: NodeTypes.DRUG.tag,
+            displayType: NodeTypes.DRUG.tag,
             numNodesMin: 0,
             numNodesMax: 1,
           },
@@ -150,7 +150,8 @@ class QuestionNewPres extends React.Component {
           </p>
           <ul>
             <li><bold>{'Name'}</bold>{': Just a name to refer to this question.'}</li>
-            <li><bold>{'Description'}</bold>{': A longer description of the goal of this question.'}</li>
+            <li><bold>{'Natural Language Question'}</bold>{': State your question in plane text.'}</li>
+            <li><bold>{'Notes'}</bold>{': Any text to communicate to other user or help you find this later. Hashtags etc..'}</li>
           </ul>
         </div>
       </Popover>
@@ -176,7 +177,7 @@ class QuestionNewPres extends React.Component {
     return (
       <div id="RobokopNewQuestion" className="col-md-12">
         <div className="row">
-          <div className="col-md-10 col-md-offset-1" style={this.styles.top}>
+          <div className="col-md-12" style={this.styles.top}>
             <h2>{'Start a New Question'}</h2>
             <p>
               {'Questions are created using the interface below.'}
@@ -198,7 +199,7 @@ class QuestionNewPres extends React.Component {
           </div>
         </div>
         <div className="row" style={{ paddingBottom: '10px' }}>
-          <div className="col-md-10 col-md-offset-1">
+          <div className="col-md-10">
             <div className="row">
               <div className="col-md-12">
                 <h5>
@@ -242,7 +243,7 @@ class QuestionNewPres extends React.Component {
           </div>
         </div>
         <div className="row">
-          <div className="col-md-5 col-md-offset-1">
+          <div className="col-md-6">
             <div className="row">
               <div className="col-md-12">
                 <h5>
@@ -258,7 +259,7 @@ class QuestionNewPres extends React.Component {
               handleChange={this.props.handleChangeQuery}
             />
           </div>
-          <div className="col-md-5 col-md-offset-1">
+          <div className="col-md-6">
             <div className="row">
               <div className="col-md-12">
                 <h5 style={{ textAlign: 'center' }}><bold style={{ fontWeight: '600' }}>Query Visualization</bold></h5>
@@ -270,7 +271,7 @@ class QuestionNewPres extends React.Component {
           </div>
         </div>
         <div className="row">
-          <div className="col-md-5 col-md-offset-1" style={{ marginTop: '20px' }}>
+          <div className="col-md-6" style={{ marginTop: '20px' }}>
             {/* <form method="POST">
               <input style={{display: "none"}} type="text" name="hidden_info" value="secrets secrets" />
               <Button type="submit" bsStyle="default" bsSize="lg">

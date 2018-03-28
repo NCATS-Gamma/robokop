@@ -49,6 +49,7 @@ docker run \
     --name robokop-redis \
     --net robokop-docker-net \
     --ip $REDIS_HOST \
+    --publish $REDIS_PORT:$REDIS_PORT \
     -d \
     redis
 
@@ -60,30 +61,33 @@ docker run \
     --ip $POSTGRES_HOST \
     --env POSTGRES_USER \
     --env POSTGRES_DB \
+    --publish $POSTGRES_PORT:$POSTGRES_PORT \
     -d \
     postgres
 # docker run -it --rm --net robokop-docker-net postgres psql -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DB
 
 # Web server
-docker run \
-    --name robokop-web \
-    --net robokop-docker-net \
-    --ip $ROBOKOP_HOST \
-    --env NEO4J_HOST \
-    --env NEO4J_HTTP_PORT \
-    --env NEO4J_BOLT_PORT \
-    --env REDIS_HOST \
-    --env REDIS_PORT \
-    --env CELERY_BROKER_URL \
-    --env CELERY_RESULT_BACKEND \
-    --env POSTGRES_HOST \
-    --env POSTGRES_PORT \
-    --env POSTGRES_USER \
-    --env POSTGRES_DB \
-    --publish 80:80 \
-    -v $(pwd)/shared:/home/murphy/shared \
-    -it \
-    robokop bash
+# In development mode we will assume that we start the server manually (outside of Docker)
+# 
+# docker run \
+#     --name robokop-web \
+#     --net robokop-docker-net \
+#     --ip $ROBOKOP_HOST \
+#     --env NEO4J_HOST \
+#     --env NEO4J_HTTP_PORT \
+#     --env NEO4J_BOLT_PORT \
+#     --env REDIS_HOST \
+#     --env REDIS_PORT \
+#     --env CELERY_BROKER_URL \
+#     --env CELERY_RESULT_BACKEND \
+#     --env POSTGRES_HOST \
+#     --env POSTGRES_PORT \
+#     --env POSTGRES_USER \
+#     --env POSTGRES_DB \
+#     --publish 80:80 \
+#     -v $(pwd)/shared:/home/murphy/shared \
+#     -it \
+#     robokop bash
 
 # to detach:   CTRL-q, CTRL-p
 # to reattach: docker attach robokop-web
