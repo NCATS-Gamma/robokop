@@ -78,7 +78,7 @@ docker run \
     --publish 80:80 \
     -v $(pwd)/shared:/home/murphy/shared \
     -it \
-    robokop bash
+    patrickkwang/robokop-web bash
 
 # to detach:   CTRL-q, CTRL-p
 # to reattach: docker attach robokop-web
