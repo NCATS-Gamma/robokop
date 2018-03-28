@@ -54,10 +54,26 @@ class AppConfig {
     this.enableQuestionEdit = ((config.ui !== null) && (config.ui.enableQuestionEdit !== null)) ? config.ui.enableQuestionEdit : true;
     this.enableQuestionDelete = ((config.ui !== null) && (config.ui.enableQuestionDelete !== null)) ? config.ui.enableQuestionDelete : true;
     this.enableQuestionFork = ((config.ui !== null) && (config.ui.enableQuestionFork !== null)) ? config.ui.enableQuestionFork : true;
+    this.enableAnswerFeedback = ((config.ui !== null) && (config.ui.enableAnswerFeedback !== null)) ? config.ui.enableAnswerFeedback : true;
+
+    this.colors = {
+      bluegray: '#f5f7fa',
+      blue: '#b8c6db',
+    };
+
+    this.styles = {
+      header: {
+        backgroundColor: this.colors.blue,
+        backgroundImage: `linear-gradient(315deg, ${this.colors.blue} 0%, ${this.colors.bluegray} 74%)`,
+      },
+      jumbotron: {
+        backgroundColor: this.colors.bluegray,
+      },
+    };
   }
 
   url(ext) {
-    return `${this.config.protocol}://${this.config.clientHost}:${this.config.port}/${ext}`;
+    return `${this.config.protocol}://${this.config.host}:${this.config.port}/${ext}`;
   }
 
   landingData(fun) { this.getRequest(`${this.urls.landing}/data`, fun); }

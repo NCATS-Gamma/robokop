@@ -43,7 +43,7 @@ class Landing extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        <Jumbotron>
+        <Jumbotron style={this.appConfig.styles.jumbotron}>
           <h1>Robokop</h1>
           <p>
             <b>R</b>easoning <b>O</b>ver <b>B</b>iomedical <b> O</b>bjects linked in <b>K</b>nowledge <b>O</b>riented <b>P</b>athways
