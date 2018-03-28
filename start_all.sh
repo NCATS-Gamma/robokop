@@ -41,9 +41,8 @@ docker run \
     --publish $NEO4J_HTTP_PORT:$NEO4J_HTTP_PORT \
     --publish $NEO4J_BOLT_PORT:$NEO4J_BOLT_PORT \
     -v $(pwd)/neo4j/logs:/logs \
-    -v $(pwd)/neo4j/plugins:/plugins \
-    -it \
-    neo4j:3.2.6
+    -d \
+    patrickkwang/robokop-neo4j
 
 # Redis:
 # https://hub.docker.com/_/redis/
