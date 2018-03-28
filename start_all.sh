@@ -38,6 +38,7 @@ docker run \
     --net robokop-docker-net \
     --env NEO4J_dbms_security_auth__enabled=false \
     --env NEO4J_dbms_connectors_default__listen__address=0.0.0.0 \
+    -e NEO4J_dbms_security_procedures_unrestricted=apoc.\\\* \ # un-sandbox apoc procedures: http://blog.armbruster-it.de/2017/05/running-neo4j-3-2-apoc-docker/
     --publish $NEO4J_HTTP_PORT:$NEO4J_HTTP_PORT \
     --publish $NEO4J_BOLT_PORT:$NEO4J_BOLT_PORT \
     -v $(pwd)/neo4j/logs:/logs \
