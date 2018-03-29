@@ -15,4 +15,5 @@ bundle.js
 .vscode/
 python/robokop_setup_environ.py
 *.pid
-/neo4j_plugins/*
+sandbox
+neo4j_plugins
