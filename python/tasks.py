@@ -8,7 +8,8 @@ from flask_security.core import current_user
 
 import os
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces'))
+greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
+sys.path.insert(0, greent_path)
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build','builder'))
 import userquery
 from greent.rosetta import Rosetta
@@ -76,7 +77,7 @@ def update_kg(self, question_id):
         node_string = ''.join([symbol_lookup[n['type']] for n in question.nodes])
         start_name = question.nodes[0]['label'] if question.nodes[0]['nodeSpecType']=='Named Node' else None
         end_name = question.nodes[-1]['label'] if question.nodes[-1]['nodeSpecType']=='Named Node' else None
-        run_builder(node_string, start_name, end_name, 'q_'+question.hash, ['chemotext'])
+        run_builder(node_string, start_name, end_name, 'q_'+question.hash, ['chemotext'], os.path.join(greent_path,'greent','greent.conf'))
 
         # send completion email
         with app.app_context():
