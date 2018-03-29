@@ -46,9 +46,10 @@ class QuestionMetaEditor extends React.Component {
       notes: this.state.notes,
     };
 
-    this.props.callbackUpdate(newMeta, () => {
-      this.setState({ editedNotes: false });
-    });
+    this.props.callbackUpdate(
+      newMeta,
+      () => this.setState({ editedNotes: false }),
+    );
   }
 
   syncPropsAndState(newProps) {

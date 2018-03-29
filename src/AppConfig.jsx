@@ -8,6 +8,7 @@ class AppConfig {
     this.comms = axios.create();
     axiosRetry(this.comms, { retries: 3 }); // Retry for request timeouts, help with spotty connections.
 
+    // Valid urls we would go to
     this.urls = {
       landing: this.url('landing'),
       login: this.url('login'),
@@ -21,33 +22,40 @@ class AppConfig {
       answer: (answersetId, answerId) => this.url(`a/${answersetId}/${answerId}`),
     };
 
+    // Some are functions that we must bind
     this.urls.question = this.urls.question.bind(this);
     this.urls.answerset = this.urls.answerset.bind(this);
     this.urls.answer = this.urls.answer.bind(this);
 
+    // Other URLs that are primarily used for API calls
     this.api = {
-      questionNewSearch: this.questionNewSearch.bind(this),
-      questionNewValidate: this.questionNewValidate.bind(this),
-      questionNewTranslate: this.questionNewTranslate.bind(this),
       questionUpdate: this.url('q/edit'),
       questionDelete: this.url('q/delete'),
-      questionFork: this.url('q/fork'),
     };
 
     this.url = this.url.bind(this);
 
+    // Methods for fetching data
     this.landingData = this.landingData.bind(this);
     this.accountData = this.accountData.bind(this);
     this.adminData = this.adminData.bind(this);
     this.questionNewData = this.questionNewData.bind(this);
-    this.questionUpdateMeta = this.questionUpdateMeta.bind(this);
     this.questionListData = this.questionListData.bind(this);
     this.questionData = this.questionData.bind(this);
     this.questionSubgraph = this.questionSubgraph.bind(this);
     this.answersetData = this.answersetData.bind(this);
-    this.answersetNew = this.answersetNew.bind(this);
     this.answerData = this.answerData.bind(this);
 
+    // Question and Answer Manipulation
+    this.questionCreate = this.questionCreate.bind(this);
+    this.answersetCreate = this.answersetCreate.bind(this);
+    this.questionUpdateMeta = this.questionUpdateMeta.bind(this);
+    this.questionRefresh = this.questionRefresh.bind(this);
+    this.questionFork = this.questionFork.bind(this);
+    this.questionDelete = this.questionDelete.bind(this);
+    
+
+    // Read config parameters for enabling controls
     this.enableNewAnswersets = ((config.ui !== null) && (config.ui.enableNewAnswersets !== null)) ? config.ui.enableNewAnswersets : true;
     this.enableNewQuestions = ((config.ui !== null) && (config.ui.enableNewQuestions !== null)) ? config.ui.enableNewQuestions : true;
     this.enableQuestionRefresh = ((config.ui !== null) && (config.ui.enableQuestionRefresh !== null)) ? config.ui.enableQuestionRefresh : true;
@@ -79,20 +87,105 @@ class AppConfig {
   landingData(fun) { this.getRequest(`${this.urls.landing}/data`, fun); }
   accountData(fun) { this.getRequest(`${this.urls.account}/data`, fun); }
   adminData(fun) { this.getRequest(`${this.urls.admin}/data`, fun); }
-  questionNew(data, fun) { this.postRequest(`${this.urls.questionNew}`, data, fun, (err) => { throw err; }); }
-  questionUpdateMeta(data, fun) { this.postRequest(`${this.api.questionUpdate}`, data, fun, (err) => { throw err; }); }
-  questionNewData(fun) { this.getRequest(`${this.urls.questionNew}/data`, fun); }
   questionListData(fun) { this.getRequest(`${this.urls.questionList}/data`, fun); }
   questionData(id, fun) { this.getRequest(`${this.urls.question(id)}/data`, fun); }
   questionSubgraph(id, fun) { this.getRequest(`${this.urls.question(id)}/subgraph`, fun); }
+  questionNewData(qid, fun) { this.postRequest(`${this.urls.questionNew}/data`, { question_id: qid }, fun, (err) => { throw err; }); }
   answersetData(id, fun) { this.getRequest(`${this.urls.answerset(id)}/data`, fun); }
-
-  answersetNew(qid, successFun, failureFun) { this.postRequest(`${this.urls.question(qid)}`, { command: 'answer' }, successFun, failureFun); }
-  refresh(qid, successFun, failureFun) { this.postRequest(`${this.urls.question(qid)}`, { command: 'update' }, successFun, failureFun); }
   answerData(setId, id, fun) { this.getRequest(`${this.urls.answer(setId, id)}/data`, fun); }
 
-  open(newUrlExt) {
-    window.open(this.url(newUrlExt));
+  questionCreate(data, successFun, failureFun) {
+    // Data must contain a complete specification for a new question
+    // This is in flux but currently matches the spec from protocop
+    // const data = {
+    //   name: ''
+    //   natural: ''
+    //   notes: ''
+    //   query: {}, // Complex object matching current machine question syntax
+    // };
+
+    // To make a new question we post to the questionNew with specifications for a question
+    this.postRequest(
+      this.urls.questionNew,
+      data,
+      successFun,
+      failureFun,
+    );
+  }
+  answersetCreate(qid, successFun, failureFun) {
+    // New answersets are triggered by a post request to the question url with
+    // {command: answer}
+    this.postRequest(
+      this.urls.question(qid),
+      { command: 'answer' },
+      successFun,
+      failureFun,
+    );
+  }
+  questionRefresh(qid, successFun, failureFun) {
+    // A knowledge graph reset is triggered by a post request to the question url with
+    // {command: update}
+    this.postRequest(
+      this.urls.question(qid),
+      { command: 'update' },
+      successFun,
+      failureFun,
+    );
+  }
+  questionFork(qid) {
+    // To fork a question we make a form post request to the questionNew page
+    // with {question_id: qid}
+    // We make a form request to redirect after the post
+    console.log("Fork here" + qid)
+    // var bodyFormData = new FormData();
+    // this.comms.post(
+    //   `${this.urls.questionNew}`,
+    //   {question_id: qid},
+    //   {'Content-Type': 'application/json'}
+    // ); }
+
+    // <form action={this.props.questionNewUrl} method="post" class="add-entry">
+    //   <input type="submit" name="question_id" value={this.props.question.id} />
+    // </form>
+  }
+
+  questionUpdateMeta(data, successFun, failureFun) {
+    // Data must contain all necessary meta data fields
+    // Can only be done by the owner
+    // const newMeta = {
+    //   question_id: '' // Must match a valid question id to be updated
+    //   natural_question: ''
+    //   name: '',
+    //   notes: '',
+    // };
+    this.postRequest(
+      this.api.questionUpdate,
+      data,
+      successFun,
+      failureFun,
+    );
+  }
+  questionDelete(qid, successFunction, failureFunction) {
+    // Deleting a question can only be done by the owner
+    const data = { question_id: qid };
+
+    // Make the post request
+    this.postRequest(
+      this.api.questionDelete,
+      data,
+      successFunction,
+      failureFunction,
+    );
+  }
+
+  // open(newUrlExt) {
+  //   window.open(this.url(newUrlExt));
+  // }
+  redirect(newUrl) {
+    window.location.href = newUrl;
+  }
+  back() {
+    window.history.back();
   }
 
   questionNewSearch(postData, successFunction, failureFunction) {
@@ -115,13 +208,6 @@ class AppConfig {
     });
   }
 
-  questionDelete(question, user, successFunction, failureFunction) {
-    // Make specific post data for this action
-    const data = { question_id: question.id, user: user.username };
-
-    // Make the post request
-    this.postRequest(this.api.questionDelete, data, successFunction, failureFunction);
-  }
 
   postRequest(addr, data, successFunction = () => {}, failureFunction = () => {}) {
     this.comms.post(addr, data).then((result) => {

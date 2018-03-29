@@ -1,4 +1,5 @@
 import React from 'react';
+import Dialog from 'react-bootstrap-dialog';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
@@ -31,10 +32,22 @@ class QuestionNew extends React.Component {
   }
 
   componentDidMount() {
-    this.appConfig.questionNewData(data => this.setState({
-      user: data.user,
-      ready: true,
-    }));
+    this.appConfig.questionNewData(
+      this.props.questionId,
+      (data) => {
+        // In the future we need to support forking here
+        // Currently we will accpt a question id but then not actually prepopulate fields for the fork.
+        //
+        // 1. Check if we have valid question data coming back
+        //    If questionId is empty or null the server wont give anything
+        // 2. If valid question data, populate the GUI
+
+        this.setState({
+          user: data.user,
+          ready: true,
+        });
+      },
+    );
   }
 
   handleChangeName(e) {
@@ -94,12 +107,77 @@ class QuestionNew extends React.Component {
       query: this.state.query,
     };
 
-    this.appConfig.questionNew(
+    // Splash wait overlay
+    this.dialogWait({
+      title: 'Creating Question...',
+      text: '',
+      showLoading: true,
+    });
+
+    this.appConfig.questionCreate(
       newBoardInfo,
-      data => { window.location.href = this.appConfig.urls.question(data); },
+      data => this.appConfig.redirect(this.appConfig.urls.question(data)), // Success redirect to the new question page
+      this.dialogMessage({
+        title: 'Trouble Creating Question',
+        text: 'We ran in to problems creating this question. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+        buttonText: 'OK',
+        buttonAction: () => {},
+      }),
     );
   }
-  
+  dialogWait(inputOptions) {
+    const defaultOptions = {
+      title: 'Hi',
+      text: 'Please wait...',
+      showLoading: false,
+    };
+    const options = { ...defaultOptions, ...inputOptions };
+
+    const bodyNode = (
+      <div>
+        {options.text}
+        {options.showLoading &&
+          <Loading />
+        }
+      </div>
+    );
+
+    // Show custom react-bootstrap-dialog
+    this.dialog.show({
+      title: options.title,
+      body: bodyNode,
+      actions: [],
+      bsSize: 'large',
+      onHide: () => {},
+    });
+  }
+  dialogMessage(inputOptions) {
+    const defaultOptions = {
+      title: 'Hi',
+      text: 'How are you?',
+      buttonText: 'OK',
+      buttonAction: () => {},
+    };
+    const options = { ...defaultOptions, ...inputOptions };
+
+    // Show custom react-bootstrap-dialog
+    this.dialog.show({
+      title: options.title,
+      body: options.text,
+      actions: [
+        Dialog.Action(
+          options.buttonText,
+          (dialog) => { dialog.hide(); options.buttonAction(); },
+          'btn-primary',
+        ),
+      ],
+      bsSize: 'large',
+      onHide: (dialog) => {
+        dialog.hide();
+      },
+    });
+  }
+
   onSearch(postData) {
     this.appConfig.questionNewSearch(postData);
   }
@@ -110,7 +188,7 @@ class QuestionNew extends React.Component {
     this.appConfig.questionNewTranslate(postData);
   }
   onCancel() {
-    window.history.back();
+    this.appConfig.back();
   }
 
   renderLoading() {
@@ -137,6 +215,7 @@ class QuestionNew extends React.Component {
           callbackTranslate={this.onTranslate}
           callbackCancel={this.onCancel}
         />
+        <Dialog ref={(el) => { this.dialog = el; }} />
       </div>
     );
   }

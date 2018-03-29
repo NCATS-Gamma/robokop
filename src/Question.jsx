@@ -44,6 +44,7 @@ class Question extends React.Component {
         owner: data.owner,
         question: data.question,
         answersets: data.answerset_list,
+        tasks: data.tasks,
         ready: true,
       }),
     );
@@ -65,7 +66,7 @@ class Question extends React.Component {
       (err) => {
         this.dialogMessage({
           title: 'Trouble Queuing Answer Set Generation',
-          text: 'This could due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+          text: 'This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
           buttonText: 'OK',
           buttonAction: () => {},
         });
@@ -83,13 +84,13 @@ class Question extends React.Component {
           title: 'Knowledge Graph Refresh in Progress',
           text: 'We are working on updating the knowledge graph for this question. This can take a little bit. We will send you an email when the updates are complete.',
           buttonText: 'OK',
-          buttonAction: () => this.addToTaskList( {questionTask: newData.task_id }),
+          buttonAction: () => this.addToTaskList({ questionTask: newData.task_id }),
         });
       },
       (err) => {
         this.dialogMessage({
           title: 'Trouble Refreshing the Knowledge Graph',
-          text: 'This could due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+          text: 'This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
           buttonText: 'OK',
           buttonAction: () => {},
         });
@@ -102,12 +103,10 @@ class Question extends React.Component {
   }
   callbackFork() {
     const q = this.state.question;
-    const u = this.state.user;
-    console.log('Fork question for user. Get the new question ID. Then show a message. Redirect to new question page');
+    this.appConfig.questionFork(q.id);
   }
   callbackDelete() {
     const q = this.state.question;
-    const u = this.state.user;
 
     this.dialogConfirm(
       () => {
@@ -119,11 +118,8 @@ class Question extends React.Component {
 
         // Actually try to delete the question here.
         this.appConfig.questionDelete(
-          q,
-          u,
-          () => {
-            window.open(this.appConfig.urls.questionList, '_self');
-          },
+          q.id,
+          () => this.appConfig.redirect(this.appConfig.urls.questionList),
           () => {
             this.dialogMessage({
               title: 'Question Not Deleted',

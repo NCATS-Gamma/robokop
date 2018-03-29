@@ -156,17 +156,36 @@ def account_data():
     return jsonify({'timestamp': now_str,\
         'user': user})
 
+# # New Question
+# @app.route('/q/new', methods=['GET', 'POST'])
+# def new():
+#     """Deliver new question"""
+#     question_id = request.form['question_id'] if 'question_id' in request.form else None
+    
+#     return render_template('questionNew.html', questionId=question_id)
+
+
 # New Question Interface
 @app.route('/q/new', methods=['GET'])
 def new():
     """Deliver new-question interface"""
-    return render_template('questionNew.html')
+    return render_template('questionNew.html',  questionId=None)
 
 # New Question Submission
 @app.route('/q/new', methods=['POST'])
 @auth_required('session', 'basic')
-def new_submission():
-    """Create new question"""
+def new_from_post():
+    """Trigger creation of a new question, or prepopulate question new page"""
+    # This is a little bit of a hack to double use this POST entry
+    # In the future we could update the post request spec to make this more explicit
+
+    # If you make a post request with a question_id we will assume you want a new question editor
+    # we will prepopulate the question new page with data from that question (if it is a valid question id)
+    if 'question_id' in request.form:
+        return render_template('questionNew.html', questionId=request.form['question_id'])
+    
+    # Otherwise, we assume you are submitting a new question with all other data
+    # in which case you dont know the question id so you didn't give me one (right?)
     user_id = current_user.id
     name = request.json['name']
     natural_question = request.json['natural']
@@ -176,7 +195,7 @@ def new_submission():
     q = Question(id=qid, user_id=user_id, name=name, natural_question=natural_question, notes=notes, nodes=nodes, edges=edges)
     return qid, 201
 
-@app.route('/q/new/data', methods=['GET'])
+@app.route('/q/new/data', methods=['GET', 'POST'])
 def new_data():
     """Data for the new-question interface"""
 
@@ -241,7 +260,8 @@ def question_data(question_id):
                     'user': user,
                     'question': question.toJSON(),
                     'owner': question.user.email,
-                    'answerset_list': [a.toJSON() for a in answerset_list]})
+                    'answerset_list': [a.toJSON() for a in answerset_list],
+                    'tasks': []})
 
 @app.route('/q/<question_id>/subgraph', methods=['GET'])
 def question_subgraph(question_id):
