@@ -59,7 +59,7 @@ class Question extends React.Component {
           title: 'Answer Set Generation in Progress',
           text: "We are working on developing a new Answer Set for this this question. This can take a little bit. We will send you an email when it's ready.",
           buttonText: 'OK',
-          buttonAction: () => this.addToTaskList(newData),
+          buttonAction: () => this.addToTaskList({ answersetTask: newData.task_id }),
         });
       },
       (err) => {
@@ -81,9 +81,9 @@ class Question extends React.Component {
       (newData) => {
         this.dialogMessage({
           title: 'Knowledge Graph Refresh in Progress',
-          text: 'We are working on updating the knolwedge graph for this question. This can take a little bit. We will send you an email when the updates are complete.',
+          text: 'We are working on updating the knowledge graph for this question. This can take a little bit. We will send you an email when the updates are complete.',
           buttonText: 'OK',
-          buttonAction: () => this.addToTaskList(newData),
+          buttonAction: () => this.addToTaskList( {questionTask: newData.task_id }),
         });
       },
       (err) => {
