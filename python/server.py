@@ -44,7 +44,7 @@ from tasks import celery, answer_question, update_kg
 user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
 security = Security(app, user_datastore)
 
-# Create a user to test with
+# Initialization
 @app.before_first_request
 def init():
     pass
@@ -419,16 +419,12 @@ def admin_answerset_delete():
 ################################################################################
 
 if __name__ == '__main__':
-    # Our local config is in the main directory
     
-    # We will use this host and port if we are running from python and not gunicorn
-    global local_config
-    config_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),'..')
-    json_file = os.path.join(config_dir,'config.json')
-    with open(json_file, 'rt') as json_in:
-        local_config = json.load(json_in)
-        
-    app.run(host=local_config['serverHost'],\
-        port=local_config['port'],\
+    # Get host and port from environmental variables
+    server_host = os.environ['ROBOKOP_HOST']
+    server_port = os.environ['ROBOKOP_PORT']
+
+    app.run(host=server_host,\
+        port=server_port,\
         debug=False,\
         use_reloader=False)

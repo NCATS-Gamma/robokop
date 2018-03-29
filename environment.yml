@@ -18,6 +18,9 @@ dependencies:
   - psycopg2-binary
   - bcrypt
   - kombu
+  - pymongo
+  - lru-dict
+  - pytest
 - nltk
 - networkx=1.11
 - nb_conda

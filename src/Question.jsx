@@ -37,13 +37,16 @@ class Question extends React.Component {
   }
 
   componentDidMount() {
-    this.appConfig.questionData(this.props.id, data => this.setState({
-      user: data.user,
-      owner: data.owner,
-      question: data.question,
-      answersets: data.answerset_list,
-      ready: true,
-    }));
+    this.appConfig.questionData(
+      this.props.id,
+      data => this.setState({
+        user: data.user,
+        owner: data.owner,
+        question: data.question,
+        answersets: data.answerset_list,
+        ready: true,
+      }),
+    );
   }
 
   callbackNewAnswerset() {
