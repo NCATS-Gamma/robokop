@@ -34,7 +34,7 @@ curl https://github.com/NCATS-Gamma/robokop-neo4j-plugin/releases/download/v1.0.
 # https://neo4j.com/docs/operations-manual/current/installation/docker/
 # https://neo4j.com/docs/operations-manual/current/reference/configuration-settings/
 docker run \
-    --name robokop-neo4j \
+    --name $NEO4J_NAME \
     --net robokop-docker-net \
     --env NEO4J_dbms_security_auth__enabled=false \
     --env NEO4J_dbms_connectors_default__listen__address=0.0.0.0 \
@@ -48,7 +48,7 @@ docker run \
 # Redis:
 # https://hub.docker.com/_/redis/
 docker run \
-    --name robokop-redis \
+    --name $REDIS_NAME \
     --net robokop-docker-net \
     -d \
     redis
@@ -56,7 +56,7 @@ docker run \
 # Postgres:
 # https://hub.docker.com/_/postgres/
 docker run \
-    --name robokop-postgres \
+    --name $POSTGRES_NAME \
     --net robokop-docker-net \
     --env POSTGRES_USER \
     --env POSTGRES_DB \
@@ -66,7 +66,7 @@ docker run \
 
 # Web server
 docker run \
-    --name robokop-web \
+    --name $ROBOKOP_NAME \
     --net robokop-docker-net \
     --env NEO4J_HOST=$NEO4J_NAME \
     --env NEO4J_HTTP_PORT \
