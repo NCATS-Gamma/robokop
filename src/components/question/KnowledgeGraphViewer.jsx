@@ -1,8 +1,13 @@
 import React from 'react';
+
+import { Button } from 'react-bootstrap';
+import GoSync from 'react-icons/lib/go/sync';
+
 import NodeTypes from '../questionNew/QuestionNewNodeTypes';
 
 const Graph = require('react-graph-vis').default;
 const _ = require('lodash');
+
 
 class KnowledgeGraphViewer extends React.Component {
   constructor(props) {
@@ -112,7 +117,8 @@ class KnowledgeGraphViewer extends React.Component {
     return g;
   }
 
-  render() {
+  
+  renderGraph() {
     let graph = this.addTagsToGraph(this.props.graph);
 
     this.graphOptions.height = this.props.height;
@@ -130,6 +136,34 @@ class KnowledgeGraphViewer extends React.Component {
         </div>
       </div>
     );
+  }
+  renderNoGraph() {
+    return (
+      <div>
+        <h5>The current knowledge graph does not have any relevant nodes for this question.</h5>
+        <h5>You need to update the knowledge graph.</h5>
+        <Button title="Update KG and Get New Answer Set" onClick={this.props.callbackRefresh}>
+          Refresh
+          <br />
+          <GoSync />
+        </Button>
+      </div>
+    );
+  }
+
+  render() {
+    const showGraph = this.props.graph.nodes.length > 0
+    const showNoGraph = !showGraph;
+    return (
+      <div>
+        {showGraph &&
+          this.renderGraph()
+        }
+        {showNoGraph &&
+          this.renderNoGraph()
+        }
+      </div>
+    )
   }
 }
 

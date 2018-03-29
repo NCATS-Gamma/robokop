@@ -52,19 +52,53 @@ class Question extends React.Component {
   callbackNewAnswerset() {
     const q = this.state.question;
     // Send post request to build new answerset.
-    this.appConfig.answersetNew(q.id);
+    this.appConfig.answersetNew(
+      q.id,
+      (newData) => {
+        this.dialogMessage({
+          title: 'Answer Set Generation in Progress',
+          text: "We are working on developing a new Answer Set for this this question. This can take a little bit. We will send you an email when it's ready.",
+          buttonText: 'OK',
+          buttonAction: () => this.addToTaskList(newData),
+        });
+      },
+      (err) => {
+        this.dialogMessage({
+          title: 'Trouble Queuing Answer Set Generation',
+          text: 'This could due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+          buttonText: 'OK',
+          buttonAction: () => {},
+        });
+      },
+    );
   }
 
   callbackRefresh() {
     const q = this.state.question;
     // Send post request to update question data.
-    this.appConfig.refresh(q.id);
+    this.appConfig.refresh(
+      q.id,
+      (newData) => {
+        this.dialogMessage({
+          title: 'Knowledge Graph Refresh in Progress',
+          text: 'We are working on updating the knolwedge graph for this question. This can take a little bit. We will send you an email when the updates are complete.',
+          buttonText: 'OK',
+          buttonAction: () => this.addToTaskList(newData),
+        });
+      },
+      (err) => {
+        this.dialogMessage({
+          title: 'Trouble Refreshing the Knowledge Graph',
+          text: 'This could due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+          buttonText: 'OK',
+          buttonAction: () => {},
+        });
+      },
+    );
   }
 
   callbackUpdateMeta(newMeta, fun) {
-    const q = this.state.question;
-    const u = this.state.user;
-    this.appConfig.questionUpdateMeta(newMeta, fun)
+    this.appConfig.questionUpdateMeta(newMeta, fun);
   }
   callbackFork() {
     const q = this.state.question;
@@ -72,7 +106,6 @@ class Question extends React.Component {
     console.log('Fork question for user. Get the new question ID. Then show a message. Redirect to new question page');
   }
   callbackDelete() {
-    console.log('Delete this question if possible. Then show a message. Redirect to questions.');
     const q = this.state.question;
     const u = this.state.user;
 
@@ -94,7 +127,7 @@ class Question extends React.Component {
           () => {
             this.dialogMessage({
               title: 'Question Not Deleted',
-              text: 'We were unable to delete the question.',
+              text: 'We were unable to delete the question. This could due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
               buttonText: 'OK',
             });
           },
@@ -188,6 +221,10 @@ class Question extends React.Component {
         dialog.hide();
       },
     });
+  }
+
+  addToTaskList(newTask) {
+    console.log(newTask)
   }
 
   renderLoading() {

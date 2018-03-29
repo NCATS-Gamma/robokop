@@ -41,9 +41,10 @@ class KnowledgeGraphFetchAndView extends React.Component {
     const showFetchButton = !showGraph && !showFetching;
     
     const propsStyle = { height: this.props.height, width: this.props.width };
-    const containerStyle = this.styles.container;
+    let containerStyle = this.styles.container;
     if (!showGraph) {
-      containerStyle.backgroundColor = '#eee';
+      containerStyle.backgroundColor = '#b8c6db';
+      // containerStyle.backgroundImage = 'linear-gradient(315deg, #b8c6db 0%, #f5f7fa 74%)';
     } else {
       containerStyle.backgroundColor = '#fff';
     }
@@ -58,6 +59,7 @@ class KnowledgeGraphFetchAndView extends React.Component {
                 height={this.props.height}
                 width={this.props.width}
                 graph={this.props.subgraph}
+                callbackRefresh={this.props.callbackRefresh}
               />
             }
             {showFetching &&
@@ -82,6 +84,7 @@ KnowledgeGraphFetchAndView.defaultProps = {
   height: '500px',
   width: '500px',
   callbackFetchGraph: () => {},
+  callbackRefresh: () => {},
 };
 
 

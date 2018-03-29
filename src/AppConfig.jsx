@@ -87,8 +87,8 @@ class AppConfig {
   questionSubgraph(id, fun) { this.getRequest(`${this.urls.question(id)}/subgraph`, fun); }
   answersetData(id, fun) { this.getRequest(`${this.urls.answerset(id)}/data`, fun); }
 
-  answersetNew(qid) { this.postRequest(`${this.urls.question(qid)}`, { command: 'answer' }, () => {}, () => {}); }
-  refresh(qid) { this.postRequest(`${this.urls.question(qid)}`, { command: 'update' }, () => {}, () => {}); }
+  answersetNew(qid, successFun, failureFun) { this.postRequest(`${this.urls.question(qid)}`, { command: 'answer' }, successFun, failureFun); }
+  refresh(qid, successFun, failureFun) { this.postRequest(`${this.urls.question(qid)}`, { command: 'update' }, successFun, failureFun); }
   answerData(setId, id, fun) { this.getRequest(`${this.urls.answer(setId, id)}/data`, fun); }
 
   open(newUrlExt) {

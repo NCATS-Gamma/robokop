@@ -94,6 +94,7 @@ class QuestionPres extends React.Component {
               height="750px"
               width="750px"
               callbackFetchGraph={this.props.callbackFetchGraph}
+              callbackRefresh={this.props.callbackRefresh}
               subgraph={this.props.subgraph}
             />
           </Col>
