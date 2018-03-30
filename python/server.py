@@ -117,6 +117,7 @@ def get_tasks():
     answerer_active = [(t['id'], t['args']) for t in active['answerer@robokop']]
     updater_queued = [(t['id'], t['args']) for t in scheduled['updater@robokop'] + reserved['updater@robokop']]
     updater_active = [(t['id'], t['args']) for t in active['updater@robokop']]
+
     response = {'answerers_queued': answerer_queued,\
         'answerers_active': answerer_active,\
         'updaters_queued': updater_queued,\
@@ -203,13 +204,14 @@ def new_data():
     question = {}
     if initialization_id:
         question = get_question_by_id(initialization_id)
+        question = question.toJSON()
     
     user = getAuthData()
 
     now_str = datetime.now().__str__()
     return jsonify({\
         'timestamp': now_str,\
-        'question': question.toJSON(),
+        'question': question,
         'user': user})
 
 # QuestionList
@@ -269,6 +271,29 @@ def question_data(question_id):
                     'owner': question.user.email,
                     'answerset_list': [a.toJSON() for a in answerset_list],
                     'tasks': []})
+
+@app.route('/q/<question_id>/tasks', methods=['GET'])
+def question_tasks(question_id):
+    """ List of active and queued tasks for only a specific question """
+
+    i = celery.control.inspect()
+    scheduled = i.scheduled()
+    reserved = i.reserved()
+    active = i.active()
+    all_answerer_queued = [(t['id'], t['args']) for t in scheduled['answerer@robokop'] + reserved['answerer@robokop']]
+    all_answerer_active = [(t['id'], t['args']) for t in active['answerer@robokop']]
+    all_updater_queued = [(t['id'], t['args']) for t in scheduled['updater@robokop'] + reserved['updater@robokop']]
+    all_updater_active = [(t['id'], t['args']) for t in active['updater@robokop']]
+
+    answerer_queued = [a[0] for a in all_answerer_queued if a[1][0] == question_id]
+    answerer_active = [a[0] for a in all_answerer_active if a[1][0] == question_id]
+    updater_queued = [a[0] for a in all_updater_queued if a[1][0] == question_id]
+    updater_active = [a[0] for a in all_updater_active if a[1][0] == question_id]
+
+    return jsonify({'answerer_queued': answerer_queued,
+                    'answerer_active': answerer_active,
+                    'updater_queued': updater_queued,
+                    'updater_active': updater_active})
 
 @app.route('/q/<question_id>/subgraph', methods=['GET'])
 def question_subgraph(question_id):
