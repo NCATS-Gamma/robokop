@@ -8,6 +8,6 @@
   </div>
   <script type="text/javascript" src="{{ url_for('static', filename='bundle.js') }}"></script>
   <script type="text/javascript">
-    robokop.questionNew();
+    robokop.questionNew("{{ question_id }}");
   </script>
 </body>

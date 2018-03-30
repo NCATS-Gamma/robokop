@@ -184,28 +184,43 @@ class QuestionNewPres extends React.Component {
     );
     return (
       <div id="RobokopNewQuestion" className="col-md-12">
-        <div className="row">
-          <div className="col-md-12" style={this.styles.top}>
-            <h2>{'Start a New Question'}</h2>
-            <p>
-              {'Questions are created using the interface below.'}
-              <br />
-              {'To get started quickly, try one of these templates:'}
-            </p>
-            <div style={{ paddingLeft: '5px' }}>
-              <ButtonToolbar>
-                <ButtonGroup>
-                  <Button bsSize="small" onClick={() => this.queryTemplateSet(1)}>
-                    {'Question 1 Example'}
-                  </Button>
-                  <Button bsSize="small" onClick={() => this.queryTemplateSet(2)}>
-                    {'Question 2 Example'}
-                  </Button>
-                </ButtonGroup>
-              </ButtonToolbar>
+        {!this.props.isFork &&
+          <div className="row">
+            <div className="col-md-12" style={this.styles.top}>
+              <h2>{'Start a New Question'}</h2>
+              <p>
+                {'Questions are created using the interface below.'}
+                <br />
+                {'To get started quickly, try one of these templates:'}
+              </p>
+              <div style={{ paddingLeft: '5px' }}>
+                <ButtonToolbar>
+                  <ButtonGroup>
+                    <Button bsSize="small" onClick={() => this.queryTemplateSet(1)}>
+                      {'Question 1 Example'}
+                    </Button>
+                    <Button bsSize="small" onClick={() => this.queryTemplateSet(2)}>
+                      {'Question 2 Example'}
+                    </Button>
+                  </ButtonGroup>
+                </ButtonToolbar>
+              </div>
             </div>
           </div>
-        </div>
+        }
+        {this.props.isFork &&
+          <div className="row">
+            <div className="col-md-12" style={this.styles.top}>
+              <h2>{'Fork Question'}</h2>
+              <p>
+                {'Questions are own by users and can be deleted. If you like a question you can make yourself a copy that you own. We call this "forking".'}
+                <br />
+                {'Before we create your copy of this question, you are free to make any edits. Keep in mind however that any edits will results in a different question.'}
+                {'and different question will require us to collect new answers.'}
+              </p>
+            </div>
+          </div>
+        }
         <div className="row" style={{ paddingBottom: '10px' }}>
           <div className="col-md-10">
             <div className="row">

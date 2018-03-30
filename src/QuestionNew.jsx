@@ -21,6 +21,7 @@ class QuestionNew extends React.Component {
       natural: '',
       notes: '',
       query: [],
+      isFork: false,
     };
 
     this.onCreate = this.onCreate.bind(this);
@@ -29,11 +30,13 @@ class QuestionNew extends React.Component {
     this.handleChangeNatural = this.handleChangeNatural.bind(this);
     this.handleChangeNotes = this.handleChangeNotes.bind(this);
     this.handleChangeQuery = this.handleChangeQuery.bind(this);
+
+    console.log("new state stuff?")
   }
 
   componentDidMount() {
     this.appConfig.questionNewData(
-      this.props.questionId,
+      this.props.initializationId,
       (data) => {
         // In the future we need to support forking here
         // Currently we will accpt a question id but then not actually prepopulate fields for the fork.
@@ -42,20 +45,108 @@ class QuestionNew extends React.Component {
         //    If questionId is empty or null the server wont give anything
         // 2. If valid question data, populate the GUI
 
-        console.log(data)
-        const name = data.question.name !== null ? data.name : '';
-        const natural = data.question.natural !== null ? data.natural : '';
-        const notes = data.question.notes !== null ? data.notes : '';
+        const isFork = (data.question && data.question.name);
+        const name = (data.question && data.question.name) ? data.question.name : '';
+        const natural = (data.question && data.question.natural_question) ? data.question.natural_question : '';
+        const notes = (data.question && data.question.notes) ? data.question.notes : '';
 
         this.setState({
           user: data.user,
           name,
           natural,
           notes,
+          isFork,
           ready: true,
         });
       },
     );
+  }
+
+  onCreate() {
+    const newBoardInfo = {
+      name: this.state.name,
+      natural: this.state.natural,
+      notes: this.state.notes,
+      query: this.state.query,
+    };
+
+    // Splash wait overlay
+    this.dialogWait({
+      title: 'Creating Question...',
+      text: '',
+      showLoading: true,
+    });
+
+    this.appConfig.questionCreate(
+      newBoardInfo,
+      data => this.appConfig.redirect(this.appConfig.urls.question(data)), // Success redirect to the new question page
+      () => {
+        this.dialogMessage({
+          title: 'Trouble Creating Question',
+          text: 'We ran in to problems creating this question. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+          buttonText: 'OK',
+          buttonAction: () => {},
+        })
+      },
+    );
+  }
+
+  onCancel() {
+    this.appConfig.back();
+  }
+
+  dialogWait(inputOptions) {
+    const defaultOptions = {
+      title: 'Hi',
+      text: 'Please wait...',
+      showLoading: false,
+    };
+    const options = { ...defaultOptions, ...inputOptions };
+
+    const bodyNode = (
+      <div>
+        {options.text}
+        {options.showLoading &&
+          <Loading />
+        }
+      </div>
+    );
+
+    // Show custom react-bootstrap-dialog
+    this.dialog.show({
+      title: options.title,
+      body: bodyNode,
+      actions: [],
+      bsSize: 'large',
+      onHide: () => {},
+    });
+  }
+
+  dialogMessage(inputOptions) {
+    const defaultOptions = {
+      title: 'Hi',
+      text: 'How are you?',
+      buttonText: 'OK',
+      buttonAction: () => {},
+    };
+    const options = { ...defaultOptions, ...inputOptions };
+
+    // Show custom react-bootstrap-dialog
+    this.dialog.show({
+      title: options.title,
+      body: options.text,
+      actions: [
+        Dialog.Action(
+          options.buttonText,
+          (dialog) => { dialog.hide(); options.buttonAction(); },
+          'btn-primary',
+        ),
+      ],
+      bsSize: 'large',
+      onHide: (dialog) => {
+        dialog.hide();
+      },
+    });
   }
 
   handleChangeName(e) {
@@ -107,87 +198,6 @@ class QuestionNew extends React.Component {
     this.setState({ query: slimQuery });
   }
 
-  onCreate() {
-    const newBoardInfo = {
-      name: this.state.name,
-      natural: this.state.natural,
-      notes: this.state.notes,
-      query: this.state.query,
-    };
-
-    // Splash wait overlay
-    this.dialogWait({
-      title: 'Creating Question...',
-      text: '',
-      showLoading: true,
-    });
-
-    this.appConfig.questionCreate(
-      newBoardInfo,
-      data => this.appConfig.redirect(this.appConfig.urls.question(data)), // Success redirect to the new question page
-      () => {
-        this.dialogMessage({
-          title: 'Trouble Creating Question',
-          text: 'We ran in to problems creating this question. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
-          buttonText: 'OK',
-          buttonAction: () => {},
-        })
-      },
-    );
-  }
-  dialogWait(inputOptions) {
-    const defaultOptions = {
-      title: 'Hi',
-      text: 'Please wait...',
-      showLoading: false,
-    };
-    const options = { ...defaultOptions, ...inputOptions };
-
-    const bodyNode = (
-      <div>
-        {options.text}
-        {options.showLoading &&
-          <Loading />
-        }
-      </div>
-    );
-
-    // Show custom react-bootstrap-dialog
-    this.dialog.show({
-      title: options.title,
-      body: bodyNode,
-      actions: [],
-      bsSize: 'large',
-      onHide: () => {},
-    });
-  }
-  dialogMessage(inputOptions) {
-    const defaultOptions = {
-      title: 'Hi',
-      text: 'How are you?',
-      buttonText: 'OK',
-      buttonAction: () => {},
-    };
-    const options = { ...defaultOptions, ...inputOptions };
-
-    // Show custom react-bootstrap-dialog
-    this.dialog.show({
-      title: options.title,
-      body: options.text,
-      actions: [
-        Dialog.Action(
-          options.buttonText,
-          (dialog) => { dialog.hide(); options.buttonAction(); },
-          'btn-primary',
-        ),
-      ],
-      bsSize: 'large',
-      onHide: (dialog) => {
-        dialog.hide();
-      },
-    });
-  }
-
   onSearch(postData) {
     this.appConfig.questionNewSearch(postData);
   }
@@ -197,10 +207,7 @@ class QuestionNew extends React.Component {
   onTranslate(postData) {
     this.appConfig.questionNewTranslate(postData);
   }
-  onCancel() {
-    this.appConfig.back();
-  }
-
+  
   renderLoading() {
     return (
       <Loading />
@@ -218,6 +225,7 @@ class QuestionNew extends React.Component {
           natural={this.state.natural}
           notes={this.state.notes}
           query={this.state.query}
+          isFork={this.state.isFork}
           handleChangeName={this.handleChangeName}
           handleChangeNatural={this.handleChangeNatural}
           handleChangeNotes={this.handleChangeNotes}

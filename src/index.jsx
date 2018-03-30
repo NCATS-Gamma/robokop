@@ -52,10 +52,11 @@ const robokop = {
       document.getElementById('reactEntry'),
     );
   },
-  questionNew: () => {
+  questionNew: (id) => {
     ReactDOM.render(
       <QuestionNew
         config={config}
+        initializationId={id}
       />,
       document.getElementById('reactEntry'),
     );

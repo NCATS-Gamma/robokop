@@ -91,7 +91,7 @@ class AppConfig {
   questionListData(fun) { this.getRequest(`${this.urls.questionList}/data`, fun); }
   questionData(id, fun) { this.getRequest(`${this.urls.question(id)}/data`, fun); }
   questionSubgraph(id, fun) { this.getRequest(`${this.urls.question(id)}/subgraph`, fun); }
-  questionNewData(qid, fun) { this.postRequest(`${this.urls.questionNew}/data`, { question_id: qid }, fun, (err) => { throw err; }); }
+  questionNewData(qid, fun) { this.postRequest(`${this.urls.questionNew}/data`, { initialization_id: qid }, fun, (err) => { throw err; }); }
   answersetData(id, fun) { this.getRequest(`${this.urls.answerset(id)}/data`, fun); }
   answerData(setId, id, fun) { this.getRequest(`${this.urls.answer(setId, id)}/data`, fun); }
 
