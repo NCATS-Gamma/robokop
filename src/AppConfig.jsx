@@ -1,5 +1,6 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
+import FormData from 'form-data';
 
 class AppConfig {
   constructor(config) {
@@ -132,22 +133,69 @@ class AppConfig {
       failureFun,
     );
   }
-  questionFork(qid) {
+  questionFork(qid, successFun = () => {}, failureFun = () => {}) {
     // To fork a question we make a form post request to the questionNew page
     // with {question_id: qid}
     // We make a form request to redirect after the post
-    console.log("Fork here" + qid)
-    // var bodyFormData = new FormData();
-    // this.comms.post(
-    //   `${this.urls.questionNew}`,
-    //   {question_id: qid},
-    //   {'Content-Type': 'application/json'}
-    // ); }
 
-    // <form action={this.props.questionNewUrl} method="post" class="add-entry">
-    //   <input type="submit" name="question_id" value={this.props.question.id} />
-    // </form>
+    // const form = new FormData();
+
+    function formPost(path, parameters) {
+      var form = $('<form></form>');
+
+      form.attr("method", "post");
+      form.attr("action", path);
+
+      $.each(parameters, function(key, value) {
+        var field = $('<input></input>');
+        field.attr("type", "hidden");
+        field.attr("name", key);
+        field.attr("value", value);
+
+        form.append(field);
+      });
+
+      // The form needs to be a part of the document in
+      // order for us to be able to submit it.
+      $(document.body).append(form);
+      form.submit();
+    }
+
+    formPost(
+      this.urls.questionNew,
+      { question_id: qid },
+    );
   }
+
+  // // form.append('type', 'application/json');
+  //   // form.append('question_id', qid);
+
+  //   // const getHeaders = (f) => {
+  //   //   Promise((resolve, reject) => {
+  //   //     f.getLength((err, length) => {
+  //   //       if (err) { reject(err); }
+  //   //       const headers = Object.assign({ 'Content-Length': length }, f.getHeaders());
+  //   //       resolve(headers);
+  //   //     });
+  //   //   });
+  //   // };
+
+  //   // getHeaders(form).then(headers => this.comms.post(
+  //   //   this.urls.questionNew,
+  //   //   form,
+  //   //   { headers },
+  //   // )).then(response => successFun(response)).catch(err => failureFun(err));
+
+
+  //   this.comms.post(
+  //     this.urls.questionNew,
+  //     { question_id: qid },
+  //     { 'Content-Type': 'application/json' },
+  //   );
+
+  // <form action={this.props.questionNewUrl} method="post" class="add-entry">
+  //   <input type="submit" name="question_id" value={this.props.question.id} />
+  // </form>
 
   questionUpdateMeta(data, successFun, failureFun) {
     // Data must contain all necessary meta data fields

@@ -33,6 +33,7 @@
     "axios": "^0.18.0",
     "axios-retry": "^3.0.2",
     "bootstrap": "^3.3.7",
+    "form-data": "^2.3.2",
     "immutability-helper": "^2.4.0",
     "jquery": "^3.2.1",
     "lodash": "^4.17.4",

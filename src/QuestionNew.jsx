@@ -42,8 +42,16 @@ class QuestionNew extends React.Component {
         //    If questionId is empty or null the server wont give anything
         // 2. If valid question data, populate the GUI
 
+        console.log(data)
+        const name = data.question.name !== null ? data.name : '';
+        const natural = data.question.natural !== null ? data.natural : '';
+        const notes = data.question.notes !== null ? data.notes : '';
+
         this.setState({
           user: data.user,
+          name,
+          natural,
+          notes,
           ready: true,
         });
       },
@@ -117,12 +125,14 @@ class QuestionNew extends React.Component {
     this.appConfig.questionCreate(
       newBoardInfo,
       data => this.appConfig.redirect(this.appConfig.urls.question(data)), // Success redirect to the new question page
-      this.dialogMessage({
-        title: 'Trouble Creating Question',
-        text: 'We ran in to problems creating this question. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
-        buttonText: 'OK',
-        buttonAction: () => {},
-      }),
+      () => {
+        this.dialogMessage({
+          title: 'Trouble Creating Question',
+          text: 'We ran in to problems creating this question. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+          buttonText: 'OK',
+          buttonAction: () => {},
+        })
+      },
     );
   }
   dialogWait(inputOptions) {
@@ -204,6 +214,9 @@ class QuestionNew extends React.Component {
           user={this.state.user}
         />
         <QuestionNewPres
+          name={this.state.name}
+          natural={this.state.natural}
+          notes={this.state.notes}
           query={this.state.query}
           handleChangeName={this.handleChangeName}
           handleChangeNatural={this.handleChangeNatural}

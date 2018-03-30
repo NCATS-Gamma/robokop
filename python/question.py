@@ -9,8 +9,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..
 from nagaProto import ProtocopRank
 from answer import Answer, AnswerSet, list_answersets_by_question_hash
 from user import User
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces'))
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build', 'builder'))
+greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
+builder_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build', 'builder')
+sys.path.insert(0, greent_path)
+sys.path.insert(0, builder_path)
 from greent import node_types
 from builder import setup
 from lookup_utils import lookup_identifier
@@ -21,6 +23,7 @@ from sqlalchemy.orm import relationship, backref
 
 from setup import db
 from logging_config import logger
+
 
 class Question(db.Model):
     '''
@@ -84,7 +87,7 @@ class Question(db.Model):
                 warnings.warn("Keyword argument {} ignored.".format(key))
 
         # replace input node names with identifiers
-        rosetta = setup()
+        rosetta = setup(os.path.join(greent_path,'greent','greent.conf'))
         for n in self.nodes:
             if n['nodeSpecType']=='Named Node':
                 start_identifiers = lookup_identifier(n['label'], n['type'], rosetta.core)

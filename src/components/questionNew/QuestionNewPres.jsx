@@ -30,7 +30,10 @@ class QuestionNewPres extends React.Component {
       case 0:
         newQuery = [];
         this.editorComponent.child.decoratedComponentInstance.setQuery(newQuery);
-        this.setState({ name: '', description: '' });
+        this.props.handleChangeName({ target: { value: '' } });
+        this.props.handleChangeNatural({ target: { value: '' } });
+        this.props.handleChangeNotes({ target: { value: '' } });
+        // this.setState({ name: '', description: '' });
         break;
       case 1:
         newQuery = [
@@ -63,7 +66,10 @@ class QuestionNewPres extends React.Component {
           },
         ];
         this.editorComponent.child.decoratedComponentInstance.setQuery(newQuery);
-        this.setState({ name: 'Question 1: Ebola', description: 'Which other genetic conditions observed in the human population might offer protection from Ebola.' });
+        this.props.handleChangeName({ target: { value: 'Ebola Genetic Conditions' } });
+        this.props.handleChangeNatural({ target: { value: 'Which other genetic conditions observed in the human population might offer protection from Ebola?' } });
+        this.props.handleChangeNotes({ target: { value: '#Ebola #Q1' } });
+
         break;
       case 2:
         newQuery = [
@@ -132,7 +138,9 @@ class QuestionNewPres extends React.Component {
           },
         ];
         this.editorComponent.child.decoratedComponentInstance.setQuery(newQuery);
-        this.setState({ name: 'Question 2: IMATINIB to Asthma', description: 'The clinical outcome pathway of Imatinib for the treatment of Asthma.' });
+        this.props.handleChangeName({ target: { value: 'IMATINIB to Asthma Clinical Outcome Pathway' } });
+        this.props.handleChangeNatural({ target: { value: 'What is the clinical outcome pathway of Imatinib for the treatment of Asthma?' } });
+        this.props.handleChangeNotes({ target: { value: '#Imatinib #Asthma #COP #Q2' } });
         break;
       default:
         break;

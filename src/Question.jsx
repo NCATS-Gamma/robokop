@@ -53,7 +53,7 @@ class Question extends React.Component {
   callbackNewAnswerset() {
     const q = this.state.question;
     // Send post request to build new answerset.
-    this.appConfig.answersetNew(
+    this.appConfig.answersetCreate(
       q.id,
       (newData) => {
         this.dialogMessage({
@@ -77,7 +77,7 @@ class Question extends React.Component {
   callbackRefresh() {
     const q = this.state.question;
     // Send post request to update question data.
-    this.appConfig.refresh(
+    this.appConfig.questionRefresh(
       q.id,
       (newData) => {
         this.dialogMessage({

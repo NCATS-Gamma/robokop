@@ -179,6 +179,7 @@ def new_from_post():
     # This is a little bit of a hack to double use this POST entry
     # In the future we could update the post request spec to make this more explicit
 
+    print(request.form)
     # If you make a post request with a question_id we will assume you want a new question editor
     # we will prepopulate the question new page with data from that question (if it is a valid question id)
     if 'question_id' in request.form:
@@ -198,11 +199,18 @@ def new_from_post():
 @app.route('/q/new/data', methods=['GET', 'POST'])
 def new_data():
     """Data for the new-question interface"""
+    question_id = request.form['question_id'] if 'question_id' in request.form else None
 
+    question = {}
+    if question_id:
+        question = get_question_by_id(question_id)
+    
     user = getAuthData()
 
     now_str = datetime.now().__str__()
-    return jsonify({'timestamp': now_str,\
+    return jsonify({\
+        'timestamp': now_str,\
+        'question': question,
         'user': user})
 
 # QuestionList
