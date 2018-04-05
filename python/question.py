@@ -16,6 +16,8 @@ sys.path.insert(0, builder_path)
 from greent import node_types
 from builder import setup
 from lookup_utils import lookup_identifier
+from greent.synonymizers.disease_synonymizer import synonymize
+from greent.graph_components import KNode
 
 from sqlalchemy.types import JSON
 from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey, func
@@ -91,7 +93,12 @@ class Question(db.Model):
         for n in self.nodes:
             if n['nodeSpecType']=='Named Node':
                 start_identifiers = lookup_identifier(n['label'], n['type'], rosetta.core)
-                n['identifiers'] = start_identifiers
+                node = KNode(start_identifiers[0],node_types.DISEASE)
+                synonyms = list(synonymize(node,rosetta.core))
+                node.add_synonyms(synonyms)
+                #TODO Don't always use doids here.
+                doids = list(node.get_synonyms_by_prefix('DOID'))
+                n['identifiers'] = doids 
 
         self.hash = self.compute_hash()
 
