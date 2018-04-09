@@ -30,8 +30,6 @@ class QuestionNew extends React.Component {
     this.handleChangeNatural = this.handleChangeNatural.bind(this);
     this.handleChangeNotes = this.handleChangeNotes.bind(this);
     this.handleChangeQuery = this.handleChangeQuery.bind(this);
-
-    console.log("new state stuff?")
   }
 
   componentDidMount() {
@@ -86,13 +84,23 @@ class QuestionNew extends React.Component {
           text: 'We ran in to problems creating this question. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
           buttonText: 'OK',
           buttonAction: () => {},
-        })
+        });
       },
     );
   }
 
   onCancel() {
     this.appConfig.back();
+  }
+
+  onSearch(postData) {
+    this.appConfig.questionNewSearch(postData);
+  }
+  onValidate(postData) {
+    this.appConfig.questionNewValidate(postData);
+  }
+  onTranslate(postData) {
+    this.appConfig.questionNewTranslate(postData);
   }
 
   dialogWait(inputOptions) {
@@ -198,16 +206,6 @@ class QuestionNew extends React.Component {
     this.setState({ query: slimQuery });
   }
 
-  onSearch(postData) {
-    this.appConfig.questionNewSearch(postData);
-  }
-  onValidate(postData) {
-    this.appConfig.questionNewValidate(postData);
-  }
-  onTranslate(postData) {
-    this.appConfig.questionNewTranslate(postData);
-  }
-  
   renderLoading() {
     return (
       <Loading />

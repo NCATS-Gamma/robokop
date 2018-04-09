@@ -78,7 +78,7 @@ class AnswersetSummary extends React.Component {
       </div>
     );
   }
-};
+}
 
 AnswersetSummary.propTypes = {
   questionUrlFunc: PropTypes.func.isRequired,

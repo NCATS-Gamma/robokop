@@ -269,8 +269,7 @@ def question_data(question_id):
                     'user': user,
                     'question': question.toJSON(),
                     'owner': question.user.email,
-                    'answerset_list': [a.toJSON() for a in answerset_list],
-                    'tasks': []})
+                    'answerset_list': [a.toJSON() for a in answerset_list]})
 
 @app.route('/q/<question_id>/tasks', methods=['GET'])
 def question_tasks(question_id):
@@ -285,10 +284,10 @@ def question_tasks(question_id):
     all_updater_queued = [(t['id'], t['args']) for t in scheduled['updater@robokop'] + reserved['updater@robokop']]
     all_updater_active = [(t['id'], t['args']) for t in active['updater@robokop']]
 
-    answerer_queued = [a[0] for a in all_answerer_queued if a[1][0] == question_id]
-    answerer_active = [a[0] for a in all_answerer_active if a[1][0] == question_id]
-    updater_queued = [a[0] for a in all_updater_queued if a[1][0] == question_id]
-    updater_active = [a[0] for a in all_updater_active if a[1][0] == question_id]
+    answerer_queued = [a[0] for a in all_answerer_queued if json.loads(a[1].replace("'",'"'))[0] == question_id]
+    answerer_active = [a[0] for a in all_answerer_active if json.loads(a[1].replace("'",'"'))[0] == question_id]
+    updater_queued = [a[0] for a in all_updater_queued if json.loads(a[1].replace("'",'"'))[0] == question_id]
+    updater_active = [a[0] for a in all_updater_active if json.loads(a[1].replace("'",'"'))[0] == question_id]
 
     return jsonify({'answerer_queued': answerer_queued,
                     'answerer_active': answerer_active,
@@ -339,13 +338,21 @@ def answer_data(answerset_id, answer_id):
     """Data for an answer """
     
     user = getAuthData()
-    answer = get_answer_by_id(answer_id)
-    feedback = list_feedback_by_answer(answer)
+    if answerset_id == 'test':
+        answer = get_answer_by_id(answer_id)
+        answerset = get_answerset_by_id(answerset_id)
+        questions = list_questions_by_hash(answerset.question_hash)
+        feedback = list_feedback_by_answer(answer)
+    else:
+        answer = get_answer_by_id(answer_id)
+        answerset = get_answerset_by_id(answerset_id)
+        questions = list_questions_by_hash(answerset.question_hash)
+        feedback = list_feedback_by_answer(answer)
     
-    now_str = datetime.now().__str__()
-    return jsonify({'timestamp': now_str,\
-        'user': user,\
+    return jsonify({'user': user,\
+        'answerset': answerset.toJSON(),\
         'answer': answer.toJSON(),\
+        'questions': [q.toJSON() for q in questions],\
         'feedback': feedback})
 
 # Admin

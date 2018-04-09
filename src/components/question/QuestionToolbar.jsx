@@ -1,11 +1,14 @@
 import React from 'react';
 
-import { ButtonToolbar, ButtonGroup, Button } from 'react-bootstrap';
+import { DropdownButton, MenuItem } from 'react-bootstrap';
 
-import GoRepoForked from 'react-icons/lib/go/repo-forked';
+import GoGear from 'react-icons/lib/go/gear';
 import GoSync from 'react-icons/lib/go/sync';
 import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
+import GoRepoForked from 'react-icons/lib/go/repo-forked';
 import GoTrashcan from 'react-icons/lib/go/trashcan';
+
+const shortid = require('shortid');
 
 class QuestionToolbar extends React.Component {
   constructor(props) {
@@ -14,23 +17,47 @@ class QuestionToolbar extends React.Component {
   }
 
   render() {
+    const refreshing = this.props.refreshActive || this.props.refreshQueued;
+    const answering =  this.props.answerActive || this.props.answerQueued;
+
     return (
-      <ButtonToolbar>
-        <ButtonGroup>
-          {this.props.showFork &&
-            <Button title="Fork Question" onClick={this.props.callbackFork}><GoRepoForked /></Button>
-          }
-          {this.props.showRefresh &&
-            <Button title="Update KG and Get New Answer Set" onClick={this.props.callbackRefresh}><GoSync /></Button>
-          }
-          {this.props.showNewAnswerset &&
-            <Button title="Get New Answer Set" onClick={this.props.callbackNewAnswerset}><GoPlaybackPlay /></Button>
-          }
-          {this.props.showDelete &&
-            <Button title="Delete Question" onClick={this.props.callbackDelete}><GoTrashcan /></Button>
-          }
-        </ButtonGroup>
-      </ButtonToolbar>
+      <DropdownButton
+        bsStyle="default"
+        title={<GoGear />}
+        key={shortid.generate()}
+        id={`question-toolbar`}
+        pullRight
+      >
+        <MenuItem
+          eventKey="1"
+          disabled={!this.props.enableQuestionRefresh}
+          onSelect={this.props.callbackRefresh}
+        >
+          <GoSync /> Update Knowledge Graph
+        </MenuItem>
+        <MenuItem
+          eventKey="2"
+          disabled={!this.props.enableNewAnswersets}
+          onSelect={this.props.callbackNewAnswerset}
+        >
+          <GoPlaybackPlay /> Find New Answers
+        </MenuItem>
+        <MenuItem
+          eventKey="3"
+          disabled={!this.props.enableQuestionFork}
+          onSelect={this.props.callbackFork}
+        >
+          <GoRepoForked /> Fork Question
+        </MenuItem>
+        <MenuItem divider />
+        <MenuItem
+          eventKey="4"
+          disabled={!this.props.enableQuestionDelete}
+          onSelect={this.props.callbackRefresh}
+        >
+          <GoTrashcan /> Delete
+        </MenuItem>
+      </DropdownButton>
     );
   }
 }

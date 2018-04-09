@@ -1,6 +1,5 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
-import FormData from 'form-data';
 
 class AppConfig {
   constructor(config) {
@@ -23,15 +22,11 @@ class AppConfig {
       answer: (answersetId, answerId) => this.url(`a/${answersetId}/${answerId}`),
     };
 
-    // Some are functions that we must bind
-    this.urls.question = this.urls.question.bind(this);
-    this.urls.answerset = this.urls.answerset.bind(this);
-    this.urls.answer = this.urls.answer.bind(this);
-
     // Other URLs that are primarily used for API calls
     this.api = {
       questionUpdate: this.url('q/edit'),
       questionDelete: this.url('q/delete'),
+      questionTasks: questionId => this.url(`q/${questionId}/tasks`),
     };
 
     this.url = this.url.bind(this);
@@ -54,7 +49,7 @@ class AppConfig {
     this.questionRefresh = this.questionRefresh.bind(this);
     this.questionFork = this.questionFork.bind(this);
     this.questionDelete = this.questionDelete.bind(this);
-    
+    this.questionTasks = this.questionTasks.bind(this);
 
     // Read config parameters for enabling controls
     this.enableNewAnswersets = ((config.ui !== null) && (config.ui.enableNewAnswersets !== null)) ? config.ui.enableNewAnswersets : true;
@@ -64,7 +59,7 @@ class AppConfig {
     this.enableQuestionDelete = ((config.ui !== null) && (config.ui.enableQuestionDelete !== null)) ? config.ui.enableQuestionDelete : true;
     this.enableQuestionFork = ((config.ui !== null) && (config.ui.enableQuestionFork !== null)) ? config.ui.enableQuestionFork : true;
     this.enableAnswerFeedback = ((config.ui !== null) && (config.ui.enableAnswerFeedback !== null)) ? config.ui.enableAnswerFeedback : true;
-
+    
     this.colors = {
       bluegray: '#f5f7fa',
       blue: '#b8c6db',
@@ -133,24 +128,26 @@ class AppConfig {
       failureFun,
     );
   }
-  questionFork(qid, successFun = () => {}, failureFun = () => {}) {
-    // To fork a question we make a form post request to the questionNew page
+  questionFork(qid) {
+    // To fork a question we make a form submission post request to the questionNew page
     // with {question_id: qid}
     // We make a form request to redirect after the post
 
-    // const form = new FormData();
-
+    // Spoofing a form post request with proper headers is actualy sort of tricky
+    // To do this we use some jquery to inject a form and that submit that
+    // This function is a little more general purpose and could be moved and used elsewhere
+    // but let's avoid that if possible.
     function formPost(path, parameters) {
-      var form = $('<form></form>');
+      const form = $('<form></form>');
 
-      form.attr("method", "post");
-      form.attr("action", path);
+      form.attr('method', 'post');
+      form.attr('action', path);
 
-      $.each(parameters, function(key, value) {
-        var field = $('<input></input>');
-        field.attr("type", "hidden");
-        field.attr("name", key);
-        field.attr("value", value);
+      $.each(parameters, (key, value) => {
+        const field = $('<input></input>');
+        field.attr('type', 'hidden');
+        field.attr('name', key);
+        field.attr('value', value);
 
         form.append(field);
       });
@@ -166,36 +163,14 @@ class AppConfig {
       { question_id: qid },
     );
   }
-
-  // // form.append('type', 'application/json');
-  //   // form.append('question_id', qid);
-
-  //   // const getHeaders = (f) => {
-  //   //   Promise((resolve, reject) => {
-  //   //     f.getLength((err, length) => {
-  //   //       if (err) { reject(err); }
-  //   //       const headers = Object.assign({ 'Content-Length': length }, f.getHeaders());
-  //   //       resolve(headers);
-  //   //     });
-  //   //   });
-  //   // };
-
-  //   // getHeaders(form).then(headers => this.comms.post(
-  //   //   this.urls.questionNew,
-  //   //   form,
-  //   //   { headers },
-  //   // )).then(response => successFun(response)).catch(err => failureFun(err));
-
-
-  //   this.comms.post(
-  //     this.urls.questionNew,
-  //     { question_id: qid },
-  //     { 'Content-Type': 'application/json' },
-  //   );
-
-  // <form action={this.props.questionNewUrl} method="post" class="add-entry">
-  //   <input type="submit" name="question_id" value={this.props.question.id} />
-  // </form>
+  questionTasks(qid, successFun, failureFun) {
+    // Fetch active tasks for a specific question
+    this.getRequest(
+      this.api.questionTasks(qid),
+      successFun,
+      failureFun,
+    );
+  }
 
   questionUpdateMeta(data, successFun, failureFun) {
     // Data must contain all necessary meta data fields
@@ -226,9 +201,13 @@ class AppConfig {
     );
   }
 
-  // open(newUrlExt) {
-  //   window.open(this.url(newUrlExt));
-  // }
+  answerFeedback(data, successFun, failureFun) {
+    console.log("Set feedback here")
+  }
+
+  open(url) {
+    window.open(url, '_blank'); // This will not open a new tab in all browsers, but will try
+  }
   redirect(newUrl) {
     window.location.href = newUrl;
   }

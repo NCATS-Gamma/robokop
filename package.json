@@ -25,7 +25,9 @@
     "file-loader": "^1.1.5",
     "style-loader": "^0.19.0",
     "uglifyjs-webpack-plugin": "^1.1.2",
-    "webpack": "^4.3.0"
+    "webpack": "^4.3.0",
+    "webpack-cli": "^2.0.13",
+    "webpack-merge": "^4.1.2"
   },
   "dependencies": {
     "ag-grid": "^14.2.0",
@@ -33,7 +35,6 @@
     "axios": "^0.18.0",
     "axios-retry": "^3.0.2",
     "bootstrap": "^3.3.7",
-    "form-data": "^2.3.2",
     "immutability-helper": "^2.4.0",
     "jquery": "^3.2.1",
     "lodash": "^4.17.4",
@@ -49,12 +50,11 @@
     "react-dom-factories": "^1.0.2",
     "react-graph-vis": "^1.0.2",
     "react-icons": "^2.2.7",
+    "react-notifications": "^1.4.3",
     "react-select": "^1.0.0-rc.5",
     "react-virtualized": "^9.18.5",
     "seedrandom": "^2.4.3",
-    "shortid": "^2.2.8",
-    "webpack-cli": "^2.0.13",
-    "webpack-merge": "^4.1.2"
+    "shortid": "^2.2.8"
   },
   "scripts": {
     "startserver": "sudo -E python python/server.py",

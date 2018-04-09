@@ -7,6 +7,7 @@ import 'ag-grid/dist/styles/ag-grid.css';
 // import 'ag-grid/dist/styles/ag-theme-fresh.css';
 import 'ag-grid/dist/styles/ag-theme-bootstrap.css';
 import 'react-select/dist/react-select.css';
+import '../assets/css/react-notifications.css';
 
 import Landing from './Landing';
 import Account from './Account';
