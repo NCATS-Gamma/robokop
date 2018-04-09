@@ -3,8 +3,13 @@ import PropTypes from 'prop-types';
 
 import { Row, Col, Button, Media } from 'react-bootstrap';
 import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
+import GoArrowRight from 'react-icons/lib/go/arrow-right';
+import GoCircuitBoard from 'react-icons/lib/go/circuit-board';
 
+import Select from 'react-select';
 import Loading from '../Loading';
+
+const _ = require('lodash');
 
 class AnswersetSelector extends React.Component {
   constructor(props) {
@@ -14,41 +19,98 @@ class AnswersetSelector extends React.Component {
       selectedId: null,
       showOverlay: true,
     };
+
+    this.styles = {
+      bigButton: {
+        margin: 'auto',
+        padding: '10px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+    };
+
+    this.handleSelectorChange = this.handleSelectorChange.bind(this);
+    this.getUpdatedState = this.getUpdatedState.bind(this);
+  }
+  componentDidMount() {
+    this.setState(this.getUpdatedState(this.props));
   }
 
-  componentDidMount() {
-    let selectedId = null;
-    let showOverlay = true;
-    if (this.props.answersets.length > 0) {
-      selectedId = this.props.answersets[0].id;
-      showOverlay = false;
+  componentWillReceiveProps(nextProps, prevState) {
+    if (!_.isEqual(nextProps.answersets, this.props.answersets)) {
+      this.setState(this.getUpdatedState(nextProps));
     }
-    this.setState({ selectedId, showOverlay });
   }
+
+  getUpdatedState(props) {
+    let selectedId = null;
+    const haveAnAnswerSet = props.answersets && Array.isArray(props.answersets) && props.answersets.length > 0;
+    if (haveAnAnswerSet) {
+      // Find the newest answerset
+      let newest = props.answersets[0];
+      let newestDate = new Date(newest.timestamp);
+      props.answersets.forEach((a) => {
+        const d = new Date(a.timestamp);
+        if (d > newestDate) {
+          // JS Date object works with standard caomparator
+          newestDate = d;
+          newest = a;
+        }
+      });
+
+      selectedId = newest.id;
+    }
+    return { selectedId, showOverlay: !haveAnAnswerSet };
+  }
+
   getMainContent() {
+    const answersetFilter = this.props.answersets.filter(a => a.id === this.state.selectedId);
+    // if (answersetFilter.length < 1) {
+    //   console.log('Answerset filter failure');
+    // }
+    // if (answersetFilter.length > 1) {
+    //   console.log('Duplicated Answerset IDs');
+    // }
+    const answerset = answersetFilter[0];
+
+    const d = new Date(answerset.timestamp);
+    const timeString = d.toLocaleString();
+
     return (
       <Media>
         <Media.Left>
-          <img width={64} height={64} src="/thumbnail.png" alt="thumbnail" />
+          <div style={{ minHeight: '200px', minWidth: '200px', backgroundColor: '#b8c6db' }} />
         </Media.Left>
         <Media.Body>
-          <Media.Heading>Media Heading</Media.Heading>
+          <Media.Heading>{timeString}</Media.Heading>
           <p>
-            Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque
-            ante sollicitudin commodo. Cras purus odio, vestibulum in vulputate at,
-            tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate
-            fringilla. Donec lacinia congue felis in faucibus.
+            {`Question Hash: ${answerset.question_hash}`}
           </p>
+          <div style={this.styles.bigButton}>
+            <Button
+              bsStyle="primary"
+              bsSize="large"
+              style={{ minWidth: '150px' }}
+              onClick={() => this.props.callbackAnswersetOpen(answerset)}
+            >
+              Explore <GoArrowRight /> <GoCircuitBoard />
+            </Button>
+          </div>
         </Media.Body>
       </Media>
     );
+  }
+  handleSelectorChange(selectedOption) {
+    this.setState({ selectedId: selectedOption.value });
+    console.log(`Selected Answerset: ${selectedOption.label}`);
   }
 
   renderOverlay() {
     return (
       <div>
         <h4>
-          Getting Initial Answerset please wait.
+          Getting Initial Answers. Please Wait.
         </h4>
         <Loading />
       </div>
@@ -56,18 +118,46 @@ class AnswersetSelector extends React.Component {
   }
   renderStandard() {
     const { showNewButton } = this.props;
-
+    const moreThanOne = this.props.answersets.length > 1;
+    const options = this.props.answersets.map((a) => {
+      const d = new Date(a.timestamp);
+      return { value: a.id, label: d.toLocaleString() };
+    });
     return (
       <div>
-        <div style={{ position: 'relative' }}>
-          {`${this.props.answersets.length} Different Answer Sets Available:`}
-          
+        <div id="answersetSelect" style={{ display: 'table', width: '100%' }}>
+          {!moreThanOne &&
+            <div>
+              <div style={{ display: 'table-cell', width: '40%' }}>
+                {`Answers from ${options[0].label}`}
+              </div>
+              <div style={{ display: 'table-cell', width: '50%' }} />
+            </div>
+          }
+          {moreThanOne &&
+            <div>
+              <div style={{ display: 'table-cell', width: '40%' }}>
+                {`${this.props.answersets.length} Different Answer Sets Available:`}
+              </div>
+              <div style={{ display: 'table-cell', width: '50%' }}>
+                <Select
+                  name="answerset-selector"
+                  value={this.state.selectedId}
+                  onChange={this.handleSelectorChange}
+                  options={options}
+                  clearable={false}
+                  searchable={false}
+                />
+              </div>
+            </div>
+          }
           {showNewButton &&
-            <div className="pull-right" style={{ position: 'absolute', right: 0, top: 0 }}>
+            <div style={{ display: 'table-cell', width: '34px' }}>
               <Button
                 bsSize="small"
                 alt="Get a New Answer Set"
                 onClick={this.props.callbackAnswersetNew}
+                disabled={!this.props.enableNewButton}
               >
                 <GoPlaybackPlay />
               </Button>

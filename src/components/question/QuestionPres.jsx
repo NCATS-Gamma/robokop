@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Grid, Row, Col, PageHeader } from 'react-bootstrap';
 
-import QuestionHeader from './QuestionHeader';
+import QuestionHeader from '../shared/QuestionHeader';
 import QuestionGraphViewer from '../shared/QuestionGraphViewer';
 import AnswersetSelector from './AnswersetSelector';
 import KnowledgeGraphFetchAndView from './KnowledgeGraphFetchAndView';
@@ -20,6 +20,12 @@ class QuestionPres extends React.Component {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        minHeight: '300px',
+      },
+      answersetContainer: {
+        border: '1px solid #d1d1d1',
+        padding: '10px',
+        minHeight: '300px',
       },
     };
 
@@ -68,7 +74,7 @@ class QuestionPres extends React.Component {
           enableQuestionDelete={enableDelete}
           enableQuestionFork={enableQuestionFork}
         />
-        <Row style={{ minHeight: '250px' }}>
+        <Row>
           <Col md={4}>
             <h4>Machine Question</h4>
             <div style={this.styles.questionGraphContainer}>
@@ -79,12 +85,15 @@ class QuestionPres extends React.Component {
           </Col>
           <Col md={8}>
             <h4>Answer Sets</h4>
-            <AnswersetSelector
-              showNewButton={enableNewAnswersets}
-              answersets={this.props.answersets}
-              callbackAnswersetNew={this.props.callbackNewAnswerset}
-              callbackAnswersetOpen={this.callbackAnswerset}
-            />
+            <div style={this.styles.answersetContainer}>
+              <AnswersetSelector
+                showNewButton={enableNewAnswersets}
+                enableNewButton={!(this.props.answerActive || this.props.answerQueued)}
+                answersets={this.props.answersets}
+                callbackAnswersetNew={this.props.callbackNewAnswerset}
+                callbackAnswersetOpen={this.callbackAnswerset}
+              />
+            </div>
           </Col>
         </Row>
         <Row>

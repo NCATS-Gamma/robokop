@@ -80,8 +80,8 @@ class Question extends React.Component {
     const answerActive = Boolean(tasks && tasks.answerer_active && Array.isArray(tasks.answerer_active) && tasks.answerer_active.length > 0);
     const answerQueued = Boolean(tasks && tasks.answerer_queued && Array.isArray(tasks.answerer_queued) && tasks.answerer_queued.length > 0);
 
-    const refreshDone = !refreshActive && this.state.refreshActive;
-    const answerDone = !refreshActive && this.state.answerActive;
+    const refreshFinished = !(refreshActive || refreshQueued) && (this.state.refreshActive || this.state.refreshQueued);
+    const answerFinished = !(answerActive || answerQueued) && (this.state.answerActive || this.state.answerQueued);
 
     this.setState({
       refreshActive,
@@ -94,10 +94,16 @@ class Question extends React.Component {
     if (refreshActive || refreshQueued || answerActive || answerQueued) {
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
-    if (refreshDone) {
+    if (refreshFinished) {
       this.notifyRefresh();
     }
-    if (answerDone) {
+    if (answerFinished) {
+      this.appConfig.questionData(
+        this.props.id,
+        data => this.setState({
+          answersets: data.answerset_list,
+        }),
+      );
       this.notifyAnswers();
     }
   }
