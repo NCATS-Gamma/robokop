@@ -8,6 +8,7 @@
     "enableQuestionRefresh": true,
     "enableQuestionEdit": true,
     "enableQuestionDelete": true,
-    "enableQuestionFork": true
+    "enableQuestionFork": true,
+    "enableAnswerFeedback": true
   }
 }

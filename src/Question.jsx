@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import Dialog from 'react-bootstrap-dialog';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
 
 import AppConfig from './AppConfig';
 import Loading from './components/Loading';
@@ -23,7 +24,20 @@ class Question extends React.Component {
       question: {},
       answersets: [],
       subgraph: null,
+      runningTasks: [],
+      refreshActive: false,
+      refreshQueued: false,
+      answerActive: false,
+      answerQueued: false,
     };
+
+    this.taskPollingWaitTime = 5000; // in ms
+
+    this.pullTasks = this.pullTasks.bind(this);
+    this.updateTaskStatus = this.updateTaskStatus.bind(this);
+
+    this.notifyRefresh = this.notifyRefresh.bind(this);
+    this.notifyAnswers = this.notifyAnswers.bind(this);
 
     this.callbackUpdateMeta = this.callbackUpdateMeta.bind(this);
     this.callbackRefresh = this.callbackRefresh.bind(this);
@@ -44,9 +58,67 @@ class Question extends React.Component {
         owner: data.owner,
         question: data.question,
         answersets: data.answerset_list,
-        tasks: data.tasks,
         ready: true,
       }),
+    );
+    this.pullTasks();
+  }
+  pullTasks() {
+    this.appConfig.questionTasks(
+      this.props.id,
+      (data) => {
+        this.setState({ runningTasks: data }, this.updateTaskStatus);
+      },
+      err => console.log('Issues fetching active tasks', err),
+    )
+  }
+  updateTaskStatus() {
+    const tasks = this.state.runningTasks;
+
+    const refreshActive = Boolean(tasks && tasks.updater_active && Array.isArray(tasks.updater_active) && tasks.updater_active.length > 0);
+    const refreshQueued = Boolean(tasks && tasks.updater_queued && Array.isArray(tasks.updater_queued) && tasks.updater_queued.length > 0);
+    const answerActive = Boolean(tasks && tasks.answerer_active && Array.isArray(tasks.answerer_active) && tasks.answerer_active.length > 0);
+    const answerQueued = Boolean(tasks && tasks.answerer_queued && Array.isArray(tasks.answerer_queued) && tasks.answerer_queued.length > 0);
+
+    const refreshFinished = !(refreshActive || refreshQueued) && (this.state.refreshActive || this.state.refreshQueued);
+    const answerFinished = !(answerActive || answerQueued) && (this.state.answerActive || this.state.answerQueued);
+
+    this.setState({
+      refreshActive,
+      refreshQueued,
+      answerActive,
+      answerQueued,
+    });
+
+    // If someing is going on, we will ask again soon
+    if (refreshActive || refreshQueued || answerActive || answerQueued) {
+      setTimeout(this.pullTasks, this.taskPollingWaitTime);
+    }
+    if (refreshFinished) {
+      this.notifyRefresh();
+    }
+    if (answerFinished) {
+      this.appConfig.questionData(
+        this.props.id,
+        data => this.setState({
+          answersets: data.answerset_list,
+        }),
+      );
+      this.notifyAnswers();
+    }
+  }
+  notifyRefresh() {
+    NotificationManager.success(
+      'We finished updating the knolwedge graph for this question. Go check it out!',
+      'Knowledge Graph Update Complete',
+      5000,
+    );
+  }
+  notifyAnswers() {
+    NotificationManager.success(
+      'We finished finding new answers for this quesiton. Go check them out!',
+      'New Answers are Available',
+      5000,
     );
   }
 
@@ -56,11 +128,12 @@ class Question extends React.Component {
     this.appConfig.answersetCreate(
       q.id,
       (newData) => {
+        this.addToTaskList({ answersetTask: newData.task_id });
         this.dialogMessage({
           title: 'Answer Set Generation in Progress',
           text: "We are working on developing a new Answer Set for this this question. This can take a little bit. We will send you an email when it's ready.",
           buttonText: 'OK',
-          buttonAction: () => this.addToTaskList({ answersetTask: newData.task_id }),
+          buttonAction: () => {},
         });
       },
       (err) => {
@@ -80,11 +153,12 @@ class Question extends React.Component {
     this.appConfig.questionRefresh(
       q.id,
       (newData) => {
+        this.addToTaskList({ questionTask: newData.task_id });
         this.dialogMessage({
           title: 'Knowledge Graph Refresh in Progress',
           text: 'We are working on updating the knowledge graph for this question. This can take a little bit. We will send you an email when the updates are complete.',
           buttonText: 'OK',
-          buttonAction: () => this.addToTaskList({ questionTask: newData.task_id }),
+          buttonAction: () => {},
         });
       },
       (err) => {
@@ -218,11 +292,18 @@ class Question extends React.Component {
       },
     });
   }
-
   addToTaskList(newTask) {
-    console.log(newTask)
-  }
+    const answerQueued = Boolean(newTask.answersetTask);
+    const refreshQueued = Boolean(newTask.questionTask);
 
+    this.setState(
+      {
+        answerQueued,
+        refreshQueued,
+      },
+      this.pullTasks,
+    );
+  }
   renderLoading() {
     return (
       <Loading />
@@ -248,6 +329,10 @@ class Question extends React.Component {
           question={this.state.question}
           answersets={this.state.answersets}
           subgraph={this.state.subgraph}
+          refreshActive={this.state.refreshActive}
+          refreshQueued={this.state.refreshQueued}
+          answerActive={this.state.answerActive}
+          answerQueued={this.state.answerQueued}
           enableNewAnswersets={this.appConfig.enableNewAnswersets}
           enableNewQuestions={this.appConfig.enableNewQuestions}
           enableQuestionRefresh={this.appConfig.enableQuestionRefresh}
@@ -256,6 +341,9 @@ class Question extends React.Component {
           enableQuestionFork={this.appConfig.enableQuestionFork}
         />
         <Dialog ref={(el) => { this.dialog = el; }} />
+        <NotificationContainer
+          ref={ref=>this.notificationSystem = ref}
+          />
       </div>
     );
   }

@@ -3,6 +3,9 @@ import React from 'react';
 import AppConfig from './AppConfig';
 import Header from './components/Header';
 
+import Loading from './components/Loading';
+import AnswerPres from './components/answer/AnswerPres';
+
 class Answer extends React.Component {
   constructor(props) {
     super(props);
@@ -11,31 +14,43 @@ class Answer extends React.Component {
 
     this.state = {
       ready: false,
-      timestamp: null,
       user: {},
     };
   }
 
   componentDidMount() {
-    this.appConfig.answerData( this.props.setId, this.props.id, (data) => this.setState({timestamp: data.timestamp, user: data.user, ready: true}));
+    this.appConfig.answerData(
+      this.props.setId,
+      this.props.id,
+      data => this.setState({
+        user: data.user,
+        ready: true,
+      }),
+    );
   }
 
   renderLoading() {
     return (
-      <div>
-        <h1>{'Loading...'}</h1>
-      </div>
+      <Loading />
     );
   }
-  renderLoaded(){
+
+  renderLoaded() {
     return (
       <div>
         <Header
           config={this.props.config}
           user={this.state.user}
         />
-        <h1>{'Answer'}</h1>
-        <h3>{`Time: ${this.state.timestamp}`}</h3>
+        <AnswerPres
+          question
+          answerset
+          answersetId={this.props}
+          answerId={this.props.id}
+          feedback={this.state.feedback}
+          
+        />
+
       </div>
     );
   }

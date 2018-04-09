@@ -73,3 +73,13 @@ div.vis-tooltip-inner {
 .vis-tooltip .field-name {
   font-weight: bold;
 }
+
+#answersetSelect .Select-value {
+  line-height: 20px;
+} 
+#answersetSelect .Select-input {
+  height: 20px;
+}
+#answersetSelect .Select-control {
+  height: 20px;
+} 
