@@ -170,7 +170,7 @@ def account_data():
 @app.route('/q/new', methods=['GET'])
 def new():
     """Deliver new-question interface"""
-    return render_template('questionNew.html',  questionId=None)
+    return render_template('questionNew.html',  question_id=None)
 
 # New Question Submission
 @app.route('/q/new', methods=['POST'])
