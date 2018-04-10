@@ -25,10 +25,8 @@ class Question extends React.Component {
       answersets: [],
       subgraph: null,
       runningTasks: [],
-      refreshActive: false,
-      refreshQueued: false,
-      answerActive: false,
-      answerQueued: false,
+      refreshBusy: false,
+      answerBusy: false,
     };
 
     this.taskPollingWaitTime = 5000; // in ms
@@ -75,23 +73,19 @@ class Question extends React.Component {
   updateTaskStatus() {
     const tasks = this.state.runningTasks;
 
-    const refreshActive = Boolean(tasks && tasks.updater_active && Array.isArray(tasks.updater_active) && tasks.updater_active.length > 0);
-    const refreshQueued = Boolean(tasks && tasks.updater_queued && Array.isArray(tasks.updater_queued) && tasks.updater_queued.length > 0);
-    const answerActive = Boolean(tasks && tasks.answerer_active && Array.isArray(tasks.answerer_active) && tasks.answerer_active.length > 0);
-    const answerQueued = Boolean(tasks && tasks.answerer_queued && Array.isArray(tasks.answerer_queued) && tasks.answerer_queued.length > 0);
+    const refreshBusy = tasks.updaters.length>0;
+    const answerBusy = tasks.answerers.length>0;
 
-    const refreshFinished = !(refreshActive || refreshQueued) && (this.state.refreshActive || this.state.refreshQueued);
-    const answerFinished = !(answerActive || answerQueued) && (this.state.answerActive || this.state.answerQueued);
+    const refreshFinished = !refreshBusy && this.state.refreshBusy;
+    const answerFinished = !answerBusy && this.state.answerBusy;
 
     this.setState({
-      refreshActive,
-      refreshQueued,
-      answerActive,
-      answerQueued,
+      refreshBusy,
+      answerBusy,
     });
 
     // If someing is going on, we will ask again soon
-    if (refreshActive || refreshQueued || answerActive || answerQueued) {
+    if (refreshBusy || answerBusy) {
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
     if (refreshFinished) {
@@ -293,13 +287,13 @@ class Question extends React.Component {
     });
   }
   addToTaskList(newTask) {
-    const answerQueued = Boolean(newTask.answersetTask);
-    const refreshQueued = Boolean(newTask.questionTask);
+    const answerBusy = Boolean(newTask.answersetTask);
+    const refreshBusy = Boolean(newTask.questionTask);
 
     this.setState(
       {
-        answerQueued,
-        refreshQueued,
+        answerBusy,
+        refreshBusy,
       },
       this.pullTasks,
     );
@@ -329,10 +323,8 @@ class Question extends React.Component {
           question={this.state.question}
           answersets={this.state.answersets}
           subgraph={this.state.subgraph}
-          refreshActive={this.state.refreshActive}
-          refreshQueued={this.state.refreshQueued}
-          answerActive={this.state.answerActive}
-          answerQueued={this.state.answerQueued}
+          refreshBusy={this.state.refreshBusy}
+          answerBusy={this.state.answerBusy}
           enableNewAnswersets={this.appConfig.enableNewAnswersets}
           enableNewQuestions={this.appConfig.enableNewQuestions}
           enableQuestionRefresh={this.appConfig.enableQuestionRefresh}

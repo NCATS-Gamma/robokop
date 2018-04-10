@@ -17,8 +17,8 @@ class QuestionToolbar extends React.Component {
   }
 
   render() {
-    const refreshing = this.props.refreshActive || this.props.refreshQueued;
-    const answering =  this.props.answerActive || this.props.answerQueued;
+    const refreshing = this.props.refreshBusy;
+    const answering =  this.props.answerBusy;
 
     return (
       <DropdownButton
