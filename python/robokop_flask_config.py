@@ -47,7 +47,7 @@ SECURITY_EMAIL_SUBJECT_CONFIRM = 'Robokop - Please confirm your email' # Sets th
 
 # Mail Setup
 MAIL_SERVER = os.environ["ROBOKOP_MAIL_SERVER"]
-MAIL_PORT = 25
+MAIL_PORT = 587
 MAIL_USE_TLS = True
 MAIL_USE_SSL = False
 MAIL_USERNAME = os.environ["ROBOKOP_MAIL_USERNAME"]
