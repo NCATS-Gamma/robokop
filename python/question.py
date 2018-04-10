@@ -93,10 +93,11 @@ class Question(db.Model):
         for n in self.nodes:
             if n['nodeSpecType']=='Named Node':
                 start_identifiers = lookup_identifier(n['label'], n['type'], rosetta.core)
-                node = KNode(start_identifiers[0],node_types.DISEASE)
-                synonyms = list(synonymize(node,rosetta.core))
+                #TODO See if we can avoid the need for this:
+                if n['type'] == node_types.DISEASE:
+                    node = KNode(start_identifiers[0], node_types.DISEASE)
+                    synonyms = list(synonymize(node, rosetta.core))
                 node.add_synonyms(synonyms)
-                #TODO Don't always use doids here.
                 doids = list(node.get_synonyms_by_prefix('DOID'))
                 n['identifiers'] = doids 
 
