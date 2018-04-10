@@ -89,17 +89,17 @@ class Question(db.Model):
                 warnings.warn("Keyword argument {} ignored.".format(key))
 
         # replace input node names with identifiers
-        rosetta = setup(os.path.join(greent_path,'greent','greent.conf'))
+        rosetta = setup(os.path.join(greent_path, 'greent', 'greent.conf'))
         for n in self.nodes:
-            if n['nodeSpecType']=='Named Node':
+            if n['nodeSpecType'] == 'Named Node':
                 start_identifiers = lookup_identifier(n['label'], n['type'], rosetta.core)
                 #TODO See if we can avoid the need for this:
                 if n['type'] == node_types.DISEASE:
                     node = KNode(start_identifiers[0], node_types.DISEASE)
                     synonyms = list(synonymize(node, rosetta.core))
-                node.add_synonyms(synonyms)
-                doids = list(node.get_synonyms_by_prefix('DOID'))
-                n['identifiers'] = doids 
+                    node.add_synonyms(synonyms)
+                    doids = list(node.get_synonyms_by_prefix('DOID'))
+                    n['identifiers'] = doids
 
         self.hash = self.compute_hash()
 
