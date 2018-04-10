@@ -2,22 +2,6 @@
 
 """Flask web server thread"""
 
-# spin up Celery workers:
-# one worker with 4 processes for the answer queue
-# one worker with 1 process for the update queue
-#   celery -A tasks.celery worker --loglevel=info -c 4 -n answerer@robokop -Q answer
-#   celery -A tasks.celery worker --loglevel=info -c 1 -n updater@robokop -Q update
-# here is a shortcut:
-#   celery multi start answerer@robokop updater@robokop -A tasks.celery -l info -c:1 4 -c:2 1 -Q:1 answer -Q:2 update
-# to stop them:
-#   celery multi stop answerer updater
-# `celery multi restart ...` seems to begin 4 processes for the updater. Avoid this.
-
-# spin up Redis message passing:
-# redis-server
-
-# also start up Postgres and Neo4j...
-
 import os
 import json
 import logging
@@ -122,10 +106,10 @@ def show_tasks():
     output.append('-'*150)
     for task_id in tasks:
         task = tasks[task_id]
-        name = task['name']
-        question_hash = re.match("\['(.*)'\]", task['args']).group(1)
-        user_email = re.match("\{'user_email': '(.*)'\}", task['kwargs']).group(1)
-        state = task['state']
+        name = task['name'] if task['name'] else ''
+        question_hash = re.match("\['(.*)'\]", task['args']).group(1) if task['args'] else ''
+        user_email = re.match("\{'user_email': '(.*)'\}", task['kwargs']).group(1) if task['kwargs'] else ''
+        state = task['state'] if task['state'] else ''
         output.append('{:<40}{:<30}{:<40}{:<20}{:<20}'.format(task_id, name, question_hash, user_email, state))
 
     return "<pre>"+"\n".join(output)+"</pre>"
@@ -206,9 +190,9 @@ def new_from_post():
 def new_data():
     """Data for the new-question interface"""
     initialization_id = request.json['initialization_id'] if 'initialization_id' in request.json else None
-    
+
     question = {}
-    if initialization_id:
+    if initialization_id and not initialization_id == 'None':
         question = get_question_by_id(initialization_id)
         question = question.toJSON()
     
@@ -288,7 +272,7 @@ def question_tasks(question_id):
     tasks = get_tasks().values()
 
     # filter out tasks for other questions
-    tasks = [t for t in tasks if re.match("\['(.*)'\]", t['args']).group(1) == question_hash]
+    tasks = [t for t in tasks if (re.match("\['(.*)'\]", t['args']).group(1) if t['args'] else None) == question_hash]
 
     # filter out the SUCCESS/FAILURE tasks
     tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE')]
@@ -487,7 +471,7 @@ if __name__ == '__main__':
     
     # Get host and port from environmental variables
     server_host = os.environ['ROBOKOP_HOST']
-    server_port = os.environ['ROBOKOP_PORT']
+    server_port = int(os.environ['ROBOKOP_PORT'])
 
     app.run(host=server_host,\
         port=server_port,\
