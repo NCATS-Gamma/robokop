@@ -50,14 +50,14 @@ def answer_question(self, question_hash, user_email=None):
 
     question = list_questions_by_hash(question_hash)[0]
     question.answer()
-    
+
     if user_email:
-    with app.app_context():
-        msg = Message("ROBOKOP: Answers Ready",
-                      sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
+        with app.app_context():
+            msg = Message("ROBOKOP: Answers Ready",
+                          sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
                           recipients=['patrick@covar.com'], #[user_email],
-                      body="Your question answers are ready. <link>")
-        mail.send(msg)
+                          body="Your question answers are ready. <link>")
+            mail.send(msg)
 
     logger.info("Done answering.")
 
@@ -67,26 +67,26 @@ def update_kg(self, question_hash, user_email=None):
     logger.info("Updating the knowledge graph...")
 
     question = list_questions_by_hash(question_hash)[0]
-    
+
     # initialize rosetta
     rosetta = Rosetta()
-        
+
     try:
         symbol_lookup = {node_types.type_codes[a]:a for a in node_types.type_codes} # invert this dict
         # assume the nodes are in order
         node_string = ''.join([symbol_lookup[n['type']] for n in question.nodes])
-        start_name = question.nodes[0]['label'] if question.nodes[0]['nodeSpecType']=='Named Node' else None
-        end_name = question.nodes[-1]['label'] if question.nodes[-1]['nodeSpecType']=='Named Node' else None
-        run_builder(node_string, start_name, end_name, 'q_'+question.hash, ['chemotext'], os.path.join(greent_path,'greent','greent.conf'))
+        start_name = question.nodes[0]['label'] if question.nodes[0]['nodeSpecType'] == 'Named Node' else None
+        end_name = question.nodes[-1]['label'] if question.nodes[-1]['nodeSpecType'] == 'Named Node' else None
+        run_builder(node_string, start_name, end_name, 'q_'+question.hash, ['chemotext'], os.path.join(greent_path, 'greent', 'greent.conf'))
 
         if user_email:
-        # send completion email
-        with app.app_context():
-            msg = Message("ROBOKOP: Knowledge Graph Update Complete",
-                          sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
+            # send completion email
+            with app.app_context():
+                msg = Message("ROBOKOP: Knowledge Graph Update Complete",
+                              sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
                               recipients=['patrick@covar.com'], #[user_email],
-                          body="The knowledge graph has been updated with respect to your question. <link>")
-            mail.send(msg)
+                              body="The knowledge graph has been updated with respect to your question. <link>")
+                mail.send(msg)
 
         logger.info("Done updating.")
 
