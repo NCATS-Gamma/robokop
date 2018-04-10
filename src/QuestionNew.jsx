@@ -26,6 +26,8 @@ class QuestionNew extends React.Component {
 
     this.onCreate = this.onCreate.bind(this);
     this.onCancel = this.onCancel.bind(this);
+    this.onSearch = this.onSearch.bind(this);
+
     this.handleChangeName = this.handleChangeName.bind(this);
     this.handleChangeNatural = this.handleChangeNatural.bind(this);
     this.handleChangeNotes = this.handleChangeNotes.bind(this);
@@ -93,8 +95,9 @@ class QuestionNew extends React.Component {
     this.appConfig.back();
   }
 
-  onSearch(postData) {
-    this.appConfig.questionNewSearch(postData);
+  onSearch(input, nodeType) {
+    return this.appConfig.monarchSearch(input, nodeType);
+    // this.appConfig.questionNewSearch(postData);
   }
   onValidate(postData) {
     this.appConfig.questionNewValidate(postData);

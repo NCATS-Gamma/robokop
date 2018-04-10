@@ -51,6 +51,8 @@ class AppConfig {
     this.questionDelete = this.questionDelete.bind(this);
     this.questionTasks = this.questionTasks.bind(this);
 
+    this.monarchSearch = this.monarchSearch.bind(this);
+
     // Read config parameters for enabling controls
     this.enableNewAnswersets = ((config.ui !== null) && (config.ui.enableNewAnswersets !== null)) ? config.ui.enableNewAnswersets : true;
     this.enableNewQuestions = ((config.ui !== null) && (config.ui.enableNewQuestions !== null)) ? config.ui.enableNewQuestions : true;
@@ -223,6 +225,15 @@ class AppConfig {
   }
   questionNewTranslate(postData, successFunction, failureFunction) {
     console.log('Transle the question here');
+  }
+
+  monarchSearch(input, nodeType) {
+    const addr = `https://owlsim.monarchinitiative.org/api/search/entity/${encodeURIComponent(input)}?start=0&rows=25&category=${encodeURIComponent(nodeType)}`;
+    console.log(addr)
+    return this.comms.get(addr).then((result) => {
+      console.log(result);
+      return { options: result.data.docs.map(d => ({ value: d.id, label: d.label[0] })) };
+    });
   }
 
   getRequest(addr, fun = () => {}) {

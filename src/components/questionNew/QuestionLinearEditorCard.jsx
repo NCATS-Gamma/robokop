@@ -111,6 +111,7 @@ class QuestionLinearEditorCard extends Component {
     // Store colormap from nodeType to color for titlebar coloring of cards
     this.nodeTypeColorMap = {};
     Object.keys(NodeTypes).forEach(k => (this.nodeTypeColorMap[NodeTypes[k].tag] = NodeTypes[k].color));
+
   }
 
   getCard() {
@@ -119,6 +120,8 @@ class QuestionLinearEditorCard extends Component {
       id: this.props.id,
       type: this.props.type,
       name: this.props.name,
+      nameId: this.props.nameId,
+      nameEntry: this.props.nameEntry,
       nodeType: this.props.nodeType,
       displayType: this.props.displayType,
       numNodesMin: this.props.numNodesMin,
@@ -131,11 +134,21 @@ class QuestionLinearEditorCard extends Component {
     card.displayType = card.type === CardTypes.NUMNODES ? 'Unspecified' : card.nodeType;
     this.props.callbackUpdateCard(card); 
   }
-  handleChangeName(e) {
+  handleChangeName(entry) {
     const card = this.getCard();
     // card.name = e.value;
-    card.name = e.target.value;
-    // console.log('New name: ', e.target.value)
+    if (entry) {
+      card.name = entry.label;
+      card.nameId = entry.value;
+      card.nameEntry = entry;
+      card.nameIsValid = true;
+    } else {
+      card.name = '';
+      card.nameId = ''
+      card.nameEntry = {};
+      card.nameIsValid = false;
+    }
+    
     this.props.callbackUpdateCard(card);
   }
   handleChangeNodeType(newNodeType) {
@@ -167,21 +180,38 @@ class QuestionLinearEditorCard extends Component {
   //   return true;
   // }
 
-	render() {
-		const {
+  getSearchOptions (input,nodeType) {
+    if (!input) {
+      return Promise.resolve({ options: [] });
+    }
+
+    return this.props.callbackSearch(input, nodeType);
+  }
+  
+
+  render() {
+    const {
       id,
-			text,
-			isDragging,
-			connectDragSource,
+      text,
+      isDragging,
+      connectDragSource,
       connectDropTarget,
       type,
       name,
+      nameId,
+      nameEntry,
+      nameIsValid,
       nodeType,
       displayType,
       numNodesMin,
       numNodesMax,
-		} = this.props
-		const opacity = isDragging ? 0 : 1
+    } = this.props
+    const opacity = isDragging ? 0 : 1
+
+    const isValid = (type === CardTypes.NAMEDNODETYPE) ? nameIsValid : true;
+    // const validityBorder = isValid ? {} : {border: 'solid 2px red'};
+    // const validityBorder = isValid ? {} : {boxShadow: '0px 0px 3px red'};
+    const validityBorder = isValid ? {} : {borderRight: 'solid 5px red'};
 
     let contentFragment = [];
 
@@ -212,7 +242,18 @@ class QuestionLinearEditorCard extends Component {
                 />
               </div>
               <div className="col-md-6">
-                {<FormControl autoFocus
+                <Select.Async
+                  multi={false}
+                  value={nameEntry}
+                  onChange={this.handleChangeName}
+                  valueKey="value"
+                  labelKey="label"
+                  loadOptions={(input) => this.getSearchOptions(input, nodeType)}
+                  backspaceRemoves={true}
+                />
+                {/*
+                {
+                <FormControl autoFocus
                   inputRef={ref => { this.nameInput = ref; }}
                   type="textarea"
                   value={name}
@@ -225,6 +266,7 @@ class QuestionLinearEditorCard extends Component {
                   }}
                 />
                 }
+                */}
               </div>
             </div>
           ];
@@ -301,7 +343,7 @@ class QuestionLinearEditorCard extends Component {
     
     return connectDragSource(
 			connectDropTarget(
-        <div style={{ ...styles.cardParent, opacity }}>
+        <div style={{ ...styles.cardParent, opacity, ...validityBorder }}>
           <div className="row" style={{...styles.cardBar, ...backgroundColor}}>
             <div className="col-md-4" style={{marginLeft: '-15px'}}>
               <Select

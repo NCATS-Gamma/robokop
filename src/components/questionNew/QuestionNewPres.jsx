@@ -149,7 +149,7 @@ class QuestionNewPres extends React.Component {
 
   render() {
     const infoHelp = (
-      <Popover id="infoTooltip" key={shortid.generate()} title="Blackboard Information">
+      <Popover id="infoTooltip" key={shortid.generate()} title="Question Information">
         <div style={{ textAlign: 'left' }}>
           <p>
             {'\
@@ -165,11 +165,11 @@ class QuestionNewPres extends React.Component {
       </Popover>
     );
     const queryBuilderHelp = (
-      <Popover id="queryTooltip" key={shortid.generate()} title="Query Specification">
+      <Popover id="queryTooltip" key={shortid.generate()} title="Questions Specification">
         <div style={{ textAlign: 'left' }}>
           <p>
             {'\
-            Queries are specified as a sequence of steps that will be used to construct a knowledge graph.\
+            Questions are specified as a sequence of steps that will be used to construct a knowledge graph.\
             Each step specifies the adjacent "node types" in resulting graph.\
             There are 3 different step types:\
             '}
@@ -280,6 +280,7 @@ class QuestionNewPres extends React.Component {
             <QuestionLinearEditor
               ref={(r) => { this.editorComponent = r; }}
               handleChange={this.props.handleChangeQuery}
+              callbackSearch={this.props.callbackSearch}
             />
           </div>
           <div className="col-md-6">
