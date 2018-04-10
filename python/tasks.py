@@ -49,14 +49,21 @@ def answer_question(self, question_hash, user_email=None):
     logger.info("Answering your question...")
 
     question = list_questions_by_hash(question_hash)[0]
-    question.answer()
+    answerset = question.answer()
 
     if user_email:
         with app.app_context():
+            question_url = 'http://{}/q/{}'.format(os.environ['ROBOKOP_HOST'], question.id)
+            answerset_url = 'http://{}/a/{}'.format(os.environ['ROBOKOP_HOST'], answerset.id)
+            lines = ['We have finished answering your question: <a href="{1}">"{0}"</a>.'.format(
+                question.natural_question,
+                question_url)]
+            lines.append('<a href="{}">ANSWERS</a>'.format(answerset_url))
+            html = '<br />\n'.join(lines)
             msg = Message("ROBOKOP: Answers Ready",
                           sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
                           recipients=['patrick@covar.com'], #[user_email],
-                          body="Your question answers are ready. <link>")
+                          html=html)
             mail.send(msg)
 
     logger.info("Done answering.")
@@ -81,11 +88,16 @@ def update_kg(self, question_hash, user_email=None):
 
         if user_email:
             # send completion email
+            question_url = 'http://{}/q/{}'.format(os.environ['ROBOKOP_HOST'], question.id)
+            lines = ['We have finished gathering information for your question: <a href="{1}">"{0}"</a>.'.format(
+                question.natural_question,
+                question_url)]
+            html = '<br />\n'.join(lines)
             with app.app_context():
                 msg = Message("ROBOKOP: Knowledge Graph Update Complete",
                               sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
                               recipients=['patrick@covar.com'], #[user_email],
-                              body="The knowledge graph has been updated with respect to your question. <link>")
+                              html=html)
                 mail.send(msg)
 
         logger.info("Done updating.")
