@@ -3,7 +3,7 @@ import time
 from setup import app, mail
 from celery import Celery
 from flask_mail import Message
-from question import get_question_by_id
+from question import get_question_by_id, list_questions_by_hash
 from flask_security.core import current_user
 
 import os
@@ -44,29 +44,29 @@ def wait_and_email():
         mail.send(msg)
 
 @celery.task(bind=True, queue='answer')
-def answer_question(self, question_id):
+def answer_question(self, question_hash, user_email=None):
     self.update_state(state='ANSWERING')
     logger.info("Answering your question...")
 
-    question = get_question_by_id(question_id)
+    question = list_questions_by_hash(question_hash)[0]
     question.answer()
-    user = question.user
     
+    if user_email:
     with app.app_context():
         msg = Message("ROBOKOP: Answers Ready",
                       sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
-                      recipients=['patrick@covar.com'], #[user.email],
+                          recipients=['patrick@covar.com'], #[user_email],
                       body="Your question answers are ready. <link>")
         mail.send(msg)
 
     logger.info("Done answering.")
 
 @celery.task(bind=True, queue='update')
-def update_kg(self, question_id):
+def update_kg(self, question_hash, user_email=None):
     self.update_state(state='UPDATING KG')
     logger.info("Updating the knowledge graph...")
 
-    question = get_question_by_id(question_id)
+    question = list_questions_by_hash(question_hash)[0]
     
     # initialize rosetta
     rosetta = Rosetta()
@@ -79,11 +79,12 @@ def update_kg(self, question_id):
         end_name = question.nodes[-1]['label'] if question.nodes[-1]['nodeSpecType']=='Named Node' else None
         run_builder(node_string, start_name, end_name, 'q_'+question.hash, ['chemotext'], os.path.join(greent_path,'greent','greent.conf'))
 
+        if user_email:
         # send completion email
         with app.app_context():
             msg = Message("ROBOKOP: Knowledge Graph Update Complete",
                           sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
-                          recipients=['patrick@covar.com'], #[user.email],
+                              recipients=['patrick@covar.com'], #[user_email],
                           body="The knowledge graph has been updated with respect to your question. <link>")
             mail.send(msg)
 

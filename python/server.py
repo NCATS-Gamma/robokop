@@ -245,14 +245,16 @@ def question(question_id):
 @auth_required('session', 'basic')
 def question_action(question_id):
     """ run update or answer actions """
+    question_hash = get_question_by_id(question_id).hash
+    username = current_user.username
     command = request.json['command']
     if 'answer' in command:
         # Answer a question
-        task = answer_question.apply_async(args=[question_id])
+        task = answer_question.apply_async(args=[question_hash], kwargs={'user_email':username})
         return jsonify({'task_id':task.id}), 202
     elif 'update' in command:
         # Update the knowledge graph for a question
-        task = update_kg.apply_async(args=[question_id])
+        task = update_kg.apply_async(args=[question_hash], kwargs={'user_email':username})
         return jsonify({'task_id':task.id}), 202
 
 @app.route('/q/<question_id>/data', methods=['GET'])
@@ -275,6 +277,8 @@ def question_data(question_id):
 def question_tasks(question_id):
     """ List of active and queued tasks for only a specific question """
 
+    question_hash = get_question_by_id(question_id).hash
+
     i = celery.control.inspect()
     scheduled = i.scheduled()
     reserved = i.reserved()
@@ -284,10 +288,10 @@ def question_tasks(question_id):
     all_updater_queued = [(t['id'], t['args']) for t in scheduled['updater@robokop'] + reserved['updater@robokop']]
     all_updater_active = [(t['id'], t['args']) for t in active['updater@robokop']]
 
-    answerer_queued = [a[0] for a in all_answerer_queued if json.loads(a[1].replace("'",'"'))[0] == question_id]
-    answerer_active = [a[0] for a in all_answerer_active if json.loads(a[1].replace("'",'"'))[0] == question_id]
-    updater_queued = [a[0] for a in all_updater_queued if json.loads(a[1].replace("'",'"'))[0] == question_id]
-    updater_active = [a[0] for a in all_updater_active if json.loads(a[1].replace("'",'"'))[0] == question_id]
+    answerer_queued = [a[0] for a in all_answerer_queued if json.loads(a[1].replace("'",'"'))[0] == question_hash]
+    answerer_active = [a[0] for a in all_answerer_active if json.loads(a[1].replace("'",'"'))[0] == question_hash]
+    updater_queued = [a[0] for a in all_updater_queued if json.loads(a[1].replace("'",'"'))[0] == question_hash]
+    updater_active = [a[0] for a in all_updater_active if json.loads(a[1].replace("'",'"'))[0] == question_hash]
 
     return jsonify({'answerer_queued': answerer_queued,
                     'answerer_active': answerer_active,
