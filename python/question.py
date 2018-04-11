@@ -1,30 +1,43 @@
+'''
+Question definition
+'''
+
+# standard modules
 import os
 import sys
 import json
 import hashlib
 import warnings
-from universalgraph import UniversalGraph
-from knowledgegraph import KnowledgeGraph
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-rank'))
-from nagaProto import ProtocopRank
-from answer import Answer, AnswerSet, list_answersets_by_question_hash
-from user import User
-greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
-builder_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build', 'builder')
-sys.path.insert(0, greent_path)
-sys.path.insert(0, builder_path)
-from greent import node_types
-from builder import setup
-from lookup_utils import lookup_identifier
-from greent.synonymizers.disease_synonymizer import synonymize
-from greent.graph_components import KNode
 
+# 3rd-party modules
 from sqlalchemy.types import JSON
-from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey, func
+from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref
 
+# our modules
+from universalgraph import UniversalGraph
+from knowledgegraph import KnowledgeGraph
+from answer import Answer, AnswerSet, list_answersets_by_question_hash
+from user import User
 from setup import db
 from logging_config import logger
+
+# robokop-rank modules
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-rank'))
+from nagaProto import ProtocopRank
+
+# robokop-build modules
+builder_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build', 'builder')
+sys.path.insert(0, builder_path)
+from builder import setup
+from lookup_utils import lookup_identifier
+
+# robokop-interfaces modules
+greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
+sys.path.insert(0, greent_path)
+from greent import node_types
+from greent.graph_components import KNode
+from greent.synonymizers.disease_synonymizer import synonymize
 
 
 class Question(db.Model):
@@ -260,51 +273,6 @@ class Question(db.Model):
 
         # print(query_string)
         return query_string
-    
-    @staticmethod
-    def add_name_nodes_to_query(nodes, edges):
-        '''
-        Adds name node to the beginning of a query
-        based on the "label" specified in the leading "named node"
-        '''
-
-        max_id = max([n['id'] for n in nodes])
-
-        new_nodes = []
-        new_edges = edges
-        for i, n in enumerate(nodes):
-            if n['nodeSpecType'] == 'Named Node':
-                name_type = 'NAME.DISEASE' if n['type'] == node_types.DISEASE or n['type'] == node_types.PHENOTYPE\
-                    else 'NAME.DRUG' if n['type'] == node_types.DRUG\
-                    else 'idk'
-                max_id += 1
-                zeroth_node = {
-                    "id": max_id,
-                    "nodeSpecType": "Named Node",
-                    "type": name_type,
-                    "label": n['label'],
-                    "isBoundName": True,
-                    "isBoundType": True,
-                    "meta": {
-                        "name": n['meta']['name']
-                    },
-                    "color": n['color']
-                }
-                first_node = {
-                    "id": n['id'],
-                    "nodeSpecType": "Node Type",
-                    "type": n['type'],
-                    "label": n['type'],
-                    "isBoundName": False,
-                    "isBoundType": True,
-                    "meta": {},
-                    "color": n['color']
-                }
-                new_edges += [{'start':max_id, 'end':n['id'], 'length':[1]}]
-                new_nodes += [zeroth_node, first_node]
-            else:
-                new_nodes += [n]
-        return new_nodes, new_edges
 
 def list_questions():
     return db.session.query(Question).all()
