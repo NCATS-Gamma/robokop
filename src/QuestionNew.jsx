@@ -50,6 +50,8 @@ class QuestionNew extends React.Component {
         const natural = (data.question && data.question.natural_question) ? data.question.natural_question : '';
         const notes = (data.question && data.question.notes) ? data.question.notes : '';
 
+        console.log(data.question)
+        
         this.setState({
           user: data.user,
           name,

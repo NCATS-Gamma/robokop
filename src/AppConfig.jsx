@@ -227,8 +227,9 @@ class AppConfig {
     console.log('Transle the question here');
   }
 
-  monarchSearch(input, nodeType) {
-    const addr = `https://owlsim.monarchinitiative.org/api/search/entity/${encodeURIComponent(input)}?start=0&rows=25&category=${encodeURIComponent(nodeType)}`;
+  monarchSearch(input, category) {
+    // https://api.monarchinitiative.org/api/search/entity/autocomplete/ - 500s
+    const addr = `https://owlsim.monarchinitiative.org/api/search/entity/autocomplete/${encodeURIComponent(input)}?start=0&rows=25&category=${encodeURIComponent(category)}`;
     console.log(addr)
     return this.comms.get(addr).then((result) => {
       console.log(result);
