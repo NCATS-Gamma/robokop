@@ -9,17 +9,19 @@ from celery import Celery
 from kombu import Queue
 from flask_mail import Message
 from flask_security.core import current_user
+
 from setup import app, mail
 from question import get_question_by_id, list_questions_by_hash
 from logging_config import logger
 
 greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
 sys.path.insert(0, greent_path)
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build','builder'))
-from userquery import UserQuery
 from greent import node_types
 from greent.rosetta import Rosetta
-from builder import KnowledgeGraph, generate_name_node, lookup_identifier, run as run_builder
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build','builder'))
+from userquery import UserQuery
+from builder import KnowledgeGraph, lookup_identifier, run as run_builder
 
 # set up Celery
 app.config['broker_url'] = os.environ["CELERY_BROKER_URL"]
