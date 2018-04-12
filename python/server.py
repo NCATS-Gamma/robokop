@@ -10,6 +10,7 @@ import string
 import random
 import requests
 import re
+import sys
 from datetime import datetime
 
 from flask import Flask, jsonify, request, render_template, url_for, redirect
@@ -23,8 +24,11 @@ from user import User, Role, list_users
 from question import Question, list_questions, get_question_by_id, list_questions_by_username, list_questions_by_hash
 from answer import get_answerset_by_id, list_answersets_by_question_hash, get_answer_by_id, list_answers_by_answerset, list_answersets
 from feedback import Feedback, list_feedback_by_answer
-
 from tasks import celery, answer_question, update_kg
+
+greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
+sys.path.insert(0, greent_path)
+from greent import node_types
 
 # Setup flask-security with user tables
 user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
@@ -198,10 +202,13 @@ def new_data():
     
     user = getAuthData()
 
+    concepts = list(node_types.node_types - {'UnspecifiedType'})
+
     now_str = datetime.now().__str__()
     return jsonify({\
         'timestamp': now_str,\
         'question': question,
+        'concepts': concepts,
         'user': user})
 
 # QuestionList

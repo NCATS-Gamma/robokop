@@ -33,8 +33,8 @@ class QuestionLinearEditor extends React.Component {
       nameId: '',
       nameEntry: {},
       nameIsValid: false,
-      nodeType: NodeTypes.DISEASE.tag,
-      displayType: NodeTypes.DISEASE.tag,
+      nodeType: 'disease',
+      displayType: 'disease',
       numNodesMin: 0,
       numNodesMax: 5,
     }
@@ -46,8 +46,8 @@ class QuestionLinearEditor extends React.Component {
       nameId: '',
       nameEntry: {},
       nameIsValid: false,
-      nodeType: NodeTypes.DISEASE.tag,
-      displayType: NodeTypes.DISEASE.tag,
+      nodeType: 'disease',
+      displayType: 'disease',
       numNodesMin: 0,
       numNodesMax: 1,
     }
@@ -134,6 +134,7 @@ class QuestionLinearEditor extends React.Component {
                 nameEntry={card.nameEntry}
                 nameIsValid={card.nameIsValid}
                 nodeType={card.nodeType}
+                concepts={this.props.concepts}
                 displayType={card.displayType}
                 numNodesMin={card.numNodesMin}
                 numNodesMax={card.numNodesMax}

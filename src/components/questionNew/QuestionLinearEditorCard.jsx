@@ -219,9 +219,9 @@ class QuestionLinearEditorCard extends Component {
     const undefinedColor = '#aaa';
     let backgroundColor = {backgroundColor: (this.nodeTypeColorMap[displayType] ? this.nodeTypeColorMap[displayType] : undefinedColor)};
 
-    let nodeTypeKeys = Object.keys(NodeTypes); 
+    let nodeTypeKeys = this.props.concepts; 
     const nodeTypeOptions = nodeTypeKeys.map((k) => {
-      return {value: NodeTypes[k].tag, label: NodeTypes[k].name};
+      return {value: k, label: k};
     });
     
     switch (type) {

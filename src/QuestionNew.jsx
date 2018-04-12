@@ -57,6 +57,7 @@ class QuestionNew extends React.Component {
           name,
           natural,
           notes,
+          concepts: data.concepts,
           isFork,
           ready: true,
         });
@@ -229,6 +230,7 @@ class QuestionNew extends React.Component {
           notes={this.state.notes}
           query={this.state.query}
           isFork={this.state.isFork}
+          concepts={this.state.concepts}
           handleChangeName={this.handleChangeName}
           handleChangeNatural={this.handleChangeNatural}
           handleChangeNotes={this.handleChangeNotes}
