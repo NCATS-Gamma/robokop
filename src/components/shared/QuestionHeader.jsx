@@ -113,7 +113,7 @@ class QuestionHeader extends React.Component {
     );
 
     const edited = this.state.editedName || this.state.editedNatural || this.state.editedNotes;
-    const active = this.props.refreshActive || this.props.refreshQueued || this.props.answerActive || this.props.answerQueued;
+    const active = this.props.refreshBusy || this.props.answerBusy;
 
     const notesStyle = {
       minHeight: '50px',
@@ -125,10 +125,10 @@ class QuestionHeader extends React.Component {
     }
 
     let activityMessage = '';
-    if (this.props.refreshActive || this.props.refreshQueued) {
+    if (this.props.refreshBusy) {
       activityMessage = 'Knowledge Graph Update in Progress';
     }
-    if (this.props.answerActive || this.props.answerQueued) {
+    if (this.props.answerBusy) {
       activityMessage = 'Getting Answers';
     }
 

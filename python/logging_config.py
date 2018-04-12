@@ -15,7 +15,7 @@ file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(formatter)
 
 # create smtp handler and set level to error
-smtp_handler = logging.handlers.SMTPHandler(os.environ["ROBOKOP_MAIL_SERVER"],
+smtp_handler = logging.handlers.SMTPHandler(mailhost=(os.environ["ROBOKOP_MAIL_SERVER"], 587),
                                             fromaddr=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
                                             toaddrs=["patrick@covar.com"],
                                             subject="ROBOKOP error log",

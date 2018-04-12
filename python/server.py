@@ -2,28 +2,14 @@
 
 """Flask web server thread"""
 
-# spin up Celery workers:
-# one worker with 4 processes for the answer queue
-# one worker with 1 process for the update queue
-#   celery -A tasks.celery worker --loglevel=info -c 4 -n answerer@robokop -Q answer
-#   celery -A tasks.celery worker --loglevel=info -c 1 -n updater@robokop -Q update
-# here is a shortcut:
-#   celery multi start answerer@robokop updater@robokop -A tasks.celery -l info -c:1 4 -c:2 1 -Q:1 answer -Q:2 update
-# to stop them:
-#   celery multi stop answerer updater
-# `celery multi restart ...` seems to begin 4 processes for the updater. Avoid this.
-
-# spin up Redis message passing:
-# redis-server
-
-# also start up Postgres and Neo4j...
-
 import os
 import json
 import logging
 import time
 import string
 import random
+import requests
+import re
 from datetime import datetime
 
 from flask import Flask, jsonify, request, render_template, url_for, redirect
@@ -105,24 +91,28 @@ def taskstatus(task_id):
     task = celery.AsyncResult(task_id)
     return task.state
 
+def get_tasks():
+    flower_url = 'http://{}:{}/api/tasks'.format(os.environ['FLOWER_ADDRESS'], os.environ['FLOWER_PORT'])
+    response = requests.get(flower_url, auth=(os.environ['FLOWER_USER'], os.environ['FLOWER_PASSWORD']))
+    return response.json()
+
 # from celery.app.control import Inspect
 @app.route('/tasks')
-def get_tasks():
+def show_tasks():
     """Fetch queued/active task list"""
-    i = celery.control.inspect()
-    scheduled = i.scheduled()
-    reserved = i.reserved()
-    active = i.active()
-    answerer_queued = [(t['id'], t['args']) for t in scheduled['answerer@robokop'] + reserved['answerer@robokop']]
-    answerer_active = [(t['id'], t['args']) for t in active['answerer@robokop']]
-    updater_queued = [(t['id'], t['args']) for t in scheduled['updater@robokop'] + reserved['updater@robokop']]
-    updater_active = [(t['id'], t['args']) for t in active['updater@robokop']]
+    tasks = get_tasks()
+    output = []
+    output.append('{:<40}{:<30}{:<40}{:<20}{:<20}'.format('task id', 'name', 'question hash', 'user', 'state'))
+    output.append('-'*150)
+    for task_id in tasks:
+        task = tasks[task_id]
+        name = task['name'] if task['name'] else ''
+        question_hash = re.match("\['(.*)'\]", task['args']).group(1) if task['args'] else ''
+        user_email = re.match("\{'user_email': '(.*)'\}", task['kwargs']).group(1) if task['kwargs'] else ''
+        state = task['state'] if task['state'] else ''
+        output.append('{:<40}{:<30}{:<40}{:<20}{:<20}'.format(task_id, name, question_hash, user_email, state))
 
-    response = {'answerers_queued': answerer_queued,\
-        'answerers_active': answerer_active,\
-        'updaters_queued': updater_queued,\
-        'updaters_active': updater_active}
-    return str(response)
+    return "<pre>"+"\n".join(output)+"</pre>"
 
 @app.route('/')
 def landing():
@@ -170,7 +160,7 @@ def account_data():
 @app.route('/q/new', methods=['GET'])
 def new():
     """Deliver new-question interface"""
-    return render_template('questionNew.html',  questionId=None)
+    return render_template('questionNew.html',  question_id=None)
 
 # New Question Submission
 @app.route('/q/new', methods=['POST'])
@@ -200,9 +190,9 @@ def new_from_post():
 def new_data():
     """Data for the new-question interface"""
     initialization_id = request.json['initialization_id'] if 'initialization_id' in request.json else None
-    
+
     question = {}
-    if initialization_id:
+    if initialization_id and not initialization_id == 'None':
         question = get_question_by_id(initialization_id)
         question = question.toJSON()
     
@@ -245,14 +235,16 @@ def question(question_id):
 @auth_required('session', 'basic')
 def question_action(question_id):
     """ run update or answer actions """
+    question_hash = get_question_by_id(question_id).hash
+    username = current_user.username
     command = request.json['command']
     if 'answer' in command:
         # Answer a question
-        task = answer_question.apply_async(args=[question_id])
+        task = answer_question.apply_async(args=[question_hash], kwargs={'user_email':username})
         return jsonify({'task_id':task.id}), 202
     elif 'update' in command:
         # Update the knowledge graph for a question
-        task = update_kg.apply_async(args=[question_id])
+        task = update_kg.apply_async(args=[question_hash], kwargs={'user_email':username})
         return jsonify({'task_id':task.id}), 202
 
 @app.route('/q/<question_id>/data', methods=['GET'])
@@ -275,24 +267,22 @@ def question_data(question_id):
 def question_tasks(question_id):
     """ List of active and queued tasks for only a specific question """
 
-    i = celery.control.inspect()
-    scheduled = i.scheduled()
-    reserved = i.reserved()
-    active = i.active()
-    all_answerer_queued = [(t['id'], t['args']) for t in scheduled['answerer@robokop'] + reserved['answerer@robokop']]
-    all_answerer_active = [(t['id'], t['args']) for t in active['answerer@robokop']]
-    all_updater_queued = [(t['id'], t['args']) for t in scheduled['updater@robokop'] + reserved['updater@robokop']]
-    all_updater_active = [(t['id'], t['args']) for t in active['updater@robokop']]
+    question_hash = get_question_by_id(question_id).hash
 
-    answerer_queued = [a[0] for a in all_answerer_queued if json.loads(a[1].replace("'",'"'))[0] == question_id]
-    answerer_active = [a[0] for a in all_answerer_active if json.loads(a[1].replace("'",'"'))[0] == question_id]
-    updater_queued = [a[0] for a in all_updater_queued if json.loads(a[1].replace("'",'"'))[0] == question_id]
-    updater_active = [a[0] for a in all_updater_active if json.loads(a[1].replace("'",'"'))[0] == question_id]
+    tasks = get_tasks().values()
 
-    return jsonify({'answerer_queued': answerer_queued,
-                    'answerer_active': answerer_active,
-                    'updater_queued': updater_queued,
-                    'updater_active': updater_active})
+    # filter out tasks for other questions
+    tasks = [t for t in tasks if (re.match("\['(.*)'\]", t['args']).group(1) if t['args'] else None) == question_hash]
+
+    # filter out the SUCCESS/FAILURE tasks
+    tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE')]
+
+    # split into answer and update tasks
+    answerers = [t for t in tasks if t['name'] == 'tasks.answer_question']
+    updaters = [t for t in tasks if t['name'] == 'tasks.update_kg']
+
+    return jsonify({'answerers': answerers,
+                    'updaters': updaters})
 
 @app.route('/q/<question_id>/subgraph', methods=['GET'])
 def question_subgraph(question_id):
@@ -481,7 +471,7 @@ if __name__ == '__main__':
     
     # Get host and port from environmental variables
     server_host = os.environ['ROBOKOP_HOST']
-    server_port = os.environ['ROBOKOP_PORT']
+    server_port = int(os.environ['ROBOKOP_PORT'])
 
     app.run(host=server_host,\
         port=server_port,\

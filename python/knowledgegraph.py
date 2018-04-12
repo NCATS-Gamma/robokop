@@ -11,7 +11,7 @@ class KnowledgeGraph:
 
     def __init__(self):
         # connect to neo4j database
-        self.driver = GraphDatabase.driver("bolt://"+os.environ["NEO4J_HOST"]+":"+os.environ["NEO4J_BOLT_PORT"], auth=basic_auth("python", "pyword"))
+        self.driver = GraphDatabase.driver("bolt://"+os.environ["NEO4J_HOST"]+":"+os.environ["NEO4J_BOLT_PORT"], auth=basic_auth("neo4j", os.environ["NEO4J_PASSWORD"]))
         print('Initialized driver.')
         self.session = self.driver.session()
         print('Started session.')

@@ -126,10 +126,8 @@ class QuestionPres extends React.Component {
           question={this.props.question}
           showToolbar={userIsLoggedIn}
 
-          refreshActive={this.props.refreshActive}
-          refreshQueued={this.props.refreshQueued}
-          answerActive={this.props.answerActive}
-          answerQueued={this.props.answerQueued}
+          refreshBusy={this.props.refreshBusy}
+          answerBusy={this.props.answerBusy}
 
           callbackNewAnswerset={this.props.callbackNewAnswerset}
           callbackRefresh={this.props.callbackRefresh}
@@ -174,7 +172,7 @@ class QuestionPres extends React.Component {
               <Panel.Body>
                 <AnswersetSelector
                   showNewButton={enableNewAnswersets}
-                  enableNewButton={!(this.props.answerActive || this.props.answerQueued)}
+                  enableNewButton={!this.props.answerBusy}
                   answersets={this.props.answersets}
                   callbackAnswersetNew={this.props.callbackNewAnswerset}
                   callbackAnswersetOpen={this.callbackAnswerset}
