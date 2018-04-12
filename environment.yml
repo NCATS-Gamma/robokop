@@ -1,26 +1,27 @@
-name: covar-ncats
+name: robokop
 dependencies:
 - python=3.6
-- numpy>=1.8.0
-- matplotlib
-- scipy>=0.16.1
-- scikit-learn>=0.14
-- ipython
 - pip
 - pip:
-  - neo4j-driver
+  - bcrypt
+  - celery
+  - eventlet
   - flask
+  - flask-mail
   - flask-security
   - flask-sqlalchemy
+  - flower
   - gunicorn
-  - eventlet
+  - kombu
+  - lru-dict
+  - neo4j-driver
+  - networkx==1.11
+  - numpy>=1.8.0
   - psycopg2
   - psycopg2-binary
-  - bcrypt
-  - kombu
   - pymongo
-  - lru-dict
   - pytest
-- nltk
-- networkx=1.11
-- nb_conda
+  - redis
+
+  # this may be interesting to explore:
+  # https://conda.io/docs/user-guide/tasks/manage-environments.html#saving-environment-variables
