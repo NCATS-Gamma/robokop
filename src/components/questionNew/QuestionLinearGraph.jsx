@@ -1,5 +1,5 @@
 import React from 'react';
-import NodeTypes from './QuestionNewNodeTypes';
+import getNodeTypeColorMap from './ColorUtils';
 
 const Graph = require('react-graph-vis').default;
 const shortid = require('shortid');
@@ -53,11 +53,9 @@ class QuestionLinearGraph extends React.Component {
 
   addTagsToGraph(graph) {
     // Adds vis.js specific tags primarily to style graph as desired
-    const undefinedColor = '#f2f2f2';
-    let nodeTypeColorMap = {};
-    Object.keys(NodeTypes).forEach(k => (nodeTypeColorMap[NodeTypes[k].tag] = NodeTypes[k].color));
+    const nodeTypeColorMap = getNodeTypeColorMap();
     graph.nodes = graph.nodes.map((n) => {
-      const backgroundColor = nodeTypeColorMap[n.type] ? nodeTypeColorMap[n.type] : undefinedColor;
+      const backgroundColor = nodeTypeColorMap(n.type);
       n.color = {
         background: backgroundColor,
         highlight: { background: backgroundColor },

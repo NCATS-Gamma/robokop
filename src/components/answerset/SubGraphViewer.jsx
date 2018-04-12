@@ -1,5 +1,5 @@
 import React from 'react';
-import NodeTypes from '../questionNew/QuestionNewNodeTypes';
+import getNodeTypeColorMap from '../questionNew/ColorUtils';
 
 const Graph = require('react-graph-vis').default;
 const shortid = require('shortid');
@@ -131,12 +131,10 @@ class SubGraphViewer extends React.Component {
     }
     // Adds vis.js specific tags primarily to style graph as desired
     const g = _.cloneDeep(graph);
-    const undefinedColor = '#f2f2f2';
-    const nodeTypeColorMap = {};
-    Object.keys(NodeTypes).forEach(k => (nodeTypeColorMap[NodeTypes[k].tag] = NodeTypes[k].color));
+    const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
 
     g.nodes = g.nodes.map((n, i) => {
-      const backgroundColor = nodeTypeColorMap[n.type] ? nodeTypeColorMap[n.type] : undefinedColor;
+      const backgroundColor = nodeTypeColorMap(n.type);
       n.color = {
         background: backgroundColor,
         highlight: { background: backgroundColor },

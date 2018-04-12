@@ -4,7 +4,7 @@ import { Panel, PanelGroup, Badge } from 'react-bootstrap';
 
 import GoSync from 'react-icons/lib/go/sync';
 
-import NodeTypes from '../questionNew/QuestionNewNodeTypes';
+import getNodeTypeColorMap from '../questionNew/ColorUtils';
 
 const shortid = require('shortid');
 
@@ -45,14 +45,12 @@ class AnswersetInteractiveSelector extends React.Component {
 
   getAllDropDowns() {
     const sgp = this.props.subgraphPossibilities;
-    const undefinedColor = '#f2f2f2';
-    const nodeTypeColorMap = {};
-    Object.keys(NodeTypes).forEach(k => (nodeTypeColorMap[NodeTypes[k].tag] = NodeTypes[k].color));
+    const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
     return sgp.map((p, ind) => {
       const opts = p.map((e) => {
         return { value: e.id, label: `${e.score.toFixed(2)}: ` + e.name, score: e.score, name: e.name };
       });
-      const background = nodeTypeColorMap[p[0].type] ? nodeTypeColorMap[p[0].type] : undefinedColor;
+      const background = nodeTypeColorMap(p[0].type);
       const value = this.props.subgraph.nodes[ind].id;
       const thisIsSelected = this.state.isSelected.indexOf(ind) !== -1;
 

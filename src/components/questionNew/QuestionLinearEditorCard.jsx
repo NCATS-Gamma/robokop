@@ -7,7 +7,7 @@ import { DragSource, DropTarget } from 'react-dnd'
 import MdCancel from 'react-icons/md/cancel'
 
 import CardTypes from './QuestionNewCardTypes';
-import NodeTypes from './QuestionNewNodeTypes';
+import getNodeTypeColorMap from './ColorUtils';
 
 import Select from 'react-select';
 
@@ -109,8 +109,7 @@ class QuestionLinearEditorCard extends Component {
     this.handleChangeMinNodes = this.handleChangeMinNodes.bind(this);
 
     // Store colormap from nodeType to color for titlebar coloring of cards
-    this.nodeTypeColorMap = {};
-    Object.keys(NodeTypes).forEach(k => (this.nodeTypeColorMap[NodeTypes[k].tag] = NodeTypes[k].color));
+    this.nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
 
   }
 
@@ -217,7 +216,7 @@ class QuestionLinearEditorCard extends Component {
 
     // Setup background color for titlebar
     const undefinedColor = '#aaa';
-    let backgroundColor = {backgroundColor: (this.nodeTypeColorMap[displayType] ? this.nodeTypeColorMap[displayType] : undefinedColor)};
+    let backgroundColor = {backgroundColor: this.nodeTypeColorMap(displayType)};
 
     let nodeTypeKeys = this.props.concepts; 
     const nodeTypeOptions = nodeTypeKeys.map((k) => {
