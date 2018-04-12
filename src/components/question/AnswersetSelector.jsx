@@ -80,7 +80,7 @@ class AnswersetSelector extends React.Component {
     return (
       <Media>
         <Media.Left>
-          <div style={{ minHeight: '200px', minWidth: '200px', backgroundColor: '#b8c6db' }} />
+          <div style={{ minHeight: '150px', minWidth: '150px', backgroundColor: '#b8c6db' }} />
         </Media.Left>
         <Media.Body>
           <Media.Heading>{timeString}</Media.Heading>
@@ -155,6 +155,7 @@ class AnswersetSelector extends React.Component {
             <div style={{ display: 'table-cell', width: '34px' }}>
               <Button
                 bsSize="small"
+                style={{ padding: '5px 13px' }}
                 alt="Get a New Answer Set"
                 onClick={this.props.callbackAnswersetNew}
                 disabled={!this.props.enableNewButton}

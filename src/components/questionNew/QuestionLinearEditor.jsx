@@ -30,6 +30,9 @@ class QuestionLinearEditor extends React.Component {
       id: shortid.generate(),
       type: CardTypes.NAMEDNODETYPE,
       name: '',
+      nameId: '',
+      nameEntry: {},
+      nameIsValid: false,
       nodeType: NodeTypes.DISEASE.tag,
       displayType: NodeTypes.DISEASE.tag,
       numNodesMin: 0,
@@ -39,7 +42,10 @@ class QuestionLinearEditor extends React.Component {
     this.defaultCard = {
       id: '', // Generate one when we need to
       type: CardTypes.NODETYPE,
-      name: '', 
+      name: '',
+      nameId: '',
+      nameEntry: {},
+      nameIsValid: false,
       nodeType: NodeTypes.DISEASE.tag,
       displayType: NodeTypes.DISEASE.tag,
       numNodesMin: 0,
@@ -124,6 +130,9 @@ class QuestionLinearEditor extends React.Component {
                 id={card.id}
                 type={card.type}
                 name={card.name}
+                nameId={card.nameId}
+                nameEntry={card.nameEntry}
+                nameIsValid={card.nameIsValid}
                 nodeType={card.nodeType}
                 displayType={card.displayType}
                 numNodesMin={card.numNodesMin}
@@ -131,8 +140,9 @@ class QuestionLinearEditor extends React.Component {
                 moveCard={this.moveCard}
                 findCard={this.findCard}
                 numCards={this.state.cards.length}
-                callbackUpdateCard={this.updateCard}
+                callxackUpdateCard={this.updateCard}
                 callbackDeleteCard={this.deleteCard}
+                callbackSearch={this.props.callbackSearch}
               />
             ))}
           </div>

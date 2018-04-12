@@ -40,7 +40,10 @@ class QuestionNewPres extends React.Component {
           {
             id: shortid.generate(),
             type: CardTypes.NAMEDNODETYPE,
-            name: 'Ebola Virus Disease',
+            name: 'Ebola hemorrhagic fever',
+            nameId: 'MONDO:0005737',
+            nameEntry: { label: 'Ebola hemorrhagic fever', value: 'MONDO:0005737' },
+            nameIsValid: true,
             nodeType: NodeTypes.DISEASE.tag,
             displayType: NodeTypes.DISEASE.tag,
             numNodesMin: 0,
@@ -50,6 +53,9 @@ class QuestionNewPres extends React.Component {
             id: shortid.generate(),
             type: CardTypes.NODETYPE,
             name: '',
+            nameId: '',
+            nameEntry: {},
+            nameIsValid: false,
             nodeType: NodeTypes.GENE.tag,
             displayType: NodeTypes.GENE.tag,
             numNodesMin: 0,
@@ -59,6 +65,9 @@ class QuestionNewPres extends React.Component {
             id: shortid.generate(),
             type: CardTypes.NODETYPE,
             name: '',
+            nameId: '',
+            nameEntry: {},
+            nameIsValid: false,
             nodeType: NodeTypes.GENETICCONDITION.tag,
             displayType: NodeTypes.GENETICCONDITION.tag,
             numNodesMin: 0,
@@ -77,6 +86,9 @@ class QuestionNewPres extends React.Component {
             id: shortid.generate(),
             type: CardTypes.NAMEDNODETYPE,
             name: 'Imatinib',
+            nameId: '',
+            nameEntry: {},
+            nameIsValid: false,
             nodeType: NodeTypes.DRUG.tag,
             displayType: NodeTypes.DRUG.tag,
             numNodesMin: 0,
@@ -86,6 +98,9 @@ class QuestionNewPres extends React.Component {
             id: shortid.generate(),
             type: CardTypes.NODETYPE,
             name: NodeTypes.GENE.name,
+            nameId: '',
+            nameEntry: {},
+            nameIsValid: false,
             nodeType: NodeTypes.GENE.tag,
             displayType: NodeTypes.GENE.tag,
             numNodesMin: 0,
@@ -95,6 +110,9 @@ class QuestionNewPres extends React.Component {
             id: shortid.generate(),
             type: CardTypes.NODETYPE,
             name: NodeTypes.BIOLOGICALPROCESS.name,
+            nameId: '',
+            nameEntry: {},
+            nameIsValid: false,
             nodeType: NodeTypes.BIOLOGICALPROCESS.tag,
             displayType: NodeTypes.BIOLOGICALPROCESS.tag,
             numNodesMin: 0,
@@ -104,6 +122,9 @@ class QuestionNewPres extends React.Component {
             id: shortid.generate(),
             type: CardTypes.NODETYPE,
             name: NodeTypes.CELL.name,
+            nameId: '',
+            nameEntry: {},
+            nameIsValid: false,
             nodeType: NodeTypes.CELL.tag,
             displayType: NodeTypes.CELL.tag,
             numNodesMin: 0,
@@ -113,6 +134,9 @@ class QuestionNewPres extends React.Component {
             id: shortid.generate(),
             type: CardTypes.NODETYPE,
             name: NodeTypes.CELL.name,
+            nameId: '',
+            nameEntry: {},
+            nameIsValid: false,
             nodeType: NodeTypes.ANATOMY.tag,
             displayType: NodeTypes.ANATOMY.tag,
             numNodesMin: 0,
@@ -122,6 +146,9 @@ class QuestionNewPres extends React.Component {
             id: shortid.generate(),
             type: CardTypes.NODETYPE,
             name: NodeTypes.PHENOTYPE.name,
+            nameId: '',
+            nameEntry: {},
+            nameIsValid: false,
             nodeType: NodeTypes.PHENOTYPE.tag,
             displayType: NodeTypes.PHENOTYPE.tag,
             numNodesMin: 0,
@@ -130,7 +157,10 @@ class QuestionNewPres extends React.Component {
           {
             id: shortid.generate(),
             type: CardTypes.NAMEDNODETYPE,
-            name: 'Asthma',
+            name: 'asthma',
+            nameId: 'MONDO:0004979',
+            nameEntry: { label: 'asthma', value: 'MONDO:0004979' },
+            nameIsValid: true,
             nodeType: NodeTypes.DISEASE.tag,
             displayType: NodeTypes.DISEASE.tag,
             numNodesMin: 0,
@@ -149,7 +179,7 @@ class QuestionNewPres extends React.Component {
 
   render() {
     const infoHelp = (
-      <Popover id="infoTooltip" key={shortid.generate()} title="Blackboard Information">
+      <Popover id="infoTooltip" key={shortid.generate()} title="Question Information">
         <div style={{ textAlign: 'left' }}>
           <p>
             {'\
@@ -165,11 +195,11 @@ class QuestionNewPres extends React.Component {
       </Popover>
     );
     const queryBuilderHelp = (
-      <Popover id="queryTooltip" key={shortid.generate()} title="Query Specification">
+      <Popover id="queryTooltip" key={shortid.generate()} title="Questions Specification">
         <div style={{ textAlign: 'left' }}>
           <p>
             {'\
-            Queries are specified as a sequence of steps that will be used to construct a knowledge graph.\
+            Questions are specified as a sequence of steps that will be used to construct a knowledge graph.\
             Each step specifies the adjacent "node types" in resulting graph.\
             There are 3 different step types:\
             '}
@@ -182,6 +212,8 @@ class QuestionNewPres extends React.Component {
         </div>
       </Popover>
     );
+
+    const isValid = true;
     return (
       <div id="RobokopNewQuestion" className="col-md-12">
         {!this.props.isFork &&
@@ -213,9 +245,9 @@ class QuestionNewPres extends React.Component {
             <div className="col-md-12" style={this.styles.top}>
               <h2>{'Fork Question'}</h2>
               <p>
-                {'Questions are own by users and can be deleted. If you like a question you can make yourself a copy that you own. We call this "forking".'}
+                {'Questions are owned by users and can be deleted. If you like a question you can make yourself a copy that you own. We call this "forking".'}
                 <br />
-                {'Before we create your copy of this question, you are free to make any edits. Keep in mind however that any edits will results in a different question.'}
+                {'Before we create your copy of this question, you are free to make any edits. Keep in mind however that any edits will result in a different question'}
                 {'and different question will require us to collect new answers.'}
               </p>
             </div>
@@ -280,6 +312,7 @@ class QuestionNewPres extends React.Component {
             <QuestionLinearEditor
               ref={(r) => { this.editorComponent = r; }}
               handleChange={this.props.handleChangeQuery}
+              callbackSearch={this.props.callbackSearch}
             />
           </div>
           <div className="col-md-6">

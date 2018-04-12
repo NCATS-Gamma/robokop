@@ -27,6 +27,7 @@ class QuestionToolbar extends React.Component {
         key={shortid.generate()}
         id={`question-toolbar`}
         pullRight
+        style={{padding: '3px 6px 3px 6px', marginRight: '15px'}}
       >
         <MenuItem
           eventKey="1"
