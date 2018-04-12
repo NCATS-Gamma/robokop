@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import Dialog from 'react-bootstrap-dialog';
-import { NotificationContainer, NotificationManager } from 'react-notifications';
+import NotificationSystem from 'react-notification-system';
 
 import AppConfig from './AppConfig';
 import Loading from './components/Loading';
@@ -95,7 +95,7 @@ class Question extends React.Component {
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
     if (refreshFinished) {
-      this.notifyRefresh();
+      this.notifyRefresh(true);
     }
     if (answerFinished) {
       this.appConfig.questionData(
@@ -104,22 +104,48 @@ class Question extends React.Component {
           answersets: data.answerset_list,
         }),
       );
-      this.notifyAnswers();
+      this.notifyAnswers(true);
     }
   }
-  notifyRefresh() {
-    NotificationManager.success(
-      'We finished updating the knolwedge graph for this question. Go check it out!',
-      'Knowledge Graph Update Complete',
-      5000,
-    );
+  notifyRefresh(success) {
+    if (success) {
+      this.notificationSystem.addNotification({
+        title: 'Knowledge Graph Update Complete',
+        message: 'We finished updating the knolwedge graph for this question. Go check it out!',
+        level: 'success',
+        dismissible: 'click',
+        position: 'tr',
+      });
+    } else {
+      this.notificationSystem.addNotification({
+        title: 'Error Updating Knowledge Graph',
+        message: 'We encountered an error while trying to update the knowledge graph for this quesiton. If this error persists please contact a system administrator.',
+        level: 'error',
+        dismissible: 'click',
+        position: 'tr',
+        autoDismiss: 0,
+      });
+    }
   }
-  notifyAnswers() {
-    NotificationManager.success(
-      'We finished finding new answers for this quesiton. Go check them out!',
-      'New Answers are Available',
-      5000,
-    );
+  notifyAnswers(success) {
+    if (success) {
+      this.notificationSystem.addNotification({
+        title: 'New Answers are Available',
+        message: 'We finished finding new answers for this quesiton. Go check them out!',
+        level: 'success',
+        dismissible: 'click',
+        position: 'tr',
+      });
+    } else {
+      this.notificationSystem.addNotification({
+        title: 'Error Finding New Answers',
+        message: 'We encountered an error while trying to find new answers for this quesiton. If this error persists please contact a system administrator.',
+        level: 'error',
+        dismissible: 'click',
+        position: 'tr',
+        autoDismiss: 0,
+      });
+    }
   }
 
   callbackNewAnswerset() {
@@ -129,11 +155,12 @@ class Question extends React.Component {
       q.id,
       (newData) => {
         this.addToTaskList({ answersetTask: newData.task_id });
-        this.dialogMessage({
+        this.notificationSystem.addNotification({
           title: 'Answer Set Generation in Progress',
-          text: "We are working on developing a new Answer Set for this this question. This can take a little bit. We will send you an email when it's ready.",
-          buttonText: 'OK',
-          buttonAction: () => {},
+          message: "We are working on developing a new Answer Set for this this question. This can take a little bit. We will send you an email when it's ready.",
+          level: 'info',
+          position: 'tr',
+          dismissible: 'click',
         });
       },
       (err) => {
@@ -154,11 +181,12 @@ class Question extends React.Component {
       q.id,
       (newData) => {
         this.addToTaskList({ questionTask: newData.task_id });
-        this.dialogMessage({
+        this.notificationSystem.addNotification({
           title: 'Knowledge Graph Refresh in Progress',
-          text: 'We are working on updating the knowledge graph for this question. This can take a little bit. We will send you an email when the updates are complete.',
-          buttonText: 'OK',
-          buttonAction: () => {},
+          message: 'We are working on updating the knowledge graph for this question. This can take a little bit. We will send you an email when the updates are complete.',
+          level: 'info',
+          position: 'tr',
+          dismissible: 'click',
         });
       },
       (err) => {
@@ -341,9 +369,9 @@ class Question extends React.Component {
           enableQuestionFork={this.appConfig.enableQuestionFork}
         />
         <Dialog ref={(el) => { this.dialog = el; }} />
-        <NotificationContainer
-          ref={ref=>this.notificationSystem = ref}
-          />
+        <NotificationSystem
+          ref={(ref) => { this.notificationSystem = ref; }}
+        />
       </div>
     );
   }

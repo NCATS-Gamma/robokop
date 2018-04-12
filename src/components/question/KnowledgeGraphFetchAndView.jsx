@@ -18,7 +18,7 @@ class KnowledgeGraphFetchAndView extends React.Component {
   }
 
   getHeight() {
-    const h = $(window).height() - 20;
+    const h = $(window).height() - 50;
     return `${h}px`;
   }
   getWidth() {
@@ -30,7 +30,7 @@ class KnowledgeGraphFetchAndView extends React.Component {
   scrollGraphToTop() {
     $('html, body').animate(
       {
-        scrollTop: $("#kgFetchDiv").offset().top,
+        scrollTop: $(this.props.scrollToId).offset().top - 3,
       },
       1000,
     );
@@ -48,10 +48,7 @@ class KnowledgeGraphFetchAndView extends React.Component {
     const showFetching = fetching;
     const showFetchButton = !showGraph && !showFetching;
 
-    let panelExtraStyle = {};
-    if (!showGraph) {
-      panelExtraStyle = { border: 'none' };
-    }
+    const panelExtraStyle = { margin: 0, border: 'none' };
 
     const height = this.getHeight();
     const width = this.getWidth();
@@ -62,6 +59,7 @@ class KnowledgeGraphFetchAndView extends React.Component {
           <Button
             onClick={this.fetch}
             disabled={showFetching}
+            style={{ margin: '15px' }}
           >
             {!showFetching &&
               'Explore'
@@ -73,7 +71,7 @@ class KnowledgeGraphFetchAndView extends React.Component {
         }
         <Panel style={panelExtraStyle} id="collapsible-panel-kg" expanded={showGraph} onToggle={() => {}}>
           <Panel.Collapse>
-            <Panel.Body>
+            <Panel.Body style={{ padding: '0px' }}>
               {showGraph &&
               <KnowledgeGraphViewer
                 height={height}

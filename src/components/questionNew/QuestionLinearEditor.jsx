@@ -140,7 +140,7 @@ class QuestionLinearEditor extends React.Component {
                 moveCard={this.moveCard}
                 findCard={this.findCard}
                 numCards={this.state.cards.length}
-                callbackUpdateCard={this.updateCard}
+                callxackUpdateCard={this.updateCard}
                 callbackDeleteCard={this.deleteCard}
                 callbackSearch={this.props.callbackSearch}
               />

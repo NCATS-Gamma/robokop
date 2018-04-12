@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Grid, Row, Col, Popover, OverlayTrigger } from 'react-bootstrap';
+import { Grid, Row, Col, Popover, OverlayTrigger, Panel } from 'react-bootstrap';
 import GoQuestion from 'react-icons/go/question';
 
 import QuestionHeader from '../shared/QuestionHeader';
@@ -16,22 +16,13 @@ class QuestionPres extends React.Component {
 
     this.styles = {
       questionGraphContainer: {
-        border: '1px solid #d1d1d1',
-        // boxShadow: '0px 0px 5px #c3c3c3',
-        margin: 'auto',
-        padding: '10px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         minHeight: '300px',
       },
       answersetContainer: {
-        border: '1px solid #d1d1d1',
-        padding: '10px',
         minHeight: '300px',
       },
       rowTopPad: {
-        paddingTop: '10px',
+        paddingTop: '15px',
       },
     };
 
@@ -154,50 +145,64 @@ class QuestionPres extends React.Component {
         />
         <Row style={this.styles.rowTopPad}>
           <Col md={4}>
-            <h4>
-              Machine Question
-              <OverlayTrigger placement="right" overlay={machineQuestionHelp}>
-                <span> {'    '} <GoQuestion /> </span>
-              </OverlayTrigger>
-            </h4>
-            
-            <div style={this.styles.questionGraphContainer}>
-              <QuestionGraphViewer
-                graph={questionGraph}
-              />
-            </div>
+            <Panel style={this.styles.questionGraphContainer}>
+              <Panel.Heading>
+                <Panel.Title componentClass="h3">
+                  Machine Question
+                  <OverlayTrigger placement="right" overlay={machineQuestionHelp}>
+                    <span> {'    '} <GoQuestion /> </span>
+                  </OverlayTrigger>
+                </Panel.Title>
+              </Panel.Heading>
+              <Panel.Body style={{ padding: 0 }}>
+                <QuestionGraphViewer
+                  graph={questionGraph}
+                />
+              </Panel.Body>
+            </Panel>
           </Col>
           <Col md={8}>
-            <h4>
-              Answer Sets
-              <OverlayTrigger placement="right" overlay={answersetHelp}>
-                <span> {'    '} <GoQuestion /> </span>
-              </OverlayTrigger>
-            </h4>
-            <div style={this.styles.answersetContainer}>
-              <AnswersetSelector
-                showNewButton={enableNewAnswersets}
-                enableNewButton={!(this.props.answerActive || this.props.answerQueued)}
-                answersets={this.props.answersets}
-                callbackAnswersetNew={this.props.callbackNewAnswerset}
-                callbackAnswersetOpen={this.callbackAnswerset}
-              />
-            </div>
+            <Panel style={this.styles.answersetContainer}>
+              <Panel.Heading>
+                <Panel.Title componentClass="h3">
+                  Answer Sets
+                  <OverlayTrigger placement="right" overlay={answersetHelp}>
+                    <span> {'    '} <GoQuestion /> </span>
+                  </OverlayTrigger>
+                </Panel.Title>
+              </Panel.Heading>
+              <Panel.Body>
+                <AnswersetSelector
+                  showNewButton={enableNewAnswersets}
+                  enableNewButton={!(this.props.answerActive || this.props.answerQueued)}
+                  answersets={this.props.answersets}
+                  callbackAnswersetNew={this.props.callbackNewAnswerset}
+                  callbackAnswersetOpen={this.callbackAnswerset}
+                />
+              </Panel.Body>
+            </Panel>
           </Col>
         </Row>
-        <Row style={this.styles.rowTopPad}>
+        <Row>
           <Col md={12}>
-            <h4>
-              Local Knowledge Graph
-              <OverlayTrigger placement="right" overlay={knowledgeGraphHelp}>
-                <span> {'    '} <GoQuestion /> </span>
-              </OverlayTrigger>
-            </h4>
-            <KnowledgeGraphFetchAndView
-              callbackFetchGraph={this.props.callbackFetchGraph}
-              callbackRefresh={this.props.callbackRefresh}
-              subgraph={this.props.subgraph}
-            />
+            <Panel id="localKGHeader">
+              <Panel.Heading>
+                <Panel.Title componentClass="h3">
+                  Local Knowledge Graph
+                  <OverlayTrigger placement="right" overlay={knowledgeGraphHelp}>
+                    <span> {'    '} <GoQuestion /> </span>
+                  </OverlayTrigger>
+                </Panel.Title>
+              </Panel.Heading>
+              <Panel.Body style={{ padding: 0 }}>
+                <KnowledgeGraphFetchAndView
+                  callbackFetchGraph={this.props.callbackFetchGraph}
+                  callbackRefresh={this.props.callbackRefresh}
+                  subgraph={this.props.subgraph}
+                  scrollToId="#localKGHeader"
+                />
+              </Panel.Body>
+            </Panel>
           </Col>
         </Row>
       </Grid>

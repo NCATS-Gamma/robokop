@@ -115,11 +115,15 @@ class QuestionHeader extends React.Component {
     const edited = this.state.editedName || this.state.editedNatural || this.state.editedNotes;
     const active = this.props.refreshActive || this.props.refreshQueued || this.props.answerActive || this.props.answerQueued;
 
-    const notesStyle = { minHeight: '50px' };
+    const notesStyle = {
+      minHeight: '50px',
+      resize: 'vertical',
+    };
     if (!this.props.enableQuestionEdit) {
       notesStyle.color = '#000';
       notesStyle.background = '#fff';
     }
+
     let activityMessage = '';
     if (this.props.refreshActive || this.props.refreshQueued) {
       activityMessage = 'Knowledge Graph Update in Progress';
@@ -151,7 +155,7 @@ class QuestionHeader extends React.Component {
                 <div className="pull-right" style={{ position: 'absolute', right: 0, top: 0 }}>
                   {edited &&
                     <div style={{ display: 'inline' }}>
-                      <Alert bsStyle="warning" style={{ fontSize: '12px', display: 'inline', paddingTop: '5px' }}>
+                      <Alert bsStyle="warning" style={{ fontSize: '12px', display: 'inline', paddingTop: '5px', paddingBottom: '5px' }}>
                         You have unsaved changes! <span onClick={this.onSave} style={{ cursor: 'pointer', textDecoration: 'underline'}}>Save Now</span>
                       </Alert>
                       &nbsp;
@@ -189,7 +193,7 @@ class QuestionHeader extends React.Component {
           </Col>
         </Row>
         <Row>
-          <Col md={12}>
+          <Col id="questionNotes" md={12}>
             <FormControl
               disabled={!this.props.enableQuestionEdit}
               componentClass="textarea"
