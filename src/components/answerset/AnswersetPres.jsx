@@ -30,13 +30,35 @@ class AnswersetPres extends React.Component {
   render() {
     return (
       <Grid>
+        <QuestionHeader
+          question={this.props.question}
+          showToolbar={false}
+
+          refreshBusy={this.props.refreshBusy}
+          answerBusy={this.props.answerBusy}
+
+          callbackNewAnswerset={(this.props.callbackNewAnswerset)}
+          callbackRefresh={this.props.callbackRefresh}
+          callbackUpdate={this.props.callbackUpdateMeta}
+          callbackFork={this.props.callbackFork}
+          callbackDelete={this.props.callbackDelete}
+
+          enableNewAnswersets={enableNewAnswersets}
+          enableQuestionRefresh={enableQuestionRefresh}
+          enableQuestionEdit={enableEditing}
+          enableQuestionDelete={enableDelete}
+          enableQuestionFork={enableQuestionFork}
+
+          otherQuestions={this.props.questions}
+          questionUrlFunc={this.props.questionUrlFunc}
+        />
         <Row>
           <Col md={12}>
             <AnswersetSummary
               answerset={this.props.answerset}
               otherAnswersets={[this.props.answerset]}
               questions={this.props.questions}
-              questionUrlFunc={this.props.questionUrlFunc}
+
               answersetUrlFunc={this.props.answersetUrlFunc}
             />
           </Col>

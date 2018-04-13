@@ -7,10 +7,7 @@ import NotificationSystem from 'react-notification-system';
 import AppConfig from './AppConfig';
 import Loading from './components/Loading';
 import Header from './components/Header';
-
 import QuestionPres from './components/question/QuestionPres';
-
-import customPropTypes from './customPropTypes';
 
 class Question extends React.Component {
   constructor(props) {
@@ -68,13 +65,13 @@ class Question extends React.Component {
         this.setState({ runningTasks: data }, this.updateTaskStatus);
       },
       err => console.log('Issues fetching active tasks', err),
-    )
+    );
   }
   updateTaskStatus() {
     const tasks = this.state.runningTasks;
 
-    const refreshBusy = tasks.updaters.length>0;
-    const answerBusy = tasks.answerers.length>0;
+    const refreshBusy = tasks.updaters.length > 0;
+    const answerBusy = tasks.answerers.length > 0;
 
     const refreshFinished = !refreshBusy && this.state.refreshBusy;
     const answerFinished = !answerBusy && this.state.answerBusy;
@@ -157,7 +154,7 @@ class Question extends React.Component {
           dismissible: 'click',
         });
       },
-      (err) => {
+      () => {
         this.dialogMessage({
           title: 'Trouble Queuing Answer Set Generation',
           text: 'This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
@@ -169,6 +166,7 @@ class Question extends React.Component {
   }
 
   callbackRefresh() {
+    this.setState({ subgraph: null });
     const q = this.state.question;
     // Send post request to update question data.
     this.appConfig.questionRefresh(
@@ -183,7 +181,7 @@ class Question extends React.Component {
           dismissible: 'click',
         });
       },
-      (err) => {
+      () => {
         this.dialogMessage({
           title: 'Trouble Refreshing the Knowledge Graph',
           text: 'This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
@@ -378,7 +376,11 @@ class Question extends React.Component {
 }
 
 Question.propTypes = {
-  config: customPropTypes.config.isRequired,
+  config: PropTypes.shape({
+    protocol: PropTypes.string,
+    clientHost: PropTypes.string,
+    port: PropTypes.number,
+  }).isRequired,
   id: PropTypes.string.isRequired,
 };
 

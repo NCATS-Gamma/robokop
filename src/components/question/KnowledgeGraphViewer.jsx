@@ -137,11 +137,12 @@ class KnowledgeGraphViewer extends React.Component {
   }
   renderNoGraph() {
     return (
-      <div>
-        <h5>The current knowledge graph does not have any relevant nodes for this question.</h5>
-        <h5>You need to update the knowledge graph.</h5>
+      <div style={{ margin: '15px' }}>
+        <p>
+          The current knowledge graph does not have any relevant nodes for this question. You may need to update the knowledge graph for this question.
+        </p>
         <Button title="Update KG and Get New Answer Set" onClick={this.props.callbackRefresh}>
-          Refresh
+          Update Knowledge Graph
           <br />
           <GoSync />
         </Button>

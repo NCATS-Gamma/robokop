@@ -47,6 +47,7 @@ class KnowledgeGraphFetchAndView extends React.Component {
     const showGraph = !(this.props.subgraph === null);
     const showFetching = fetching;
     const showFetchButton = !showGraph && !showFetching;
+    const showWait = this.props.wait;
 
     const panelExtraStyle = { margin: 0, border: 'none' };
 
@@ -55,19 +56,33 @@ class KnowledgeGraphFetchAndView extends React.Component {
 
     return (
       <div id="kgFetchDiv">
-        {(showFetchButton || showFetching) &&
-          <Button
-            onClick={this.fetch}
-            disabled={showFetching}
-            style={{ margin: '15px' }}
-          >
-            {!showFetching &&
-              'Explore'
+        {(showFetchButton || showFetching || showWait) &&
+          <div style={{ margin: '15px' }}>
+            {showWait &&
+              <p>
+                Knowledge graph update in progress.
+              </p>
             }
-            {showFetching &&
-              'Loading ...'
-            }
-          </Button>
+            {/* {!showWait &&
+              <p>
+                To explore knowledge graph we will need to load it...
+              </p>
+            } */}
+            <Button
+              onClick={this.fetch}
+              disabled={showFetching || showWait}
+            >
+              {!showFetching && !showWait &&
+                'Explore'
+              }
+              {showFetching && !showWait &&
+                'Loading ...'
+              }
+              {showWait &&
+                'Please wait...'
+              }
+            </Button>
+          </div>
         }
         <Panel style={panelExtraStyle} id="collapsible-panel-kg" expanded={showGraph} onToggle={() => {}}>
           <Panel.Collapse>
@@ -89,8 +104,11 @@ class KnowledgeGraphFetchAndView extends React.Component {
 }
 
 KnowledgeGraphFetchAndView.defaultProps = {
+  subgraph: null,
+  wait: false,
   callbackFetchGraph: () => {},
   callbackRefresh: () => {},
+  scrollToId: '',
 };
 
 
