@@ -70,21 +70,23 @@ const robokop = {
       document.getElementById('reactEntry'),
     );
   },
-  answerset: (answersetId) => {
+  answerset: (questionId, answersetId) => {
     ReactDOM.render(
       <Answerset
         config={config}
         id={answersetId}
+        questionId={questionId}
       />,
       document.getElementById('reactEntry'),
     );
   },
-  answer: (answersetId, answerId) => {
+  answer: (questionId, answersetId, answerId) => {
     ReactDOM.render(
       <Answer
         config={config}
         setId={answersetId}
         id={answerId}
+        questionId={questionId}
       />,
       document.getElementById('reactEntry'),
     );

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Row, Col, Button, Media } from 'react-bootstrap';
+import { Button, Media } from 'react-bootstrap';
 import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
 import GoArrowRight from 'react-icons/lib/go/arrow-right';
 import GoCircuitBoard from 'react-icons/lib/go/circuit-board';
@@ -92,7 +92,7 @@ class AnswersetSelector extends React.Component {
               bsStyle="primary"
               bsSize="large"
               style={{ minWidth: '150px' }}
-              onClick={() => this.props.callbackAnswersetOpen(answerset)}
+              onClick={() => this.props.callbackAnswersetOpen(answerset.id)}
             >
               Explore <GoArrowRight /> <GoCircuitBoard />
             </Button>

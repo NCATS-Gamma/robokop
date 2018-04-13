@@ -25,16 +25,22 @@ class Answerset extends React.Component {
   componentDidMount() {
     // makes the appropriate GET request from server.py,
     // uses the result to set this.state
-    this.appConfig.answersetData(this.props.id, data => this.setState({
-      user: data.user,
-      answerset: data.answerset,
-      answers: data.answers,
-      questions: data.questions,
-      answerCount: data.answer_num,
-      answersetGraph: data.answerset_graph,
-      answersetFeedback: data.answerset_feedback,
-      ready: true,
-    }));
+    this.appConfig.answersetData(
+      this.props.questionId, 
+      this.props.id, 
+      data => this.setState({
+        user: data.user,
+        question: data.question,
+        answerset: data.answerset,
+        answers: data.answers,
+        answerCount: data.answer_num,
+        answersetGraph: data.answerset_graph,
+        answersetFeedback: data.answerset_feedback,
+        otherAnswersets: data.other_answersets,
+        otherQuestions: data.other_questions,
+        ready: true,
+      }),
+    );
   }
 
   renderLoading() {
@@ -51,15 +57,17 @@ class Answerset extends React.Component {
           user={this.state.user}
         />
         <AnswersetPres
+          question={this.state.question}
           answerset={this.state.answerset}
           answers={this.state.answers}
-          questions={this.state.questions}
           answerCount={this.state.answerCount}
           answersetGraph={this.state.answersetGraph}
           answersetFeedback={this.state.answersetFeedback}
-          questionUrlFunc={question => this.appConfig.urls.question(question.id)}
-          answersetUrlFunc={answerset => this.appConfig.urls.answerset(answerset.id)}
-          answerUrlFunc={(answerset, answer) => this.appConfig.urls.answer(answerset.id, answer.id)}
+          otherQuestions={this.state.otherQuestions}
+          otherAnswersets={this.state.otherAnswersets}
+          callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
+          callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
+          callbackAnswerSelect={a => this.appConfig.redirect(this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, a.id))}
         />
       </div>
     );

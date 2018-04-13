@@ -1,6 +1,8 @@
 import React from 'react';
 
 import { Row, Col, Alert, FormGroup, FormControl, Popover, OverlayTrigger, ProgressBar } from 'react-bootstrap';
+import Select from 'react-select';
+
 import GoPencil from 'react-icons/lib/go/pencil';
 
 import QuestionToolbar from './QuestionToolbar';
@@ -132,6 +134,26 @@ class QuestionHeader extends React.Component {
       activityMessage = 'Getting Answers';
     }
 
+    const firstAnswersetValue = this.props.answerset;
+    const fullAnswersets = [firstAnswersetValue].concat(this.props.otherAnswersets);
+
+    const answersetSelectOptions = fullAnswersets.map((a) => {
+      if (a) {
+        const d = new Date(a.timestamp);
+        return { label: d.toLocaleDateString(), value: a };
+      }
+      return null;
+    });
+
+    const firstQuestionValue = {
+      question_id: this.props.question_id,
+      name: this.state.name,
+      natural_question: this.state.natural,
+      notes: this.state.notes,
+    };
+    const fullQuestions = [firstQuestionValue].concat(this.props.otherQuestions);
+    const questionSelectOptions = fullQuestions.map(q => ({ label: q.natural_question, value: q }));
+
     return (
       <div>
         <Row>
@@ -205,6 +227,40 @@ class QuestionHeader extends React.Component {
             />
           </Col>
         </Row>
+        { (this.props.showOtherQuestions || this.props.showOtherAnswersets) &&
+        <Row>
+          {this.props.showOtherQuestions &&
+            <Col md={6}>
+              <Select
+                name="questionHeaderQuestionSelector"
+                value={firstQuestionValue}
+                onChange={q => this.props.callbackQuestionSelect(q)}
+                options={questionSelectOptions}
+                clearable={false}
+                searchable={false}
+              />
+            </Col>
+          }
+          {!this.props.showOtherQuestions &&
+            <Col md={6} />
+          }
+          {this.props.showOtherAnswersets &&
+            <Col md={6}>
+              <Select
+                name="questionHeaderAnswersetSelector"
+                value={firstAnswersetValue}
+                onChange={q => this.props.callbackAnswersetSelect(q)}
+                options={answersetSelectOptions}
+                clearable={false}
+                searchable={false}
+              />
+            </Col>
+          }
+          {!this.props.showOtherAnswersets &&
+            <Col md={6} />
+          }
+        </Row>
+        }
       </div>
     );
   }
@@ -227,6 +283,14 @@ QuestionHeader.defaultProps = {
   enableQuestionEdit: false,
   enableQuestionDelete: false,
   enableQuestionFork: false,
+
+  showOtherQuestions: false,
+  otherQuestions: [],
+  callbackQuestionSelect: () => {},
+
+  showOtherAnswersets: false,
+  otherAnswersets: [],
+  callbackAnswersetSelect: () => {},
 };
 
 export default QuestionHeader;

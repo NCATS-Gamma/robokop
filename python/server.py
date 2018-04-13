@@ -151,15 +151,6 @@ def account_data():
     return jsonify({'timestamp': now_str,\
         'user': user})
 
-# # New Question
-# @app.route('/q/new', methods=['GET', 'POST'])
-# def new():
-#     """Deliver new question"""
-#     question_id = request.form['question_id'] if 'question_id' in request.form else None
-    
-#     return render_template('questionNew.html', questionId=question_id)
-
-
 # New Question Interface
 @app.route('/q/new', methods=['GET'])
 def new():
@@ -188,6 +179,13 @@ def new_from_post():
     nodes, edges = Question.dictionary_to_graph(request.json['query'])
     qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
     q = Question(id=qid, user_id=user_id, name=name, natural_question=natural_question, notes=notes, nodes=nodes, edges=edges)
+
+    # At this point the question is finished
+    # Returning the question id will tell the UI to re-route to the corresponding question page
+    # To speed things along we start a answerset generation task for this question
+    # This isn't the standard answerset generation task because we might also trigger a KG Update
+    # Patrick TODO: Make new celery task happen here.
+    
     return qid, 201
 
 @app.route('/q/new/data', methods=['GET', 'POST'])
@@ -301,37 +299,41 @@ def question_subgraph(question_id):
     return jsonify(subgraph)
 
 # Answer Set
-@app.route('/a/<answerset_id>')
-def answerset(answerset_id):
+@app.route('/q/<question_id>/a/<answerset_id>')
+def answerset(question_id, answerset_id):
     """Deliver answerset page for a given id"""
-    return render_template('answerset.html', answerset_id=answerset_id)
+    return render_template('answerset.html', question_id=question_id, answerset_id=answerset_id)
 
-@app.route('/a/<answerset_id>/data', methods=['GET'])
-def answerset_data(answerset_id):
+@app.route('/q/<question_id>/a/<answerset_id>/data', methods=['GET'])
+def answerset_data(question_id, answerset_id):
     """Data for an answerset """
 
     user = getAuthData()
     answerset = get_answerset_by_id(answerset_id)
     answers = list_answers_by_answerset(answerset)
     questions = list_questions_by_hash(answerset.question_hash)
+    question = questions[0]
+    other_questions = questions[1:] # TODO actually find the question id of interest
     answerset_graph = None
 
     now_str = datetime.now().__str__()
     return jsonify({'timestamp': now_str,\
         'user': user,\
+        'question': question.toJSON(),\
         'answerset': answerset.toJSON(),\
         'answers': [a.toJSON() for a in answers],\
-        'questions': [q.toJSON() for q in questions],\
+        'other_answersets': [], #TODO find the other answersets
+        'other_questions': [q.toJSON() for q in other_questions],\
         'answerset_graph': answerset_graph})
 
 # Answer
-@app.route('/a/<answerset_id>/<answer_id>')
-def answer(answerset_id, answer_id):
+@app.route('/q/<question_id>/a/<answerset_id>/<answer_id>')
+def answer(question_id, answerset_id, answer_id):
     """Deliver answerset page for a given id"""
-    return render_template('answer.html', answerset_id=answerset_id, answer_id=answer_id)
+    return render_template('answer.html', question_id=question_id, answerset_id=answerset_id, answer_id=answer_id)
 
-@app.route('/a/<answerset_id>/<answer_id>/data', methods=['GET'])
-def answer_data(answerset_id, answer_id):
+@app.route('/q/<question_id>/a/<answerset_id>/<answer_id>/data', methods=['GET'])
+def answer_data(question_id, answerset_id, answer_id):
     """Data for an answer """
     
     user = getAuthData()

@@ -43,6 +43,8 @@ class Question extends React.Component {
 
     this.dialogMessage = this.dialogMessage.bind(this);
     this.dialogConfirm = this.dialogConfirm.bind(this);
+
+    this.callbackAnswerset = this.callbackAnswerset.bind(this);
   }
 
   componentDidMount() {
@@ -191,7 +193,9 @@ class Question extends React.Component {
       },
     );
   }
-
+  callbackAnswerset(answersetId) {
+    this.appConfig.redirect(this.appConfig.urls.answerset(this.props.id, answersetId));
+  }
   callbackUpdateMeta(newMeta, fun) {
     this.appConfig.questionUpdateMeta(newMeta, fun);
   }
@@ -345,7 +349,7 @@ class Question extends React.Component {
           callbackFork={this.callbackFork}
           callbackDelete={this.callbackDelete}
           callbackFetchGraph={this.callbackFetchGraph}
-          answersetUrlFunc={a => this.appConfig.urls.answerset(a.id)}
+          callbackAnswersetOpen={this.callbackAnswerset}
           question={this.state.question}
           answersets={this.state.answersets}
           subgraph={this.state.subgraph}

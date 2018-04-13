@@ -18,8 +18,8 @@ class AppConfig {
       questionList: this.url('questions'),
       questionNew: this.url('q/new'),
       question: questionId => this.url(`q/${questionId}`),
-      answerset: answersetId => this.url(`a/${answersetId}`),
-      answer: (answersetId, answerId) => this.url(`a/${answersetId}/${answerId}`),
+      answerset: (questionId, answersetId) => this.url(`q/${questionId}/a/${answersetId}`),
+      answer: (questionId, answersetId, answerId) => this.url(`q/${questionId}/a/${answersetId}/${answerId}`),
     };
 
     // Other URLs that are primarily used for API calls
@@ -89,8 +89,8 @@ class AppConfig {
   questionData(id, fun) { this.getRequest(`${this.urls.question(id)}/data`, fun); }
   questionSubgraph(id, fun) { this.getRequest(`${this.urls.question(id)}/subgraph`, fun); }
   questionNewData(qid, fun) { this.postRequest(`${this.urls.questionNew}/data`, { initialization_id: qid }, fun, (err) => { throw err; }); }
-  answersetData(id, fun) { this.getRequest(`${this.urls.answerset(id)}/data`, fun); }
-  answerData(setId, id, fun) { this.getRequest(`${this.urls.answer(setId, id)}/data`, fun); }
+  answersetData(qid, id, fun) { this.getRequest(`${this.urls.answerset(qid, id)}/data`, fun); }
+  answerData(qid, setId, id, fun) { this.getRequest(`${this.urls.answer(qid, setId, id)}/data`, fun); }
 
   questionCreate(data, successFun, failureFun) {
     // Data must contain a complete specification for a new question
@@ -230,9 +230,9 @@ class AppConfig {
   monarchSearch(input, category) {
     // https://api.monarchinitiative.org/api/search/entity/autocomplete/ - 500s
     const addr = `https://owlsim.monarchinitiative.org/api/search/entity/autocomplete/${encodeURIComponent(input)}?start=0&rows=25&category=${encodeURIComponent(category)}`;
-    console.log(addr)
+    // console.log(addr)
     return this.comms.get(addr).then((result) => {
-      console.log(result);
+      // console.log(result);
       return { options: result.data.docs.map(d => ({ value: d.id, label: d.label[0] })) };
     });
   }

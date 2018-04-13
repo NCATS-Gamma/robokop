@@ -9,66 +9,27 @@ import AnswersetExplorer from './AnswersetExplorer';
 class AnswersetPres extends React.Component {
   constructor(props) {
     super(props);
-
-    this.callbackQuestion = this.callbackQuestion.bind(this);
-    this.callbackAnswerset = this.callbackAnswerset.bind(this);
-    this.callbackAnswer = this.callbackAnswer.bind(this);
-  }
-
-  callbackQuestion(question) {
-    window.open(this.props.questionUrlFunc(question), '_self');
-  }
-
-  callbackAnswerset(answerset) {
-    window.open(this.props.answersetUrlFunc(answerset), '_self');
-  }
-
-  callbackAnswer(answerset, answer) {
-    window.open(this.props.answerUrlFunc(answerset, answer), '_self');
   }
 
   render() {
     return (
       <Grid>
         <QuestionHeader
+          answerset={this.props.answerset}
           question={this.props.question}
-          showToolbar={false}
 
-          refreshBusy={this.props.refreshBusy}
-          answerBusy={this.props.answerBusy}
-
-          callbackNewAnswerset={(this.props.callbackNewAnswerset)}
-          callbackRefresh={this.props.callbackRefresh}
-          callbackUpdate={this.props.callbackUpdateMeta}
-          callbackFork={this.props.callbackFork}
-          callbackDelete={this.props.callbackDelete}
-
-          enableNewAnswersets={enableNewAnswersets}
-          enableQuestionRefresh={enableQuestionRefresh}
-          enableQuestionEdit={enableEditing}
-          enableQuestionDelete={enableDelete}
-          enableQuestionFork={enableQuestionFork}
-
-          otherQuestions={this.props.questions}
-          questionUrlFunc={this.props.questionUrlFunc}
+          showOtherQuestions
+          otherQuestions={this.props.otherQuestions}
+          callbackQuestionSelect={this.props.callbackQuestionSelect}
+          showOtherAnswersets
+          otherAnswersets={this.props.otherAnswersets}
+          callbackAnswersetSelect={this.props.callbackAnswersetSelect}
         />
-        <Row>
-          <Col md={12}>
-            <AnswersetSummary
-              answerset={this.props.answerset}
-              otherAnswersets={[this.props.answerset]}
-              questions={this.props.questions}
-
-              answersetUrlFunc={this.props.answersetUrlFunc}
-            />
-          </Col>
-        </Row>
-        <br />
         <Row>
           <Col md={12}>
             <AnswersetExplorer
               answers={this.props.answers}
-              callbackAnswer={this.callbackAnswers}
+              callbackAnswer={this.props.callbackAnswerSelect}
             />
           </Col>
         </Row>
@@ -78,11 +39,13 @@ class AnswersetPres extends React.Component {
 };
 
 AnswersetPres.propTypes = {
-  questionUrlFunc: PropTypes.func.isRequired,
-  answersetUrlFunc: PropTypes.func.isRequired,
-  answerUrlFunc: PropTypes.func.isRequired,
-  questions: PropTypes.arrayOf(PropTypes.object).isRequired,
+  callbackAnswersetSelect: PropTypes.func.isRequired,
+  callbackQuestionSelect: PropTypes.func.isRequired,
+  callbackAnswerSelect: PropTypes.func.isRequired,
+  question: PropTypes.object.isRequired,
+  otherQuestions: PropTypes.arrayOf(PropTypes.object).isRequired,
   answerset: PropTypes.object.isRequired,
+  otherAnswersets: PropTypes.arrayOf(PropTypes.object).isRequired,
   answers: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 

@@ -26,11 +26,6 @@ class QuestionPres extends React.Component {
       },
     };
 
-    this.callbackAnswerset = this.callbackAnswerset.bind(this);
-  }
-
-  callbackAnswerset(answerset) {
-    window.open(this.props.answersetUrlFunc(answerset), '_self');
   }
 
   render() {
@@ -175,7 +170,7 @@ class QuestionPres extends React.Component {
                   enableNewButton={!this.props.answerBusy}
                   answersets={this.props.answersets}
                   callbackAnswersetNew={this.props.callbackNewAnswerset}
-                  callbackAnswersetOpen={this.callbackAnswerset}
+                  callbackAnswersetOpen={this.props.callbackAnswersetOpen}
                 />
               </Panel.Body>
             </Panel>

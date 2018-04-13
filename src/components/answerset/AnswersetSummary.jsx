@@ -81,10 +81,8 @@ class AnswersetSummary extends React.Component {
 }
 
 AnswersetSummary.propTypes = {
-  questionUrlFunc: PropTypes.func.isRequired,
-  answersetUrlFunc: PropTypes.func.isRequired,
-  questions: PropTypes.arrayOf(PropTypes.object).isRequired,
   answerset: PropTypes.object.isRequired,
+  answersetUrlFunc: PropTypes.func.isRequired,
   otherAnswersets: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
