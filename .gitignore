@@ -17,3 +17,5 @@ python/robokop_setup_environ.py
 *.pid
 sandbox
 neo4j_plugins
+shared/setenv.sh
+shared/startupInstructions.md

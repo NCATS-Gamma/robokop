@@ -60,7 +60,7 @@ class KnowledgeGraphFetchAndView extends React.Component {
           <div style={{ margin: '15px' }}>
             {showWait &&
               <p>
-                Knowledge graph update in progress. Please wait ...
+                Knowledge graph update in progress.
               </p>
             }
             {/* {!showWait &&

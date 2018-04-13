@@ -210,4 +210,23 @@ class QuestionHeader extends React.Component {
   }
 }
 
+QuestionHeader.defaultProps = {
+  question: {},
+  showToolbar: false,
+  refreshBusy: false,
+  answerBusy: false,
+
+  callbackNewAnswerset: () => {},
+  callbackRefresh: () => {},
+  callbackUpdate: () => {},
+  callbackFork: () => {},
+  callbackDelete: () => {},
+
+  enableNewAnswersets: false,
+  enableQuestionRefresh: false,
+  enableQuestionEdit: false,
+  enableQuestionDelete: false,
+  enableQuestionFork: false,
+};
+
 export default QuestionHeader;

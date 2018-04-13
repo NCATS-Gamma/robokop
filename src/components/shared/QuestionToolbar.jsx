@@ -54,7 +54,7 @@ class QuestionToolbar extends React.Component {
         <MenuItem
           eventKey="4"
           disabled={!this.props.enableQuestionDelete}
-          onSelect={this.props.callbackRefresh}
+          onSelect={this.props.callbackDelete}
         >
           <GoTrashcan /> Delete
         </MenuItem>
@@ -65,10 +65,10 @@ class QuestionToolbar extends React.Component {
 
 
 QuestionToolbar.defaultProps = {
-  showFork: true,
-  showRefresh: true,
-  showNewAnswerset: true,
-  showDelete: false,
+  enableQuestionRefresh: true,
+  enableNewAnswersets: false,
+  enableQuestionFork: false,
+  enableQuestionDelete: false,
   callbackFork: () => {},
   callbackUpdate: () => {},
   callbackNewAnswerset: () => {},
