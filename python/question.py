@@ -178,7 +178,7 @@ class Question(db.Model):
         # get all subgraphs relevant to the question from the knowledge graph
         database = KnowledgeGraph()
         subgraphs = database.query(self) # list of lists of nodes with 'id' and 'bound'
-        answer_set_subgraph = database.getGraphByLabel('q_'+self.hash)
+        answer_set_subgraph = database.queryToGraph(self.subgraph_with_support())
         del database
 
         # compute scores with NAGA, export to json
@@ -204,12 +204,7 @@ class Question(db.Model):
 
         return aset
 
-    def cypher(self):
-        '''
-        Generate a Cypher query to extract the portion of the Knowledge Graph necessary to answer the question.
-
-        Returns the query as a string.
-        '''
+    def cypher_match_string(self):
 
         nodes, edges = self.nodes, self.edges
 
@@ -222,10 +217,6 @@ class Question(db.Model):
         node_names = ['n{:d}'.format(i) for i in range(node_count)]
         edge_names = ['r{0:d}{1:d}'.format(i, i+1) for i in range(edge_count)]
 
-        # define bound nodes (no edges are bound)
-        node_bound = ['identifiers' in n and n['identifiers'] for n in nodes]
-        edge_bound = [False for e in range(edge_count)]
-
         node_conditions = []
         for node in nodes:
             node_conds = []
@@ -236,7 +227,7 @@ class Question(db.Model):
             node_conditions += [node_conds]
 
         # generate MATCH command string to get paths of the appropriate size
-        match_strings = ['MATCH '+'({}:{})'.format(node_names[0], 'q_'+self.hash)]
+        match_strings = ['MATCH '+'({})'.format(node_names[0])]
         match_strings += ['MATCH '+'({})-'.format(node_names[i])+'[{0}:{2}*{3}..{4}]-({1})'.format(edge_names[i], node_names[i+1], edge_types[i], edges[i]['length'][0], edges[i]['length'][-1]) for i in range(edge_count)]
         with_strings = ['WITH DISTINCT '+', '.join(node_names[:i+1]) for i in range(edge_count)]
 
@@ -258,15 +249,66 @@ class Question(db.Model):
             for d in conds]\
             for i, conds in enumerate(node_conditions)]
         where_strings = ['WHERE '+' AND '.join(c) for c in node_cond_strings]
-        big_string = match_strings[0]+' '+where_strings[0]+' '+' '.join([w+' '+m+' '+d for w, m, d in zip(with_strings, match_strings[1:], where_strings[1:])])
-        
+        match_string = match_strings[0]+' '+where_strings[0]+' '+' '.join([w+' '+m+' '+d for w, m, d in zip(with_strings, match_strings[1:], where_strings[1:])])
+        return match_string
+
+    def cypher(self):
+        '''
+        Generate a Cypher query to extract the portion of the Knowledge Graph necessary to answer the question.
+
+        Returns the query as a string.
+        '''
+
+        match_string = self.cypher_match_string()
+
+        # generate internal node and edge variable names
+        node_names = ['n{:d}'.format(i) for i in range(len(self.nodes))]
+        edge_names = ['r{0:d}{1:d}'.format(i, i+1) for i in range(len(self.edges))]
+
+        # define bound nodes (no edges are bound)
+        node_bound = ['identifiers' in n and n['identifiers'] for n in self.nodes]
+        node_bound = ["True" if b else "False" for b in node_bound]
+
         # add bound fields and return map
-        return_string = 'RETURN ['+', '.join(['{{id:{0}.id, bound:{1}}}'.format(n, 'True' if b else 'False') for n, b in zip(node_names, node_bound)])+'] as nodes'
+        answer_return_string = f"RETURN [{', '.join([f'{{id:{n}.id, bound:{b}}}' for n, b in zip(node_names, node_bound)])}] as nodes"
 
         # return subgraphs matching query
-        query_string = ' '.join([big_string, return_string])
+        query_string = ' '.join([match_string, answer_return_string])
+        logger.info(query_string)
 
         # print(query_string)
+        return query_string
+
+    def subgraph_with_support(self):
+        match_string = self.cypher_match_string()
+
+        # generate internal node and edge variable names
+        node_names = ['n{:d}'.format(i) for i in range(len(self.nodes))]
+
+        collection_string = f"WITH {'+'.join([f'collect({n})' for n in node_names])} as nodes"
+        support_string = 'CALL apoc.path.subgraphAll(nodes, {maxLevel:0}) YIELD relationships as rels ' + \
+            'UNWIND rels as r WITH [r{.*, start:startNode(r).id, end:endNode(r).id, type:type(r), id:id(r)}] as rels, nodes'
+        return_string = 'RETURN nodes, rels'
+        query_string = "\n".join([match_string, collection_string, support_string, return_string])
+        logger.info(query_string)
+
+        return query_string
+
+    def subgraph(self):
+        match_string = self.cypher_match_string()
+
+        # generate internal node and edge variable names
+        node_names = ['n{:d}'.format(i) for i in range(len(self.nodes))]
+        edge_names = ['r{0:d}{1:d}'.format(i, i+1) for i in range(len(self.edges))]
+
+        # just return a list of nodes and edges
+        collection_string = f"WITH {'+'.join([f'collect({e})' for e in edge_names])} as rels, {'+'.join([f'collect({n})' for n in node_names])} as nodes"
+        unique_string = 'UNWIND nodes as n WITH collect(distinct n) as nodes, rels UNWIND rels as r WITH nodes, collect(distinct r) as rels'
+        return_string = "\n".join([collection_string, unique_string, 'RETURN nodes, rels'])
+
+        query_string = "\n".join([match_string, return_string])
+        logger.info(query_string)
+
         return query_string
 
 def list_questions():
