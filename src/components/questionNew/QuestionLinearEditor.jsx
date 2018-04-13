@@ -9,7 +9,6 @@ import FaPlus from 'react-icons/fa/plus';
 
 import QuestionLinearEditorCard from './QuestionLinearEditorCard';
 import CardTypes from './QuestionNewCardTypes';
-import NodeTypes from './QuestionNewNodeTypes';
 
 const shortid = require('shortid');
 

@@ -49,8 +49,6 @@ class QuestionNew extends React.Component {
         const name = (data.question && data.question.name) ? data.question.name : '';
         const natural = (data.question && data.question.natural_question) ? data.question.natural_question : '';
         const notes = (data.question && data.question.notes) ? data.question.notes : '';
-
-        console.log(data.question)
         
         this.setState({
           user: data.user,
@@ -178,17 +176,12 @@ class QuestionNew extends React.Component {
       let meta = {};
       const type = e.displayType;
       let label = e.nodeType;
-      let isBoundType = false;
-      let isBoundName = false;
       switch (e.type) {
         case CardTypes.NAMEDNODETYPE:
-          isBoundType = true;
-          isBoundName = true;
           label = e.name;
-          meta = { name: e.name };
+          meta = { identifier: e.nameId };
           break;
         case CardTypes.NODETYPE:
-          isBoundType = true;
           label = e.nodeType;
           break;
         case CardTypes.NUMNODES:
@@ -203,8 +196,6 @@ class QuestionNew extends React.Component {
         nodeSpecType: e.type,
         type,
         label,
-        isBoundName,
-        isBoundType,
         meta,
       };
     });

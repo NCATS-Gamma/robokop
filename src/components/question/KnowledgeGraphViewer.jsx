@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from 'react-bootstrap';
 import GoSync from 'react-icons/lib/go/sync';
 
-import NodeTypes from '../questionNew/QuestionNewNodeTypes';
+import getNodeTypeColorMap from '../questionNew/ColorUtils';
 
 const Graph = require('react-graph-vis').default;
 const _ = require('lodash');
@@ -96,13 +96,11 @@ class KnowledgeGraphViewer extends React.Component {
 
   addTagsToGraph(graph) {
     // Adds vis.js specific tags primarily to style graph as desired
-    const undefinedColor = '#f2f2f2';
-    const nodeTypeColorMap = {};
-    Object.keys(NodeTypes).forEach(k => (nodeTypeColorMap[NodeTypes[k].tag] = NodeTypes[k].color));
+    const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
 
     const g = _.cloneDeep(graph);
     g.nodes = g.nodes.map((n) => {
-      const backgroundColor = nodeTypeColorMap[n.type] ? nodeTypeColorMap[n.type] : undefinedColor;
+      const backgroundColor = nodeTypeColorMap(n.type);
       n.color = {
         background: backgroundColor,
         highlight: { background: backgroundColor },

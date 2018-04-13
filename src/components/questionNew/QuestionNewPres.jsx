@@ -5,7 +5,6 @@ import GoQuestion from 'react-icons/go/question';
 import QuestionLinearEditor from './QuestionLinearEditor';
 import QuestionLinearGraph from './QuestionLinearGraph';
 import CardTypes from './QuestionNewCardTypes';
-import NodeTypes from './QuestionNewNodeTypes';
 
 const shortid = require('shortid');
 

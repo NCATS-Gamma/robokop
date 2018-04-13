@@ -19,7 +19,7 @@ from universalgraph import UniversalGraph
 from knowledgegraph import KnowledgeGraph
 from answer import Answer, AnswerSet, list_answersets_by_question_hash
 from user import User
-from setup import db
+from setup import db, rosetta
 from logging_config import logger
 
 # robokop-rank modules
@@ -29,7 +29,6 @@ from nagaProto import ProtocopRank
 # robokop-build modules
 builder_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build', 'builder')
 sys.path.insert(0, builder_path)
-from builder import setup
 from lookup_utils import lookup_identifier
 
 # robokop-interfaces modules
@@ -102,17 +101,13 @@ class Question(db.Model):
                 warnings.warn("Keyword argument {} ignored.".format(key))
 
         # replace input node names with identifiers
-        rosetta = setup(os.path.join(greent_path, 'greent', 'greent.conf'))
         for n in self.nodes:
             if n['nodeSpecType'] == 'Named Node':
-                start_identifiers = lookup_identifier(n['label'], n['type'], rosetta.core)
-                #TODO See if we can avoid the need for this:
-                if n['type'] == node_types.DISEASE:
-                    node = KNode(start_identifiers[0], node_types.DISEASE)
-                    synonyms = list(synonymize(node, rosetta.core))
-                    node.add_synonyms(synonyms)
-                    doids = list(node.get_synonyms_by_prefix('DOID'))
-                    n['identifiers'] = doids
+                # identifiers = lookup_identifier(n['label'], n['type'], rosetta.core)
+                identifiers = [n['meta']['identifier']]
+                n['identifiers'] = identifiers
+            else:
+                n['identifiers'] = None
 
         self.hash = self.compute_hash()
 
@@ -228,15 +223,15 @@ class Question(db.Model):
         edge_names = ['r{0:d}{1:d}'.format(i, i+1) for i in range(edge_count)]
 
         # define bound nodes (no edges are bound)
-        node_bound = [n['isBoundName'] for n in nodes]
+        node_bound = ['identifiers' in n and n['identifiers'] for n in nodes]
         edge_bound = [False for e in range(edge_count)]
 
         node_conditions = []
         for node in nodes:
             node_conds = []
-            if node['isBoundName']:
+            if 'identifiers' in node and node['identifiers']:
                 node_conds.append([{'prop':'id', 'val':l, 'op':'=', 'cond':True} for l in node['identifiers']])
-            if node['isBoundType']:
+            if 'type' in node and node['type']:
                 node_conds += [[{'prop':'node_type', 'val':node['type'].replace(' ', ''), 'op':'=', 'cond':True}]]
             node_conditions += [node_conds]
 
