@@ -228,15 +228,15 @@ class Question(db.Model):
         edge_names = ['r{0:d}{1:d}'.format(i, i+1) for i in range(edge_count)]
 
         # define bound nodes (no edges are bound)
-        node_bound = [n['isBoundName'] for n in nodes]
+        node_bound = ['identifiers' in n and n['identifiers'] for n in nodes]
         edge_bound = [False for e in range(edge_count)]
 
         node_conditions = []
         for node in nodes:
             node_conds = []
-            if node['isBoundName']:
+            if 'identifiers' in node and node['identifiers']:
                 node_conds.append([{'prop':'id', 'val':l, 'op':'=', 'cond':True} for l in node['identifiers']])
-            if node['isBoundType']:
+            if 'type' in node and node['type']:
                 node_conds += [[{'prop':'node_type', 'val':node['type'].replace(' ', ''), 'op':'=', 'cond':True}]]
             node_conditions += [node_conds]
 
