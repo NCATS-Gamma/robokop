@@ -19,7 +19,7 @@ from universalgraph import UniversalGraph
 from knowledgegraph import KnowledgeGraph
 from answer import Answer, AnswerSet, list_answersets_by_question_hash
 from user import User
-from setup import db
+from setup import db, rosetta
 from logging_config import logger
 
 # robokop-rank modules
@@ -29,7 +29,6 @@ from nagaProto import ProtocopRank
 # robokop-build modules
 builder_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build', 'builder')
 sys.path.insert(0, builder_path)
-from builder import setup
 from lookup_utils import lookup_identifier
 
 # robokop-interfaces modules
@@ -102,17 +101,13 @@ class Question(db.Model):
                 warnings.warn("Keyword argument {} ignored.".format(key))
 
         # replace input node names with identifiers
-        rosetta = setup(os.path.join(greent_path, 'greent', 'greent.conf'))
         for n in self.nodes:
             if n['nodeSpecType'] == 'Named Node':
-                start_identifiers = lookup_identifier(n['label'], n['type'], rosetta.core)
-                #TODO See if we can avoid the need for this:
-                if n['type'] == node_types.DISEASE:
-                    node = KNode(start_identifiers[0], node_types.DISEASE)
-                    synonyms = list(synonymize(node, rosetta.core))
-                    node.add_synonyms(synonyms)
-                    doids = list(node.get_synonyms_by_prefix('DOID'))
-                    n['identifiers'] = doids
+                # identifiers = lookup_identifier(n['label'], n['type'], rosetta.core)
+                identifiers = [n['meta']['identifier']]
+                n['identifiers'] = identifiers
+            else:
+                n['identifiers'] = None
 
         self.hash = self.compute_hash()
 
