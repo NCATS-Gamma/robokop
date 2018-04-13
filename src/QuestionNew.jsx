@@ -49,8 +49,6 @@ class QuestionNew extends React.Component {
         const name = (data.question && data.question.name) ? data.question.name : '';
         const natural = (data.question && data.question.natural_question) ? data.question.natural_question : '';
         const notes = (data.question && data.question.notes) ? data.question.notes : '';
-
-        console.log(data.question)
         
         this.setState({
           user: data.user,
@@ -181,7 +179,7 @@ class QuestionNew extends React.Component {
       switch (e.type) {
         case CardTypes.NAMEDNODETYPE:
           label = e.name;
-          meta = { name: e.name };
+          meta = { identifier: e.nameId };
           break;
         case CardTypes.NODETYPE:
           label = e.nodeType;
