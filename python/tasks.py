@@ -10,7 +10,7 @@ from kombu import Queue
 from flask_mail import Message
 from flask_security.core import current_user
 
-from setup import app, mail
+from setup import app, mail, rosetta
 from question import get_question_by_id, list_questions_by_hash
 from logging_config import logger
 
@@ -18,10 +18,11 @@ greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '.
 sys.path.insert(0, greent_path)
 from greent import node_types
 from greent.rosetta import Rosetta
+from greent.graph_components import KNode
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build','builder'))
 from userquery import UserQuery
-from builder import KnowledgeGraph, lookup_identifier, run as run_builder
+from builder import KnowledgeGraph, lookup_identifier, tokenize_path, run_query, generate_query
 
 # set up Celery
 app.config['broker_url'] = os.environ["CELERY_BROKER_URL"]
@@ -73,16 +74,17 @@ def update_kg(self, question_hash, user_email=None):
 
     question = list_questions_by_hash(question_hash)[0]
 
-    # initialize rosetta
-    rosetta = Rosetta()
-
     try:
         symbol_lookup = {node_types.type_codes[a]:a for a in node_types.type_codes} # invert this dict
         # assume the nodes are in order
         node_string = ''.join([symbol_lookup[n['type']] for n in question.nodes])
-        start_name = question.nodes[0]['label'] if question.nodes[0]['nodeSpecType'] == 'Named Node' else None
-        end_name = question.nodes[-1]['label'] if question.nodes[-1]['nodeSpecType'] == 'Named Node' else None
-        run_builder(node_string, start_name, end_name, 'q_'+question.hash, ['chemotext'], os.path.join(greent_path, 'greent', 'greent.conf'))
+        start_identifiers = question.nodes[0]['identifiers']
+        end_identifiers = question.nodes[-1]['identifiers']
+
+        steps = tokenize_path(node_string)
+        query = generate_query(steps, start_identifiers, end_identifiers)
+        kgraph = KnowledgeGraph(query, rosetta)
+        run_query(query, supports=['chemotext'], result_name='q_'+question.hash, rosetta=rosetta, prune=False)
 
         if user_email:
             # send completion email
