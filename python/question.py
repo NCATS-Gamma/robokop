@@ -161,7 +161,7 @@ class Question(db.Model):
     def relevant_subgraph(self):
         # get the subgraph relevant to the question from the knowledge graph
         database = KnowledgeGraph()
-        subgraph_networkx = database.getGraphByLabel('q_'+self.hash)
+        subgraph_networkx = database.queryToGraph(self.subgraph_with_support())
         del database
         subgraph = UniversalGraph(subgraph_networkx)
         return {"nodes":subgraph.nodes,\
@@ -285,9 +285,10 @@ class Question(db.Model):
         # generate internal node and edge variable names
         node_names = ['n{:d}'.format(i) for i in range(len(self.nodes))]
 
-        collection_string = f"WITH {'+'.join([f'collect({n})' for n in node_names])} as nodes"
-        support_string = 'CALL apoc.path.subgraphAll(nodes, {maxLevel:0}) YIELD relationships as rels ' + \
-            'UNWIND rels as r WITH [r{.*, start:startNode(r).id, end:endNode(r).id, type:type(r), id:id(r)}] as rels, nodes'
+        collection_string = f"WITH {'+'.join([f'collect({n})' for n in node_names])} as nodes" + "\n" + \
+            "UNWIND nodes as n WITH collect(distinct n) as nodes"
+        support_string = 'CALL apoc.path.subgraphAll(nodes, {maxLevel:0}) YIELD relationships as rels' + "\n" +\
+            "WITH [r in rels | r{.*, start:startNode(r).id, end:endNode(r).id, type:type(r), id:id(r)}] as rels, nodes"
         return_string = 'RETURN nodes, rels'
         query_string = "\n".join([match_string, collection_string, support_string, return_string])
         logger.info(query_string)
