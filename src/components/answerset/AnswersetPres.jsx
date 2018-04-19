@@ -1,14 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Grid, Row, Col } from 'react-bootstrap';
+import { Grid } from 'react-bootstrap';
 import QuestionHeader from '../shared/QuestionHeader';
-import AnswersetSummary from './AnswersetSummary';
-import AnswersetExplorer from './AnswersetExplorer';
+import AnswersetInteractive from './AnswersetInteractive';
+
 
 class AnswersetPres extends React.Component {
   constructor(props) {
     super(props);
+
   }
 
   render() {
@@ -25,14 +26,11 @@ class AnswersetPres extends React.Component {
           otherAnswersets={this.props.otherAnswersets}
           callbackAnswersetSelect={this.props.callbackAnswersetSelect}
         />
-        <Row>
-          <Col md={12}>
-            <AnswersetExplorer
-              answers={this.props.answers}
-              callbackAnswer={this.props.callbackAnswerSelect}
-            />
-          </Col>
-        </Row>
+        <br />
+        <AnswersetInteractive
+          answers={this.props.answers}
+          callbackAnswer={this.props.callbackAnswerSelect}
+        />
       </Grid>
     );
   }

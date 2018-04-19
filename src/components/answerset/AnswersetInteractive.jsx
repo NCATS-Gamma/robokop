@@ -1,10 +1,8 @@
 import React from 'react';
-import { ButtonGroup, Button, Glyphicon, PanelGroup, Panel } from 'react-bootstrap';
+import { Row, Col, Modal } from 'react-bootstrap';
 import AnswersetInteractiveSelector from './AnswersetInteractiveSelector';
-import SubGraphViewer from './SubGraphViewer';
-import SubGraphInfo from './SubGraphInfo';
-
-const shortid = require('shortid');
+import AnswerExplorer from '../shared/AnswerExplorer';
+import FeedbackEditor from '../shared/FeedbackEditor'
 
 class AnswersetInteractive extends React.Component {
   constructor(props) {
@@ -36,6 +34,7 @@ class AnswersetInteractive extends React.Component {
       },
     };
     this.state = {
+      feedbackModalShow: false,
       selectedSubGraphIndex: 0,
       selectedSubGraphPossibilities: [],
       selectedSubGraphEdge: null,
@@ -46,6 +45,10 @@ class AnswersetInteractive extends React.Component {
     this.handleNodeSelectionChange = this.handleNodeSelectionChange.bind(this);
     this.onSelectionCallback = this.onSelectionCallback.bind(this);
     this.onGraphClick = this.onGraphClick.bind(this);
+    
+    this.feedbackModalOpen = this.feedbackModalOpen.bind(this);
+    this.feedbackModalClose = this.feedbackModalClose.bind(this);
+    this.feedbackUpdate = this.feedbackUpdate.bind(this);
   }
   componentDidMount() {
     // this.updateSelectedSubGraphIndex(0);
@@ -55,6 +58,26 @@ class AnswersetInteractive extends React.Component {
     // this.setState({ selectedSubGraphIndex: 0, selectedSubGraphEdge: null });
     this.initializeNodeSelection();
   }
+
+  onSelectionCallback(index, selectedOption) {
+    const { nodeSelection } = this.state;
+    if (selectedOption == null) {
+      nodeSelection[index] = null;
+    } else {
+      nodeSelection[index] = selectedOption.value;
+    }
+
+    this.handleNodeSelectionChange(nodeSelection);
+    this.setState({ nodeSelection });
+  }
+  onGraphClick(event) {
+    if (event.edges.length !== 0) { // Clicked on an Edge
+      this.setState({ selectedSubGraphEdge: event.edges[0] });
+    } else { // Reset things since something else was clicked
+      this.setState({ selectedSubGraphEdge: null });
+    }
+  }
+
   initializeNodeSelection() {
     const nodeSelection = this.props.answers[0].nodes.map(n => null);
     this.handleNodeSelectionChange(nodeSelection);
@@ -68,15 +91,15 @@ class AnswersetInteractive extends React.Component {
     // loop through path positions
     const subgraphPossibilities = this.props.answers[0].nodes.map((n, ind) => {
       // loop through paths
-      const theseNodes = this.props.answers.map(s => {
+      const theseNodes = this.props.answers.map((s) => {
         // extract node at position
-        const n = s.nodes[ind];
-        n.score = s.score.rank_score;
-        return n;
+        const n2 = s.nodes[ind];
+        n2.score = s.score.rank_score;
+        return n2;
         // filter out user-constrained nodes
       }).filter((id, ind2) => isKept[ind2]);
       // get node ids
-      const nodeIds = theseNodes.map(n => n.id);
+      const nodeIds = theseNodes.map(n2 => n2.id);
       // keep first occurrence of each node
       return theseNodes.filter((val, ind3) => nodeIds.indexOf(val.id) === ind3);
     //   return theseNodes.filter((val, ind3) => nodeNames.indexOf(val.name) === ind3);
@@ -90,51 +113,58 @@ class AnswersetInteractive extends React.Component {
     }
 
     this.setState({ selectedSubGraphIndex, selectedSubGraphPossibilities: subgraphPossibilities });
+  }
+  feedbackModalOpen() {
+    this.setState({ feedbackModalShow: true });
+  }
+  feedbackModalClose() {
+    this.setState({ feedbackModalShow: false });
+  }
+  feedbackUpdate(newFeedback) {
+    console.log('New Feedback', newFeedback);
+    this.feedbackModalClose();
+  }
 
-  }
-  onSelectionCallback(index, selectedOption){
-    const nodeSelection = this.state.nodeSelection;
-    if (selectedOption == null) {nodeSelection[index] = null}
-    else {nodeSelection[index] = selectedOption.value}
-    this.handleNodeSelectionChange(nodeSelection);
-    this.setState({ nodeSelection });
-  }
-  onGraphClick(event) {
-    if (event.edges.length !== 0) { // Clicked on an Edge
-      this.setState({ selectedSubGraphEdge: event.edges[0] });
-    } else { // Reset things since something else was clicked
-      this.setState({ selectedSubGraphEdge: null });
-    }
-  }
   render() {
     return (
-      <div id="ProtocopRanking_Explorer" className="col-md-12">
-        <div className="row" style={this.styles.mainContent}>
-          <div className={'col-md-3'} style={this.styles.graph}>
-            <AnswersetInteractiveSelector
-              subgraph={this.props.answers[this.state.selectedSubGraphIndex]}
-              subgraphPossibilities={this.state.selectedSubGraphPossibilities}
-              onSelectionCallback={this.onSelectionCallback}
+      <Row className="modal-container">
+        <Col md={3}>
+          <AnswersetInteractiveSelector
+            subgraph={this.props.answers[this.state.selectedSubGraphIndex]}
+            subgraphPossibilities={this.state.selectedSubGraphPossibilities}
+            onSelectionCallback={this.onSelectionCallback}
+          />
+        </Col>
+        <Col md={9}>
+          <AnswerExplorer
+            answerset={this.props.answerset}
+            subgraph={this.props.answers[this.state.selectedSubGraphIndex]}
+            subgraphs={this.props.answers}
+            selectedSubgraphIndex={this.state.selectedSubGraphIndex}
+            selectedEdge={this.state.selectedSubGraphEdge}
+            callbackOnGraphClick={this.onGraphClick}
+            callbackOpenFeedback={this.feedbackModalOpen}
+          />
+        </Col>
+        <Modal
+          show={this.state.feedbackModalShow}
+          onHide={this.feedbackModalClose}
+          container={this}
+          bsSize="large"
+          aria-labelledby="FeebackModal"
+        >
+          <Modal.Header closeButton>
+            <Modal.Title id="FeebackModal">Feedback</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <FeedbackEditor
+              feedback={{ accuracy: 4, interest: 3, notes: 'This one seems about right.' }}
+              callbackUpdate={this.feedbackUpdate}
+              callbackClose={this.feedbackModalClose}
             />
-          </div>
-          <div className={'col-md-3'} style={this.styles.graph}>
-            <SubGraphViewer
-              subgraph={this.props.answers[this.state.selectedSubGraphIndex]}
-              callbackOnGraphClick={this.onGraphClick}
-            />
-          </div>
-          <div className={'col-md-6'} style={this.styles.explorer}>
-            <SubGraphInfo
-              subgraphs={this.props.answers}
-              selectedSubgraphIndex={this.state.selectedSubGraphIndex}
-              selectedEdge={this.state.selectedSubGraphEdge}
-            />
-          </div>
-          {/* <div className="col-md-4" style={this.styles.explorer}>
-            {'Graph Info Goes Here.'}
-          </div> */}
-        </div>
-      </div>
+          </Modal.Body>
+        </Modal>
+      </Row>
     );
   }
 }

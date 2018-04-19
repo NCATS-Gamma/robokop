@@ -46,14 +46,17 @@ class QuestionListTableAgGrid extends React.Component {
     return (
       <div>
         {this.props.showSearch &&
-        <FormControl
-          id="filterText"
-          type="text"
-          placeholder="Search"
-          onChange={this.onFilterTextChange}
-        />
+        <div>
+          <FormControl
+            id="filterText"
+            type="text"
+            placeholder="Search"
+            onChange={this.onFilterTextChange}
+          />
+          <br />
+        </div>
         }
-        <div className="ag-theme-bootstrap" style={{ width: '100%', height: this.props.height }}>
+        <div className="ag-theme-material" style={{ width: '100%', height: this.props.height }}>
           <AgGridReact
             columnDefs={[
               { headerName: 'Name', field: 'name', suppressMenu: true },

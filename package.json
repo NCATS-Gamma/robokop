@@ -52,6 +52,7 @@
     "react-icons": "^2.2.7",
     "react-notification-system": "^0.2.17",
     "react-select": "^1.0.0-rc.5",
+    "react-star-rating-component": "^1.4.1",
     "react-virtualized": "^9.18.5",
     "seedrandom": "^2.4.3",
     "shortid": "^2.2.8"

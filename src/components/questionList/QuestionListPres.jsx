@@ -66,7 +66,7 @@ class QuestionListPres extends React.Component {
         <Panel>
           <Panel.Heading>
             <Panel.Title>
-              <b>All Questions</b>
+              <b>Explore All Questions</b>
             </Panel.Title>
           </Panel.Heading>
           <Panel.Body>

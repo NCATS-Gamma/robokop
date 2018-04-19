@@ -224,12 +224,6 @@ class SubGraphInfo extends React.Component {
 
       topContent = (
         <div>
-          <div className="row">
-            <div className="col-md-12">
-              <h2>Answer {this.props.selectedSubgraphIndex + 1} of {this.props.subgraphs.length}</h2>
-              <h5>{subgraphName}</h5>
-            </div>
-          </div>
           <div className="row" style={{ minHeight: '100px' }}>
             <div className="col-md-12">
               {/* <p>{subgraph.info.nameLong}</p> */}

@@ -1,12 +1,13 @@
 import React from 'react';
 
-import { Row, Col, Alert, FormGroup, FormControl, Popover, OverlayTrigger, ProgressBar } from 'react-bootstrap';
+import { Row, Col, Alert, FormGroup, FormControl, Popover, OverlayTrigger, ProgressBar, DropdownButton, MenuItem } from 'react-bootstrap';
 import Select from 'react-select';
 
 import GoPencil from 'react-icons/lib/go/pencil';
 
 import QuestionToolbar from './QuestionToolbar';
 
+const shortid = require('shortid');
 
 class QuestionHeader extends React.Component {
   constructor(props) {
@@ -77,7 +78,9 @@ class QuestionHeader extends React.Component {
     const popoverEditName = (
       <Popover id="popover-edit-name" title="Edit Question Name" style={{ minWidth: '500px' }}>
         <FormGroup role="form">
+          <p>
           This will change the public name of this quesiton and will impact how this question shows up in search results.
+          </p>
           <FormControl
             type="text"
             value={name}
@@ -97,7 +100,9 @@ class QuestionHeader extends React.Component {
     const popoverEditNatural = (
       <Popover id="popover-edit-natural" title="Edit Question" style={{ minWidth: '500px' }}>
         <FormGroup role="form">
+          <p>
           At this point our interpretation of your question is fixed. This will not cause a re-evaluation of your question. This is only used to correct typos etc.
+          </p>
           <FormControl
             type="text"
             value={natural}
@@ -134,25 +139,34 @@ class QuestionHeader extends React.Component {
       activityMessage = 'Getting Answers';
     }
 
-    const firstAnswersetValue = this.props.answerset;
-    const fullAnswersets = [firstAnswersetValue].concat(this.props.otherAnswersets);
-
-    const answersetSelectOptions = fullAnswersets.map((a) => {
-      if (a) {
-        const d = new Date(a.timestamp);
-        return { label: d.toLocaleDateString(), value: a };
-      }
-      return null;
+    const otherAnswersetMenuItemList = this.props.otherAnswersets.map((a, i) => {
+      const d = new Date(a.timestamp);
+      return (
+        <MenuItem eventKey={`${i+2}`} key={shortid.generate()}>
+          {d.toLocaleDateString()}
+        </MenuItem>
+      );
     });
+    let answersetDate = new Date();
+    if (this.props.answerset && this.props.answerset.timestamp) {
+      answersetDate = new Date(this.props.answerset.timestamp);
+    }
+    const answersetMenuItemList = [
+      <MenuItem eventKey="1" key={shortid.generate()} active>
+        {answersetDate.toLocaleDateString()}
+      </MenuItem>,
+    ].concat(otherAnswersetMenuItemList);
 
-    const firstQuestionValue = {
-      question_id: this.props.question_id,
-      name: this.state.name,
-      natural_question: this.state.natural,
-      notes: this.state.notes,
-    };
-    const fullQuestions = [firstQuestionValue].concat(this.props.otherQuestions);
-    const questionSelectOptions = fullQuestions.map(q => ({ label: q.natural_question, value: q }));
+    const otherQuestionsMenuItemList = this.props.otherQuestions.map((q, i) => (
+      <MenuItem eventKey={`${i+2}`} key={shortid.generate()}>
+        {q.name}
+      </MenuItem>
+    ));
+    const questionMenuItemList = [
+      <MenuItem eventKey="1" key={shortid.generate()} active>
+        {this.state.name}
+      </MenuItem>,
+    ].concat(otherQuestionsMenuItemList);
 
     return (
       <div>
@@ -161,7 +175,7 @@ class QuestionHeader extends React.Component {
             {active &&
               <Alert bsStyle="success">
                 {activityMessage}
-                <ProgressBar striped active style={{ marginBottom: '5px' }}bsStyle="success" now={100} />
+                <ProgressBar striped active style={{ marginBottom: '5px' }} bsStyle="success" now={100} />
               </Alert>
             }
             <div style={{ position: 'relative' }}>
@@ -183,6 +197,16 @@ class QuestionHeader extends React.Component {
                       &nbsp;
                       &nbsp;
                     </div>
+                  }
+                  {this.props.showOtherQuestions && questionMenuItemList.length > 1 &&
+                    <DropdownButton id="diminisheddropdown" noCaret title="Similar Questions">
+                      {questionMenuItemList}
+                    </DropdownButton>
+                  }
+                  {this.props.showOtherAnswersets && answersetMenuItemList.length > 1 &&
+                    <DropdownButton id="diminisheddropdown" noCaret title="Other Answersets">
+                      {answersetMenuItemList}
+                    </DropdownButton>
                   }
                   {this.props.showToolbar &&
                     <QuestionToolbar
@@ -227,40 +251,6 @@ class QuestionHeader extends React.Component {
             />
           </Col>
         </Row>
-        { (this.props.showOtherQuestions || this.props.showOtherAnswersets) &&
-        <Row>
-          {this.props.showOtherQuestions &&
-            <Col md={6}>
-              <Select
-                name="questionHeaderQuestionSelector"
-                value={firstQuestionValue}
-                onChange={q => this.props.callbackQuestionSelect(q)}
-                options={questionSelectOptions}
-                clearable={false}
-                searchable={false}
-              />
-            </Col>
-          }
-          {!this.props.showOtherQuestions &&
-            <Col md={6} />
-          }
-          {this.props.showOtherAnswersets &&
-            <Col md={6}>
-              <Select
-                name="questionHeaderAnswersetSelector"
-                value={firstAnswersetValue}
-                onChange={q => this.props.callbackAnswersetSelect(q)}
-                options={answersetSelectOptions}
-                clearable={false}
-                searchable={false}
-              />
-            </Col>
-          }
-          {!this.props.showOtherAnswersets &&
-            <Col md={6} />
-          }
-        </Row>
-        }
       </div>
     );
   }

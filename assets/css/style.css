@@ -83,3 +83,23 @@ div.vis-tooltip-inner {
 #answersetSelect .Select-control {
   height: 20px;
 } 
+
+.panel-default > .panel-heading {
+  color: #333;
+  background-color: #f5f7fa;/*#f5f5f5;*/
+  border-color: #ddd;
+}
+
+/* A dropdown that doesn't look like a button */
+#diminisheddropdown .dropdown-toggle > .btn > .btn-default {
+  border: none;
+  color: #b8c6db;
+}
+
+/* To enable contained modals */
+.modal-container {
+  position: relative;
+}
+.modal-container .modal, .modal-container .modal-backdrop {
+  position: absolute;
+}
