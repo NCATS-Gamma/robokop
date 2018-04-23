@@ -19,3 +19,10 @@ sandbox
 neo4j_plugins
 shared/setenv.sh
 shared/startupInstructions.md
+.eslintrc.json
+.babelrc
+AllDxCounts.txt
+ICD_Combo_Chi2.txt
+chemotext.words.txt
+*.tsv
+*.tsv.gz

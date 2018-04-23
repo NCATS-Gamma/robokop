@@ -1,11 +1,9 @@
 # This Dockerfile is used to build ROBOKOP
-#
-# based on Ubuntu
 
 FROM python:3
 
 LABEL maintainer="patrick@covar.com"
-ENV REFRESHED_AT 2018-03-23
+ENV REFRESHED_AT 2018-04-11
 
 ENV LANG=C.UTF-8 \
     LC_ALL=C.UTF-8
@@ -28,10 +26,9 @@ RUN apt-get install -yq \
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN apt-get install -y nodejs
 
-## Install more things
+## This thing is required for node? IDK
 RUN apt-get install -yq \
     libkrb5-dev
-RUN pip install gnureadline
 
 ## Set up home directory
 RUN useradd -m -s /bin/bash murphy
@@ -44,12 +41,14 @@ RUN git clone https://github.com/NCATS-Gamma/robokop-rank.git
 RUN git clone https://github.com/NCATS-Gamma/robokop.git
 
 WORKDIR /home/murphy/robokop
-
 RUN git checkout docker
-
-## ugh dependency issues
-RUN sed -i -e 's/gnureadline==6.3.3/gnureadline==6.3.8/' ../robokop-build/builder/requirements.txt
-RUN sed -i -e 's/gnureadline==6.3.3/gnureadline==6.3.8/' ../robokop-interfaces/greent/requirements.txt
+RUN git reset --hard 82910d6cffa47346367370695e1728eb92daed21
+WORKDIR /home/murphy/robokop-interfaces
+RUN git checkout config
+RUN git reset --hard 4711afa36bec593d7747a22eb48f4d9e19109509
+WORKDIR /home/murphy/robokop-build
+RUN git reset --hard d36a228cb3b52b060f653ed6f43a7e37beaecb58
+WORKDIR /home/murphy/robokop
 
 ## Install all requirements
 RUN pip install -r ../robokop-interfaces/greent/requirements.txt
@@ -57,9 +56,8 @@ RUN pip install -r ../robokop-build/builder/requirements.txt
 RUN pip install -r ./requirements.txt
 
 ## Set up the website
-RUN sed -i -e 's/"\(enable.*\)": false/"\1": true/' ./config.json
 RUN npm install
-RUN npm run webpack
+RUN npm run webpackProd
 
 ## Finish up
 ENV HOME=/home/murphy

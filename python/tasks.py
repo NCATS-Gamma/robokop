@@ -32,7 +32,60 @@ celery.conf.update(app.config)
 celery.conf.task_queues = (
     Queue('answer', routing_key='answer'),
     Queue('update', routing_key='update'),
+    Queue('initialize', routing_key='initialize'),
 )
+
+@celery.task(bind=True, queue='initialize')
+def initialize_question(self, question_hash, user_email=None):
+    '''
+    Initialize a new question:
+    Answer.
+    If answers do not exist:
+        update and
+        answer.
+    '''
+
+    logger.info("Initializing your question...")
+
+    self.update_state(state='ANSWERING, PRE-REFRESH')
+    task = answer_question.apply(args=[question_hash]) # don't send email here
+
+    if task.state == 'ANSWERS FOUND':
+        if user_email:
+            with app.app_context():
+                question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}'
+                answerset_url = f'http://{os.environ["ROBOKOP_HOST"]}/a/{answerset.id}'
+                lines = [f'We have finished initializing your question: <a href="{question_url}">"{question.natural_question}"</a>.']
+                lines.append(f'<a href="{answerset_url}">ANSWERS</a>')
+                lines.append('Answers were found without refreshing the knowledge graph. You may be able to get more answers by refreshing the knowledge graph and answering again.')
+                html = '<br />\n'.join(lines)
+                msg = Message("ROBOKOP: Answers Ready",
+                            sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
+                            recipients=['patrick@covar.com'], #[user_email],
+                            html=html)
+                mail.send(msg)
+        return
+
+    self.update_state(state='REFRESHING KG')
+    task = update_kg.apply(args=[question_hash]) # don't send email here
+
+    self.update_state(state='ANSWERING')
+    task = answer_question.apply(args=[question_hash]) # don't send email here
+
+    if user_email:
+        with app.app_context():
+            question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}'
+            answerset_url = f'http://{os.environ["ROBOKOP_HOST"]}/a/{answerset.id}'
+            lines = [f'We have finished initializing your question: <a href="{question_url}">"{question.natural_question}"</a>.']
+            lines.append(f'<a href="{answerset_url}">ANSWERS</a>')
+            html = '<br />\n'.join(lines)
+            msg = Message("ROBOKOP: Answers Ready",
+                        sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
+                        recipients=['patrick@covar.com'], #[user_email],
+                        html=html)
+            mail.send(msg)
+
+    logger.info("Done initializing.")
 
 @celery.task(bind=True, queue='answer')
 def answer_question(self, question_hash, user_email=None):
@@ -43,8 +96,18 @@ def answer_question(self, question_hash, user_email=None):
     self.update_state(state='ANSWERING')
     logger.info("Answering your question...")
 
-    question = list_questions_by_hash(question_hash)[0]
-    answerset = question.answer()
+    try:
+        question = list_questions_by_hash(question_hash)[0]
+        answerset = question.answer()
+        if answerset.answers:
+            self.update_state(state='ANSWERS FOUND')
+            logger.info("Answers found.")
+        else:
+            self.update_state(state='NO ANSWERS FOUND')
+            logger.info("No answers found.")
+    except Exception:
+        logger.error("Something went wrong with question answering.")
+        return
 
     if user_email:
         with app.app_context():
@@ -83,7 +146,6 @@ def update_kg(self, question_hash, user_email=None):
 
         steps = tokenize_path(node_string)
         query = generate_query(steps, start_identifiers, end_identifiers)
-        kgraph = KnowledgeGraph(query, rosetta)
         run_query(query, supports=['chemotext'], result_name='q_'+question.hash, rosetta=rosetta, prune=False)
 
         if user_email:
@@ -103,4 +165,4 @@ def update_kg(self, question_hash, user_email=None):
         logger.info("Done updating.")
 
     except:
-        logger.exception("Exception while updating KG.")
+        logger.exception("Something went wrong with updating KG.")

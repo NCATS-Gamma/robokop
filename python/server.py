@@ -24,7 +24,7 @@ from user import User, Role, list_users
 from question import Question, list_questions, get_question_by_id, list_questions_by_username, list_questions_by_hash
 from answer import get_answerset_by_id, list_answersets_by_question_hash, get_answer_by_id, list_answers_by_answerset, list_answersets
 from feedback import Feedback, list_feedback_by_answer
-from tasks import celery, answer_question, update_kg
+from tasks import celery, answer_question, update_kg, initialize_question
 
 greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
 sys.path.insert(0, greent_path)
@@ -184,7 +184,7 @@ def new_from_post():
     # Returning the question id will tell the UI to re-route to the corresponding question page
     # To speed things along we start a answerset generation task for this question
     # This isn't the standard answerset generation task because we might also trigger a KG Update
-    # Patrick TODO: Make new celery task happen here.
+    task = initialize_question.apply_async(args=[q.hash], kwargs={'user_email':current_user.user_email})
     
     return qid, 201
 
