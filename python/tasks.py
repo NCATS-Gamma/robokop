@@ -50,8 +50,7 @@ def initialize_question(self, question_id, user_email=None):
     question = get_question_by_id(question_id)
 
     self.update_state(state='ANSWERING, PRE-REFRESH')
-    result = answer_question.apply(args=[question.hash]) # don't send email here
-    answerset_id = result.result if result.state == 'SUCCESS' else None
+    answerset_id = answer_question.apply_async(args=[question.hash]).get(disable_sync_subtasks=False) # don't send email here
     answerset = get_answerset_by_id(answerset_id) if answerset_id else None
 
     if answerset and answerset.answers:
@@ -73,12 +72,11 @@ def initialize_question(self, question_id, user_email=None):
     logger.info("Empty anwerset. Refreshing KG...")
 
     self.update_state(state='REFRESHING KG')
-    result = update_kg.apply(args=[question.hash]) # don't send email here
+    result = update_kg.apply_async(args=[question.hash]).get(disable_sync_subtasks=False) # don't send email here
 
     self.update_state(state='ANSWERING')
-    result = answer_question.apply(args=[question.hash]) # don't send email here
+    answerset_id = answer_question.apply_async(args=[question.hash]).get(disable_sync_subtasks=False) # don't send email here
 
-    answerset_id = result.result
     if user_email:
         with app.app_context():
             question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}'
@@ -114,7 +112,7 @@ def answer_question(self, question_hash, user_email=None):
             logger.info("No answers found.")
     except Exception:
         logger.error("Something went wrong with question answering.")
-        return
+        return -1
 
     if user_email:
         with app.app_context():
