@@ -21,7 +21,7 @@ from greent import node_types
 from greent.rosetta import Rosetta
 from greent.graph_components import KNode
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build','builder'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build', 'builder'))
 from userquery import UserQuery
 from builder import KnowledgeGraph, lookup_identifier, tokenize_path, run_query, generate_query
 

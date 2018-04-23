@@ -30,7 +30,7 @@ class KnowledgeGraph:
             query_string = question
         else:
             query_string = question.cypher()
-        
+
         print('Running query... ', end='')
         start = time.time()
         result = self.session.run(query_string)
