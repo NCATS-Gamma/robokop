@@ -11,6 +11,7 @@ from flask_mail import Message
 from flask_security.core import current_user
 
 from setup import app, mail, rosetta
+from answer import get_answerset_by_id
 from question import get_question_by_id, list_questions_by_hash
 from logging_config import logger
 
@@ -36,7 +37,7 @@ celery.conf.task_queues = (
 )
 
 @celery.task(bind=True, queue='initialize')
-def initialize_question(self, question_hash, user_email=None):
+def initialize_question(self, question_id, user_email=None):
     '''
     Initialize a new question:
     Answer.
@@ -46,43 +47,49 @@ def initialize_question(self, question_hash, user_email=None):
     '''
 
     logger.info("Initializing your question...")
+    question = get_question_by_id(question_id)
 
     self.update_state(state='ANSWERING, PRE-REFRESH')
-    task = answer_question.apply(args=[question_hash]) # don't send email here
+    result = answer_question.apply(args=[question.hash]) # don't send email here
+    answerset_id = result.result if result.state == 'SUCCESS' else None
+    answerset = get_answerset_by_id(answerset_id) if answerset_id else None
 
-    if task.state == 'ANSWERS FOUND':
+    if answerset and answerset.answers:
         if user_email:
             with app.app_context():
                 question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}'
-                answerset_url = f'http://{os.environ["ROBOKOP_HOST"]}/a/{answerset.id}'
+                answerset_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}/a/{answerset_id}'
                 lines = [f'We have finished initializing your question: <a href="{question_url}">"{question.natural_question}"</a>.']
                 lines.append(f'<a href="{answerset_url}">ANSWERS</a>')
                 lines.append('Answers were found without refreshing the knowledge graph. You may be able to get more answers by refreshing the knowledge graph and answering again.')
                 html = '<br />\n'.join(lines)
                 msg = Message("ROBOKOP: Answers Ready",
-                            sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
-                            recipients=['patrick@covar.com'], #[user_email],
-                            html=html)
+                              sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
+                              recipients=['patrick@covar.com'], #[user_email],
+                              html=html)
                 mail.send(msg)
         return
 
+    logger.info("Empty anwerset. Refreshing KG...")
+
     self.update_state(state='REFRESHING KG')
-    task = update_kg.apply(args=[question_hash]) # don't send email here
+    result = update_kg.apply(args=[question.hash]) # don't send email here
 
     self.update_state(state='ANSWERING')
-    task = answer_question.apply(args=[question_hash]) # don't send email here
+    result = answer_question.apply(args=[question.hash]) # don't send email here
 
+    answerset_id = result.result
     if user_email:
         with app.app_context():
             question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}'
-            answerset_url = f'http://{os.environ["ROBOKOP_HOST"]}/a/{answerset.id}'
+            answerset_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}/a/{answerset_id}'
             lines = [f'We have finished initializing your question: <a href="{question_url}">"{question.natural_question}"</a>.']
             lines.append(f'<a href="{answerset_url}">ANSWERS</a>')
             html = '<br />\n'.join(lines)
             msg = Message("ROBOKOP: Answers Ready",
-                        sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
-                        recipients=['patrick@covar.com'], #[user_email],
-                        html=html)
+                          sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
+                          recipients=['patrick@covar.com'], #[user_email],
+                          html=html)
             mail.send(msg)
 
     logger.info("Done initializing.")
@@ -111,12 +118,10 @@ def answer_question(self, question_hash, user_email=None):
 
     if user_email:
         with app.app_context():
-            question_url = 'http://{}/q/{}'.format(os.environ['ROBOKOP_HOST'], question.id)
-            answerset_url = 'http://{}/a/{}'.format(os.environ['ROBOKOP_HOST'], answerset.id)
-            lines = ['We have finished answering your question: <a href="{1}">"{0}"</a>.'.format(
-                question.natural_question,
-                question_url)]
-            lines.append('<a href="{}">ANSWERS</a>'.format(answerset_url))
+            question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}'
+            answerset_url = f'http://{os.environ["ROBOKOP_HOST"]}/a/{answerset.id}'
+            lines = [f'We have finished answering your question: <a href="{question_url}">"{question.natural_question}"</a>.']
+            lines.append(f'<a href="{answerset_url}">ANSWERS</a>')
             html = '<br />\n'.join(lines)
             msg = Message("ROBOKOP: Answers Ready",
                           sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
@@ -125,6 +130,7 @@ def answer_question(self, question_hash, user_email=None):
             mail.send(msg)
 
     logger.info("Done answering.")
+    return answerset.id
 
 @celery.task(bind=True, queue='update')
 def update_kg(self, question_hash, user_email=None):
@@ -150,10 +156,8 @@ def update_kg(self, question_hash, user_email=None):
 
         if user_email:
             # send completion email
-            question_url = 'http://{}/q/{}'.format(os.environ['ROBOKOP_HOST'], question.id)
-            lines = ['We have finished gathering information for your question: <a href="{1}">"{0}"</a>.'.format(
-                question.natural_question,
-                question_url)]
+            question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}'
+            lines = [f'We have finished gathering information for your question: <a href="{question_url}">"{question.natural_question}"</a>.']
             html = '<br />\n'.join(lines)
             with app.app_context():
                 msg = Message("ROBOKOP: Knowledge Graph Update Complete",
@@ -164,5 +168,5 @@ def update_kg(self, question_hash, user_email=None):
 
         logger.info("Done updating.")
 
-    except:
+    except Exception:
         logger.exception("Something went wrong with updating KG.")

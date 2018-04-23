@@ -184,8 +184,8 @@ def new_from_post():
     # Returning the question id will tell the UI to re-route to the corresponding question page
     # To speed things along we start a answerset generation task for this question
     # This isn't the standard answerset generation task because we might also trigger a KG Update
-    task = initialize_question.apply_async(args=[q.hash], kwargs={'user_email':current_user.user_email})
-    
+    task = initialize_question.apply_async(args=[qid], kwargs={'user_email':current_user.email})
+
     return qid, 201
 
 @app.route('/q/new/data', methods=['GET', 'POST'])
