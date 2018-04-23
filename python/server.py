@@ -224,11 +224,37 @@ def questions_data():
     user_question_list = list_questions_by_username(user['username'])
     # nonuser_question_list = list_questions_by_username(user['username'], invert=True)
 
+    tasks = get_tasks().values()
+
+    # filter out the SUCCESS/FAILURE tasks
+    tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE')]
+
+    # get question hashes
+    question_hashes = [re.match("\['(.*)'\]", t['args']).group(1) if t['args'] else None for t in tasks]
+
+    # split into answer and update tasks
+    task_types = ['answering' if t['name'] == 'tasks.answer_question' else
+                  'refreshing KG' if t['name'] == 'tasks.update_kg' else
+                  'initializing' for t in tasks]
+
+    question_status = [[task_types[i] for i in [j for j, h in enumerate(question_hashes) if h == q.hash]] for q in question_list]
+    user_question_status = [[task_types[i] for i in [j for j, h in enumerate(question_hashes) if h == q.hash]] for q in user_question_list]
+
+    def answerset_info(question_list):
+        latest_answerset_ids = []
+        latest_answerset_timestamps = []
+        for q in question_list:
+            answerset_timestamps = [a.timestamp for a in q.answersets]
+            latest_idx = answerset_timestamps.index(max(answerset_timestamps))
+            latest_answerset_ids.append(q.answersets[latest_idx].id)
+            latest_answerset_timestamps.append(q.answersets[latest_idx].timestamp)
+        return [{'latest_answerset_id':aid, 'latest_answerset_timestamp':ats} for aid, ats in zip(latest_answerset_ids, latest_answerset_timestamps)]
+
     now_str = datetime.now().__str__()
     return jsonify({'timestamp': now_str,\
         'user': user,\
-        'questions': [q.toJSON() for q in question_list],\
-        'user_questions': [q.toJSON() for q in user_question_list]})
+        'questions': [{**q.toJSON(), **ainfo, 'tasks':s} for q, ainfo, s in zip(question_list, answerset_info(question_list), question_status)],\
+        'user_questions': [{**q.toJSON(), **ainfo, 'tasks':s} for q, ainfo, s in zip(user_question_list, answerset_info(user_question_list), user_question_status)]})
 
 # Question
 @app.route('/q/<question_id>', methods=['GET'])
@@ -285,9 +311,11 @@ def question_tasks(question_id):
     # split into answer and update tasks
     answerers = [t for t in tasks if t['name'] == 'tasks.answer_question']
     updaters = [t for t in tasks if t['name'] == 'tasks.update_kg']
+    initializers = [t for t in tasks if t['name'] == 'tasks.initialize_question']
 
     return jsonify({'answerers': answerers,
-                    'updaters': updaters})
+                    'updaters': updaters,
+                    'initializers': initializers})
 
 @app.route('/q/<question_id>/subgraph', methods=['GET'])
 def question_subgraph(question_id):

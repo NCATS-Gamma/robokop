@@ -133,6 +133,7 @@ class Question(db.Model):
 
         return nodes, edges
 
+    @property
     def answersets(self):
         return list_answersets_by_question_hash(self.hash)
 
