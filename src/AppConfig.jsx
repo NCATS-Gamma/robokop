@@ -18,8 +18,8 @@ class AppConfig {
       questionList: this.url('questions'),
       questionNew: this.url('q/new'),
       question: questionId => this.url(`q/${questionId}`),
-      answerset: (questionId, answersetId) => this.url(`q/${questionId}/a/${answersetId}`),
-      answer: (questionId, answersetId, answerId) => this.url(`q/${questionId}/a/${answersetId}/${answerId}`),
+      answerset: (questionId, answersetId) => this.url(`a/${questionId}_${answersetId}`),
+      answer: (questionId, answersetId, answerId) => this.url(`a/${questionId}_${answersetId}/${answerId}`),
     };
 
     // Other URLs that are primarily used for API calls
