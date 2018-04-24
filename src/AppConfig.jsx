@@ -18,13 +18,15 @@ class AppConfig {
       questions: this.url('questions'),
       questionDesign: this.url('q/new'),
       question: questionId => this.url(`q/${questionId}`),
+      questionAnswer: questionId => this.url(`q/${questionId}/answer`),
+      questionRefreshKG: questionId => this.url(`q/${questionId}/refresh_kg`),
       answerset: (questionId, answersetId) => this.url(`a/${questionId}_${answersetId}`),
       answer: (questionId, answersetId, answerId) => this.url(`a/${questionId}_${answersetId}/${answerId}`),
     };
 
     // Other URLs that are primarily used for API calls
     this.api = {
-      questionUpdate: this.url('q/edit'),
+      questionUpdate: questionId => this.url(`q/${questionId}`),
       questionTasks: questionId => this.url(`q/${questionId}/tasks`),
     };
 
@@ -112,8 +114,8 @@ class AppConfig {
     // New answersets are triggered by a post request to the question url with
     // {command: answer}
     this.postRequest(
-      this.urls.question(qid),
-      { command: 'answer' },
+      this.urls.questionAnswer(qid),
+      null,
       successFun,
       failureFun,
     );
@@ -122,8 +124,8 @@ class AppConfig {
     // A knowledge graph reset is triggered by a post request to the question url with
     // {command: update}
     this.postRequest(
-      this.urls.question(qid),
-      { command: 'update' },
+      this.urls.questionRefreshKG(qid),
+      null,
       successFun,
       failureFun,
     );
@@ -172,7 +174,7 @@ class AppConfig {
     );
   }
 
-  questionUpdateMeta(data, successFun, failureFun) {
+  questionUpdateMeta(qid, data, successFun, failureFun) {
     // Data must contain all necessary meta data fields
     // Can only be done by the owner
     // const newMeta = {
@@ -182,7 +184,7 @@ class AppConfig {
     //   notes: '',
     // };
     this.postRequest(
-      this.api.questionUpdate,
+      this.api.questionUpdate(qid),
       data,
       successFun,
       failureFun,

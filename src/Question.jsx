@@ -197,7 +197,7 @@ class Question extends React.Component {
     this.appConfig.redirect(this.appConfig.urls.answerset(this.props.id, answersetId));
   }
   callbackUpdateMeta(newMeta, fun) {
-    this.appConfig.questionUpdateMeta(newMeta, fun);
+    this.appConfig.questionUpdateMeta(this.props.id, newMeta, fun);
   }
   callbackFork() {
     const q = this.state.question;

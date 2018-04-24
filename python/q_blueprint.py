@@ -68,21 +68,39 @@ def question_page(question_id):
     """Deliver user info page"""
     return render_template('question.html', question_id=question_id)
 
-@q.route('/<question_id>', methods=['POST'])
+@q.route('/<question_id>/answer', methods=['POST'])
 @auth_required('session', 'basic')
-def question_action(question_id):
+def question_answer(question_id):
     """ run update or answer actions """
     question_hash = get_question_by_id(question_id).hash
     username = current_user.username
-    command = request.json['command']
-    if 'answer' in command:
-        # Answer a question
-        task = answer_question.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':username})
-        return jsonify({'task_id':task.id}), 202
-    elif 'update' in command:
-        # Update the knowledge graph for a question
-        task = update_kg.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':username})
-        return jsonify({'task_id':task.id}), 202
+    # Answer a question
+    task = answer_question.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':username})
+    return jsonify({'task_id':task.id}), 202
+
+@q.route('/<question_id>/refresh_kg', methods=['POST'])
+@auth_required('session', 'basic')
+def question_refresh_kg(question_id):
+    """ run update or answer actions """
+    question_hash = get_question_by_id(question_id).hash
+    username = current_user.username
+    # Update the knowledge graph for a question
+    task = update_kg.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':username})
+    return jsonify({'task_id':task.id}), 202
+
+@q.route('/<question_id>', methods=['POST'])
+@auth_required('session', 'basic')
+def question_edit(question_id):
+    """Edit the properties of a question"""
+    logger.info('Editing question %s', question_id)
+    q = get_question_by_id(question_id)
+    if not (current_user == q.user or current_user.has_role('admin')):
+        return "UNAUTHORIZED", 401 # not authorized
+    q.name = request.json['name']
+    q.notes = request.json['notes']
+    q.natural_question = request.json['natural_question']
+    db.session.commit()
+    return "SUCCESS", 200
 
 @q.route('/<question_id>', methods=['DELETE'])
 @auth_required('session', 'basic')
@@ -158,20 +176,3 @@ def question_new_validate():
 @q.route('/new/translate', methods=['POST'])
 def question_new_translate():
     """Translate a natural language question into a machine question"""
-
-################################################################################
-##### Question Editing, Forking ################################################
-################################################################################
-@q.route('/edit', methods=['POST'])
-@auth_required('session', 'basic')
-def question_edit():
-    """Edit the properties of a question"""
-    logger.info('Editing question %s', request.json['question_id'])
-    q = get_question_by_id(request.json['question_id'])
-    if not (current_user == q.user or current_user.has_role('admin')):
-        return "UNAUTHORIZED", 401 # not authorized
-    q.name = request.json['name']
-    q.notes = request.json['notes']
-    q.natural_question = request.json['natural_question']
-    db.session.commit()
-    return "SUCCESS", 200
