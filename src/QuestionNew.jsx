@@ -22,6 +22,7 @@ class QuestionNew extends React.Component {
       notes: '',
       query: [],
       isFork: false,
+      initializationQuestion: {},
     };
 
     this.onCreate = this.onCreate.bind(this);
@@ -50,6 +51,11 @@ class QuestionNew extends React.Component {
         const natural = (data.question && data.question.natural_question) ? data.question.natural_question : '';
         const notes = (data.question && data.question.notes) ? data.question.notes : '';
         
+        let initializationQuestion = {};
+        if (isFork) {
+          initializationQuestion = data.question;
+        }
+
         this.setState({
           user: data.user,
           name,
@@ -57,6 +63,7 @@ class QuestionNew extends React.Component {
           notes,
           concepts: data.concepts,
           isFork,
+          initializationQuestion,
           ready: true,
         });
       },
@@ -221,6 +228,7 @@ class QuestionNew extends React.Component {
           notes={this.state.notes}
           query={this.state.query}
           isFork={this.state.isFork}
+          initializationQuestion={this.state.initializationQuestion}
           concepts={this.state.concepts}
           handleChangeName={this.handleChangeName}
           handleChangeNatural={this.handleChangeNatural}

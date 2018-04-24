@@ -80,6 +80,16 @@ class QuestionLinearEditor extends React.Component {
   updateCard(card) {
     const index = this.findCardIndex(card.id);
     const cards = this.state.cards;
+    const oldCard = cards[index];
+
+    // If you change the node type we will wipe out selected named entity
+    if (oldCard.nodeType !== card.nodeType){
+      card.name = '';
+      card.nameId = '';
+      card.nameEntry = {};
+      card.nameIsValid = false;
+    }
+
     cards[index] = card;
     
     this.setState({ cards }, () => this.props.handleChange(cards));
