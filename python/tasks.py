@@ -37,7 +37,7 @@ celery.conf.task_queues = (
 )
 
 @celery.task(bind=True, queue='initialize')
-def initialize_question(self, question_id, user_email=None):
+def initialize_question(self, question_hash, question_id=None, user_email=None):
     '''
     Initialize a new question:
     Answer.
@@ -47,6 +47,8 @@ def initialize_question(self, question_id, user_email=None):
     '''
 
     logger.info("Initializing your question...")
+
+    question_id = question_id if question_id else list_questions_by_hash(question_hash)[0].id
     question = get_question_by_id(question_id)
 
     self.update_state(state='ANSWERING, PRE-REFRESH')
@@ -93,7 +95,7 @@ def initialize_question(self, question_id, user_email=None):
     logger.info("Done initializing.")
 
 @celery.task(bind=True, queue='answer')
-def answer_question(self, question_hash, user_email=None):
+def answer_question(self, question_hash, question_id=None, user_email=None):
     '''
     Generate answerset for a question
     '''
@@ -101,8 +103,10 @@ def answer_question(self, question_hash, user_email=None):
     self.update_state(state='ANSWERING')
     logger.info("Answering your question...")
 
+    question_id = question_id if question_id else list_questions_by_hash(question_hash)[0].id
+    question = get_question_by_id(question_id)
+
     try:
-        question = list_questions_by_hash(question_hash)[0]
         answerset = question.answer()
         if answerset.answers:
             self.update_state(state='ANSWERS FOUND')
@@ -131,7 +135,7 @@ def answer_question(self, question_hash, user_email=None):
     return answerset.id
 
 @celery.task(bind=True, queue='update')
-def update_kg(self, question_hash, user_email=None):
+def update_kg(self, question_hash, question_id=None, user_email=None):
     '''
     Update the shared knowledge graph with respect to a question
     '''
@@ -139,7 +143,8 @@ def update_kg(self, question_hash, user_email=None):
     self.update_state(state='UPDATING KG')
     logger.info("Updating the knowledge graph...")
 
-    question = list_questions_by_hash(question_hash)[0]
+    question_id = question_id if question_id else list_questions_by_hash(question_hash)[0].id
+    question = get_question_by_id(question_id)
 
     try:
         symbol_lookup = {node_types.type_codes[a]:a for a in node_types.type_codes} # invert this dict
