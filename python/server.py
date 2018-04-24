@@ -184,7 +184,7 @@ def new_from_post():
     # Returning the question id will tell the UI to re-route to the corresponding question page
     # To speed things along we start a answerset generation task for this question
     # This isn't the standard answerset generation task because we might also trigger a KG Update
-    task = initialize_question.apply_async(args=[qid], kwargs={'user_email':current_user.email})
+    task = initialize_question.apply_async(args=[q.hash], kwargs={'question_id':qid, 'user_email':current_user.email})
 
     return qid, 201
 
@@ -274,11 +274,11 @@ def question_action(question_id):
     command = request.json['command']
     if 'answer' in command:
         # Answer a question
-        task = answer_question.apply_async(args=[question_hash], kwargs={'user_email':username})
+        task = answer_question.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':username})
         return jsonify({'task_id':task.id}), 202
     elif 'update' in command:
         # Update the knowledge graph for a question
-        task = update_kg.apply_async(args=[question_hash], kwargs={'user_email':username})
+        task = update_kg.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':username})
         return jsonify({'task_id':task.id}), 202
 
 @app.route('/q/<question_id>/data', methods=['GET'])
