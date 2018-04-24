@@ -15,8 +15,8 @@ class AppConfig {
       logout: this.url('logout'),
       admin: this.url('admin'),
       account: this.url('account'),
-      questionList: this.url('questions'),
-      questionNew: this.url('q/new'),
+      questions: this.url('questions'),
+      questionDesign: this.url('q/new'),
       question: questionId => this.url(`q/${questionId}`),
       answerset: (questionId, answersetId) => this.url(`a/${questionId}_${answersetId}`),
       answer: (questionId, answersetId, answerId) => this.url(`a/${questionId}_${answersetId}/${answerId}`),
@@ -83,10 +83,10 @@ class AppConfig {
   landingData(fun) { this.getRequest(`${this.urls.landing}/data`, fun); }
   accountData(fun) { this.getRequest(`${this.urls.account}/data`, fun); }
   adminData(fun) { this.getRequest(`${this.urls.admin}/data`, fun); }
-  questionListData(fun) { this.getRequest(`${this.urls.questionList}/data`, fun); }
+  questionListData(fun) { this.getRequest(`${this.urls.questions}/data`, fun); }
   questionData(id, fun) { this.getRequest(`${this.urls.question(id)}/data`, fun); }
   questionSubgraph(id, fun) { this.getRequest(`${this.urls.question(id)}/subgraph`, fun); }
-  questionNewData(qid, fun) { this.postRequest(`${this.urls.questionNew}/data`, { initialization_id: qid }, fun, (err) => { throw err; }); }
+  questionNewData(qid, fun) { this.postRequest(`${this.urls.questionDesign}/data`, { initialization_id: qid }, fun, (err) => { throw err; }); }
   answersetData(qid, id, fun) { this.getRequest(`${this.urls.answerset(qid, id)}/data`, fun); }
   answerData(qid, setId, id, fun) { this.getRequest(`${this.urls.answer(qid, setId, id)}/data`, fun); }
 
@@ -102,7 +102,7 @@ class AppConfig {
 
     // To make a new question we post to the questionNew with specifications for a question
     this.postRequest(
-      this.urls.questionNew,
+      this.urls.questions,
       data,
       successFun,
       failureFun,
@@ -159,7 +159,7 @@ class AppConfig {
     }
 
     formPost(
-      this.urls.questionNew,
+      this.urls.questionDesign,
       { question_id: qid },
     );
   }

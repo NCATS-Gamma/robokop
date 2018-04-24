@@ -51,7 +51,7 @@ class QuestionList extends React.Component {
         />
         <QuestionListPres
           loginUrl={this.appConfig.urls.login}
-          questionNewUrl={this.appConfig.urls.questionNew}
+          questionNewUrl={this.appConfig.urls.questionDesign}
           questionUrlFunc={q => this.appConfig.urls.question(q.id)}
           userQuestions={this.state.userQuestions}
           questions={this.state.questions}

@@ -217,7 +217,7 @@ class Question extends React.Component {
         // Actually try to delete the question here.
         this.appConfig.questionDelete(
           q.id,
-          () => this.appConfig.redirect(this.appConfig.urls.questionList),
+          () => this.appConfig.redirect(this.appConfig.urls.questions),
           () => {
             this.dialogMessage({
               title: 'Question Not Deleted',

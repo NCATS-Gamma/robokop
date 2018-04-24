@@ -52,11 +52,11 @@ class Header extends React.Component {
         </Navbar.Header>
         <Navbar.Collapse>
           <Nav>
-            <NavItem eventKey={1} href={this.appConfig.urls.questionList}>
+            <NavItem eventKey={1} href={this.appConfig.urls.questions}>
               Questions
             </NavItem>
             {showNewQuestion &&
-            <NavItem eventKey={2} href={this.appConfig.urls.questionNew}>
+            <NavItem eventKey={2} href={this.appConfig.urls.questionDesign}>
               New Question
             </NavItem>
             }

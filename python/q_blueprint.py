@@ -37,31 +37,9 @@ def new():
 @auth_required('session', 'basic')
 def new_from_post():
     """Trigger creation of a new question, or prepopulate question new page"""
-    # This is a little bit of a hack to double use this POST entry
-    # In the future we could update the post request spec to make this more explicit
-
     # If you make a post request with a question_id we will assume you want a new question editor
     # we will prepopulate the question new page with data from that question (if it is a valid question id)
-    if 'question_id' in request.form:
-        return render_template('questionNew.html', question_id=request.form['question_id'])
-    
-    # Otherwise, we assume you are submitting a new question with all other data
-    # in which case you dont know the question id so you didn't give me one (right?)
-    user_id = current_user.id
-    name = request.json['name']
-    natural_question = request.json['natural']
-    notes = request.json['notes']
-    nodes, edges = Question.dictionary_to_graph(request.json['query'])
-    qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
-    q = Question(id=qid, user_id=user_id, name=name, natural_question=natural_question, notes=notes, nodes=nodes, edges=edges)
-
-    # At this point the question is finished
-    # Returning the question id will tell the UI to re-route to the corresponding question page
-    # To speed things along we start a answerset generation task for this question
-    # This isn't the standard answerset generation task because we might also trigger a KG Update
-    task = initialize_question.apply_async(args=[q.hash], kwargs={'question_id':qid, 'user_email':current_user.email})
-
-    return qid, 201
+    return render_template('questionNew.html', question_id=request.form['question_id'])
 
 @q.route('/new/data', methods=['GET', 'POST'])
 def new_data():

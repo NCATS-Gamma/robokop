@@ -2,19 +2,42 @@ from datetime import datetime
 import re
 import os
 import requests
-from flask import Blueprint, jsonify, render_template
+import random
+import string
+from flask import Blueprint, jsonify, render_template, request
+from flask_security import auth_required, current_user
 from util import getAuthData, get_tasks
 
-from question import list_questions, list_questions_by_username
+from question import list_questions, list_questions_by_username, Question
+from tasks import initialize_question
 
 questions = Blueprint('question_list', __name__,
                         template_folder='templates')
 
 # QuestionList
-@questions.route('/')
+@questions.route('/', methods=['GET'])
 def questions_page():
     """Initial contact. Give the initial page."""
     return render_template('questions.html')
+
+# New Question Submission
+@questions.route('/', methods=['POST'])
+@auth_required('session', 'basic')
+def new_from_post():
+    """Trigger creation of a new question"""
+    user_id = current_user.id
+    name = request.json['name']
+    natural_question = request.json['natural']
+    notes = request.json['notes']
+    nodes, edges = Question.dictionary_to_graph(request.json['query'])
+    qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
+    q = Question(id=qid, user_id=user_id, name=name, natural_question=natural_question, notes=notes, nodes=nodes, edges=edges)
+
+    # To speed things along we start a answerset generation task for this question
+    # This isn't the standard answerset generation task because we might also trigger a KG Update
+    task = initialize_question.apply_async(args=[q.hash], kwargs={'question_id':qid, 'user_email':current_user.email})
+
+    return qid, 201
 
 @questions.route('/data', methods=['GET'])
 def questions_data():
