@@ -239,9 +239,9 @@ def questions_data():
 
     def augment_info(question):
         answerset_timestamps = [a.timestamp for a in question.answersets]
-        latest_idx = answerset_timestamps.index(max(answerset_timestamps))
-        latest_answerset_id = question.answersets[latest_idx].id
-        latest_answerset_timestamp = question.answersets[latest_idx].timestamp
+        latest_idx = answerset_timestamps.index(max(answerset_timestamps)) if answerset_timestamps else None
+        latest_answerset_id = question.answersets[latest_idx].id if latest_idx else None
+        latest_answerset_timestamp = question.answersets[latest_idx].timestamp if latest_idx else None
         q = question.toJSON()
         q.pop('user_id')
         q.pop('nodes')

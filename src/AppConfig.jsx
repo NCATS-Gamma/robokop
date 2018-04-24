@@ -27,6 +27,7 @@ class AppConfig {
       questionUpdate: this.url('q/edit'),
       questionDelete: this.url('q/delete'),
       questionTasks: questionId => this.url(`q/${questionId}/tasks`),
+      taskStatus: taskId => this.url(`status/${taskId}`),
     };
 
     this.url = this.url.bind(this);
@@ -50,6 +51,7 @@ class AppConfig {
     this.questionFork = this.questionFork.bind(this);
     this.questionDelete = this.questionDelete.bind(this);
     this.questionTasks = this.questionTasks.bind(this);
+    this.taskStatus = this.taskStatus.bind(this);
 
     this.monarchSearch = this.monarchSearch.bind(this);
 
@@ -61,7 +63,7 @@ class AppConfig {
     this.enableQuestionDelete = ((config.ui !== null) && (config.ui.enableQuestionDelete !== null)) ? config.ui.enableQuestionDelete : true;
     this.enableQuestionFork = ((config.ui !== null) && (config.ui.enableQuestionFork !== null)) ? config.ui.enableQuestionFork : true;
     this.enableAnswerFeedback = ((config.ui !== null) && (config.ui.enableAnswerFeedback !== null)) ? config.ui.enableAnswerFeedback : true;
-    
+
     this.colors = {
       bluegray: '#f5f7fa',
       blue: '#b8c6db',
@@ -200,6 +202,13 @@ class AppConfig {
       data,
       successFunction,
       failureFunction,
+    );
+  }
+
+  taskStatus(taskId, successFun) {
+    this.getRequest(
+      this.api.taskStatus(taskId),
+      successFun,
     );
   }
 

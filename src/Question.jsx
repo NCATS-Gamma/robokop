@@ -22,8 +22,10 @@ class Question extends React.Component {
       answersets: [],
       subgraph: null,
       runningTasks: [],
+      prevRunningTasks: [],
       refreshBusy: false,
       answerBusy: false,
+      initializerBusy: false,
     };
 
     this.taskPollingWaitTime = 5000; // in ms
@@ -64,81 +66,128 @@ class Question extends React.Component {
     this.appConfig.questionTasks(
       this.props.id,
       (data) => {
-        this.setState({ runningTasks: data }, this.updateTaskStatus);
+        const prevRunningTasks = this.state.runningTasks;
+        this.setState({ runningTasks: data, prevRunningTasks }, this.updateTaskStatus);
       },
       err => console.log('Issues fetching active tasks', err),
     );
   }
   updateTaskStatus() {
     const tasks = this.state.runningTasks;
+    const prevTasks = this.state.prevRunningTasks;
 
     const refreshBusy = tasks.updaters.length > 0;
     const answerBusy = tasks.answerers.length > 0;
+    const initializerBusy = tasks.initializers.length > 0;
 
     const refreshFinished = !refreshBusy && this.state.refreshBusy;
     const answerFinished = !answerBusy && this.state.answerBusy;
+    const initializerFinished = !initializerBusy && this.state.initializerBusy;
 
     this.setState({
       refreshBusy,
       answerBusy,
+      initializerBusy,
     });
 
     // If someing is going on, we will ask again soon
-    if (refreshBusy || answerBusy) {
+    if (refreshBusy || answerBusy || initializerBusy) {
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
-    if (refreshFinished) {
-      this.notifyRefresh(true);
-    }
-    if (answerFinished) {
+    if (initializerFinished) {
       this.appConfig.questionData(
         this.props.id,
         data => this.setState({
           answersets: data.answerset_list,
         }),
       );
-      this.notifyAnswers(true);
+      this.notifyInitializer(prevTasks.initializers[0].uuid);
+      return;
+    }
+    if (refreshFinished && !initializerBusy) {
+      this.notifyRefresh(prevTasks.updaters[0].uuid);
+    }
+    if (answerFinished && !initializerBusy) {
+      this.appConfig.questionData(
+        this.props.id,
+        data => this.setState({
+          answersets: data.answerset_list,
+        }),
+      );
+      this.notifyAnswers(prevTasks.answerers[0].uuid);
     }
   }
-  notifyRefresh(success) {
-    if (success) {
-      this.notificationSystem.addNotification({
-        title: 'Knowledge Graph Update Complete',
-        message: 'We finished updating the knolwedge graph for this question. Go check it out!',
-        level: 'success',
-        dismissible: 'click',
-        position: 'tr',
-      });
-    } else {
-      this.notificationSystem.addNotification({
-        title: 'Error Updating Knowledge Graph',
-        message: 'We encountered an error while trying to update the knowledge graph for this quesiton. If this error persists please contact a system administrator.',
-        level: 'error',
-        dismissible: 'click',
-        position: 'tr',
-        autoDismiss: 0,
-      });
-    }
+  notifyRefresh(taskId) {
+    this.appConfig.taskStatus(taskId, (data) => {
+      const success = data !== 'FAILURE';
+      console.log(taskId, data);
+      if (success) {
+        this.notificationSystem.addNotification({
+          title: 'Knowledge Graph Update Complete',
+          message: 'We finished updating the knolwedge graph for this question. Go check it out!',
+          level: 'success',
+          dismissible: 'click',
+          position: 'tr',
+        });
+      } else {
+        this.notificationSystem.addNotification({
+          title: 'Error Updating Knowledge Graph',
+          message: 'We encountered an error while trying to update the knowledge graph for this quesiton. If this error persists please contact a system administrator.',
+          level: 'error',
+          dismissible: 'click',
+          position: 'tr',
+          autoDismiss: 0,
+        });
+      }
+    });
   }
-  notifyAnswers(success) {
-    if (success) {
-      this.notificationSystem.addNotification({
-        title: 'New Answers are Available',
-        message: 'We finished finding new answers for this quesiton. Go check them out!',
-        level: 'success',
-        dismissible: 'click',
-        position: 'tr',
-      });
-    } else {
-      this.notificationSystem.addNotification({
-        title: 'Error Finding New Answers',
-        message: 'We encountered an error while trying to find new answers for this quesiton. If this error persists please contact a system administrator.',
-        level: 'error',
-        dismissible: 'click',
-        position: 'tr',
-        autoDismiss: 0,
-      });
-    }
+  notifyAnswers(taskId) {
+    this.appConfig.taskStatus(taskId, (data) => {
+      const success = data !== 'FAILURE';
+      console.log(taskId, data);
+      if (success) {
+        this.notificationSystem.addNotification({
+          title: 'New Answers are Available',
+          message: 'We finished finding new answers for this quesiton. Go check them out!',
+          level: 'success',
+          dismissible: 'click',
+          position: 'tr',
+        });
+      } else {
+        this.notificationSystem.addNotification({
+          title: 'Error Finding New Answers',
+          message: 'We encountered an error while trying to find new answers for this quesiton. If this error persists please contact a system administrator.',
+          level: 'error',
+          dismissible: 'click',
+          position: 'tr',
+          autoDismiss: 0,
+        });
+      }
+    });
+  }
+  notifyInitializer(taskId) {
+    this.appConfig.taskStatus(taskId, (data) => {
+      const success = data !== 'FAILURE';
+      console.log(taskId, data);
+      if (success) {
+        this.notificationSystem.addNotification({
+          title: 'Initial Answers are Available',
+          message: 'We finished finding initial answers for this quesiton. Go check them out!',
+          level: 'success',
+          dismissible: 'click',
+          position: 'tr',
+        });
+      } else {
+        this.notificationSystem.addNotification({
+          title: 'Error Finding Initial Answers',
+          message: 'We encountered an error while trying to find answers for this quesiton. Robokop may not be capable of answering the question as phrased.',
+          level: 'error',
+          dismissible: 'click',
+          position: 'tr',
+          autoDismiss: 0,
+        });
+      }
+    });
   }
 
   callbackNewAnswerset() {
