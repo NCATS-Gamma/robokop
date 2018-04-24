@@ -339,12 +339,22 @@ def answerset(question_id, answerset_id):
 def answerset_data(question_id, answerset_id):
     """Data for an answerset """
 
+    question = get_question_by_id(question_id)
+    answersets = list_answersets_by_question_hash(question.hash)
+    answerset_ids = [aset.id for aset in answersets]
+    answerset_id = int(answerset_id)
+
+    if not answerset_id in answerset_ids:
+        return "Answerset not available for this question", 400 # bad request - question does not have this answerset
+
     user = getAuthData()
     answerset = get_answerset_by_id(answerset_id)
     answers = list_answers_by_answerset(answerset)
     questions = list_questions_by_hash(answerset.question_hash)
-    question = questions[0]
-    other_questions = questions[1:] # TODO actually find the question id of interest
+    idx = questions.index(question)
+    questions.pop(idx)
+    idx = answerset_ids.index(answerset_id)
+    answersets.pop(idx)
     answerset_graph = None
 
     now_str = datetime.now().__str__()
@@ -353,8 +363,8 @@ def answerset_data(question_id, answerset_id):
         'question': question.toJSON(),\
         'answerset': answerset.toJSON(),\
         'answers': [a.toJSON() for a in answers],\
-        'other_answersets': [], #TODO find the other answersets
-        'other_questions': [q.toJSON() for q in other_questions],\
+        'other_answersets': [aset.toJSON() for aset in answersets],
+        'other_questions': [q.toJSON() for q in questions],\
         'answerset_graph': answerset_graph})
 
 # Answer
