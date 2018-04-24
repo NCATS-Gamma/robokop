@@ -25,7 +25,6 @@ class AppConfig {
     // Other URLs that are primarily used for API calls
     this.api = {
       questionUpdate: this.url('q/edit'),
-      questionDelete: this.url('q/delete'),
       questionTasks: questionId => this.url(`q/${questionId}/tasks`),
     };
 
@@ -48,7 +47,6 @@ class AppConfig {
     this.questionUpdateMeta = this.questionUpdateMeta.bind(this);
     this.questionRefresh = this.questionRefresh.bind(this);
     this.questionFork = this.questionFork.bind(this);
-    this.questionDelete = this.questionDelete.bind(this);
     this.questionTasks = this.questionTasks.bind(this);
 
     this.monarchSearch = this.monarchSearch.bind(this);
@@ -192,12 +190,10 @@ class AppConfig {
   }
   questionDelete(qid, successFunction, failureFunction) {
     // Deleting a question can only be done by the owner
-    const data = { question_id: qid };
-
+    
     // Make the post request
-    this.postRequest(
-      this.api.questionDelete,
-      data,
+    this.deleteRequest(
+      this.urls.question(qid),
       successFunction,
       failureFunction,
     );
@@ -247,9 +243,16 @@ class AppConfig {
     });
   }
 
-
   postRequest(addr, data, successFunction = () => {}, failureFunction = () => {}) {
     this.comms.post(addr, data).then((result) => {
+      successFunction(result.data);
+    }).catch((err) => {
+      failureFunction(err);
+    });
+  }
+
+  deleteRequest(addr, data, successFunction = () => {}, failureFunction = () => {}) {
+    this.comms.delete(addr).then((result) => {
       successFunction(result.data);
     }).catch((err) => {
       failureFunction(err);

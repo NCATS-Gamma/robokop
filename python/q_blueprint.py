@@ -86,7 +86,7 @@ def new_data():
 
 # Question
 @q.route('/<question_id>', methods=['GET'])
-def question(question_id):
+def question_page(question_id):
     """Deliver user info page"""
     return render_template('question.html', question_id=question_id)
 
@@ -105,6 +105,18 @@ def question_action(question_id):
         # Update the knowledge graph for a question
         task = update_kg.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':username})
         return jsonify({'task_id':task.id}), 202
+
+@q.route('/<question_id>', methods=['DELETE'])
+@auth_required('session', 'basic')
+def question_delete(question_id):
+    """Delete question (if owned by current_user)"""
+    logger.info('Deleting question %s', question_id)
+    q = get_question_by_id(question_id)
+    if not (current_user == q.user or current_user.has_role('admin')):
+        return "UNAUTHORIZED", 401 # not authorized
+    db.session.delete(q)
+    db.session.commit()
+    return "SUCCESS", 200
 
 @q.route('/<question_id>/data', methods=['GET'])
 def question_data(question_id):
@@ -183,22 +195,5 @@ def question_edit():
     q.name = request.json['name']
     q.notes = request.json['notes']
     q.natural_question = request.json['natural_question']
-    db.session.commit()
-    return "SUCCESS", 200
-
-@q.route('/fork', methods=['POST'])
-@auth_required('session', 'basic')
-def question_fork():
-    """Fork a question to form a new question owned by current_user """
-
-@q.route('/delete', methods=['POST'])
-@auth_required('session', 'basic')
-def question_delete():
-    """Delete question (if owned by current_user)"""
-    logger.info('Deleting question %s', request.json['question_id'])
-    q = get_question_by_id(request.json['question_id'])
-    if not (current_user == q.user or current_user.has_role('admin')):
-        return "UNAUTHORIZED", 401 # not authorized
-    db.session.delete(q)
     db.session.commit()
     return "SUCCESS", 200
