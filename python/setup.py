@@ -23,7 +23,8 @@ mail = Mail(app)
 db = SQLAlchemy(app)
 
 api_blueprint = Blueprint('api', __name__, url_prefix='/api')
-api = Api(api_blueprint) # doc='/swagger/'
+api = Api(api_blueprint, version='1.0', title='ROBOKOP Manager API',
+    description='An API for management of biomedical questions and answers.') # doc='/swagger/'
 app.register_blueprint(api_blueprint)
 
 rosetta = setup(os.path.join(greent_path, 'greent', 'greent.conf'))

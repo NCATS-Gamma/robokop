@@ -17,7 +17,10 @@ from setup import app, api
 app.url_map.converters['qa'] = QAConverter
 
 @api.route('/a/<qa:qa_id>')
+@api.param('qa_id', 'An answerset id, prefixed by the question hash, i.e. "<question_id>_<answerset_id>"')
 class AnswersetAPI(Resource):
+    @api.response(200, 'Success')
+    @api.response(404, 'Invalid answerset key')
     def get(self, qa_id):
         """Get answerset """
         try:
@@ -39,18 +42,20 @@ class AnswersetAPI(Resource):
         answersets.pop(idx)
         answerset_graph = None
 
-        now_str = datetime.now().__str__()
-        return jsonify({'timestamp': now_str,\
-            'user': user,\
-            'question': question.toJSON(),\
-            'answerset': answerset.toJSON(),\
-            'answers': [a.toJSON() for a in answers],\
-            'other_answersets': [aset.toJSON() for aset in answersets],
-            'other_questions': [q.toJSON() for q in questions],\
-            'answerset_graph': answerset_graph})
+        return {'user': user,\
+                'question': question.toJSON(),\
+                'answerset': answerset.toJSON(),\
+                'answers': [a.toJSON() for a in answers],\
+                'other_answersets': [aset.toJSON() for aset in answersets],
+                'other_questions': [q.toJSON() for q in questions],\
+                'answerset_graph': answerset_graph}, 200
 
 @api.route('/a/<qa:qa_id>/<int:answer_id>')
+@api.param('qa_id', 'An answerset id, prefixed by the question hash, i.e. "<question_id>_<answerset_id>"')
+@api.param('answer_id', 'An answer id')
 class AnswerAPI(Resource):
+    @api.response(200, 'Success')
+    @api.response(404, 'Invalid answerset or answer key')
     def get(self, qa_id, answer_id):
         """Get answer"""
 
@@ -72,8 +77,8 @@ class AnswerAPI(Resource):
 
         user = getAuthData()
 
-        return jsonify({'user': user,\
-            'answerset': answerset.toJSON(),\
-            'answer': answer.toJSON(),\
-            'questions': [q.toJSON() for q in questions],\
-            'feedback': feedback})
+        return {'user': user,\
+                'answerset': answerset.toJSON(),\
+                'answer': answer.toJSON(),\
+                'questions': [q.toJSON() for q in questions],\
+                'feedback': feedback}, 200

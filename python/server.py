@@ -4,11 +4,9 @@
 
 import os
 import re
-from datetime import datetime
 
-from flask import jsonify, render_template
-from flask_security import Security, SQLAlchemySessionUserDatastore, auth_required
-from flask_login import login_required
+from flask import render_template
+from flask_security import Security, SQLAlchemySessionUserDatastore
 
 from setup import app, db
 from logging_config import logger
