@@ -117,16 +117,18 @@ class QuestionLinearGraph extends React.Component {
     // console.log('Graphs is:', graph);
     // border: '1px solid #d1d1d1', boxShadow: '0px 0px 5px #c3c3c3'
     return (
-      <div id="ProtocopQueryViewer">
+      <div>
         <div className="row">
           <div className="col-md-10 col-md-offset-1" style={{ fontFamily: 'Monospace' }}>
-            <Graph
-              graph={graph}
-              options={options}
-              events={{}}
-              getNetwork={(network) => { this.network = network; }} // Store network reference in the component
-              style={{ width: '100%' }}
-            />
+            <div style={{ boxShadow: '0px 0px 2px 0px #9e9e9e' }}>
+              <Graph
+                graph={graph}
+                options={options}
+                events={{}}
+                getNetwork={(network) => { this.network = network; }} // Store network reference in the component
+                style={{ width: '100%' }}
+              />
+            </div>
           </div>
         </div>
       </div>

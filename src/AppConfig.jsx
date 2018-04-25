@@ -13,8 +13,6 @@ class AppConfig {
       landing: this.url('landing'),
       login: this.url('login'),
       logout: this.url('logout'),
-      admin: this.url('admin'),
-      account: this.url('account'),
       questions: this.url('questions'),
       questionDesign: this.url('q/new'),
       question: questionId => this.url(`q/${questionId}`),
@@ -34,15 +32,12 @@ class AppConfig {
       questionAnswer: questionId => this.url(`api/q/${questionId}/answer`),
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg`),
       taskStatus: taskId => this.url(`api/t/${taskId}`),
-      tasks: taskId => this.url(`api/tasks`),
+      tasks: this.url('api/tasks'),
     };
 
     this.url = this.url.bind(this);
 
     // Methods for fetching data
-    this.landingData = this.landingData.bind(this);
-    this.accountData = this.accountData.bind(this);
-    this.adminData = this.adminData.bind(this);
     this.user = this.user.bind(this);
     this.concepts = this.concepts.bind(this);
     this.questionListData = this.questionListData.bind(this);
@@ -91,9 +86,6 @@ class AppConfig {
     return `${this.config.protocol}://${this.config.host}:${this.config.port}/${ext}`;
   }
 
-  landingData(fun) { this.getRequest(`${this.urls.landing}/data`, fun); }
-  accountData(fun) { this.getRequest(`${this.urls.account}/data`, fun); }
-  adminData(fun) { this.getRequest(`${this.urls.admin}/data`, fun); }
   concepts(fun) { this.getRequest(`${this.apis.concepts}`, fun); }
   user(fun) { this.getRequest(`${this.apis.user}`, fun); }
   questionListData(fun) { this.getRequest(`${this.apis.questions}`, fun); }
@@ -183,7 +175,6 @@ class AppConfig {
       failureFun,
     );
   }
-
   questionUpdateMeta(qid, data, successFun, failureFun) {
     // Data must contain all necessary meta data fields
     // Can only be done by the owner

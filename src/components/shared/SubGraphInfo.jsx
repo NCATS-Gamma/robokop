@@ -257,7 +257,7 @@ class SubGraphInfo extends React.Component {
     }
 
     return (
-      <div id="Protocop_subgraphexplorer">
+      <div style={{ paddingTop: 0, marginTop: 0, marginBottom: 0 }}>
         <div>
           {topContent}
         </div>
