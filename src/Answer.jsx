@@ -56,7 +56,7 @@ class Answer extends React.Component {
           </Col>
         </Row>
         <Row>
-          <Col md={4} mdOffSet={4}>
+          <Col md={4}>
             <Button bsSize="large" href={this.appConfig.urls.questions}>
               Browse Questions
             </Button>

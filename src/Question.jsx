@@ -64,7 +64,7 @@ class Question extends React.Component {
       }),
       () => this.setState({
         isValid: false,
-        ready: true,
+        dataReady: true,
       }),
     );
     this.appConfig.user(data => this.setState({
@@ -401,12 +401,12 @@ class Question extends React.Component {
               Unknown Question
             </h3>
             <p>
-              {"We're sorry but we can't find this question. It may have been deleted."}
+              {"We're sorry but we can't find this question."}
             </p>
           </Col>
         </Row>
         <Row>
-          <Col md={4} mdOffSet={4}>
+          <Col md={4}>
             <Button bsSize="large" href={this.appConfig.urls.questions}>
               Browse Questions
             </Button>
