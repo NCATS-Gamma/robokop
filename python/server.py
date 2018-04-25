@@ -16,8 +16,11 @@ from setup import app, db
 from logging_config import logger
 from user import User, Role
 from questions_blueprint import questions
+from questions_api_blueprint import questions_api
+from q_api_blueprint import q_api
 from q_blueprint import q
 from a_blueprint import a
+from a_api_blueprint import a_api
 from admin_blueprint import admin
 from util import get_tasks, getAuthData
 
@@ -31,8 +34,11 @@ def init():
     pass
 
 app.register_blueprint(questions, url_prefix='/questions')
+app.register_blueprint(questions_api, url_prefix='/api/questions')
 app.register_blueprint(q, url_prefix='/q')
+app.register_blueprint(q_api, url_prefix='/api/q')
 app.register_blueprint(a, url_prefix='/a')
+app.register_blueprint(a_api, url_prefix='/api/a')
 app.register_blueprint(admin, url_prefix='/admin')
 
 # Flask Server code below

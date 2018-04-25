@@ -18,16 +18,19 @@ class AppConfig {
       questions: this.url('questions'),
       questionDesign: this.url('q/new'),
       question: questionId => this.url(`q/${questionId}`),
-      questionAnswer: questionId => this.url(`q/${questionId}/answer`),
-      questionRefreshKG: questionId => this.url(`q/${questionId}/refresh_kg`),
       answerset: (questionId, answersetId) => this.url(`a/${questionId}_${answersetId}`),
       answer: (questionId, answersetId, answerId) => this.url(`a/${questionId}_${answersetId}/${answerId}`),
     };
 
     // Other URLs that are primarily used for API calls
-    this.api = {
-      questionUpdate: questionId => this.url(`q/${questionId}`),
-      questionTasks: questionId => this.url(`q/${questionId}/tasks`),
+    this.apis = {
+      questions: this.url('api/questions/'),
+      question: questionId => this.url(`api/q/${questionId}`),
+      answerset: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}`),
+      answer: (questionId, answersetId, answerId) => this.url(`api/a/${questionId}_${answersetId}/${answerId}`),
+      questionTasks: questionId => this.url(`api/q/${questionId}/tasks`),
+      questionAnswer: questionId => this.url(`api/q/${questionId}/answer`),
+      questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg`),
     };
 
     this.url = this.url.bind(this);
@@ -85,12 +88,12 @@ class AppConfig {
   landingData(fun) { this.getRequest(`${this.urls.landing}/data`, fun); }
   accountData(fun) { this.getRequest(`${this.urls.account}/data`, fun); }
   adminData(fun) { this.getRequest(`${this.urls.admin}/data`, fun); }
-  questionListData(fun) { this.getRequest(`${this.urls.questions}/data`, fun); }
-  questionData(id, fun) { this.getRequest(`${this.urls.question(id)}/data`, fun); }
-  questionSubgraph(id, fun) { this.getRequest(`${this.urls.question(id)}/subgraph`, fun); }
+  questionListData(fun) { this.getRequest(`${this.apis.questions}`, fun); }
+  questionData(id, fun) { this.getRequest(`${this.apis.question(id)}`, fun); }
+  questionSubgraph(id, fun) { this.getRequest(`${this.apis.question(id)}/subgraph`, fun); }
   questionNewData(qid, fun) { this.postRequest(`${this.urls.questionDesign}/data`, { initialization_id: qid }, fun, (err) => { throw err; }); }
-  answersetData(qid, id, fun) { this.getRequest(`${this.urls.answerset(qid, id)}/data`, fun); }
-  answerData(qid, setId, id, fun) { this.getRequest(`${this.urls.answer(qid, setId, id)}/data`, fun); }
+  answersetData(qid, id, fun) { this.getRequest(`${this.apis.answerset(qid, id)}`, fun); }
+  answerData(qid, setId, id, fun) { this.getRequest(`${this.apis.answer(qid, setId, id)}`, fun); }
 
   questionCreate(data, successFun, failureFun) {
     // Data must contain a complete specification for a new question
@@ -104,7 +107,7 @@ class AppConfig {
 
     // To make a new question we post to the questionNew with specifications for a question
     this.postRequest(
-      this.urls.questions,
+      this.apis.questions,
       data,
       successFun,
       failureFun,
@@ -114,7 +117,7 @@ class AppConfig {
     // New answersets are triggered by a post request to the question url with
     // {command: answer}
     this.postRequest(
-      this.urls.questionAnswer(qid),
+      this.apis.questionAnswer(qid),
       null,
       successFun,
       failureFun,
@@ -124,7 +127,7 @@ class AppConfig {
     // A knowledge graph reset is triggered by a post request to the question url with
     // {command: update}
     this.postRequest(
-      this.urls.questionRefreshKG(qid),
+      this.apis.questionRefreshKG(qid),
       null,
       successFun,
       failureFun,
@@ -168,7 +171,7 @@ class AppConfig {
   questionTasks(qid, successFun, failureFun) {
     // Fetch active tasks for a specific question
     this.getRequest(
-      this.api.questionTasks(qid),
+      this.apis.questionTasks(qid),
       successFun,
       failureFun,
     );
@@ -184,7 +187,7 @@ class AppConfig {
     //   notes: '',
     // };
     this.postRequest(
-      this.api.questionUpdate(qid),
+      this.apis.question(qid),
       data,
       successFun,
       failureFun,
@@ -195,7 +198,7 @@ class AppConfig {
     
     // Make the post request
     this.deleteRequest(
-      this.urls.question(qid),
+      this.apis.question(qid),
       successFunction,
       failureFunction,
     );
