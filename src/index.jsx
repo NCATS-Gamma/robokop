@@ -26,7 +26,7 @@ require('bootstrap');
 const config = require('../config.json');
 
 const robokop = {
-  config: config,
+  config,
   landing: () => {
     ReactDOM.render(
       <Landing
