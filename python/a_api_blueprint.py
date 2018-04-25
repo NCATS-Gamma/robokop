@@ -7,20 +7,22 @@ from flask import Blueprint, jsonify
 
 from question import get_question_by_id, list_questions_by_hash
 from answer import list_answersets_by_question_hash, get_answer_by_id, get_answerset_by_id, list_answers_by_answerset
-from util import getAuthData
+from util import getAuthData, QAConverter
+
 from feedback import list_feedback_by_answer
 from logging_config import logger
+from setup import app
 
 a_api = Blueprint('answer_api', __name__,
                   template_folder='templates')
+app.url_map.converters['qa'] = QAConverter
 
-@a_api.route('/<qa_id>', methods=['GET'])
+@a_api.route('/<qa:qa_id>', methods=['GET'])
 def answerset_data(qa_id):
     """Data for an answerset """
     try:
-        question_id, answerset_id = qa_id.split('_')
+        question_id, answerset_id = qa_id
         question = get_question_by_id(question_id)
-        answerset_id = int(answerset_id)
         answerset = get_answerset_by_id(answerset_id)
         answersets = list_answersets_by_question_hash(question.hash)
         if not answerset in answersets:
@@ -47,14 +49,13 @@ def answerset_data(qa_id):
         'other_questions': [q.toJSON() for q in questions],\
         'answerset_graph': answerset_graph})
 
-@a_api.route('/<qa_id>/<answer_id>', methods=['GET'])
+@a_api.route('/<qa:qa_id>/<int:answer_id>', methods=['GET'])
 def answer_data(qa_id, answer_id):
     """Data for an answer """
 
     try:
-        question_id, answerset_id = qa_id.split('_')
+        question_id, answerset_id = qa_id
         question = get_question_by_id(question_id)
-        answerset_id = int(answerset_id)
         answerset = get_answerset_by_id(answerset_id)
         answersets = list_answersets_by_question_hash(question.hash)
         if not answerset in answersets:
