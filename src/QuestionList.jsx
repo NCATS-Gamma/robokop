@@ -5,15 +5,6 @@ import Loading from './components/Loading';
 import Header from './components/Header';
 import QuestionListPres from './components/questionList/QuestionListPres';
 
-
-// "hash": "2af47219dcc4b2e9042afe998e1517ad", 
-// "id": "Query1_Alkaptonuria_cdw_chemotext2_chemotext", 
-// "name": "Question 1: Alkaptonuria", 
-// "natural_question": "What genetic condition provides protection against Alkaptonuria?",
-// "notes": "This is where notes go.", 
-// nonuser_questions
-// user_questions
-
 class QuestionList extends React.Component {
   constructor(props) {
     super(props);
@@ -21,7 +12,8 @@ class QuestionList extends React.Component {
     this.appConfig = new AppConfig(props.config);
 
     this.state = {
-      ready: false,
+      dataReady: false,
+      userReady: false,
       user: {},
       userQuestions: [],
       questions: [],
@@ -30,10 +22,13 @@ class QuestionList extends React.Component {
 
   componentDidMount() {
     this.appConfig.questionListData(data => this.setState({
-      user: this.appConfig.ensureUser(data.user),
       userQuestions: data.user_questions,
       questions: data.questions,
-      ready: true,
+      dataReady: true,
+    }));
+    this.appConfig.user(data => this.setState({
+      user: this.appConfig.ensureUser(data),
+      userReady: true,
     }));
   }
 
@@ -61,10 +56,11 @@ class QuestionList extends React.Component {
     );
   }
   render() {
+    const ready = this.state.dataReady && this.state.userReady;
     return (
       <div>
-        {!this.state.ready && this.renderLoading()}
-        {this.state.ready && this.renderLoaded()}
+        {!ready && this.renderLoading()}
+        {ready && this.renderLoaded()}
       </div>
     );
   }

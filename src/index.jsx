@@ -9,8 +9,6 @@ import 'ag-grid/dist/styles/ag-theme-material.css';
 import 'react-select/dist/react-select.css';
 
 import Landing from './Landing';
-import Account from './Account';
-import Admin from './Admin';
 import QuestionNew from './QuestionNew';
 import Question from './Question';
 import QuestionList from './QuestionList';
@@ -21,6 +19,7 @@ import Answer from './Answer';
 import '../assets/css/style.css';
 
 const $ = require('jquery');
+
 window.jQuery = window.$ = $; // eslint-disable-line
 
 require('bootstrap');
@@ -31,14 +30,6 @@ const robokop = {
   landing: () => {
     ReactDOM.render(
       <Landing
-        config={config}
-      />,
-      document.getElementById('reactEntry'),
-    );
-  },
-  account: () => {
-    ReactDOM.render(
-      <Account
         config={config}
       />,
       document.getElementById('reactEntry'),
@@ -87,14 +78,6 @@ const robokop = {
         setId={answersetId}
         id={answerId}
         questionId={questionId}
-      />,
-      document.getElementById('reactEntry'),
-    );
-  },
-  admin: () => {
-    ReactDOM.render(
-      <Admin
-        config={config}
       />,
       document.getElementById('reactEntry'),
     );

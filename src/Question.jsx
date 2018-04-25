@@ -17,7 +17,8 @@ class Question extends React.Component {
     this.appConfig = new AppConfig(props.config);
 
     this.state = {
-      ready: false,
+      dataReady: false,
+      userReady: false,
       user: {},
       question: {},
       answersets: [],
@@ -55,18 +56,21 @@ class Question extends React.Component {
     this.appConfig.questionData(
       this.props.id,
       data => this.setState({
-        user: data.user,
         owner: data.owner,
         question: data.question,
         answersets: data.answerset_list,
         isValid: true,
-        ready: true,
+        dataReady: true,
       }),
       () => this.setState({
         isValid: false,
         ready: true,
       }),
     );
+    this.appConfig.user(data => this.setState({
+      user: this.appConfig.ensureUser(data),
+      userReady: true,
+    }));
     this.pullTasks();
   }
   pullTasks() {
@@ -454,10 +458,11 @@ class Question extends React.Component {
     );
   }
   render() {
+    const ready = this.state.dataReady && this.state.userReady;
     return (
       <div>
-        {!this.state.ready && this.renderLoading()}
-        {this.state.ready && this.renderLoaded()}
+        {!ready && this.renderLoading()}
+        {ready && this.renderLoaded()}
       </div>
     );
   }

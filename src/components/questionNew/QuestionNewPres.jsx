@@ -21,8 +21,7 @@ class QuestionNewPres extends React.Component {
   componentDidMount() {
     this.initialize(this.props);
   }
-  
-  
+
   initialize(props) {
     // On initialization we might have an inititialization question
     // At this point we need to set the query to match the previous question

@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { Grid, Row, Col, Button } from 'react-bootstrap';
 import AppConfig from './AppConfig';
 import Header from './components/Header';
 
@@ -13,7 +14,9 @@ class Answer extends React.Component {
     this.appConfig = new AppConfig(props.config);
 
     this.state = {
-      ready: false,
+      dataReady: false,
+      userReady: false,
+      isValid: false,
       user: {},
     };
   }
@@ -24,10 +27,14 @@ class Answer extends React.Component {
       this.props.setId,
       this.props.id,
       data => this.setState({
-        user: data.user,
-        ready: true,
+        isValid: true,
+        dataReady: true,
       }),
     );
+    this.appConfig.user(data => this.setState({
+      user: this.appConfig.ensureUser(data),
+      userReady: true,
+    }));
   }
 
   renderLoading() {
@@ -35,7 +42,29 @@ class Answer extends React.Component {
       <Loading />
     );
   }
-
+  renderInvalid() {
+    return (
+      <Grid>
+        <Row>
+          <Col md={12}>
+            <h3>
+              Unknown Answer
+            </h3>
+            <p>
+              {"We're sorry but we can't find the requested answer."}
+            </p>
+          </Col>
+        </Row>
+        <Row>
+          <Col md={4} mdOffSet={4}>
+            <Button bsSize="large" href={this.appConfig.urls.questions}>
+              Browse Questions
+            </Button>
+          </Col>
+        </Row>
+      </Grid>
+    );
+  }
   renderLoaded() {
     return (
       <div>
@@ -43,23 +72,27 @@ class Answer extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        <AnswerPres
-          question
-          answerset
-          answersetId={this.props}
-          answerId={this.props.id}
-          feedback={this.state.feedback}
-          
-        />
-
+        {!this.state.isValid &&
+          this.renderInvalid()
+        }
+        {this.state.isValid &&
+          <AnswerPres
+            question
+            answerset
+            answersetId={this.props}
+            answerId={this.props.id}
+            feedback={this.state.feedback}
+          />
+        }
       </div>
     );
   }
   render() {
+    const ready = this.state.dataReady && this.state.userReady;
     return (
       <div>
-        {!this.state.ready && this.renderLoading()}
-        {this.state.ready && this.renderLoaded()}
+        {!ready && this.renderLoading()}
+        {ready && this.renderLoaded()}
       </div>
     );
   }

@@ -20,8 +20,8 @@ class Landing extends React.Component {
   }
 
   componentDidMount() {
-    this.appConfig.landingData(data => this.setState({
-      user: data.user,
+    this.appConfig.user(data => this.setState({
+      user: data,
       ready: true,
     }));
   }
