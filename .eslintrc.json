@@ -4,5 +4,10 @@
         "react",
         "jsx-a11y",
         "import"
-    ]
+    ],
+    "rules": {
+      "react/prop-types": "off",
+      "class-methods-use-this": "off",
+      "max-len": "off"
+    }
 }

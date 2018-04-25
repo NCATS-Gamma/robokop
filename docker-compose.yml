@@ -1,0 +1,47 @@
+version: "3"
+services:
+  neo4j:
+    image: patrickkwang/robokop-neo4j
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
+      - NEO4J_dbms_connectors_default__listen__address=0.0.0.0
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.\\\* \ # un-sandbox apoc procedures: http://blog.armbruster-it.de/2017/05/running-neo4j-3-2-apoc-docker/
+    ports:
+      - "${NEO4J_HTTP_PORT}:${NEO4J_HTTP_PORT}"
+      - "${NEO4J_BOLT_PORT}:${NEO4J_BOLT_PORT}"
+    volumes:
+      - ./neo4j/logs:/logs
+
+  redis:
+    image: redis
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_DB
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+
+  # robokop:
+  #   # image: patrickkwang/robokop-web
+  #   build:
+  #     context: ./build
+  #   environment:
+  #     - NEO4J_HOST=neo4j
+  #     - NEO4J_HTTP_PORT
+  #     - NEO4J_BOLT_PORT
+  #     - REDIS_HOST=redis
+  #     - REDIS_PORT
+  #     - CELERY_BROKER_URL
+  #     - CELERY_RESULT_BACKEND
+  #     - POSTGRES_HOST=postgres
+  #     - POSTGRES_PORT
+  #     - POSTGRES_USER
+  #     - POSTGRES_DB
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./shared:/home/murphy/shared

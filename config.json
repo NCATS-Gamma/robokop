@@ -1,6 +1,14 @@
 {
-  "serverHost": "0.0.0.0",
-  "clientHost": "127.0.0.1",
-  "neo4jPort": 7474,
-  "port": 80
+  "protocol": "http",
+  "host": "127.0.0.1",
+  "port": 80,
+  "ui": {
+    "enableNewAnswersets": true,
+    "enableNewQuestions": true,
+    "enableQuestionRefresh": true,
+    "enableQuestionEdit": true,
+    "enableQuestionDelete": true,
+    "enableQuestionFork": true,
+    "enableAnswerFeedback": true
+  }
 }

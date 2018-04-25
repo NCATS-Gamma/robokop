@@ -1,58 +1,50 @@
+#!/usr/bin/env python
+
 """Flask web server thread"""
+
 import os
 import json
-import sqlite3
-import subprocess
-import logging
-from flask import Flask, jsonify, request, render_template
-from Question import Question
-from KnowledgeGraph import KnowledgeGraph
+import re
+import requests
+import sys
+from datetime import datetime
 
-app = Flask(__name__, static_folder='../static')
-# Set default static folder to point to parent static folder where all
-# static assets can be stored and linked
+from flask import jsonify, render_template
+from flask_security import Security, SQLAlchemySessionUserDatastore, auth_required
+from flask_login import login_required
 
-# We will use a local sqlite DB
-# We will hold a global reference to the path
-global collection_location
-collection_location = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),'..','blackboards.db'))
+from setup import app, db
+from logging_config import logger
+from user import User, Role
+from questions_blueprint import questions
+from questions_api_blueprint import questions_api
+from q_api_blueprint import q_api
+from q_blueprint import q
+from a_blueprint import a
+from a_api_blueprint import a_api
+from admin_blueprint import admin
+from util import get_tasks, getAuthData
 
-# Our local config is in the main directory
-# We will use this host and port if we are running from python and not gunicorn
-global local_config
-config_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)),'..')
-json_file = os.path.join(config_dir,'config.json')
-with open(json_file, 'rt') as json_in:
-    local_config = json.load(json_in)
+greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
+sys.path.insert(0, greent_path)
+from greent import node_types
 
-# Since we start gunicorn / the server from the root directory and not the python dir
-# It's in the directory above this files.
+# Setup flask-security with user tables
+user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
+security = Security(app, user_datastore)
 
-# If we don't have a blackboards.db for somereason.
-# Initialize one
-if os.path.isfile(collection_location) is False:
-    print("Initializing Empty Blackboards DB")
-    init_table_name = 'blackboards'
-    init_database = sqlite3.connect(collection_location)
-    init_cursor = init_database.cursor()
-    init_cursor.execute('''CREATE TABLE IF NOT EXISTS {}
-            (id text, name text, description text, query_json text, finished text)'''\
-            .format(init_table_name))
-    init_database.commit()
-    init_database.close()
+# Initialization
+@app.before_first_request
+def init():
+    pass
 
-# Flush the building table every time we start the server
-# This only removes our knowledge of boards being constructed
-# When those boards finish they will still show up on the next page refresh
-init_table_name = 'building'
-init_database = sqlite3.connect(collection_location)
-init_cursor = init_database.cursor()
-init_cursor.execute('''DROP TABLE IF EXISTS {};'''.format(init_table_name))
-init_cursor.execute('''CREATE TABLE IF NOT EXISTS {}
-    (id text, name text, description text, query_json text, finished text)'''\
-    .format(init_table_name))
-init_database.commit()
-init_database.close()
+app.register_blueprint(questions, url_prefix='/questions')
+app.register_blueprint(questions_api, url_prefix='/api/questions')
+app.register_blueprint(q, url_prefix='/q')
+app.register_blueprint(q_api, url_prefix='/api/q')
+app.register_blueprint(a, url_prefix='/a')
+app.register_blueprint(a_api, url_prefix='/api/a')
+app.register_blueprint(admin, url_prefix='/admin')
 
 # Flask Server code below
 ################################################################################
@@ -81,199 +73,94 @@ def handle_invalid_usage(error):
     return response
 
 @app.route('/')
-def initialize():
+def landing():
     """Initial contact. Give the initial page."""
-    return render_template('index.html')
+    return render_template('landing.html')
 
+@app.route('/landing/data', methods=['GET'])
+def landing_data():
+    """Data for the landing page."""
 
-def fetch_table_entries(database, table, condition=''):
-    """Helper function to grab a SQL Lite table entries"""
-    #####################################################################################################
-    # Vulnerable to SQL injection. Hard to see why a user would want to do this since everything is open,
-    # but by inserting code into the query name, for example, one could gain access to the database.
-    #####################################################################################################
+    user = getAuthData()
 
-    conn = sqlite3.connect(database)
-    cursor = conn.cursor()
+    now_str = datetime.now().__str__()
+    return jsonify({'timestamp': now_str,\
+        'user': user})
 
-    condition_string = ' WHERE {}'.format(condition) if condition else ''
-    cursor.execute('SELECT * FROM {}'.format(table) + condition_string)
+# from celery.app.control import Inspect
+@app.route('/api/tasks')
+def show_tasks():
+    """Fetch queued/active task list"""
+    tasks = get_tasks()
+    output = []
+    output.append('{:<40}{:<30}{:<40}{:<20}{:<20}'.format('task id', 'name', 'question hash', 'user', 'state'))
+    output.append('-'*150)
+    for task_id in tasks:
+        task = tasks[task_id]
+        name = task['name'] if task['name'] else ''
+        question_hash = re.match(r"\['(.*)'\]", task['args']).group(1) if task['args'] else ''
+        # question_id = re.search(r"'question_id': '(\w*)'", task['kwargs']).group(1) if task['kwargs'] and not task['kwargs'] == '{}' else ''
+        user_email = re.search(r"'user_email': '([\w@.]*)'", task['kwargs']).group(1) if task['kwargs'] and not task['kwargs'] == '{}' else ''
+        state = task['state'] if task['state'] else ''
+        output.append('{:<40}{:<30}{:<40}{:<20}{:<20}'.format(task_id, name, question_hash, user_email, state))
 
-    rows = cursor.fetchall()
-    conn.close()
-    return rows
+    return "<pre>"+"\n".join(output)+"</pre>"
 
-@app.route('/collection/load', methods=['POST'])
-def collection_load():
-    logger = logging.getLogger('application')
-    logger.setLevel(level = logging.DEBUG)
-    logger.error('Loading collection...')
-    
-    """Delivers the list of all available boards"""
-    try:
-        global collection_location # Location of the sqllite db file
+@app.route('/api/t/<task_id>')
+def task_status(task_id):
+    # task = celery.AsyncResult(task_id)
+    # return task.state
 
-        # At this point collections are just specialized directory structures
-        conn = sqlite3.connect(collection_location)
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM blackboards')
-        rows = cursor.fetchall()
-        conn.close()
+    flower_url = f'http://{os.environ["FLOWER_ADDRESS"]}:{os.environ["FLOWER_PORT"]}/api/task/result/{task_id}'
+    response = requests.get(flower_url, auth=(os.environ['FLOWER_USER'], os.environ['FLOWER_PASSWORD']))
+    return json.dumps(response.json())
 
-        boards = []
-        for row in rows:
-            boards.append({
-                'id': row[0],
-                'name': row[1],
-                'description': row[2],
-            })
+@app.route('/api/concepts')
+def get_concepts():
+    concepts = list(node_types.node_types - {'UnspecifiedType'})
+    return jsonify(concepts)
 
-        return jsonify({'boards': boards})
+@app.route('/api/user')
+def get_user():
+    user = getAuthData()
+    return jsonify(user)
 
-    except Exception as ex:
-        print(ex)
-        raise InvalidUsage("Unspecified exception {0}".format(ex), 410)
-    except:
-        raise InvalidUsage('Failed to load blackboard collection.', 410)
+################################################################################
+##### Account Things ###########################################################
+################################################################################
+@app.route('/account')
+@login_required
+def account():
+    """Deliver user info page"""
+    return render_template('account.html')
 
-@app.route('/building/load', methods=['GET'])
-def building_load():
-    """Delivers a list of the boards currently under construction"""
-    try:
-        global collection_location # Location of the sqllite db file
-        
-        conn = sqlite3.connect(collection_location)
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM building')
-        rows = cursor.fetchall()
-        conn.close()
-        
-        boards = []
-        for row in rows:
-            if row[4] == "False":
-                boards.append({
-                    'id': row[0],
-                    'name': row[1],
-                    'description': row[2],
-                })
-        
-        return jsonify({'boards': boards})
+@app.route('/account/data', methods=['GET'])
+@auth_required('session', 'basic')
+def account_data():
+    """Data for the current user"""
 
-    except Exception as ex:
-        print(ex)
-        raise InvalidUsage("Unspecified exception {0}".format(ex), 410)
-    except:
-        raise InvalidUsage('Failed to fetch blackboards under construction.', 410)
+    user = getAuthData()
 
-@app.route('/blackboard/build', methods=['POST'])
-def blackboard_build():
-    """Initiates the builder process from a board_id"""
-    try:
-        global collection_location
+    now_str = datetime.now().__str__()
+    return jsonify({'timestamp': now_str,\
+        'user': user})
 
-        board_id = request.form.get('id')
-        board_name = request.form.get('name')
-        board_description = request.form.get('description')
-        board_query = request.form.get('query')
-        
-        ###############
-        # Put this new board request into the building table
-        ###############
-        # open database
-        table_name = 'building'
-        database = sqlite3.connect(collection_location)
-        cursor = database.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS {}
-                (id text, name text, description text, query_json text, finished text)'''\
-                .format(table_name))
-        # insert blackboard information into database
-        cursor.execute("INSERT INTO {} VALUES (?,?,?,?,?)".format(table_name),\
-            (board_id, board_name, board_description, board_query, "False"))
-        database.commit()
-        database.close()
+@app.route('/account/edit', methods=['POST'])
+@login_required
+def account_edit():
+    """Edit account information (if request is for current_user)"""
 
-        ###############
-        # Start subprocess to run builder
-        ###############
-        os.environ['PYTHONPATH'] = '../robokop-interfaces:../robokop-build/builder'
-        proc = subprocess.Popen(["python", 'python/runBuilderQuery.py', collection_location, board_id])
-
-        # Notes:
-        # At this point we throw out the proc and loose the ability to control it.
-        #   Ultimiately, we should have a process manager
-        # We communicate here through the database. This isn't ideal but it's functional at this scale.
-
-        return jsonify({'failure': False})
-
-    except Exception as ex:
-        print(ex)
-        raise InvalidUsage("Unspecified exception {0}".format(ex), 410)
-    except:
-        raise InvalidUsage('Failed to initiate builder.', 410)
-
-@app.route('/blackboard/load', methods=['POST'])
-def blackboard_load():
-    global local_config
-    logger = logging.getLogger('application')
-    logger.setLevel(level = logging.DEBUG)
-    logger.error('Loading blackboard...')
-
-    """Deliver all of the information we have about a blackboard given an id."""
-    try:
-        board_id = request.form.get('id')
-        global collection_location
-
-        condition = "id='{}'".format(board_id)
-        rows = fetch_table_entries(collection_location, 'blackboards', condition)
-
-        query = json.loads(rows[0][3])
-        construction_graph = json.loads(rows[0][4])
-
-        # Contact Neo4j to get the large graph of this backboard
-        database = KnowledgeGraph(local_config['clientHost'])
-        graph = database.getNodesByLabel(board_id)
-
-        return jsonify({'graph': graph,\
-            'query': query,\
-            'constructionGraph': construction_graph})
-
-    except Exception as ex:
-        print(ex)
-        raise InvalidUsage("Unspecified exception {0}".format(ex), 410)
-    except:
-        raise InvalidUsage('Failed to load blackboard.', 410)
-
-@app.route('/blackboard/rank', methods=['POST'])
-def blackboard_rank():
-    """
-    Given a board ID find the paths through the graph that match the query
-    Then rank those paths. Return a list of paths with subgraphs and scores
-    """
-    try:
-        board_id = request.form.get('id')
-        global collection_location
-
-        condition = "id='{}'".format(board_id)
-        rows = fetch_table_entries(collection_location, 'blackboards', condition)
-
-        query = json.loads(rows[0][3])
-
-        # Query and Score will contact Neo4j
-        # We just need to specify the query
-        question = Question(query, board_id)
-        ranking_data = question.answer()
-        # ranking_data = queryAndScore({'query':query, 'board_id':board_id})
-
-        return jsonify({'ranking': ranking_data})
-
-    except Exception as ex:
-        print(ex)
-        raise InvalidUsage("Unspecified exception {0}".format(ex), 410)
-    except:
-        raise InvalidUsage('Failed to set run query.', 410)
+################################################################################
+##### Run Webserver ############################################################
+################################################################################
 
 if __name__ == '__main__':
-    app.run(host=local_config['serverHost'],\
-        port=local_config['port'],\
+    
+    # Get host and port from environmental variables
+    server_host = os.environ['ROBOKOP_HOST']
+    server_port = int(os.environ['ROBOKOP_PORT'])
+
+    app.run(host=server_host,\
+        port=server_port,\
         debug=False,\
         use_reloader=False)

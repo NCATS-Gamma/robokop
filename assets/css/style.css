@@ -1,0 +1,105 @@
+.hidden {
+  display: none;
+}
+
+.ag-header-cell-label {
+  font-weight: 600;
+}
+.ag-row:hover {
+  cursor: hand;
+}
+
+.vertical-center {
+  min-height: 100%;
+  /* Fallback for browsers do NOT support vh unit */
+  min-height: 100vh;
+  /* These two lines are counted as one :-)       */
+  display: flex;
+  align-items: center;
+}
+
+.close-button {
+  margin-right: 10px;
+  margin-top: 10px;
+  font-size: 16px;
+  text-shadow: #f3f3f3 1px 1px 1px;
+  color: #3c3c3c;
+  cursor: pointer;
+}
+.close-button:hover {
+  color: #000;
+}
+/*
+.header-label { color: #26a0f4; }
+.header-val { color: #ccc; }
+*/
+
+#Protocop_subgraphexplorer p {
+  padding-top: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Box shadow around vis.js canvas elements */
+#ProtocopQueryViewer div.vis-network {
+  box-shadow: 0px 0px 2px 0px #9e9e9e;
+}
+#ProtocopGraphTabs div.vis-network {
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+}
+/* Tooltip for vis.js Network Graphs */
+div.vis-tooltip {
+  position: absolute;
+  padding: 20px;
+}
+div.vis-tooltip-inner {
+  margin: 0px;
+  padding: 7px 10px 10px 10px;
+  border: 1px solid #555;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.85);
+  box-shadow: 2px 2px 8px 0px #444;
+  font-family: sans-serif;
+  font-size: 0.8em;
+  color: #eee;
+}
+.vis-tooltip span.title {
+  color:#60adec;
+  font-weight: bolder;
+  font-size: 1.2em;
+}
+.vis-tooltip .field-name {
+  font-weight: bold;
+}
+
+#answersetSelect .Select-value {
+  line-height: 20px;
+} 
+#answersetSelect .Select-input {
+  height: 20px;
+}
+#answersetSelect .Select-control {
+  height: 20px;
+} 
+
+.panel-default > .panel-heading {
+  color: #333;
+  background-color: #f5f7fa;/*#f5f5f5;*/
+  border-color: #ddd;
+}
+
+/* A dropdown that doesn't look like a button */
+#diminisheddropdown .dropdown-toggle > .btn > .btn-default {
+  border: none;
+  color: #b8c6db;
+}
+
+/* To enable contained modals */
+.modal-container {
+  position: relative;
+}
+.modal-container .modal, .modal-container .modal-backdrop {
+  position: absolute;
+}
