@@ -27,7 +27,7 @@ q = Blueprint('question', __name__,
 @q.route('/new', methods=['GET'])
 def new():
     """Deliver new-question interface"""
-    return render_template('questionNew.html', question_id=None)
+    return render_template('questionNew.html', question_id='')
 
 # New Question Submission
 @q.route('/new', methods=['POST'])
