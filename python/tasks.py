@@ -114,9 +114,9 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
         else:
             self.update_state(state='NO ANSWERS FOUND')
             logger.info("No answers found.")
-    except Exception:
+    except Exception as err:
         logger.error("Something went wrong with question answering.")
-        return -1
+        raise err
 
     if user_email:
         with app.app_context():
@@ -142,6 +142,7 @@ def update_kg(self, question_hash, question_id=None, user_email=None):
 
     self.update_state(state='UPDATING KG')
     logger.info("Updating the knowledge graph...")
+    self.send_event('task_progress', {'hello':'world'})
 
     question_id = question_id if question_id else list_questions_by_hash(question_hash)[0].id
     question = get_question_by_id(question_id)
@@ -170,6 +171,8 @@ def update_kg(self, question_hash, question_id=None, user_email=None):
                 mail.send(msg)
 
         logger.info("Done updating.")
+        return "You updated the KG!"
 
-    except Exception:
+    except Exception as err:
         logger.exception("Something went wrong with updating KG.")
+        raise err

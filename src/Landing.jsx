@@ -54,7 +54,7 @@ class Landing extends React.Component {
             <a href="https://ncats.nih.gov/"> NIH NCATS</a>.
           </p>
           <ButtonToolbar>
-            <Button bsSize="large" href={this.appConfig.urls.questionList}>
+            <Button bsSize="large" href={this.appConfig.urls.questions}>
               Browse Questions
             </Button>
             {shownNewQuestion &&

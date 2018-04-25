@@ -246,7 +246,7 @@ class Question extends React.Component {
     this.appConfig.redirect(this.appConfig.urls.answerset(this.props.id, answersetId));
   }
   callbackUpdateMeta(newMeta, fun) {
-    this.appConfig.questionUpdateMeta(newMeta, fun);
+    this.appConfig.questionUpdateMeta(this.props.id, newMeta, fun);
   }
   callbackFork() {
     const q = this.state.question;
@@ -266,7 +266,7 @@ class Question extends React.Component {
         // Actually try to delete the question here.
         this.appConfig.questionDelete(
           q.id,
-          () => this.appConfig.redirect(this.appConfig.urls.questionList),
+          () => this.appConfig.redirect(this.appConfig.urls.questions),
           () => {
             this.dialogMessage({
               title: 'Question Not Deleted',

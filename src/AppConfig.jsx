@@ -15,18 +15,22 @@ class AppConfig {
       logout: this.url('logout'),
       admin: this.url('admin'),
       account: this.url('account'),
-      questionList: this.url('questions'),
-      questionNew: this.url('q/new'),
+      questions: this.url('questions'),
+      questionDesign: this.url('q/new'),
       question: questionId => this.url(`q/${questionId}`),
-      answerset: (questionId, answersetId) => this.url(`q/${questionId}/a/${answersetId}`),
-      answer: (questionId, answersetId, answerId) => this.url(`q/${questionId}/a/${answersetId}/${answerId}`),
+      answerset: (questionId, answersetId) => this.url(`a/${questionId}_${answersetId}`),
+      answer: (questionId, answersetId, answerId) => this.url(`a/${questionId}_${answersetId}/${answerId}`),
     };
 
     // Other URLs that are primarily used for API calls
-    this.api = {
-      questionUpdate: this.url('q/edit'),
-      questionDelete: this.url('q/delete'),
-      questionTasks: questionId => this.url(`q/${questionId}/tasks`),
+    this.apis = {
+      questions: this.url('api/questions/'),
+      question: questionId => this.url(`api/q/${questionId}`),
+      answerset: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}`),
+      answer: (questionId, answersetId, answerId) => this.url(`api/a/${questionId}_${answersetId}/${answerId}`),
+      questionTasks: questionId => this.url(`api/q/${questionId}/tasks`),
+      questionAnswer: questionId => this.url(`api/q/${questionId}/answer`),
+      questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg`),
       taskStatus: taskId => this.url(`status/${taskId}`),
     };
 
@@ -49,7 +53,6 @@ class AppConfig {
     this.questionUpdateMeta = this.questionUpdateMeta.bind(this);
     this.questionRefresh = this.questionRefresh.bind(this);
     this.questionFork = this.questionFork.bind(this);
-    this.questionDelete = this.questionDelete.bind(this);
     this.questionTasks = this.questionTasks.bind(this);
     this.taskStatus = this.taskStatus.bind(this);
 
@@ -87,12 +90,12 @@ class AppConfig {
   landingData(fun) { this.getRequest(`${this.urls.landing}/data`, fun); }
   accountData(fun) { this.getRequest(`${this.urls.account}/data`, fun); }
   adminData(fun) { this.getRequest(`${this.urls.admin}/data`, fun); }
-  questionListData(fun) { this.getRequest(`${this.urls.questionList}/data`, fun); }
-  questionData(id, fun) { this.getRequest(`${this.urls.question(id)}/data`, fun); }
-  questionSubgraph(id, fun) { this.getRequest(`${this.urls.question(id)}/subgraph`, fun); }
-  questionNewData(qid, fun) { this.postRequest(`${this.urls.questionNew}/data`, { initialization_id: qid }, fun, (err) => { throw err; }); }
-  answersetData(qid, id, fun) { this.getRequest(`${this.urls.answerset(qid, id)}/data`, fun); }
-  answerData(qid, setId, id, fun) { this.getRequest(`${this.urls.answer(qid, setId, id)}/data`, fun); }
+  questionListData(fun) { this.getRequest(`${this.apis.questions}`, fun); }
+  questionData(id, fun) { this.getRequest(`${this.apis.question(id)}`, fun); }
+  questionSubgraph(id, fun) { this.getRequest(`${this.apis.question(id)}/subgraph`, fun); }
+  questionNewData(qid, fun) { this.postRequest(`${this.urls.questionDesign}/data`, { initialization_id: qid }, fun, (err) => { throw err; }); }
+  answersetData(qid, id, fun) { this.getRequest(`${this.apis.answerset(qid, id)}`, fun); }
+  answerData(qid, setId, id, fun) { this.getRequest(`${this.apis.answer(qid, setId, id)}`, fun); }
 
   questionCreate(data, successFun, failureFun) {
     // Data must contain a complete specification for a new question
@@ -106,7 +109,7 @@ class AppConfig {
 
     // To make a new question we post to the questionNew with specifications for a question
     this.postRequest(
-      this.urls.questionNew,
+      this.apis.questions,
       data,
       successFun,
       failureFun,
@@ -116,8 +119,8 @@ class AppConfig {
     // New answersets are triggered by a post request to the question url with
     // {command: answer}
     this.postRequest(
-      this.urls.question(qid),
-      { command: 'answer' },
+      this.apis.questionAnswer(qid),
+      null,
       successFun,
       failureFun,
     );
@@ -126,8 +129,8 @@ class AppConfig {
     // A knowledge graph reset is triggered by a post request to the question url with
     // {command: update}
     this.postRequest(
-      this.urls.question(qid),
-      { command: 'update' },
+      this.apis.questionRefreshKG(qid),
+      null,
       successFun,
       failureFun,
     );
@@ -163,20 +166,20 @@ class AppConfig {
     }
 
     formPost(
-      this.urls.questionNew,
+      this.urls.questionDesign,
       { question_id: qid },
     );
   }
   questionTasks(qid, successFun, failureFun) {
     // Fetch active tasks for a specific question
     this.getRequest(
-      this.api.questionTasks(qid),
+      this.apis.questionTasks(qid),
       successFun,
       failureFun,
     );
   }
 
-  questionUpdateMeta(data, successFun, failureFun) {
+  questionUpdateMeta(qid, data, successFun, failureFun) {
     // Data must contain all necessary meta data fields
     // Can only be done by the owner
     // const newMeta = {
@@ -186,7 +189,7 @@ class AppConfig {
     //   notes: '',
     // };
     this.postRequest(
-      this.api.questionUpdate,
+      this.apis.question(qid),
       data,
       successFun,
       failureFun,
@@ -194,12 +197,10 @@ class AppConfig {
   }
   questionDelete(qid, successFunction, failureFunction) {
     // Deleting a question can only be done by the owner
-    const data = { question_id: qid };
-
+    
     // Make the post request
-    this.postRequest(
-      this.api.questionDelete,
-      data,
+    this.deleteRequest(
+      this.apis.question(qid),
       successFunction,
       failureFunction,
     );
@@ -256,9 +257,16 @@ class AppConfig {
     });
   }
 
-
   postRequest(addr, data, successFunction = () => {}, failureFunction = () => {}) {
     this.comms.post(addr, data).then((result) => {
+      successFunction(result.data);
+    }).catch((err) => {
+      failureFunction(err);
+    });
+  }
+
+  deleteRequest(addr, data, successFunction = () => {}, failureFunction = () => {}) {
+    this.comms.delete(addr).then((result) => {
       successFunction(result.data);
     }).catch((err) => {
       failureFunction(err);
