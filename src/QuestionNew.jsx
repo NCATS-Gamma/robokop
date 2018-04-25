@@ -15,7 +15,8 @@ class QuestionNew extends React.Component {
     this.appConfig = new AppConfig(props.config);
 
     this.state = {
-      ready: false,
+      dataReady: false,
+      conceptsReady: false,
       user: {},
       name: '',
       natural: '',
@@ -36,6 +37,14 @@ class QuestionNew extends React.Component {
   }
 
   componentDidMount() {
+    this.appConfig.concepts(
+      (data) => {
+        this.setState({
+          concepts: data,
+          conceptsReady: true,
+        });
+      },
+    );
     this.appConfig.questionNewData(
       this.props.initializationId,
       (data) => {
@@ -61,10 +70,9 @@ class QuestionNew extends React.Component {
           name,
           natural,
           notes,
-          concepts: data.concepts,
           isFork,
           initializationQuestion,
-          ready: true,
+          dataReady: true,
         });
       },
     );
@@ -245,10 +253,11 @@ class QuestionNew extends React.Component {
     );
   }
   render() {
+    const ready = this.state.conceptsReady && this.state.dataReady;
     return (
       <div>
-        {!this.state.ready && this.renderLoading()}
-        {this.state.ready && this.renderLoaded()}
+        {!ready && this.renderLoading()}
+        {ready && this.renderLoaded()}
       </div>
     );
   }

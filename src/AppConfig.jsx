@@ -24,6 +24,7 @@ class AppConfig {
 
     // Other URLs that are primarily used for API calls
     this.apis = {
+      concepts: this.url('api/concepts'),
       questions: this.url('api/questions/'),
       question: questionId => this.url(`api/q/${questionId}`),
       answerset: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}`),
@@ -40,6 +41,7 @@ class AppConfig {
     this.landingData = this.landingData.bind(this);
     this.accountData = this.accountData.bind(this);
     this.adminData = this.adminData.bind(this);
+    this.concepts = this.concepts.bind(this);
     this.questionNewData = this.questionNewData.bind(this);
     this.questionListData = this.questionListData.bind(this);
     this.questionData = this.questionData.bind(this);
@@ -90,6 +92,7 @@ class AppConfig {
   landingData(fun) { this.getRequest(`${this.urls.landing}/data`, fun); }
   accountData(fun) { this.getRequest(`${this.urls.account}/data`, fun); }
   adminData(fun) { this.getRequest(`${this.urls.admin}/data`, fun); }
+  concepts(fun) { this.getRequest(`${this.apis.concepts}`, fun); }
   questionListData(fun) { this.getRequest(`${this.apis.questions}`, fun); }
   questionData(id, fun) { this.getRequest(`${this.apis.question(id)}`, fun); }
   questionSubgraph(id, fun) { this.getRequest(`${this.apis.question(id)}/subgraph`, fun); }

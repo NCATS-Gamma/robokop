@@ -7,6 +7,7 @@ import string
 import os
 import sys
 import re
+import requests
 from datetime import datetime
 from flask import Blueprint, jsonify, render_template, request
 from flask_security import auth_required
@@ -18,10 +19,6 @@ from tasks import initialize_question, answer_question, update_kg
 from util import getAuthData, get_tasks
 from setup import db
 from logging_config import logger
-
-greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
-sys.path.insert(0, greent_path)
-from greent import node_types
 
 q = Blueprint('question', __name__,
               template_folder='templates')
@@ -53,13 +50,10 @@ def new_data():
     
     user = getAuthData()
 
-    concepts = list(node_types.node_types - {'UnspecifiedType'})
-
     now_str = datetime.now().__str__()
     return jsonify({\
         'timestamp': now_str,\
         'question': question,
-        'concepts': concepts,
         'user': user})
 
 # Question

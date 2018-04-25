@@ -6,6 +6,7 @@ import os
 import json
 import re
 import requests
+import sys
 from datetime import datetime
 
 from flask import jsonify, render_template
@@ -23,6 +24,10 @@ from a_blueprint import a
 from a_api_blueprint import a_api
 from admin_blueprint import admin
 from util import get_tasks, getAuthData
+
+greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
+sys.path.insert(0, greent_path)
+from greent import node_types
 
 # Setup flask-security with user tables
 user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
@@ -109,6 +114,11 @@ def task_status(task_id):
     flower_url = f'http://{os.environ["FLOWER_ADDRESS"]}:{os.environ["FLOWER_PORT"]}/api/task/result/{task_id}'
     response = requests.get(flower_url, auth=(os.environ['FLOWER_USER'], os.environ['FLOWER_PASSWORD']))
     return json.dumps(response.json())
+
+@app.route('/api/concepts')
+def get_concepts():
+    concepts = list(node_types.node_types - {'UnspecifiedType'})
+    return jsonify(concepts)
 
 
 ################################################################################
