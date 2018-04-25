@@ -7,6 +7,7 @@ import string
 import os
 import sys
 import re
+import requests
 from datetime import datetime
 from flask import Blueprint, jsonify, render_template, request
 from flask_security import auth_required
@@ -18,10 +19,6 @@ from tasks import initialize_question, answer_question, update_kg
 from util import getAuthData, get_tasks
 from setup import db
 from logging_config import logger
-
-greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
-sys.path.insert(0, greent_path)
-from greent import node_types
 
 q = Blueprint('question', __name__,
               template_folder='templates')
@@ -40,27 +37,6 @@ def new_from_post():
     # If you make a post request with a question_id we will assume you want a new question editor
     # we will prepopulate the question new page with data from that question (if it is a valid question id)
     return render_template('questionNew.html', question_id=request.form['question_id'])
-
-@q.route('/new/data', methods=['GET', 'POST'])
-def new_data():
-    """Data for the new-question interface"""
-    initialization_id = request.json['initialization_id'] if 'initialization_id' in request.json else None
-
-    question = {}
-    if initialization_id and not initialization_id == 'None':
-        question = get_question_by_id(initialization_id)
-        question = question.toJSON()
-    
-    user = getAuthData()
-
-    concepts = list(node_types.node_types - {'UnspecifiedType'})
-
-    now_str = datetime.now().__str__()
-    return jsonify({\
-        'timestamp': now_str,\
-        'question': question,
-        'concepts': concepts,
-        'user': user})
 
 # Question
 @q.route('/<question_id>', methods=['GET'])

@@ -22,7 +22,6 @@ questions_api = Blueprint('questions_api', __name__,
 @questions_api.route('/', methods=['POST'])
 @auth_required('session', 'basic')
 def new_from_post():
-    print("creating new question")
     """Trigger creation of a new question"""
     user_id = current_user.id
     name = request.json['name']

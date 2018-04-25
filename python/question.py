@@ -332,4 +332,7 @@ def list_questions_by_user_id(user_id, invert=False):
         return db.session.query(Question).filter(Question.user_id == user_id).all()
 
 def get_question_by_id(id):
-    return db.session.query(Question).filter(Question.id == id).first()
+    question = db.session.query(Question).filter(Question.id == id).first()
+    if not question:
+        raise KeyError("No such question.")
+    return question

@@ -30,7 +30,11 @@ q_api = Blueprint('q_api', __name__,
 @auth_required('session', 'basic')
 def question_answer(question_id):
     """ run update or answer actions """
-    question_hash = get_question_by_id(question_id).hash
+    try:
+        question = get_question_by_id(question_id)
+    except Exception as err:
+        return "Invalid question key.", 404
+    question_hash = question.hash
     username = current_user.username
     # Answer a question
     task = answer_question.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':username})
@@ -40,7 +44,11 @@ def question_answer(question_id):
 @auth_required('session', 'basic')
 def question_refresh_kg(question_id):
     """ run update or answer actions """
-    question_hash = get_question_by_id(question_id).hash
+    try:
+        question = get_question_by_id(question_id)
+    except Exception as err:
+        return "Invalid question key.", 404
+    question_hash = question.hash
     username = current_user.username
     # Update the knowledge graph for a question
     task = update_kg.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':username})
@@ -51,12 +59,15 @@ def question_refresh_kg(question_id):
 def question_edit(question_id):
     """Edit the properties of a question"""
     logger.info('Editing question %s', question_id)
-    q = get_question_by_id(question_id)
-    if not (current_user == q.user or current_user.has_role('admin')):
+    try:
+        question = get_question_by_id(question_id)
+    except Exception as err:
+        return "Invalid question key.", 404
+    if not (current_user == question.user or current_user.has_role('admin')):
         return "UNAUTHORIZED", 401 # not authorized
-    q.name = request.json['name']
-    q.notes = request.json['notes']
-    q.natural_question = request.json['natural_question']
+    question.name = request.json['name']
+    question.notes = request.json['notes']
+    question.natural_question = request.json['natural_question']
     db.session.commit()
     return "SUCCESS", 200
 
@@ -65,10 +76,13 @@ def question_edit(question_id):
 def question_delete(question_id):
     """Delete question (if owned by current_user)"""
     logger.info('Deleting question %s', question_id)
-    q = get_question_by_id(question_id)
-    if not (current_user == q.user or current_user.has_role('admin')):
+    try:
+        question = get_question_by_id(question_id)
+    except Exception as err:
+        return "Invalid question key.", 404
+    if not (current_user == question.user or current_user.has_role('admin')):
         return "UNAUTHORIZED", 401 # not authorized
-    db.session.delete(q)
+    db.session.delete(question)
     db.session.commit()
     return "SUCCESS", 200
 
@@ -76,9 +90,12 @@ def question_delete(question_id):
 def question_data(question_id):
     """Data for a question"""
 
-    user = getAuthData()
+    try:
+        question = get_question_by_id(question_id)
+    except Exception as err:
+        return "Invalid question key.", 404
 
-    question = get_question_by_id(question_id)
+    user = getAuthData()
     answerset_list = list_answersets_by_question_hash(question.hash)
 
     now_str = datetime.now().__str__()
@@ -92,7 +109,12 @@ def question_data(question_id):
 def question_tasks(question_id):
     """ List of active and queued tasks for only a specific question """
 
-    question_hash = get_question_by_id(question_id).hash
+    try:
+        question = get_question_by_id(question_id)
+    except Exception as err:
+        return "Invalid question key.", 404
+
+    question_hash = question.hash
 
     tasks = get_tasks().values()
 
@@ -115,7 +137,11 @@ def question_tasks(question_id):
 def question_subgraph(question_id):
     """Data for a question"""
 
-    question = get_question_by_id(question_id)
+    try:
+        question = get_question_by_id(question_id)
+    except Exception as err:
+        return "Invalid question key.", 404
+        
     subgraph = question.relevant_subgraph()
 
     return jsonify(subgraph)
