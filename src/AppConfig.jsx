@@ -42,8 +42,8 @@ class AppConfig {
     this.landingData = this.landingData.bind(this);
     this.accountData = this.accountData.bind(this);
     this.adminData = this.adminData.bind(this);
+    this.user = this.user.bind(this);
     this.concepts = this.concepts.bind(this);
-    this.questionNewData = this.questionNewData.bind(this);
     this.questionListData = this.questionListData.bind(this);
     this.questionData = this.questionData.bind(this);
     this.questionSubgraph = this.questionSubgraph.bind(this);
@@ -94,10 +94,10 @@ class AppConfig {
   accountData(fun) { this.getRequest(`${this.urls.account}/data`, fun); }
   adminData(fun) { this.getRequest(`${this.urls.admin}/data`, fun); }
   concepts(fun) { this.getRequest(`${this.apis.concepts}`, fun); }
+  user(fun) { this.getRequest(`${this.apis.user}`, fun); }
   questionListData(fun) { this.getRequest(`${this.apis.questions}`, fun); }
   questionData(id, fun) { this.getRequest(`${this.apis.question(id)}`, fun); }
   questionSubgraph(id, fun) { this.getRequest(`${this.apis.question(id)}/subgraph`, fun); }
-  questionNewData(qid, fun) { this.postRequest(`${this.urls.questionDesign}/data`, { initialization_id: qid }, fun, (err) => { throw err; }); }
   answersetData(qid, id, fun) { this.getRequest(`${this.apis.answerset(qid, id)}`, fun); }
   answerData(qid, setId, id, fun) { this.getRequest(`${this.apis.answer(qid, setId, id)}`, fun); }
 

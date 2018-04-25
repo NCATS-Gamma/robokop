@@ -38,24 +38,6 @@ def new_from_post():
     # we will prepopulate the question new page with data from that question (if it is a valid question id)
     return render_template('questionNew.html', question_id=request.form['question_id'])
 
-@q.route('/new/data', methods=['GET', 'POST'])
-def new_data():
-    """Data for the new-question interface"""
-    initialization_id = request.json['initialization_id'] if 'initialization_id' in request.json else None
-
-    question = {}
-    if initialization_id and not initialization_id == 'None':
-        question = get_question_by_id(initialization_id)
-        question = question.toJSON()
-    
-    user = getAuthData()
-
-    now_str = datetime.now().__str__()
-    return jsonify({\
-        'timestamp': now_str,\
-        'question': question,
-        'user': user})
-
 # Question
 @q.route('/<question_id>', methods=['GET'])
 def question_page(question_id):

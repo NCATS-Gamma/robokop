@@ -15,6 +15,7 @@ class QuestionNew extends React.Component {
     this.appConfig = new AppConfig(props.config);
 
     this.state = {
+      userReady: false,
       dataReady: false,
       conceptsReady: false,
       user: {},
@@ -45,37 +46,36 @@ class QuestionNew extends React.Component {
         });
       },
     );
-    this.appConfig.questionNewData(
-      this.props.initializationId,
+    this.appConfig.user(
       (data) => {
-        // In the future we need to support forking here
-        // Currently we will accpt a question id but then not actually prepopulate fields for the fork.
-        //
-        // 1. Check if we have valid question data coming back
-        //    If questionId is empty or null the server wont give anything
-        // 2. If valid question data, populate the GUI
-
-        const isFork = (data.question && data.question.name);
-        const name = (data.question && data.question.name) ? data.question.name : '';
-        const natural = (data.question && data.question.natural_question) ? data.question.natural_question : '';
-        const notes = (data.question && data.question.notes) ? data.question.notes : '';
-        
-        let initializationQuestion = {};
-        if (isFork) {
-          initializationQuestion = data.question;
-        }
-
         this.setState({
-          user: data.user,
-          name,
-          natural,
-          notes,
-          isFork,
-          initializationQuestion,
-          dataReady: true,
+          user: data,
+          userReady: true,
         });
       },
     );
+    const isFork = this.props.initializationId != 'None';
+    if (isFork)
+      this.appConfig.questionData(
+        this.props.initializationId,
+        data => this.setState({
+          isFork,
+          name: data.question.name,
+          natural: data.question.natural_question,
+          notes: data.question.notes,
+          initializationQuestion: data.question,
+          dataReady: true,
+        }),
+      );
+    else
+      this.setState({
+        isFork,
+        name: '',
+        natural: '',
+        notes: '',
+        initializationQuestion: {},
+        dataReady: true,
+      })
   }
 
   onCreate() {
@@ -253,7 +253,7 @@ class QuestionNew extends React.Component {
     );
   }
   render() {
-    const ready = this.state.conceptsReady && this.state.dataReady;
+    const ready = this.state.conceptsReady && this.state.dataReady && this.state.userReady;
     return (
       <div>
         {!ready && this.renderLoading()}
