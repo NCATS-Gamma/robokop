@@ -93,9 +93,9 @@ def show_tasks():
     for task_id in tasks:
         task = tasks[task_id]
         name = task['name'] if task['name'] else ''
-        question_hash = re.match("\['(.*)'\]", task['args']).group(1) if task['args'] else ''
-        question_id = re.search("'question_id': '(\w*)'", task['kwargs']).group(1) if task['kwargs'] and not task['kwargs'] == '{}' else ''
-        user_email = re.search("'user_email': '([\w@.]*)'", task['kwargs']).group(1) if task['kwargs'] and not task['kwargs'] == '{}' else ''
+        question_hash = re.match(r"\['(.*)'\]", task['args']).group(1) if task['args'] else ''
+        # question_id = re.search(r"'question_id': '(\w*)'", task['kwargs']).group(1) if task['kwargs'] and not task['kwargs'] == '{}' else ''
+        user_email = re.search(r"'user_email': '([\w@.]*)'", task['kwargs']).group(1) if task['kwargs'] and not task['kwargs'] == '{}' else ''
         state = task['state'] if task['state'] else ''
         output.append('{:<40}{:<30}{:<40}{:<20}{:<20}'.format(task_id, name, question_hash, user_email, state))
 
