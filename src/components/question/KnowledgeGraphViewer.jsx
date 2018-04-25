@@ -55,6 +55,7 @@ class KnowledgeGraphViewer extends React.Component {
       edges: {
         smooth: { type: 'continuous' },
         length: 120,
+        color: '#333333',
       },
       nodes: {
         shape: 'box',
@@ -102,9 +103,10 @@ class KnowledgeGraphViewer extends React.Component {
     g.nodes = g.nodes.map((n) => {
       const backgroundColor = nodeTypeColorMap(n.type);
       n.color = {
+        border: '#333333',
         background: backgroundColor,
         highlight: { background: backgroundColor },
-        hover: { background: backgroundColor },
+        hover: { background: backgroundColor, border: '#333333' },
       };
       n.label = n.name;
       return n;
@@ -117,7 +119,7 @@ class KnowledgeGraphViewer extends React.Component {
 
   
   renderGraph() {
-    let graph = this.addTagsToGraph(this.props.graph);
+    const graph = this.addTagsToGraph(this.props.graph);
 
     this.graphOptions.height = this.props.height;
     return (

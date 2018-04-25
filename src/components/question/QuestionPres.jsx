@@ -25,7 +25,6 @@ class QuestionPres extends React.Component {
         paddingTop: '15px',
       },
     };
-
   }
 
   render() {
@@ -123,6 +122,7 @@ class QuestionPres extends React.Component {
 
           refreshBusy={this.props.refreshBusy}
           answerBusy={this.props.answerBusy}
+          initializerBusy={this.props.initializerBusy}
 
           callbackNewAnswerset={this.props.callbackNewAnswerset}
           callbackRefresh={this.props.callbackRefresh}
@@ -168,6 +168,7 @@ class QuestionPres extends React.Component {
                 <AnswersetSelector
                   showNewButton={enableNewAnswersets}
                   enableNewButton={!this.props.answerBusy}
+                  initializerBusy={this.props.initializerBusy}
                   answersets={this.props.answersets}
                   callbackAnswersetNew={this.props.callbackNewAnswerset}
                   callbackAnswersetOpen={this.props.callbackAnswersetOpen}
@@ -203,16 +204,5 @@ class QuestionPres extends React.Component {
     );
   }
 }
-
-// answerHrefFunc - function
-// question.natural_question;
-//     const {
-//       name,
-//       user,
-//       notes,
-//       hash,
-// edges: this.props.question.edges,
-// nodes: this.props.question.nodes,
-// answersets
 
 export default QuestionPres;

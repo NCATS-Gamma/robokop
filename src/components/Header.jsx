@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import { Navbar, Nav, NavItem, NavDropdown, MenuItem } from 'react-bootstrap';
 
 import AppConfig from '../AppConfig';
-import customPropTypes from '../customPropTypes';
 
 class Header extends React.Component {
   constructor(props) {
@@ -82,12 +81,6 @@ class Header extends React.Component {
 
 Header.defaultProps = {
   status: '',
-};
-
-Header.propTypes = {
-  config: customPropTypes.config.isRequired,
-  user: customPropTypes.user.isRequired,
-  status: PropTypes.string,
 };
 
 export default Header;

@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import { Button, Media } from 'react-bootstrap';
 import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
@@ -109,10 +108,24 @@ class AnswersetSelector extends React.Component {
   renderOverlay() {
     return (
       <div>
-        <h4>
-          Getting Initial Answers. Please Wait.
-        </h4>
-        <Loading />
+        {this.props.initializerBusy &&
+          <div>
+            <h4>
+              Getting Initial Answers. Please Wait.
+            </h4>
+            <Loading />
+          </div>
+        }
+        {!this.props.initializerBusy &&
+          <div>
+            <h4>
+              No answer sets available.
+            </h4>
+            <p>
+              This may indicate a problem in the construction of the question, or a lack of available information.
+            </p>
+          </div>
+        }
       </div>
     );
   }

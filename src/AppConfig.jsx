@@ -213,7 +213,7 @@ class AppConfig {
   }
 
   answerFeedback(data, successFun, failureFun) {
-    console.log("Set feedback here")
+    console.log("Set feedback here");
   }
 
   open(url) {

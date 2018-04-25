@@ -28,7 +28,7 @@ class Question extends React.Component {
       initializerBusy: false,
     };
 
-    this.taskPollingWaitTime = 5000; // in ms
+    this.taskPollingWaitTime = 1000; // in ms
 
     this.pullTasks = this.pullTasks.bind(this);
     this.updateTaskStatus = this.updateTaskStatus.bind(this);
@@ -382,6 +382,9 @@ class Question extends React.Component {
       <Loading />
     );
   }
+  renderInvalid() {
+
+  }
   renderLoaded() {
     return (
       <div>
@@ -404,6 +407,7 @@ class Question extends React.Component {
           subgraph={this.state.subgraph}
           refreshBusy={this.state.refreshBusy}
           answerBusy={this.state.answerBusy}
+          initializerBusy={this.state.initializerBusy}
           enableNewAnswersets={this.appConfig.enableNewAnswersets}
           enableNewQuestions={this.appConfig.enableNewQuestions}
           enableQuestionRefresh={this.appConfig.enableQuestionRefresh}
@@ -422,7 +426,8 @@ class Question extends React.Component {
     return (
       <div>
         {!this.state.ready && this.renderLoading()}
-        {this.state.ready && this.renderLoaded()}
+        {this.state.ready && !this.state.valid && this.renderInvalid()}
+        {this.state.ready && this.state.valid && this.renderLoaded()}
       </div>
     );
   }
