@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import { Grid, Row, Col, Button } from 'react-bootstrap';
 import Dialog from 'react-bootstrap-dialog';
 import NotificationSystem from 'react-notification-system';
 
@@ -26,6 +27,7 @@ class Question extends React.Component {
       refreshBusy: false,
       answerBusy: false,
       initializerBusy: false,
+      isValid: false,
     };
 
     this.taskPollingWaitTime = 1000; // in ms
@@ -57,6 +59,11 @@ class Question extends React.Component {
         owner: data.owner,
         question: data.question,
         answersets: data.answerset_list,
+        isValid: true,
+        ready: true,
+      }),
+      () => this.setState({
+        isValid: false,
         ready: true,
       }),
     );
@@ -168,7 +175,6 @@ class Question extends React.Component {
   notifyInitializer(taskId) {
     this.appConfig.taskStatus(taskId, (data) => {
       const success = data !== 'FAILURE';
-      console.log(taskId, data);
       if (success) {
         this.notificationSystem.addNotification({
           title: 'Initial Answers are Available',
@@ -383,7 +389,27 @@ class Question extends React.Component {
     );
   }
   renderInvalid() {
-
+    return (
+      <Grid>
+        <Row>
+          <Col md={12}>
+            <h3>
+              Unknown Question
+            </h3>
+            <p>
+              {"We're sorry but we can't find this question. It may have been deleted."}
+            </p>
+          </Col>
+        </Row>
+        <Row>
+          <Col md={4} mdOffSet={4}>
+            <Button bsSize="large" href={this.appConfig.urls.questions}>
+              Browse Questions
+            </Button>
+          </Col>
+        </Row>
+      </Grid>
+    );
   }
   renderLoaded() {
     return (
@@ -392,29 +418,34 @@ class Question extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        <QuestionPres
-          user={this.state.user}
-          owner={this.state.owner}
-          callbackUpdateMeta={this.callbackUpdateMeta}
-          callbackRefresh={this.callbackRefresh}
-          callbackNewAnswerset={this.callbackNewAnswerset}
-          callbackFork={this.callbackFork}
-          callbackDelete={this.callbackDelete}
-          callbackFetchGraph={this.callbackFetchGraph}
-          callbackAnswersetOpen={this.callbackAnswerset}
-          question={this.state.question}
-          answersets={this.state.answersets}
-          subgraph={this.state.subgraph}
-          refreshBusy={this.state.refreshBusy}
-          answerBusy={this.state.answerBusy}
-          initializerBusy={this.state.initializerBusy}
-          enableNewAnswersets={this.appConfig.enableNewAnswersets}
-          enableNewQuestions={this.appConfig.enableNewQuestions}
-          enableQuestionRefresh={this.appConfig.enableQuestionRefresh}
-          enableQuestionEdit={this.appConfig.enableQuestionEdit}
-          enableQuestionDelete={this.appConfig.enableQuestionDelete}
-          enableQuestionFork={this.appConfig.enableQuestionFork}
-        />
+        {this.state.isValid &&
+          <QuestionPres
+            user={this.state.user}
+            owner={this.state.owner}
+            callbackUpdateMeta={this.callbackUpdateMeta}
+            callbackRefresh={this.callbackRefresh}
+            callbackNewAnswerset={this.callbackNewAnswerset}
+            callbackFork={this.callbackFork}
+            callbackDelete={this.callbackDelete}
+            callbackFetchGraph={this.callbackFetchGraph}
+            callbackAnswersetOpen={this.callbackAnswerset}
+            question={this.state.question}
+            answersets={this.state.answersets}
+            subgraph={this.state.subgraph}
+            refreshBusy={this.state.refreshBusy}
+            answerBusy={this.state.answerBusy}
+            initializerBusy={this.state.initializerBusy}
+            enableNewAnswersets={this.appConfig.enableNewAnswersets}
+            enableNewQuestions={this.appConfig.enableNewQuestions}
+            enableQuestionRefresh={this.appConfig.enableQuestionRefresh}
+            enableQuestionEdit={this.appConfig.enableQuestionEdit}
+            enableQuestionDelete={this.appConfig.enableQuestionDelete}
+            enableQuestionFork={this.appConfig.enableQuestionFork}
+          />
+        }
+        {!this.state.isValid &&
+          this.renderInvalid()
+        }
         <Dialog ref={(el) => { this.dialog = el; }} />
         <NotificationSystem
           ref={(ref) => { this.notificationSystem = ref; }}
@@ -426,8 +457,7 @@ class Question extends React.Component {
     return (
       <div>
         {!this.state.ready && this.renderLoading()}
-        {this.state.ready && !this.state.valid && this.renderInvalid()}
-        {this.state.ready && this.state.valid && this.renderLoaded()}
+        {this.state.ready && this.renderLoaded()}
       </div>
     );
   }

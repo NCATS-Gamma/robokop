@@ -38,24 +38,21 @@ class QuestionNew extends React.Component {
   }
 
   componentDidMount() {
-    this.appConfig.concepts(
-      (data) => {
-        this.setState({
-          concepts: data,
-          conceptsReady: true,
-        });
-      },
-    );
-    this.appConfig.user(
-      (data) => {
-        this.setState({
-          user: data,
-          userReady: true,
-        });
-      },
-    );
-    const isFork = this.props.initializationId != 'None';
-    if (isFork)
+    this.appConfig.concepts((data) => {
+      this.setState({
+        concepts: data,
+        conceptsReady: true,
+      });
+    });
+
+    this.appConfig.user((data) => {
+      this.setState({
+        user: data,
+        userReady: true,
+      });
+    });
+    const isFork = this.props.initializationId !== '';
+    if (isFork) {
       this.appConfig.questionData(
         this.props.initializationId,
         data => this.setState({
@@ -67,7 +64,7 @@ class QuestionNew extends React.Component {
           dataReady: true,
         }),
       );
-    else
+    } else {
       this.setState({
         isFork,
         name: '',
@@ -76,6 +73,7 @@ class QuestionNew extends React.Component {
         initializationQuestion: {},
         dataReady: true,
       })
+    }
   }
 
   onCreate() {

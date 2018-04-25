@@ -36,7 +36,9 @@ def new_from_post():
     """Trigger creation of a new question, or prepopulate question new page"""
     # If you make a post request with a question_id we will assume you want a new question editor
     # we will prepopulate the question new page with data from that question (if it is a valid question id)
-    return render_template('questionNew.html', question_id=request.form['question_id'])
+    question_id = request.form['question_id'] if request.form['question_id'] else ''
+
+    return render_template('questionNew.html', question_id=question_id)
 
 # Question
 @q.route('/<question_id>', methods=['GET'])
