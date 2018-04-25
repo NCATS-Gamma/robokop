@@ -53,7 +53,7 @@ def questions_data():
     tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE')]
 
     # get question hashes
-    question_hashes = [re.match("\['(.*)'\]", t['args']).group(1) if t['args'] else None for t in tasks]
+    question_hashes = [re.match(r"\['(.*)'\]", t['args']).group(1) if t['args'] else None for t in tasks]
 
     # split into answer and update tasks
     task_types = ['answering' if t['name'] == 'tasks.answer_question' else
@@ -62,18 +62,18 @@ def questions_data():
 
     def augment_info(question):
         answerset_timestamps = [a.timestamp for a in question.answersets]
-        latest_idx = answerset_timestamps.index(max(answerset_timestamps))
-        latest_answerset_id = question.answersets[latest_idx].id
-        latest_answerset_timestamp = question.answersets[latest_idx].timestamp
+        latest_idx = answerset_timestamps.index(max(answerset_timestamps)) if answerset_timestamps else None
+        latest_answerset_id = question.answersets[latest_idx].id if latest_idx else None
+        latest_answerset_timestamp = question.answersets[latest_idx].timestamp if latest_idx else None
         q = question.toJSON()
         q.pop('user_id')
         q.pop('nodes')
         q.pop('edges')
         tasks = [task_types[i] for i in [j for j, h in enumerate(question_hashes) if h == question.hash]]
         return {
-            'latest_answerset_id':latest_answerset_id,
-            'latest_answerset_timestamp':latest_answerset_timestamp,
-            'tasks':tasks,
+            'latest_answerset_id': latest_answerset_id,
+            'latest_answerset_timestamp': latest_answerset_timestamp,
+            'tasks': tasks,
             **q}
 
     now_str = datetime.now().__str__()
