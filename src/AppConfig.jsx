@@ -97,7 +97,7 @@ class AppConfig {
   concepts(fun) { this.getRequest(`${this.apis.concepts}`, fun); }
   user(fun) { this.getRequest(`${this.apis.user}`, fun); }
   questionListData(fun) { this.getRequest(`${this.apis.questions}`, fun); }
-  questionData(id, fun) { this.getRequest(`${this.apis.question(id)}`, fun); }
+  questionData(id, successFun, failureFun) { this.getRequest(`${this.apis.question(id)}`, successFun, failureFun); }
   questionSubgraph(id, fun) { this.getRequest(`${this.apis.question(id)}/subgraph`, fun); }
   answersetData(qid, id, fun) { this.getRequest(`${this.apis.answerset(qid, id)}`, fun); }
   answerData(qid, setId, id, fun) { this.getRequest(`${this.apis.answer(qid, setId, id)}`, fun); }
@@ -146,7 +146,7 @@ class AppConfig {
     // We make a form request to redirect after the post
 
     // Spoofing a form post request with proper headers is actualy sort of tricky
-    // To do this we use some jquery to inject a form and that submit that
+    // To do this we use some jquery to inject a form and then submit that
     // This function is a little more general purpose and could be moved and used elsewhere
     // but let's avoid that if possible.
     function formPost(path, parameters) {
@@ -202,8 +202,7 @@ class AppConfig {
   }
   questionDelete(qid, successFunction, failureFunction) {
     // Deleting a question can only be done by the owner
-    
-    // Make the post request
+    // Make the delete request
     this.deleteRequest(
       this.apis.question(qid),
       successFunction,
@@ -252,17 +251,32 @@ class AppConfig {
     });
   }
 
-  getRequest(addr, fun = () => {}) {
-    this.comms.get(addr).then((result) => {
-      fun(result.data); // 'ok'
-    }).catch((err) => {
+  getRequest(
+    addr,
+    successFunction = () => {},
+    failureFunction = (err) => {
       window.alert('There was a problem contacting the server.');
       console.log('Problem with get request:');
       console.log(err);
+    },
+  ) {
+    this.comms.get(addr).then((result) => {
+      successFunction(result.data); // 'ok'
+    }).catch((err) => {
+      failureFunction(err);
     });
   }
 
-  postRequest(addr, data, successFunction = () => {}, failureFunction = () => {}) {
+  postRequest(
+    addr,
+    data,
+    successFunction = () => {},
+    failureFunction = (err) => {
+      window.alert('There was a problem contacting the server.');
+      console.log('Problem with post request:');
+      console.log(err);
+    },
+  ) {
     this.comms.post(addr, data).then((result) => {
       successFunction(result.data);
     }).catch((err) => {
@@ -270,7 +284,16 @@ class AppConfig {
     });
   }
 
-  deleteRequest(addr, data, successFunction = () => {}, failureFunction = () => {}) {
+  deleteRequest(
+    addr,
+    data,
+    successFunction = () => {},
+    failureFunction = (err) => {
+      window.alert('There was a problem contacting the server.');
+      console.log('Problem with delete request:');
+      console.log(err);
+    },
+  ) {
     this.comms.delete(addr).then((result) => {
       successFunction(result.data);
     }).catch((err) => {
