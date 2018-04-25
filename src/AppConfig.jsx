@@ -33,7 +33,8 @@ class AppConfig {
       questionTasks: questionId => this.url(`api/q/${questionId}/tasks`),
       questionAnswer: questionId => this.url(`api/q/${questionId}/answer`),
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg`),
-      taskStatus: taskId => this.url(`status/${taskId}`),
+      taskStatus: taskId => this.url(`api/t/${taskId}`),
+      tasks: taskId => this.url(`api/tasks`),
     };
 
     this.url = this.url.bind(this);
