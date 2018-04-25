@@ -120,6 +120,10 @@ def get_concepts():
     concepts = list(node_types.node_types - {'UnspecifiedType'})
     return jsonify(concepts)
 
+@app.route('/api/user')
+def get_user():
+    user = getAuthData()
+    return jsonify(user)
 
 ################################################################################
 ##### Account Things ###########################################################

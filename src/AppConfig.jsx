@@ -24,6 +24,7 @@ class AppConfig {
 
     // Other URLs that are primarily used for API calls
     this.apis = {
+      user: this.url('api/user'),
       concepts: this.url('api/concepts'),
       questions: this.url('api/questions/'),
       question: questionId => this.url(`api/q/${questionId}`),
