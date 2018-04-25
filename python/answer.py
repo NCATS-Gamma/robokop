@@ -177,7 +177,10 @@ def list_answersets():
     return db.session.query(AnswerSet).all()
 
 def get_answer_by_id(id):
-    return db.session.query(Answer).filter(Answer.id == id).first()
+    answer = db.session.query(Answer).filter(Answer.id == id).first()
+    if not answer:
+        raise KeyError("No such answer.")
+    return answer
 
 def list_answers_by_answerset(answerset):
     answers = db.session.query(Answer)\
@@ -186,7 +189,10 @@ def list_answers_by_answerset(answerset):
     return answers
 
 def get_answerset_by_id(id):
-    return db.session.query(AnswerSet).filter(AnswerSet.id == id).first()
+    answerset = db.session.query(AnswerSet).filter(AnswerSet.id == id).first()
+    if not answerset:
+        raise KeyError("No such answerset.")
+    return answerset
 
 def list_answersets_by_question_hash(hash):
     asets = db.session.query(AnswerSet)\
