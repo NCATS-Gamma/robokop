@@ -73,7 +73,7 @@ class QuestionsAPI(Resource):
             q.pop('edges')
             tasks = [task_types[i] for i in [j for j, h in enumerate(question_hashes) if h == question.hash]]
             return {'latest_answerset_id': latest_answerset_id,
-                    'latest_answerset_timestamp': latest_answerset_timestamp.isoformat(),
+                    'latest_answerset_timestamp': latest_answerset_timestamp.isoformat() if latest_answerset_timestamp else None,
                     'tasks': tasks,
                     **q}
 
