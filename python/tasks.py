@@ -2,28 +2,24 @@
 Tasks for Celery workers
 '''
 
-import time
 import os
 import sys
+import requests
 from celery import Celery
 from kombu import Queue
 from flask_mail import Message
-from flask_security.core import current_user
 
 from setup import app, mail, rosetta
-from answer import get_answerset_by_id
+from answer import get_answerset_by_id, Answerset
 from question import get_question_by_id, list_questions_by_hash
 from logging_config import logger
 
 greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
 sys.path.insert(0, greent_path)
 from greent import node_types
-from greent.rosetta import Rosetta
-from greent.graph_components import KNode
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build', 'builder'))
-from userquery import UserQuery
-from builder import KnowledgeGraph, lookup_identifier, tokenize_path, run_query, generate_query
+from builder import tokenize_path, run_query, generate_query
 
 # set up Celery
 app.config['broker_url'] = os.environ["CELERY_BROKER_URL"]
@@ -107,7 +103,11 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
     question = get_question_by_id(question_id)
 
     try:
-        answerset = question.answer()
+        r = requests.post(f'http://{os.environ["ROBOKOP_HOST"]}:6010/api/', json=question.toJSON())
+        # wait here for response
+        answerset_json = r.json()
+        logger.info(answerset_json)
+        answerset = Answerset(answerset_json)
     except Exception as err:
         logger.exception("Something went wrong with question answering.")
         raise err

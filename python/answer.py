@@ -40,6 +40,9 @@ class AnswerSet(db.Model):
             struct = args[0]
             for key in struct:
                 if key in attributes:
+                    if key=='answers':
+                        struct[key] = [Answer(a) for a in struct[key]]
+
                     setattr(self, key, struct[key])
                 else:
                     warnings.warn("JSON field {} ignored.".format(key))
