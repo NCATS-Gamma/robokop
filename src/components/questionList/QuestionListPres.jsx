@@ -6,80 +6,86 @@ import QuestionListTableAgGrid from './QuestionListTableAgGrid';
 class QuestionListPres extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      questions: [{}],
+    };
 
-    this.onQuestionRowClick = this.onQuestionRowClick.bind(this);
-    this.onQuestionNewClick = this.onQuestionNewClick.bind(this);
+    this.syncStateAndProps = this.syncStateAndProps.bind(this);
+    this.getTableHeight = this.getTableHeight.bind(this);
+  }
+  componentDidMount() {
+    this.syncStateAndProps(this.props);
   }
 
-  onQuestionRowClick(question) {
-    window.open(this.props.questionUrlFunc(question), '_self');
+  componentWillReceiveProps(nextProps) {
+    this.syncStateAndProps(nextProps);
   }
 
-  onQuestionNewClick() {
-    window.open(this.props.questionNewUrl, '_self');
+  getTableHeight() {
+    let h = $(window).height() - 250;
+    if (h < 250) {
+      h = 250;
+    }
+    return `${h}px`;
+  }
+
+  syncStateAndProps(newProps) {
+    let questions = newProps.questions.map((q) => {
+      q.isUserOwned = q.user_email === this.props.user.username;
+      q.hasAnswerset = Boolean(q.latest_answerset_id);
+      q.isBusy = Array.isArray(q.tasks) && q.tasks.length > 0;
+      return q;
+    });
+    // Move the user owned questions to the top
+    // questions = questions.filter(q => q.isUserOwned).concat(questions.filter(q => !q.isUserOwned));
+
+    this.setState({ questions });
   }
 
   render() {
     const isAuth = this.props.user.is_authenticated;
-    const hasUserQuestions = this.props.userQuestions.length > 0;
+    const nUserQuestions = this.state.questions.reduce((n, q) => (n + q.isUserOwned), 0);
+    const hasUserQuestions = nUserQuestions > 0;
 
     const showLogIn = !isAuth;
     const showMyQuestionsEmpty = isAuth && !hasUserQuestions;
-    const showMyQuestionsTable = isAuth && hasUserQuestions;
-
+    const tableHeight = this.getTableHeight();
+    const nQuestions = this.state.questions.length;
     return (
       <Grid>
         <Row>
           <Col md={12}>
+            <h3>Robokop Question Library</h3>
+            <p>
+              {nQuestions} questions have been asked using Robokop.
+            </p>
+          </Col>
+          <Col md={12}>
             {showLogIn &&
-              <Alert>
+              <p>
                 If you would like to begin asking your own questions you will need to <a href={this.props.loginUrl}>Log in</a>
-              </Alert>
+              </p>
             }
-            {!showLogIn &&
-            <Panel>
-              <Panel.Heading>
-                <Panel.Title>
-                  <b>My Questions</b>
-                </Panel.Title>
-              </Panel.Heading>
-              <Panel.Body>
-                {showMyQuestionsEmpty &&
-                  <div>
-                    <h4>
-                      {"You don't seem to have any questions of your own yet."}
-                    </h4>
-                    <Button bsStyle="default" onClick={this.onQuestionNewClick}>
-                      Ask a Question
-                    </Button>
-                  </div>
-                }
-                {showMyQuestionsTable &&
-                  <QuestionListTableAgGrid
-                    questions={this.props.userQuestions}
-                    showSearch
-                    callbackRowClick={this.onQuestionRowClick}
-                    height="200px"
-                  />
-                }
-              </Panel.Body>
-            </Panel>
+            {!showLogIn && showMyQuestionsEmpty &&
+              <div>
+                <p>
+                  {"You don't seem to have any questions of your own yet."}
+                </p>
+                <Button bsStyle="default" onClick={this.onQuestionNewClick}>
+                  Ask a Question
+                </Button>
+                <br />
+                <br />
+              </div>
             }
-            <Panel>
-              <Panel.Heading>
-                <Panel.Title>
-                  <b>Explore All Questions</b>
-                </Panel.Title>
-              </Panel.Heading>
-              <Panel.Body>
-                <QuestionListTableAgGrid
-                  questions={this.props.questions}
-                  showSearch
-                  callbackRowClick={this.onQuestionRowClick}
-                  height="400px"
-                />
-              </Panel.Body>
-            </Panel>
+            <QuestionListTableAgGrid
+              questions={this.state.questions}
+              showSearch
+              answersetUrlFunction={this.props.answersetUrlFunction}
+              callbackAnswersetSelect={this.props.callbackAnswersetSelect}
+              callbackQuestionSelect={this.props.callbackQuestionSelect}
+              height={tableHeight}
+            />
           </Col>
         </Row>
       </Grid>

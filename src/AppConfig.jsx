@@ -26,7 +26,7 @@ class AppConfig {
       concepts: this.url('api/concepts'),
       questions: this.url('api/questions/'),
       question: questionId => this.url(`api/q/${questionId}`),
-      answerset: (answersetId) => this.url(`api/a/${answersetId}`),
+      answerset: answersetId => this.url(`api/a/${answersetId}`),
       answer: (answersetId, answerId) => this.url(`api/a/${answersetId}/${answerId}`),
       questionTasks: questionId => this.url(`api/q/${questionId}/tasks`),
       questionAnswer: questionId => this.url(`api/q/${questionId}/answer`),

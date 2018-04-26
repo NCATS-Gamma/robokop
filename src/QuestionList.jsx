@@ -15,14 +15,12 @@ class QuestionList extends React.Component {
       dataReady: false,
       userReady: false,
       user: {},
-      userQuestions: [],
       questions: [],
     };
   }
 
   componentDidMount() {
     this.appConfig.questionListData(data => this.setState({
-      userQuestions: data.user_questions,
       questions: data.questions,
       dataReady: true,
     }));
@@ -31,7 +29,6 @@ class QuestionList extends React.Component {
       userReady: true,
     }));
   }
-
   renderLoading() {
     return (
       <Loading />
@@ -47,8 +44,9 @@ class QuestionList extends React.Component {
         <QuestionListPres
           loginUrl={this.appConfig.urls.login}
           questionNewUrl={this.appConfig.urls.questionDesign}
-          questionUrlFunc={q => this.appConfig.urls.question(q.id)}
-          userQuestions={this.state.userQuestions}
+          answersetUrlFunction={(q, a) => this.appConfig.urls.answerset(q.id, a.id)}
+          callbackAnswersetSelect={(q, a) => this.appConfig.redirect(this.appConfig.urls.answerset(q.id, a.id))}
+          callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
           questions={this.state.questions}
           user={this.state.user}
         />
