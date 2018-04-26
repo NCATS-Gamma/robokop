@@ -21,13 +21,16 @@ from greent import node_types
 
 @api.route('/tasks')
 class Tasks(Resource):
+    @api.response(200, 'Success')
     def get(self):
         """Get list of tasks (queued and completed)"""
         tasks = get_tasks()
         return tasks
 
 @api.route('/t/<task_id>')
+@api.param('task_id', 'A task id')
 class TaskStatus(Resource):
+    @api.response(200, 'Success')
     def get(self, task_id):
         """Get status for task"""
         # task = celery.AsyncResult(task_id)
@@ -39,6 +42,7 @@ class TaskStatus(Resource):
 
 @api.route('/concepts')
 class Concepts(Resource):
+    @api.response(200, 'Success')
     def get(self):
         """Get known biomedical concepts"""
         concepts = list(node_types.node_types - {'UnspecifiedType'})
@@ -46,6 +50,7 @@ class Concepts(Resource):
 
 @api.route('/user')
 class User(Resource):
+    @api.response(200, 'Success')
     def get(self):
         """Get current user info"""
         user = getAuthData()

@@ -6,8 +6,7 @@ from datetime import datetime
 import re
 import random
 import string
-import requests
-from flask import Blueprint, jsonify, render_template, request
+from flask import jsonify, request
 from flask_security import auth_required, current_user
 from flask_restplus import Resource
 
@@ -16,13 +15,16 @@ from question import list_questions, list_questions_by_username, Question
 from tasks import initialize_question
 from setup import api
 
-questions_api = Blueprint('questions_api', __name__,
-                        template_folder='templates')
-
 # New Question Submission
 @api.route('/questions/')
 class QuestionsAPI(Resource):
     @auth_required('session', 'basic')
+    @api.response(201, 'Question created')
+    @api.doc(params={
+        'name': 'Name of question',
+        'natural_question': 'Natural-language question',
+        'notes': 'Notes',
+        'query': 'Machine-readable question'})
     def post(self):
         """Create new question"""
         user_id = current_user.id
@@ -39,6 +41,7 @@ class QuestionsAPI(Resource):
 
         return qid, 201
 
+    @api.response(200, 'Success')
     def get(self):
         """Get list of questions"""
         user = getAuthData()
@@ -69,14 +72,11 @@ class QuestionsAPI(Resource):
             q.pop('nodes')
             q.pop('edges')
             tasks = [task_types[i] for i in [j for j, h in enumerate(question_hashes) if h == question.hash]]
-            return {
-                'latest_answerset_id': latest_answerset_id,
-                'latest_answerset_timestamp': latest_answerset_timestamp,
-                'tasks': tasks,
-                **q}
+            return {'latest_answerset_id': latest_answerset_id,
+                    'latest_answerset_timestamp': latest_answerset_timestamp.isoformat(),
+                    'tasks': tasks,
+                    **q}
 
-        now_str = datetime.now().__str__()
-        return jsonify({'timestamp': now_str,\
-                        'user': user,\
-                        'questions': [augment_info(q) for q in question_list],\
-                        'user_questions': [augment_info(q) for q in user_question_list]})
+        return {'user': user,\
+                'questions': [augment_info(q) for q in question_list],\
+                'user_questions': [augment_info(q) for q in user_question_list]}, 200

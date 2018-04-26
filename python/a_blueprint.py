@@ -17,14 +17,13 @@ a = Blueprint('answer', __name__,
               template_folder='templates')
 
 # Answer Set
-@a.route('/<qa_id>')
-def answerset(qa_id):
+@a.route('/<answerset_id>')
+def answerset(answerset_id):
     """Deliver answerset page for a given id"""
-    question_id, answerset_id = qa_id.split('_')
-    return render_template('answerset.html', question_id=question_id, answerset_id=answerset_id)
+    return render_template('answerset.html', answerset_id=answerset_id)
 
 # Answer
-@a.route('/<qa_id>/<answer_id>')
-def answer(question_id, answerset_id, answer_id):
+@a.route('/<answerset_id>/<answer_id>')
+def answer(answerset_id, answer_id):
     """Deliver answerset page for a given id"""
-    return render_template('answer.html', question_id=question_id, answerset_id=answerset_id, answer_id=answer_id)
+    return render_template('answer.html', answerset_id=answerset_id, answer_id=answer_id)
