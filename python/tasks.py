@@ -108,15 +108,15 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
 
     try:
         answerset = question.answer()
-        if answerset.answers:
-            self.update_state(state='ANSWERS FOUND')
-            logger.info("Answers found.")
-        else:
-            self.update_state(state='NO ANSWERS FOUND')
-            logger.info("No answers found.")
     except Exception as err:
-        logger.error("Something went wrong with question answering.")
+        logger.exception("Something went wrong with question answering.")
         raise err
+    if answerset.answers:
+        self.update_state(state='ANSWERS FOUND')
+        logger.info("Answers found.")
+    else:
+        logger.exception("Question answering completed: no answers found.")
+        raise ValueError("Question answering completed: no answers found.")
 
     if user_email:
         with app.app_context():
