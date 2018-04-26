@@ -43,6 +43,10 @@ class Answerset extends React.Component {
         dataReady: true,
         isValid: true,
       }),
+      () => this.setState({
+        dataReady: true,
+        isValid: false,
+      }),
     );
     this.appConfig.user(data => this.setState({
       user: this.appConfig.ensureUser(data),

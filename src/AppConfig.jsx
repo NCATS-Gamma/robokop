@@ -91,8 +91,8 @@ class AppConfig {
   questionListData(fun) { this.getRequest(`${this.apis.questions}`, fun); }
   questionData(id, successFun, failureFun) { this.getRequest(`${this.apis.question(id)}`, successFun, failureFun); }
   questionSubgraph(id, fun) { this.getRequest(`${this.apis.question(id)}/subgraph`, fun); }
-  answersetData(id, fun) { this.getRequest(`${this.apis.answerset(id)}`, fun); }
-  answerData(setId, id, fun) { this.getRequest(`${this.apis.answer(setId, id)}`, fun); }
+  answersetData(id, successFun, failureFun) { this.getRequest(`${this.apis.answerset(id)}`, successFun, failureFun); }
+  answerData(setId, id, successFun, failureFun) { this.getRequest(`${this.apis.answer(setId, id)}`, successFun, failureFun); }
 
   questionCreate(data, successFun, failureFun) {
     // Data must contain a complete specification for a new question

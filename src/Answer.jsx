@@ -29,6 +29,10 @@ class Answer extends React.Component {
         isValid: true,
         dataReady: true,
       }),
+      () => this.setState({
+        isValid: false,
+        dataReady: true,
+      }),
     );
     this.appConfig.user(data => this.setState({
       user: this.appConfig.ensureUser(data),
