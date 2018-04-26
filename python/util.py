@@ -3,7 +3,7 @@ import requests
 from flask_security.core import current_user
 
 def get_tasks():
-    flower_url = 'http://{}:{}/api/tasks'.format(os.environ['FLOWER_ADDRESS'], os.environ['FLOWER_PORT'])
+    flower_url = f'http://{os.environ["FLOWER_ADDRESS"]}:{os.environ["FLOWER_PORT"]}/api/tasks'
     response = requests.get(flower_url, auth=(os.environ['FLOWER_USER'], os.environ['FLOWER_PASSWORD']))
     return response.json()
 

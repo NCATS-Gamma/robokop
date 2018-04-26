@@ -4,6 +4,7 @@ Tasks for Celery workers
 
 import os
 import sys
+import time
 import requests
 from celery import Celery
 from kombu import Queue
@@ -27,12 +28,12 @@ app.config['result_backend'] = os.environ["CELERY_RESULT_BACKEND"]
 celery = Celery(app.name, broker=app.config['broker_url'])
 celery.conf.update(app.config)
 celery.conf.task_queues = (
-    Queue('answer', routing_key='answer'),
-    Queue('update', routing_key='update'),
-    Queue('initialize', routing_key='initialize'),
+    Queue('manager_answer', routing_key='manager_answer'),
+    Queue('manager_update', routing_key='manager_update'),
+    Queue('manager_initialize', routing_key='manager_initialize'),
 )
 
-@celery.task(bind=True, queue='initialize')
+@celery.task(bind=True, queue='manager_initialize')
 def initialize_question(self, question_hash, question_id=None, user_email=None):
     '''
     Initialize a new question:
@@ -90,7 +91,7 @@ def initialize_question(self, question_hash, question_id=None, user_email=None):
 
     logger.info("Done initializing.")
 
-@celery.task(bind=True, queue='answer')
+@celery.task(bind=True, queue='manager_answer')
 def answer_question(self, question_hash, question_id=None, user_email=None):
     '''
     Generate answerset for a question
@@ -134,7 +135,7 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
     logger.info("Done answering.")
     return answerset.id
 
-@celery.task(bind=True, queue='update')
+@celery.task(bind=True, queue='manager_update')
 def update_kg(self, question_hash, question_id=None, user_email=None):
     '''
     Update the shared knowledge graph with respect to a question
@@ -142,21 +143,21 @@ def update_kg(self, question_hash, question_id=None, user_email=None):
 
     self.update_state(state='UPDATING KG')
     logger.info("Updating the knowledge graph...")
-    self.send_event('task_progress', {'hello':'world'})
 
     question_id = question_id if question_id else list_questions_by_hash(question_hash)[0].id
     question = get_question_by_id(question_id)
 
     try:
-        symbol_lookup = {node_types.type_codes[a]:a for a in node_types.type_codes} # invert this dict
-        # assume the nodes are in order
-        node_string = ''.join([symbol_lookup[n['type']] for n in question.nodes])
-        start_identifiers = question.nodes[0]['identifiers']
-        end_identifiers = question.nodes[-1]['identifiers']
-
-        steps = tokenize_path(node_string)
-        query = generate_query(steps, start_identifiers, end_identifiers)
-        run_query(query, supports=['chemotext'], result_name='q_'+question.hash, rosetta=rosetta, prune=False)
+        r = requests.post(f'http://{os.environ["ROBOKOP_HOST"]}:6011/api/', json=question.toJSON())
+        polling_url = r.json()['poll']
+        
+        for i in range(60*60*24): # wait up to 1 day
+            r = requests.get(polling_url, auth=(os.environ['FLOWER_USER'], os.environ['FLOWER_PASSWORD']))
+            if r.json()['state'] == 'SUCCESS':
+                break
+            time.sleep(1)
+        else:
+            raise RuntimeError("KG updating has not completed after 1 day. It will continue working, but we must return to the manager.")
 
         if user_email:
             # send completion email

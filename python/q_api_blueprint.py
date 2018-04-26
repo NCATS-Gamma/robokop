@@ -125,18 +125,24 @@ class QuestionTasks(Resource):
 
         question_hash = question.hash
 
-        tasks = get_tasks().values()
+        tasks = list(get_tasks().values())
 
         # filter out tasks for other questions
-        tasks = [t for t in tasks if (re.match(r"\['(.*)'\]", t['args']).group(1) if t['args'] else None) == question_hash]
+        question_tasks = []
+        for t in tasks:
+            if not t['args']:
+                continue
+            match = re.match(r"\['(.*)'\]", t['args'])
+            if match and match.group(1) == question_hash:
+                question_tasks.append(t)
 
         # filter out the SUCCESS/FAILURE tasks
-        tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE')]
+        question_tasks = [t for t in question_tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE')]
 
         # split into answer and update tasks
-        answerers = [t for t in tasks if t['name'] == 'tasks.answer_question']
-        updaters = [t for t in tasks if t['name'] == 'tasks.update_kg']
-        initializers = [t for t in tasks if t['name'] == 'tasks.initialize_question']
+        answerers = [t for t in question_tasks if t['name'] == 'tasks.answer_question']
+        updaters = [t for t in question_tasks if t['name'] == 'tasks.update_kg']
+        initializers = [t for t in question_tasks if t['name'] == 'tasks.initialize_question']
 
         return {'answerers': answerers,
                 'updaters': updaters,
