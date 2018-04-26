@@ -1,16 +1,6 @@
 import os
 import requests
 from flask_security.core import current_user
-from werkzeug.routing import BaseConverter
-
-class QAConverter(BaseConverter):
-
-    def to_python(self, value):
-        qid, aid = value.split('_')
-        return [qid, int(aid)]
-
-    def to_url(self, values):
-        return '_'.join(BaseConverter.to_url(value) for value in values)
 
 def get_tasks():
     flower_url = 'http://{}:{}/api/tasks'.format(os.environ['FLOWER_ADDRESS'], os.environ['FLOWER_PORT'])

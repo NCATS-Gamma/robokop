@@ -30,7 +30,6 @@ class Answerset extends React.Component {
     // makes the appropriate GET request from server.py,
     // uses the result to set this.state
     this.appConfig.answersetData(
-      this.props.questionId,
       this.props.id,
       data => this.setState({
         question: data.question,

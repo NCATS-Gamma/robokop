@@ -26,8 +26,8 @@ class AppConfig {
       concepts: this.url('api/concepts'),
       questions: this.url('api/questions/'),
       question: questionId => this.url(`api/q/${questionId}`),
-      answerset: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}`),
-      answer: (questionId, answersetId, answerId) => this.url(`api/a/${questionId}_${answersetId}/${answerId}`),
+      answerset: (answersetId) => this.url(`api/a/${answersetId}`),
+      answer: (answersetId, answerId) => this.url(`api/a/${answersetId}/${answerId}`),
       questionTasks: questionId => this.url(`api/q/${questionId}/tasks`),
       questionAnswer: questionId => this.url(`api/q/${questionId}/answer`),
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg`),
@@ -91,8 +91,8 @@ class AppConfig {
   questionListData(fun) { this.getRequest(`${this.apis.questions}`, fun); }
   questionData(id, successFun, failureFun) { this.getRequest(`${this.apis.question(id)}`, successFun, failureFun); }
   questionSubgraph(id, fun) { this.getRequest(`${this.apis.question(id)}/subgraph`, fun); }
-  answersetData(qid, id, fun) { this.getRequest(`${this.apis.answerset(qid, id)}`, fun); }
-  answerData(qid, setId, id, fun) { this.getRequest(`${this.apis.answer(qid, setId, id)}`, fun); }
+  answersetData(id, fun) { this.getRequest(`${this.apis.answerset(id)}`, fun); }
+  answerData(setId, id, fun) { this.getRequest(`${this.apis.answer(setId, id)}`, fun); }
 
   questionCreate(data, successFun, failureFun) {
     // Data must contain a complete specification for a new question

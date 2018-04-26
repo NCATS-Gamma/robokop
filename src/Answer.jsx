@@ -23,7 +23,6 @@ class Answer extends React.Component {
 
   componentDidMount() {
     this.appConfig.answerData(
-      this.props.questionId,
       this.props.setId,
       this.props.id,
       data => this.setState({

@@ -8,15 +8,13 @@ from flask_restplus import Resource
 
 from question import get_question_by_id, list_questions_by_hash
 from answer import list_answersets_by_question_hash, get_answer_by_id, get_answerset_by_id, list_answers_by_answerset
-from util import getAuthData, QAConverter
+from util import getAuthData
 
 from feedback import list_feedback_by_answer
 from logging_config import logger
 from setup import app, api
 
-app.url_map.converters['qa'] = QAConverter
-
-@api.route('/a/<qa:qa_id>')
+@api.route('/a/<qa_id>')
 @api.param('qa_id', 'An answerset id, prefixed by the question hash, i.e. "<question_id>_<answerset_id>"')
 class AnswersetAPI(Resource):
     @api.response(200, 'Success')
@@ -24,7 +22,7 @@ class AnswersetAPI(Resource):
     def get(self, qa_id):
         """Get answerset """
         try:
-            question_id, answerset_id = qa_id
+            question_id, answerset_id = qa_id.split('_')
             question = get_question_by_id(question_id)
             answerset = get_answerset_by_id(answerset_id)
             answersets = list_answersets_by_question_hash(question.hash)
@@ -50,7 +48,7 @@ class AnswersetAPI(Resource):
                 'other_questions': [q.toJSON() for q in questions],\
                 'answerset_graph': answerset_graph}, 200
 
-@api.route('/a/<qa:qa_id>/<int:answer_id>')
+@api.route('/a/<qa_id>/<int:answer_id>')
 @api.param('qa_id', 'An answerset id, prefixed by the question hash, i.e. "<question_id>_<answerset_id>"')
 @api.param('answer_id', 'An answer id')
 class AnswerAPI(Resource):
@@ -60,7 +58,7 @@ class AnswerAPI(Resource):
         """Get answer"""
 
         try:
-            question_id, answerset_id = qa_id
+            question_id, answerset_id = qa_id.split('_')
             question = get_question_by_id(question_id)
             answerset = get_answerset_by_id(answerset_id)
             answersets = list_answersets_by_question_hash(question.hash)
