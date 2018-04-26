@@ -16,7 +16,7 @@ from setup import db
 from sqlalchemy import event
 from sqlalchemy import DDL
 
-class AnswerSet(db.Model):
+class Answerset(db.Model):
     '''
     An "answer" to a Question.
     Contains a ranked list of walks through the Knowledge Graph.
@@ -99,7 +99,7 @@ class AnswerSet(db.Model):
         return len(self.answers)
 
 event.listen(
-    AnswerSet.__table__,
+    Answerset.__table__,
     "after_create",
     DDL("ALTER SEQUENCE answer_set_id_seq RESTART WITH 1453;")
 )
@@ -124,7 +124,7 @@ class Answer(db.Model):
 
     # Use cascade='delete,all' to propagate the deletion of an AnswerSet onto its Answers
     answer_set = relationship(
-        AnswerSet,
+        Answerset,
         backref=backref('answers',
                         uselist=True,
                         cascade='delete,all'))
@@ -179,7 +179,7 @@ class Answer(db.Model):
         return short_name
 
 def list_answersets():
-    return db.session.query(AnswerSet).all()
+    return db.session.query(Answerset).all()
 
 def get_answer_by_id(id):
     answer = db.session.query(Answer).filter(Answer.id == id).first()
@@ -194,13 +194,13 @@ def list_answers_by_answerset(answerset):
     return answers
 
 def get_answerset_by_id(id):
-    answerset = db.session.query(AnswerSet).filter(AnswerSet.id == id).first()
+    answerset = db.session.query(Answerset).filter(Answerset.id == id).first()
     if not answerset:
         raise KeyError("No such answerset.")
     return answerset
 
 def list_answersets_by_question_hash(hash):
-    asets = db.session.query(AnswerSet)\
-        .filter(AnswerSet.question_hash == hash)\
+    asets = db.session.query(Answerset)\
+        .filter(Answerset.question_hash == hash)\
         .all()
     return asets

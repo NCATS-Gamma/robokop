@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 
 from user import User, Role
 from question import Question
-from answer import Answer, AnswerSet
+from answer import Answer, Answerset
 from feedback import Feedback
 
 from setup import db

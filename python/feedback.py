@@ -5,7 +5,7 @@ import hashlib
 import datetime
 import warnings
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-rank'))
-from answer import Answer, AnswerSet
+from answer import Answer, Answerset
 from user import User
 
 from sqlalchemy.types import JSON

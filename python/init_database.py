@@ -10,7 +10,7 @@ from setup import db
 # The linter says these are unused. We have to define them anyway in order to create the associated tables.
 from user import User, Role, get_user_by_id
 from question import Question
-from answer import Answer, AnswerSet
+from answer import Answer, Answerset
 from feedback import Feedback
 
 from answer_question import answer_question
