@@ -5,11 +5,11 @@ Tasks for Celery workers
 import os
 import sys
 from celery import Celery
+from celery.utils.log import get_task_logger
 from kombu import Queue
 
 from setup import app, rosetta
 from question import Question
-from logging_config import logger
 
 greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
 sys.path.insert(0, greent_path)
@@ -32,6 +32,7 @@ def update_kg(self, question_json):
     '''
     Update the shared knowledge graph with respect to a question
     '''
+    logger = get_task_logger(__name__)
 
     self.update_state(state='UPDATING KG')
     logger.info("Updating the knowledge graph...")
