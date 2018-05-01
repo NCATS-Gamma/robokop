@@ -11,9 +11,9 @@ from flask_restplus import Resource
 from setup import app, api
 from logging_config import logger
 from util import get_tasks, getAuthData
-import questions_api_blueprint
-import q_api_blueprint
-import a_api_blueprint
+import questions_api
+import q_api
+import a_api
 
 greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
 sys.path.insert(0, greent_path)

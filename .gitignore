@@ -5,6 +5,8 @@
 /dist
 npm-debug.log
 python/__pycache__/*
+ranker/__pycache__/*
+builder/__pycache__/*
 *.db
 *.bak
 *.log
