@@ -16,9 +16,9 @@ class AnswersetPres extends React.Component {
     return (
       <Grid>
         <QuestionHeader
-          answerset={this.props.answerset}
           question={this.props.question}
-
+          answerset={this.props.answerset}
+          
           showOtherQuestions
           otherQuestions={this.props.otherQuestions}
           callbackQuestionSelect={this.props.callbackQuestionSelect}
@@ -29,7 +29,9 @@ class AnswersetPres extends React.Component {
         <br />
         <AnswersetInteractive
           answers={this.props.answers}
-          callbackAnswer={this.props.callbackAnswerSelect}
+          answerId={this.props.answerId} // Monitored for select by parameter or page load
+          callbackAnswerSelected={this.props.callbackAnswerSelect}
+          callbackNoAnswerSelected={this.props.callbackNoAnswerSelect}
         />
       </Grid>
     );

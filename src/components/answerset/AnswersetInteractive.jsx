@@ -42,10 +42,14 @@ class AnswersetInteractive extends React.Component {
     };
 
     this.initializeNodeSelection = this.initializeNodeSelection.bind(this);
+    this.selectAnswerById = this.selectAnswerById.bind(this);
+
     this.handleNodeSelectionChange = this.handleNodeSelectionChange.bind(this);
+
+    this.onSelectionAnswerIndex = this.onSelectionAnswerIndex.bind(this);
     this.onSelectionCallback = this.onSelectionCallback.bind(this);
     this.onGraphClick = this.onGraphClick.bind(this);
-    
+
     this.feedbackModalOpen = this.feedbackModalOpen.bind(this);
     this.feedbackModalClose = this.feedbackModalClose.bind(this);
     this.feedbackUpdate = this.feedbackUpdate.bind(this);
@@ -53,12 +57,24 @@ class AnswersetInteractive extends React.Component {
   componentDidMount() {
     // this.updateSelectedSubGraphIndex(0);
     this.initializeNodeSelection();
+    if (('answerId' in this.props) && this.props.answerId && Number.isSafeInteger(this.props.answerId)) {
+      this.selectAnswerById(this.props.answerId);
+    }
   }
   componentWillReceiveProps(newProps) {
     // this.setState({ selectedSubGraphIndex: 0, selectedSubGraphEdge: null });
     this.initializeNodeSelection();
+    if (('answerId' in newProps) && newProps.answerId && Number.isSafeInteger(newProps.answerId)) {
+      this.selectAnswerById(newProps.answerId);
+    }
   }
+  onSelectionAnswerIndex(index) {
+    // We must make a nodeSelection that specifies this exact answer
+    const nodeSelection = this.props.answers[index].nodes.map(n => n.id);
 
+    this.handleNodeSelectionChange(nodeSelection);
+    this.setState({ nodeSelection });
+  }
   onSelectionCallback(index, selectedOption) {
     const { nodeSelection } = this.state;
     if (selectedOption == null) {
@@ -79,9 +95,15 @@ class AnswersetInteractive extends React.Component {
   }
 
   initializeNodeSelection() {
-    const nodeSelection = this.props.answers[0].nodes.map(n => null);
+    const nodeSelection = this.props.answers[0].nodes.map(() => null);
     this.handleNodeSelectionChange(nodeSelection);
     this.setState({ nodeSelection });
+  }
+  selectAnswerById(answerId) {
+    const index = this.props.answers.findIndex(a => a.id === answerId);
+    if (Number.isSafeInteger(index) && index >= 0) {
+      this.onSelectionAnswerIndex(index);
+    }
   }
   handleNodeSelectionChange(nodeSelection) {
     // find all paths such that nodes match selection template
@@ -113,6 +135,14 @@ class AnswersetInteractive extends React.Component {
     }
 
     this.setState({ selectedSubGraphIndex, selectedSubGraphPossibilities: subgraphPossibilities });
+
+    // Change the url, if there is exactly one possibility in each dimension
+    if (subgraphPossibilities.every(p => p.length === 1)) {
+      this.props.callbackAnswerSelected(this.props.answers[selectedSubGraphIndex]);
+    } else {
+      this.props.callbackNoAnswerSelected();
+    }
+
   }
   feedbackModalOpen() {
     this.setState({ feedbackModalShow: true });
@@ -131,6 +161,7 @@ class AnswersetInteractive extends React.Component {
         <Col md={3}>
           <AnswersetInteractiveSelector
             subgraph={this.props.answers[this.state.selectedSubGraphIndex]}
+            nodeSelection={this.state.nodeSelection}
             subgraphPossibilities={this.state.selectedSubGraphPossibilities}
             onSelectionCallback={this.onSelectionCallback}
           />

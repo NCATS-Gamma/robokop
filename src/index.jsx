@@ -13,7 +13,6 @@ import QuestionNew from './QuestionNew';
 import Question from './Question';
 import QuestionList from './QuestionList';
 import Answerset from './Answerset';
-import Answer from './Answer';
 
 // Our actual CSS and other images etc.
 import '../assets/css/style.css';
@@ -61,21 +60,12 @@ const robokop = {
       document.getElementById('reactEntry'),
     );
   },
-  answerset: (answersetId) => {
+  answerset: (answersetId, answerId) => {
     ReactDOM.render(
       <Answerset
         config={config}
         id={answersetId}
-      />,
-      document.getElementById('reactEntry'),
-    );
-  },
-  answer: (answersetId, answerId) => {
-    ReactDOM.render(
-      <Answer
-        config={config}
-        setId={answersetId}
-        id={answerId}
+        answerId={answerId}
       />,
       document.getElementById('reactEntry'),
     );

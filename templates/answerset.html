@@ -1,5 +1,5 @@
 <head>
-  <title>ROBOKOP - Answers - {{answerset_id}}</title>
+  <title>ROBOKOP - Answers</title>
 </head>
 
 <body>
@@ -8,6 +8,6 @@
   </div>
   <script type="text/javascript" src="{{ url_for('static', filename='bundle.js') }}"></script>
   <script type="text/javascript">
-    robokop.answerset("{{ answerset_id }}");
+    robokop.answerset("{{ answerset_id }}", {{ answer_id }});
   </script>
 </body>

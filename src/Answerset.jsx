@@ -96,6 +96,7 @@ class Answerset extends React.Component {
           <AnswersetPres
             question={this.state.question}
             answerset={this.state.answerset}
+            answerId={this.props.answerId}
             answers={this.state.answers}
             answerCount={this.state.answerCount}
             answersetGraph={this.state.answersetGraph}
@@ -104,7 +105,8 @@ class Answerset extends React.Component {
             otherAnswersets={this.state.otherAnswersets}
             callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
             callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
-            callbackAnswerSelect={a => this.appConfig.redirect(this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, a.id))}
+            callbackAnswerSelect={a => this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, a.id))}
+            callbackNoAnswerSelect={() => this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answerset(this.state.question.id, this.state.answerset.id))}
           />
         }
       </div>

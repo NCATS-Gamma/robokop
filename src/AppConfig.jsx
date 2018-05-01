@@ -222,6 +222,14 @@ class AppConfig {
   back() {
     window.history.back();
   }
+  replaceUrl(title, url) {
+    console.log('New URL', url)
+    history.replaceState({}, title, url);
+  }
+  // setUrl(title, url) {
+  //   console.log('New URL', url)
+  //   history.pushState({}, title, url);
+  // }
 
   questionNewValidate(postData, successFunction, failureFunction) {
     console.log('Validate the machine question here');
