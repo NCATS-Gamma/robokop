@@ -31,7 +31,7 @@ class Feedback(db.Model, DictLikeMixin):
     correctness = Column(Correctness)
     notes = Column(String)
     answer_id = Column(Integer, ForeignKey('answer.id'))
-    question_id = Column(Integer, ForeignKey('question.id'))
+    question_id = Column(String, ForeignKey('question.id'))
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
     user = relationship(
