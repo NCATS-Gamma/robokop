@@ -46,7 +46,7 @@ class QuestionsAPI(Resource):
         """Get list of questions"""
         user = getAuthData()
         question_list = list_questions()
-        user_question_list = list_questions_by_username(user['username'])
+        # user_question_list = list_questions_by_username(user['username'])
         # nonuser_question_list = list_questions_by_username(user['username'], invert=True)
 
         tasks = get_tasks().values()
@@ -68,6 +68,7 @@ class QuestionsAPI(Resource):
             latest_answerset_id = question.answersets[latest_idx].id if latest_idx else None
             latest_answerset_timestamp = question.answersets[latest_idx].timestamp if latest_idx else None
             q = question.toJSON()
+            q['user_email'] = question.user.email
             q.pop('user_id')
             q.pop('nodes')
             q.pop('edges')
@@ -78,5 +79,4 @@ class QuestionsAPI(Resource):
                     **q}
 
         return {'user': user,\
-                'questions': [augment_info(q) for q in question_list],\
-                'user_questions': [augment_info(q) for q in user_question_list]}, 200
+                'questions': [augment_info(q) for q in question_list]}, 200

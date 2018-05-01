@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { Row, Col, Alert, FormGroup, FormControl, Popover, OverlayTrigger, ProgressBar, DropdownButton, MenuItem } from 'react-bootstrap';
-import Select from 'react-select';
 
 import GoPencil from 'react-icons/lib/go/pencil';
 
@@ -142,8 +141,12 @@ class QuestionHeader extends React.Component {
     const otherAnswersetMenuItemList = this.props.otherAnswersets.map((a, i) => {
       const d = new Date(a.timestamp);
       return (
-        <MenuItem eventKey={`${i+2}`} key={shortid.generate()}>
-          {d.toLocaleDateString()}
+        <MenuItem
+          eventKey={`${i + 2}`}
+          key={shortid.generate()}
+          onClick={() => this.props.callbackAnswersetSelect(a)}
+        >
+          {d.toLocaleString()}
         </MenuItem>
       );
     });
@@ -152,13 +155,21 @@ class QuestionHeader extends React.Component {
       answersetDate = new Date(this.props.answerset.timestamp);
     }
     const answersetMenuItemList = [
-      <MenuItem eventKey="1" key={shortid.generate()} active>
-        {answersetDate.toLocaleDateString()}
+      <MenuItem
+        eventKey="1"
+        key={shortid.generate()}
+        active
+      >
+        {answersetDate.toLocaleString()}
       </MenuItem>,
     ].concat(otherAnswersetMenuItemList);
 
     const otherQuestionsMenuItemList = this.props.otherQuestions.map((q, i) => (
-      <MenuItem eventKey={`${i+2}`} key={shortid.generate()}>
+      <MenuItem
+        eventKey={`${i + 2}`}
+        key={shortid.generate()}
+        onClick={() => this.props.callbackQuestionSelect(q)}
+      >
         {q.name}
       </MenuItem>
     ));
@@ -188,7 +199,7 @@ class QuestionHeader extends React.Component {
                     {editNameNode}
                   </div>
                 }
-                <div className="pull-right" style={{ position: 'absolute', right: 0, top: 0 }}>
+                <div className="pull-right" style={{ position: 'absolute', right: 0, bottom: 0 }}>
                   {edited &&
                     <div style={{ display: 'inline' }}>
                       <Alert bsStyle="warning" style={{ fontSize: '12px', display: 'inline', paddingTop: '5px', paddingBottom: '5px' }}>
