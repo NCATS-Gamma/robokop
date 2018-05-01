@@ -27,11 +27,13 @@ class AnswerSet(db.Model):
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
     filename = Column(String)
     question_hash = Column(String)
+    creator = Column(String)
 
     def __init__(self, *args, **kwargs):
         self.answers = []
         self.question_hash = None
         self.filename = None
+        self.creator = 'ROBOKOP'
         self.__idx = 0
 
         # apply json properties to existing attributes
