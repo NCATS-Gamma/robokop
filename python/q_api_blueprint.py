@@ -104,11 +104,17 @@ class QuestionAPI(Resource):
 
         user = getAuthData()
         answerset_list = list_answersets_by_question_hash(question.hash)
+        
+        # Kenny adding extra things 
+        answerset_list_json = [a.toJSON() for a in answerset_list]
+        for a in answerset_list_json:
+            a['creator'] = 'Robokop'
+            a['message'] = 'We found # of answers.\r\nThe top answer is really good!'
 
         return {'user': user,
                 'question': question.toJSON(),
                 'owner': question.user.email,
-                'answerset_list': [a.toJSON() for a in answerset_list]}, 200
+                'answerset_list': answerset_list_json}, 200
 
 @api.route('/q/<question_id>/tasks')
 @api.param('question_id', 'A question id')

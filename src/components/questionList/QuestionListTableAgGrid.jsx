@@ -63,9 +63,10 @@ class QuestionListTableAgGrid extends React.Component {
     let out = '';
     if (params.data !== '' && params.data !== undefined && params.data !== null && params.data.id) {
       // out = <span onClick={() => this.props.callbackAnswersetSelect(params.data.id, params.data.latest_answerset_id)}> AS </span>
-      console.log(params)
-      out = document.createElement('span');
-      out.innerHTML = `<a href=${this.props.answersetUrlFunction(params.data.id, params.data.latest_answerset_id)}>AS</a>`;
+      // console.log(params)
+      // out = document.createElement('span');
+      // out.innerHTML = `<a href=${this.props.answersetUrlFunction(params.data.id, params.data.latest_answerset_id)}>AS</a>`;
+      out = '->';
     }
     return out;
   }
@@ -85,8 +86,14 @@ class QuestionListTableAgGrid extends React.Component {
   }
   render() {
     // { headerName: '', field: 'isBusy', suppressMenu: true, cellRenderer: this.cellRendererBusy, width: 10 },
-    // { headerName: 'Updated', field: 'latest_answerset_timestamp', suppressMenu: true, cellRenderer: this.cellRendererAnswersetTimeStamp, width: 100 },
-    // { headerName: '', field: 'latest_answerset_id', suppressMenu: true, cellRenderer: this.cellRendererAnswers, width: 10 },
+    // {
+    //   headerName: '',
+    //   field: 'latest_answerset_id',
+    //   suppressMenu: true,
+    //   cellRenderer: this.cellRendererAnswers,
+    //   width: 10,
+    //   onCellClicked: params => console.log('Clicked'),
+    // },
     return (
       <div>
         <Panel>
@@ -104,10 +111,38 @@ class QuestionListTableAgGrid extends React.Component {
             <div className="ag-theme-material" style={{ width: '100%', height: this.props.height }}>
               <AgGridReact
                 columnDefs={[
-                  { headerName: '*', field: 'isUserOwned', suppressMenu: true, cellRenderer: this.cellRendererOwned, width: 5 },
-                  { headerName: 'Name', field: 'name', suppressMenu: true },
-                  { headerName: 'Question', field: 'natural_question', suppressMenu: true },
-                  { headerName: 'Notes', field: 'notes', suppressMenu: true },
+                  {
+                    headerName: '*',
+                    field: 'isUserOwned',
+                    suppressMenu: true,
+                    cellRenderer: this.cellRendererOwned,
+                    width: 5,
+                    tooltip: value => (value ? 'This is your question' : ''),
+                  },
+                  {
+                    headerName: 'Name',
+                    field: 'name',
+                    suppressMenu: true,
+                    tooltip: value => (value),
+                  },
+                  {
+                    headerName: 'Question',
+                    field: 'natural_question',
+                    suppressMenu: true,
+                  },
+                  {
+                    headerName: 'Notes',
+                    field: 'notes',
+                    suppressMenu: true,
+                  },
+                  {
+                    headerName: 'Updated',
+                    field: 'latest_answerset_timestamp',
+                    suppressMenu: true,
+                    cellRenderer: this.cellRendererAnswersetTimeStamp,
+                    width: 100,
+                    hide: true,
+                  },
                 ]}
                 rowData={this.props.questions}
                 getRowClass={this.getRowClass}
@@ -116,6 +151,7 @@ class QuestionListTableAgGrid extends React.Component {
 
                 quickFilterText={this.state.quickFilterText}
                 suppressMovableColumns
+                suppressCellSelection
                 defaultColDef={{ width: 100, headerComponentParams: { template: '' } }}
                 rowSelection="single"
                 onSelectionChanged={this.onClick}

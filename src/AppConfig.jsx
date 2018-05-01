@@ -55,7 +55,8 @@ class AppConfig {
     this.questionTasks = this.questionTasks.bind(this);
     this.taskStatus = this.taskStatus.bind(this);
 
-    this.monarchSearch = this.monarchSearch.bind(this);
+    this.conceptSearch = this.conceptSearch.bind(this);
+    // this.monarchSearch = this.monarchSearch.bind(this);
 
     // Read config parameters for enabling controls
     this.enableNewAnswersets = ((config.ui !== null) && (config.ui.enableNewAnswersets !== null)) ? config.ui.enableNewAnswersets : true;
@@ -222,9 +223,6 @@ class AppConfig {
     window.history.back();
   }
 
-  questionNewSearch(postData, successFunction, failureFunction) {
-    console.log('Lookup searchTerm');
-  }
   questionNewValidate(postData, successFunction, failureFunction) {
     console.log('Validate the machine question here');
   }
@@ -232,14 +230,10 @@ class AppConfig {
     console.log('Transle the question here');
   }
 
-  monarchSearch(input, category) {
-    // https://api.monarchinitiative.org/api/search/entity/autocomplete/ - 500s
-    const addr = `https://owlsim.monarchinitiative.org/api/search/entity/autocomplete/${encodeURIComponent(input)}?start=0&rows=25&category=${encodeURIComponent(category)}`;
-    // console.log(addr)
-    return this.comms.get(addr).then((result) => {
-      // console.log(result);
-      return { options: result.data.docs.map(d => ({ value: d.id, label: d.label[0] })) };
-    });
+  conceptSearch(input, category) {
+    const addr = `https://bionames.renci.org/lookup/${encodeURIComponent(input)}/${encodeURIComponent(category)}/`;
+    // Because this method is called by react-select Async we must return a promise that will return the values
+    return this.comms.get(addr).then(result => ({ options: result.data.map(d => ({ value: d.id, label: d.label })) }));
   }
 
   getRequest(

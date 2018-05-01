@@ -22,7 +22,7 @@ class QuestionNew extends React.Component {
       name: '',
       natural: '',
       notes: '',
-      query: [],
+      machineQuestion: [],
       isFork: false,
       initializationQuestion: {},
     };
@@ -34,7 +34,7 @@ class QuestionNew extends React.Component {
     this.handleChangeName = this.handleChangeName.bind(this);
     this.handleChangeNatural = this.handleChangeNatural.bind(this);
     this.handleChangeNotes = this.handleChangeNotes.bind(this);
-    this.handleChangeQuery = this.handleChangeQuery.bind(this);
+    this.handleChangeMachineQuestion = this.handleChangeMachineQuestion.bind(this);
   }
 
   componentDidMount() {
@@ -81,7 +81,7 @@ class QuestionNew extends React.Component {
       name: this.state.name,
       natural: this.state.natural,
       notes: this.state.notes,
-      query: this.state.query,
+      machineQuestion: this.state.machineQuestion,
     };
 
     // Splash wait overlay
@@ -110,8 +110,7 @@ class QuestionNew extends React.Component {
   }
 
   onSearch(input, nodeType) {
-    return this.appConfig.monarchSearch(input, nodeType);
-    // this.appConfig.questionNewSearch(postData);
+    return this.appConfig.conceptSearch(input, nodeType);
   }
   onValidate(postData) {
     this.appConfig.questionNewValidate(postData);
@@ -183,9 +182,9 @@ class QuestionNew extends React.Component {
   handleChangeNotes(e) {
     this.setState({ notes: e.target.value });
   }
-  handleChangeQuery(newQuery) {
-    // Trim off the extra meta data in the query, dependent on node type
-    const slimQuery = newQuery.map((e) => {
+  handleChangeMachineQuestion(newMachineQuestionUi) {
+    // Trim off the extra meta data in the machineQuestion, dependent on node type
+    const newMachineQuestion = newMachineQuestionUi.map((e) => {
       let meta = {};
       const type = e.displayType;
       let label = e.nodeType;
@@ -213,7 +212,7 @@ class QuestionNew extends React.Component {
       };
     });
 
-    this.setState({ query: slimQuery });
+    this.setState({ machineQuestion: newMachineQuestion });
   }
 
   renderLoading() {
@@ -232,14 +231,14 @@ class QuestionNew extends React.Component {
           name={this.state.name}
           natural={this.state.natural}
           notes={this.state.notes}
-          query={this.state.query}
+          machineQuestion={this.state.machineQuestion} // Used only for graph display
           isFork={this.state.isFork}
           initializationQuestion={this.state.initializationQuestion}
           concepts={this.state.concepts}
           handleChangeName={this.handleChangeName}
           handleChangeNatural={this.handleChangeNatural}
           handleChangeNotes={this.handleChangeNotes}
-          handleChangeQuery={this.handleChangeQuery}
+          handleChangeMachineQuestion={this.handleChangeMachineQuestion}
           callbackCreate={this.onCreate}
           callbackSearch={this.onSearch}
           callbackValidate={this.onValidate}

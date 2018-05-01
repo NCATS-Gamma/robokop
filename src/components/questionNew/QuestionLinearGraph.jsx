@@ -30,7 +30,7 @@ class QuestionLinearGraph extends React.Component {
 
   getGraph() {
     // Translate the query list to a graph for display
-    let q = this.props.query;
+    let q = this.props.machineQuestion.map(a => ({ ...a })); // Deep copy of array of objects 
     if (q == null || q.length === 0) {
       q = [];
     }

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Button, Media } from 'react-bootstrap';
+import { Row, Col, Button } from 'react-bootstrap';
 import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
 import GoArrowRight from 'react-icons/lib/go/arrow-right';
 import GoCircuitBoard from 'react-icons/lib/go/circuit-board';
@@ -19,15 +19,15 @@ class AnswersetSelector extends React.Component {
       showOverlay: true,
     };
 
-    this.styles = {
-      bigButton: {
-        margin: 'auto',
-        padding: '10px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      },
-    };
+    // this.styles = {
+    //   bigButton: {
+    //     margin: 'auto',
+    //     padding: '10px',
+    //     display: 'flex',
+    //     alignItems: 'center',
+    //     justifyContent: 'center',
+    //   },
+    // };
 
     this.handleSelectorChange = this.handleSelectorChange.bind(this);
     this.getUpdatedState = this.getUpdatedState.bind(this);
@@ -77,16 +77,18 @@ class AnswersetSelector extends React.Component {
     const timeString = d.toLocaleString();
 
     return (
-      <Media>
-        <Media.Left>
-          <div style={{ minHeight: '150px', minWidth: '150px', backgroundColor: '#b8c6db' }} />
-        </Media.Left>
-        <Media.Body>
-          <Media.Heading>{timeString}</Media.Heading>
-          <p>
-            {`Question Hash: ${answerset.question_hash}`}
-          </p>
-          <div style={this.styles.bigButton}>
+      <div style={{paddingTop: '5px'}}>
+        <Row>
+          <Col md={12}>
+            <h4>{answerset.creator}</h4>
+            <h5>{timeString}</h5>
+            <pre>
+              {answerset.message}
+            </pre>
+          </Col>
+        </Row>
+        <Row>
+          <Col md={4} mdOffset={1}>
             <Button
               bsStyle="primary"
               bsSize="large"
@@ -95,9 +97,9 @@ class AnswersetSelector extends React.Component {
             >
               Explore <GoArrowRight /> <GoCircuitBoard />
             </Button>
-          </div>
-        </Media.Body>
-      </Media>
+          </Col>
+        </Row>
+      </div>
     );
   }
   handleSelectorChange(selectedOption) {
@@ -133,7 +135,7 @@ class AnswersetSelector extends React.Component {
     const moreThanOne = this.props.answersets.length > 1;
     const options = this.props.answersets.map((a) => {
       const d = new Date(a.timestamp);
-      return { value: a.id, label: d.toLocaleString() };
+      return { value: a.id, label: `${d.toLocaleString()} - ${a.creator}` };
     });
     return (
       <div>

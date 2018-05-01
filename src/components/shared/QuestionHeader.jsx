@@ -146,7 +146,7 @@ class QuestionHeader extends React.Component {
           key={shortid.generate()}
           onClick={() => this.props.callbackAnswersetSelect(a)}
         >
-          {d.toLocaleString()}
+          {d.toLocaleString()} - {a.creator}
         </MenuItem>
       );
     });
