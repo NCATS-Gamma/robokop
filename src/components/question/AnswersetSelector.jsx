@@ -102,7 +102,6 @@ class AnswersetSelector extends React.Component {
   }
   handleSelectorChange(selectedOption) {
     this.setState({ selectedId: selectedOption.value });
-    console.log(`Selected Answerset: ${selectedOption.label}`);
   }
 
   renderOverlay() {

@@ -12,6 +12,14 @@
   outline: initial;
 }
 
+.ag-theme-material .question-row-is-owned {
+  background-color: #f5f7fa !important;
+}
+
+.ag-theme-material .question-row-is-unowned {
+  background-color: #fff !important;
+}
+
 .close-button {
   margin-right: 10px;
   margin-top: 10px;
@@ -67,9 +75,13 @@ div.vis-tooltip-inner {
 }
 
 /* A dropdown that doesn't look like a button */
-#diminisheddropdown .dropdown-toggle > .btn > .btn-default {
+#diminisheddropdown {
   border: none;
-  color: #b8c6db;
+  color: #aaa;
+}
+#diminisheddropdown:hover, #diminisheddropdown:active, #diminisheddropdown:focus {
+  background-color: inherit;
+  color:  #aaa;
 }
 
 /* To enable contained modals */
@@ -78,4 +90,31 @@ div.vis-tooltip-inner {
 }
 .modal-container .modal, .modal-container .modal-backdrop {
   position: absolute;
+}
+
+.fadeout {
+  pointer-events: none;
+  position: relative; 
+  bottom: 3em;
+  height: 3em;
+  background: -webkit-linear-gradient(
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 1) 100%
+  ); 
+  background-image: -moz-linear-gradient(
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 1) 100%
+  );
+  background-image: -o-linear-gradient(
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 1) 100%
+  );
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 1) 100%
+  );
+  background-image: -ms-linear-gradient(
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 1) 100%
+  );
 }
