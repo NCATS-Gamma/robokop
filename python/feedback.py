@@ -72,7 +72,7 @@ def list_feedback_by_question(question):
     return db.session.query(Feedback).filter(Feedback.question == question).all()
 
 def list_feedback_by_question_answerset(question, answerset):
-    return db.session.query(Feedback).filter(Feedback.question == question).filter(Feedback.answer in answerset).all()
+    return db.session.query(Feedback).filter(Feedback.question == question).filter(Feedback.answer in answerset.answers).all()
 
 def list_feedback_by_question_answer(question, answer):
     return db.session.query(Feedback).filter(Feedback.question == question).filter(Feedback.answer == answer).all()
