@@ -154,7 +154,7 @@ class QuestionTasks(Resource):
                 question_tasks.append(t)
 
         # filter out the SUCCESS/FAILURE tasks
-        question_tasks = [t for t in question_tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE')]
+        question_tasks = [t for t in question_tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE' or t['state'] == 'REVOKED')]
 
         # split into answer and update tasks
         answerers = [t for t in question_tasks if t['name'] == 'tasks.answer_question']
