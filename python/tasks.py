@@ -10,7 +10,7 @@ from celery import Celery
 from kombu import Queue
 from flask_mail import Message
 
-from setup import app, mail, rosetta
+from setup import app, mail
 from answer import get_answerset_by_id, Answerset
 from question import get_question_by_id, list_questions_by_hash
 from logging_config import logger
@@ -18,9 +18,6 @@ from logging_config import logger
 greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
 sys.path.insert(0, greent_path)
 from greent import node_types
-
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build', 'builder'))
-from builder import tokenize_path, run_query, generate_query
 
 # set up Celery
 app.config['broker_url'] = os.environ["MANAGER_CELERY_BROKER_URL"]

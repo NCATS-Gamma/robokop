@@ -17,21 +17,17 @@ from sqlalchemy.orm import relationship, backref
 # our modules
 from answer import list_answersets_by_question_hash
 from user import User
-from setup import db, rosetta
+from setup import db
 from logging_config import logger
 
 # robokop-rank modules
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-rank'))
 from nagaProto import ProtocopRank
 
-# robokop-build modules
-builder_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-build', 'builder')
-sys.path.insert(0, builder_path)
-from lookup_utils import lookup_identifier
-
 # robokop-interfaces modules
 greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
 sys.path.insert(0, greent_path)
+from builder.lookup_utils import lookup_identifier
 from greent import node_types
 from greent.graph_components import KNode
 from greent.synonymizers.disease_synonymizer import synonymize
@@ -101,7 +97,6 @@ class Question(db.Model):
         # replace input node names with identifiers
         for n in self.nodes:
             if n['nodeSpecType'] == 'Named Node':
-                # identifiers = lookup_identifier(n['label'], n['type'], rosetta.core)
                 identifiers = [n['meta']['identifier']]
                 n['identifiers'] = identifiers
             else:
