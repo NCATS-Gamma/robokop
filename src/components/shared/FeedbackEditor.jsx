@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Modal, Row, Col, FormControl, Button } from 'react-bootstrap';
+import { Row, Col, FormControl, Button } from 'react-bootstrap';
 
 import StarRatingComponent from 'react-star-rating-component';
 
@@ -10,22 +10,23 @@ class FeedbackEditor extends React.Component {
     super(props);
 
     this.state = {
+      answerId: '',
       editedAccuracy: false,
-      editedInterest: false,
+      editedImpact: false,
       editedNotes: false,
       accuracy: 0,
       displayAccuracy: 0,
-      interest: 0,
-      displayInterest: 0,
+      impact: 0,
+      displayImpact: 0,
       notes: '',
     };
 
     this.onEditAccuracy = this.onEditAccuracy.bind(this);
     this.onHoverAccuracy = this.onHoverAccuracy.bind(this);
     this.onHoverOffAccuracy = this.onHoverOffAccuracy.bind(this);
-    this.onEditInterest = this.onEditInterest.bind(this);
-    this.onHoverInterest = this.onHoverInterest.bind(this);
-    this.onHoverOffInterest = this.onHoverOffInterest.bind(this);
+    this.onEditImpact = this.onEditImpact.bind(this);
+    this.onHoverImpact = this.onHoverImpact.bind(this);
+    this.onHoverOffImpact = this.onHoverOffImpact.bind(this);
     this.onEditNotes = this.onEditNotes.bind(this);
     this.onSave = this.onSave.bind(this);
   }
@@ -44,47 +45,48 @@ class FeedbackEditor extends React.Component {
     this.setState({ displayAccuracy: this.state.accuracy });
   }
 
-  onEditInterest(nextValue) {
-    this.setState({ editedInterest: true, interest: nextValue, displayInterest: nextValue });
+  onEditImpact(nextValue) {
+    this.setState({ editedImpact: true, impact: nextValue, displayImpact: nextValue });
   }
-  onHoverInterest(nextValue) {
-    this.setState({ displayInterest: nextValue });
+  onHoverImpact(nextValue) {
+    this.setState({ displayImpact: nextValue });
   }
-  onHoverOffInterest() {
-    this.setState({ displayInterest: this.state.interest });
+  onHoverOffImpact() {
+    this.setState({ displayImpact: this.state.impact });
   }
 
   onEditNotes(e) {
     this.setState({ editedNotes: true, notes: e.target.value });
   }
   onSave() {
-    if (!(this.state.editedAccuracy || this.state.editedInterest || this.state.editedNotes)) {
+    if (!(this.state.editedAccuracy || this.state.editedImpact || this.state.editedNotes)) {
       this.props.callbackClose();
       return;
     }
 
     const newFeedback = {
       accuracy: this.state.accuracy,
-      interest: this.state.interest,
+      impact: this.state.impact,
       notes: this.state.notes,
+      answer_id: this.state.answerId, // Note the _ because this is going to be in a post.
     };
 
-    
     this.props.callbackUpdate(
       newFeedback,
-      () => this.setState({ editedAccuracy: false, editedInterest: false, editedNotes: false }),
+      () => this.setState({ editedAccuracy: false, editedImpact: false, editedNotes: false }),
     );
   }
 
   syncPropsAndState(newProps) {
     this.setState({
       editedAccuracy: false,
-      editedInterest: false,
+      editedImpact: false,
       editedNotes: false,
+      answerId: newProps.feedback.answerId,
       accuracy: newProps.feedback.accuracy,
       displayAccuracy: newProps.feedback.accuracy,
-      interest: newProps.feedback.interest,
-      displayInterest: newProps.feedback.interest,
+      impact: newProps.feedback.impact,
+      displayImpact: newProps.feedback.impact,
       notes: newProps.feedback.notes,
     });
   }
@@ -92,11 +94,11 @@ class FeedbackEditor extends React.Component {
   render() {
     const {
       displayAccuracy,
-      displayInterest,
+      displayImpact,
       notes,
     } = this.state;
 
-    const edited = this.state.editedAccuracy || this.state.editedInterest || this.state.editedNotes;
+    const edited = this.state.editedAccuracy || this.state.editedImpact || this.state.editedNotes;
 
     const notesStyle = {
       minHeight: '100px',
@@ -123,15 +125,15 @@ class FeedbackEditor extends React.Component {
               </div>
             </Col>
             <Col md={6}>
-              <h4>Interest</h4>
+              <h4>Impact</h4>
               <div style={{ fontSize: 32 }}>
                 <StarRatingComponent
-                  name="Interest" /* name of the radio input, it is required */
-                  value={displayInterest} /* number of selected icon (`0` - none, `1` - first) */
+                  name="Impact" /* name of the radio input, it is required */
+                  value={displayImpact} /* number of selected icon (`0` - none, `1` - first) */
                   starCount={5} /* number of icons in rating, default `5` */
-                  onStarClick={this.onEditInterest} /* on icon click handler */
-                  onStarHover={this.onHoverInterest}
-                  onStarHoverOut={this.onHoverOffInterest}
+                  onStarClick={this.onEditImpact} /* on icon click handler */
+                  onStarHover={this.onHoverImpact}
+                  onStarHoverOut={this.onHoverOffImpact}
                   starColor="#5d7dad" /* color of selected icons, default `#ffb400` */
                   emptyStarColor="#ccc" /* color of non-selected icons, default `#333` */
                 />

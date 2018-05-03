@@ -39,11 +39,14 @@ class AnswersetAPI(Resource):
         idx = answersets.index(answerset)
         answersets.pop(idx)
         answerset_graph = None
+        
+        feedback = list_feedback_by_question_answerset(question, answerset)
 
         return {'user': user,\
                 'question': question.toJSON(),\
                 'answerset': answerset.toJSON(),\
                 'answers': [a.toJSON() for a in answers],\
+                'feedback': [f.toJSON() for f in feedback],\
                 'other_answersets': [aset.toJSON() for aset in answersets],
                 'other_questions': [q.toJSON() for q in questions],\
                 'answerset_graph': answerset_graph}, 200
@@ -71,13 +74,22 @@ class AnswerAPI(Resource):
             return "Invalid answerset or answer key.", 404
 
         questions = list_questions_by_hash(answerset.question_hash)
+        idx = questions.index(question)
+        questions.pop(idx)
+        idx = answersets.index(answerset)
+        answersets.pop(idx)
+
+        feedback = list_feedback_by_question_answer(question, answer)
 
         user = getAuthData()
 
         return {'user': user,\
                 'answerset': answerset.toJSON(),\
                 'answer': answer.toJSON(),\
-                'questions': [q.toJSON() for q in questions]}, 200
+                'feedback': [f.toJSON() for f in feedback],\
+                'question': question.toJSON(),\
+                'other_answersets': [aset.toJSON() for aset in answersets],
+                'other_questions': [q.toJSON() for q in questions]}, 200
 
 # get feedback by question-answer
 @api.route('/a/<qa_id>/<int:answer_id>/feedback')
@@ -97,7 +109,7 @@ class GetFeedbackByAnswer(Resource):
         except Exception as err:
             return "Invalid answerset/answer key", 404
 
-        return feedback.toJSON(), 200
+        return [f.toJSON() for f in feedback], 200
 
 # get feedback by question-answerset
 @api.route('/a/<qa_id>/feedback')
@@ -115,4 +127,4 @@ class GetFeedbackByAnswerset(Resource):
         except Exception as err:
             return "Invalid answerset key", 404
 
-        return feedback.toJSON(), 200
+        return [f.toJSON() for f in feedback], 200

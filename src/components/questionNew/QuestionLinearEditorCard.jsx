@@ -166,21 +166,9 @@ class QuestionLinearEditorCard extends Component {
     card.numNodesMin = newVal.value;
     this.props.callbackUpdateCard(card);
   }
-  // shouldComponentUpdate(nextProps, nextState) {
-  //   if ( this.props.id === nextProps.id && 
-  //     this.props.type === nextProps.type && 
-  //     this.props.nodeType === nextProps.nodeType &&
-  //     this.props.displayType === nextProps.displayType &&
-  //     this.props.numNodesMin === nextProps.numNodesMin &&
-  //     this.props.numNodesMax === nextProps.numNodesMax &&
-  //     !(this.props.name === nextProps.name)) {
-  //     return false;
-  //   }
-  //   return true;
-  // }
 
   getSearchOptions (input,nodeType) {
-    if (!input) {
+    if (!input || (input.length < 3)) {
       return Promise.resolve({ options: [] });
     }
 
@@ -244,28 +232,14 @@ class QuestionLinearEditorCard extends Component {
                 <Select.Async
                   multi={false}
                   value={nameEntry}
+                  valueRenderer={opt => (<div>{opt.label}<span className="pull-right" style={{ paddingRight: '15px' }}> {opt.value} </span></div>)}
+                  optionRenderer={opt => (<div>{opt.label}<span className="pull-right"> {opt.value} </span></div>)}
                   onChange={this.handleChangeName}
                   valueKey="value"
                   labelKey="label"
                   loadOptions={(input) => this.getSearchOptions(input, nodeType)}
                   backspaceRemoves={true}
                 />
-                {/*
-                {
-                <FormControl autoFocus
-                  inputRef={ref => { this.nameInput = ref; }}
-                  type="textarea"
-                  value={name}
-                  placeholder={"Enter a name"}
-                  onChange={this.handleChangeName}
-                  onFocus={(e) => { // Fix to make autofocus put cursor at end of text-field
-                    var val = e.target.value;
-                    e.target.value = '';
-                    e.target.value = val;
-                  }}
-                />
-                }
-                */}
               </div>
             </div>
           ];

@@ -146,13 +146,17 @@ class QuestionHeader extends React.Component {
           key={shortid.generate()}
           onClick={() => this.props.callbackAnswersetSelect(a)}
         >
-          {d.toLocaleString()}
+          {d.toLocaleString()} - {a.creator}
         </MenuItem>
       );
     });
     let answersetDate = new Date();
-    if (this.props.answerset && this.props.answerset.timestamp) {
+    if (('answerset' in this.props) && ('timestamp' in this.props.answerset)) {
       answersetDate = new Date(this.props.answerset.timestamp);
+    }
+    let creator = 'Reasoner';
+    if (('answerset' in this.props) && ('creator' in this.props.answerset)) {
+      creator = this.props.answerset.creator;
     }
     const answersetMenuItemList = [
       <MenuItem
@@ -160,7 +164,7 @@ class QuestionHeader extends React.Component {
         key={shortid.generate()}
         active
       >
-        {answersetDate.toLocaleString()}
+        {`${answersetDate.toLocaleString()} - ${creator}`}
       </MenuItem>,
     ].concat(otherAnswersetMenuItemList);
 

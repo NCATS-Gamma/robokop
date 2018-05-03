@@ -12,10 +12,6 @@ class AnswersetInteractiveSelector extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      isSelected: [],
-    };
-
     this.handleSelectChange = this.handleSelectChange.bind(this);
     this.handleClear = this.handleClear.bind(this);
     this.handleClearAll = this.handleClearAll.bind(this);
@@ -33,14 +29,16 @@ class AnswersetInteractiveSelector extends React.Component {
       }));
       const background = nodeTypeColorMap(p[0].type);
       const value = this.props.subgraph.nodes[ind].id;
-      const thisIsSelected = this.state.isSelected.indexOf(ind) !== -1;
-
       const numOptions = opts.length;
       const isOnlyOne = numOptions === 1;
-      const disableButton = !thisIsSelected;
+
+      const thisIsRealySelected = this.props.nodeSelection[ind] !== null;
+      const thisIsSelected = thisIsRealySelected || isOnlyOne; // You might be actually selected
+
+      const disableButton = !thisIsRealySelected;
       const disableSelect = thisIsSelected;
 
-      let style = { border: `2px solid #eee` };
+      let style = { border: '2px solid #eee' };
       if (thisIsSelected) {
         style = { border: '2px solid #444' };
       }
@@ -49,7 +47,7 @@ class AnswersetInteractiveSelector extends React.Component {
         <Panel key={shortid.generate()}>
           <Panel.Heading style={{ backgroundColor: background }}>
             {p[0].type}
-            {!thisIsSelected &&
+            {!thisIsRealySelected &&
               <span>
                 &nbsp;
                 <Badge>{numOptions}</Badge>
@@ -88,25 +86,13 @@ class AnswersetInteractiveSelector extends React.Component {
   }
 
   handleSelectChange(index, selectedOption) {
-    const { isSelected } = this.state;
-
-    if (selectedOption !== null) {
-      isSelected.push(index);
-      this.setState({ isSelected });
-    } else {
-      const indexIndex = isSelected.indexOf(index);
-      if (indexIndex > -1) {
-        isSelected.splice(indexIndex, 1);
-      }
-      this.setState({ isSelected });
-    }
     this.props.onSelectionCallback(index, selectedOption);
   }
 
   render() {
     const dropDowns = this.getAllDropDowns();
 
-    const showReset = this.state.isSelected.length > 0;
+    const showReset = this.props.nodeSelection.reduce((val, n) => val || n !== null, false);
 
     return (
       <div>

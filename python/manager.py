@@ -14,6 +14,7 @@ from util import get_tasks, getAuthData
 import questions_api
 import q_api
 import a_api
+import feedback_api
 
 greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
 sys.path.insert(0, greent_path)

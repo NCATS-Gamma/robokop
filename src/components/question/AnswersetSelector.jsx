@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Button, Media } from 'react-bootstrap';
+import { Row, Col, Button } from 'react-bootstrap';
 import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
 import GoArrowRight from 'react-icons/lib/go/arrow-right';
 import GoCircuitBoard from 'react-icons/lib/go/circuit-board';
@@ -19,15 +19,15 @@ class AnswersetSelector extends React.Component {
       showOverlay: true,
     };
 
-    this.styles = {
-      bigButton: {
-        margin: 'auto',
-        padding: '10px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      },
-    };
+    // this.styles = {
+    //   bigButton: {
+    //     margin: 'auto',
+    //     padding: '10px',
+    //     display: 'flex',
+    //     alignItems: 'center',
+    //     justifyContent: 'center',
+    //   },
+    // };
 
     this.handleSelectorChange = this.handleSelectorChange.bind(this);
     this.getUpdatedState = this.getUpdatedState.bind(this);
@@ -76,17 +76,23 @@ class AnswersetSelector extends React.Component {
     const d = new Date(answerset.timestamp);
     const timeString = d.toLocaleString();
 
+    let { message } = answerset;
+    if (message == null || message.length < 1) {
+      message = 'No Message Provided';
+    }
     return (
-      <Media>
-        <Media.Left>
-          <div style={{ minHeight: '150px', minWidth: '150px', backgroundColor: '#b8c6db' }} />
-        </Media.Left>
-        <Media.Body>
-          <Media.Heading>{timeString}</Media.Heading>
-          <p>
-            {`Question Hash: ${answerset.question_hash}`}
-          </p>
-          <div style={this.styles.bigButton}>
+      <div style={{ paddingTop: '5px' }}>
+        <Row>
+          <Col md={12}>
+            <h4>{answerset.creator}</h4>
+            <h5>{timeString}</h5>
+            <pre>
+              {message}
+            </pre>
+          </Col>
+        </Row>
+        <Row>
+          <Col md={4} mdOffset={4}>
             <Button
               bsStyle="primary"
               bsSize="large"
@@ -95,9 +101,9 @@ class AnswersetSelector extends React.Component {
             >
               Explore <GoArrowRight /> <GoCircuitBoard />
             </Button>
-          </div>
-        </Media.Body>
-      </Media>
+          </Col>
+        </Row>
+      </div>
     );
   }
   handleSelectorChange(selectedOption) {
@@ -117,12 +123,30 @@ class AnswersetSelector extends React.Component {
         }
         {!this.props.initializerBusy &&
           <div>
-            <h4>
-              No answer sets available.
-            </h4>
-            <p>
-              This may indicate a problem in the construction of the question, or a lack of available information.
-            </p>
+            <Row>
+              <Col md={12}>
+                <h4>
+                  No answer sets available.
+                </h4>
+                <p>
+                  This may indicate a problem in the construction of the question, or a lack of available information.
+                </p>
+              </Col>
+            </Row>
+            <Row style={{ paddingTop: '10px' }}>
+              <Col md={4} mdOffset={4}>
+                <Button
+                  bsSize="large"
+                  alt="Get a New Answer Set"
+                  onClick={this.props.callbackAnswersetNew}
+                  disabled={!this.props.enableNewButton}
+                >
+                  Get New Answers
+                  <br />
+                  <GoPlaybackPlay />
+                </Button>
+              </Col>
+            </Row>
           </div>
         }
       </div>
@@ -133,17 +157,16 @@ class AnswersetSelector extends React.Component {
     const moreThanOne = this.props.answersets.length > 1;
     const options = this.props.answersets.map((a) => {
       const d = new Date(a.timestamp);
-      return { value: a.id, label: d.toLocaleString() };
+      return { value: a.id, label: `${d.toLocaleString()} - ${a.creator}` };
     });
     return (
       <div>
         <div id="answersetSelect" style={{ display: 'table', width: '100%' }}>
           {!moreThanOne &&
             <div>
-              <div style={{ display: 'table-cell', width: '40%' }}>
+              <div style={{ display: 'table-cell', width: '100%' }}>
                 {`Answers from ${options[0].label}`}
               </div>
-              <div style={{ display: 'table-cell', width: '50%' }} />
             </div>
           }
           {moreThanOne &&

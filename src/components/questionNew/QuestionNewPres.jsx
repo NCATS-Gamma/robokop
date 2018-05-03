@@ -15,7 +15,7 @@ class QuestionNewPres extends React.Component {
 
     this.state = {};
 
-    this.queryTemplateSet = this.queryTemplateSet.bind(this);
+    this.templateSet = this.templateSet.bind(this);
   }
 
   componentDidMount() {
@@ -32,7 +32,6 @@ class QuestionNewPres extends React.Component {
 
     if (('initializationQuestion' in props) && !_.isEmpty(props.initializationQuestion)) {
       // Use the ref to the editor component to actualy set this query.
-      console.log(props.initializationQuestion);
 
       const newQuery = props.initializationQuestion.nodes.map((n) => {
         let nameId = '';
@@ -64,7 +63,7 @@ class QuestionNewPres extends React.Component {
     }
   }
 
-  queryTemplateSet(templateInd) {
+  templateSet(templateInd) {
     let newQuery = [];
     switch (templateInd) {
       case 0:
@@ -237,8 +236,8 @@ class QuestionNewPres extends React.Component {
         <div style={{ textAlign: 'left' }}>
           <p>
             Questions are specified as a sequence of steps that will be used to construct a knowledge graph.
-            Each step specifies the adjacent "node types" in resulting graph.
-            There are 3 different step types:
+            Each step specifies the adjacent <b>concept types</b> in a knowledge graph.
+            There are 3 different types of concept declaration:
           </p>
           <ul>
             <li><bold>Named Node</bold>{': Specify a particular type of node (Disease, Gene. etc.) with a specific name. '}</li>
@@ -265,10 +264,10 @@ class QuestionNewPres extends React.Component {
                 <div style={{ paddingLeft: '5px' }}>
                   <ButtonToolbar>
                     <ButtonGroup>
-                      <Button bsSize="small" onClick={() => this.queryTemplateSet(1)}>
+                      <Button bsSize="small" onClick={() => this.templateSet(1)}>
                         {'Question 1 Example'}
                       </Button>
-                      <Button bsSize="small" onClick={() => this.queryTemplateSet(2)}>
+                      <Button bsSize="small" onClick={() => this.templateSet(2)}>
                         {'Question 2 Example'}
                       </Button>
                     </ButtonGroup>
@@ -335,7 +334,7 @@ class QuestionNewPres extends React.Component {
             </h5>
             <QuestionLinearEditor
               ref={(r) => { this.editorComponent = r; }}
-              handleChange={this.props.handleChangeQuery}
+              handleChange={this.props.handleChangeMachineQuestion}
               concepts={this.props.concepts}
               callbackSearch={this.props.callbackSearch}
             />
@@ -343,7 +342,7 @@ class QuestionNewPres extends React.Component {
           <Col md={6}>
             <h5 style={{ textAlign: 'center' }}><bold style={{ fontWeight: '600' }}>Query Visualization</bold></h5>
             <QuestionLinearGraph
-              query={this.props.query}
+              machineQuestion={this.props.machineQuestion}
             />
           </Col>
         </Row>

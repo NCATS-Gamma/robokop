@@ -71,7 +71,7 @@ class QuestionListPres extends React.Component {
                 <p>
                   {"You don't seem to have any questions of your own yet."}
                 </p>
-                <Button bsStyle="default" onClick={this.onQuestionNewClick}>
+                <Button bsStyle="default" onClick={this.props.callbackQuestionNew}>
                   Ask a Question
                 </Button>
                 <br />

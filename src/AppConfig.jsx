@@ -32,7 +32,7 @@ class AppConfig {
       questionAnswer: questionId => this.url(`api/q/${questionId}/answer`),
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg`),
       taskStatus: taskId => this.url(`api/t/${taskId}`),
-      tasks: this.url('api/tasks'),
+      feedback: this.url('api/feedback/'),
     };
 
     this.url = this.url.bind(this);
@@ -55,8 +55,8 @@ class AppConfig {
     this.questionTasks = this.questionTasks.bind(this);
     this.taskStatus = this.taskStatus.bind(this);
 
-    this.monarchSearch = this.monarchSearch.bind(this);
-
+    this.conceptSearch = this.conceptSearch.bind(this);
+    
     // Read config parameters for enabling controls
     this.enableNewAnswersets = ((config.ui !== null) && (config.ui.enableNewAnswersets !== null)) ? config.ui.enableNewAnswersets : true;
     this.enableNewQuestions = ((config.ui !== null) && (config.ui.enableNewQuestions !== null)) ? config.ui.enableNewQuestions : true;
@@ -203,13 +203,18 @@ class AppConfig {
 
   taskStatus(taskId, successFun) {
     this.getRequest(
-      this.api.taskStatus(taskId),
+      this.apis.taskStatus(taskId),
       successFun,
     );
   }
 
   answerFeedback(data, successFun, failureFun) {
-    console.log("Set feedback here");
+    this.postRequest(
+      this.apis.feedback,
+      data,
+      successFun,
+      failureFun,
+    );
   }
 
   open(url) {
@@ -221,10 +226,13 @@ class AppConfig {
   back() {
     window.history.back();
   }
-
-  questionNewSearch(postData, successFunction, failureFunction) {
-    console.log('Lookup searchTerm');
+  replaceUrl(title, url) {
+    history.replaceState({}, title, url);
   }
+  // setUrl(title, url) {
+  //   history.pushState({}, title, url);
+  // }
+
   questionNewValidate(postData, successFunction, failureFunction) {
     console.log('Validate the machine question here');
   }
@@ -232,14 +240,10 @@ class AppConfig {
     console.log('Transle the question here');
   }
 
-  monarchSearch(input, category) {
-    // https://api.monarchinitiative.org/api/search/entity/autocomplete/ - 500s
-    const addr = `https://owlsim.monarchinitiative.org/api/search/entity/autocomplete/${encodeURIComponent(input)}?start=0&rows=25&category=${encodeURIComponent(category)}`;
-    // console.log(addr)
-    return this.comms.get(addr).then((result) => {
-      // console.log(result);
-      return { options: result.data.docs.map(d => ({ value: d.id, label: d.label[0] })) };
-    });
+  conceptSearch(input, category) {
+    const addr = `https://bionames.renci.org/lookup/${encodeURIComponent(input)}/${encodeURIComponent(category)}/`;
+    // Because this method is called by react-select Async we must return a promise that will return the values
+    return this.comms.get(addr).then(result => ({ options: result.data.map(d => ({ value: d.id, label: d.label })) }));
   }
 
   getRequest(
@@ -277,7 +281,6 @@ class AppConfig {
 
   deleteRequest(
     addr,
-    data,
     successFunction = () => {},
     failureFunction = (err) => {
       window.alert('There was a problem contacting the server.');
@@ -286,7 +289,7 @@ class AppConfig {
     },
   ) {
     this.comms.delete(addr).then((result) => {
-      successFunction(result.data);
+      successFunction(result);
     }).catch((err) => {
       failureFunction(err);
     });

@@ -130,8 +130,7 @@ class Question extends React.Component {
   }
   notifyRefresh(taskId) {
     this.appConfig.taskStatus(taskId, (data) => {
-      const success = data !== 'FAILURE';
-      console.log(taskId, data);
+      const success = data.state !== 'FAILURE';
       if (success) {
         this.notificationSystem.addNotification({
           title: 'Knowledge Graph Update Complete',
@@ -141,9 +140,10 @@ class Question extends React.Component {
           position: 'tr',
         });
       } else {
+        console.log(taskId, data);
         this.notificationSystem.addNotification({
           title: 'Error Updating Knowledge Graph',
-          message: 'We encountered an error while trying to update the knowledge graph for this quesiton. If this error persists please contact a system administrator.',
+          message: `We encountered an error while trying to update the knowledge graph for this quesiton. If this error persists please contact a system administrator.\r\n\r\nError Report:\r\n${data.result}`,
           level: 'error',
           dismissible: 'click',
           position: 'tr',
@@ -154,8 +154,7 @@ class Question extends React.Component {
   }
   notifyAnswers(taskId) {
     this.appConfig.taskStatus(taskId, (data) => {
-      const success = data !== 'FAILURE';
-      console.log(taskId, data);
+      const success = data.state !== 'FAILURE';
       if (success) {
         this.notificationSystem.addNotification({
           title: 'New Answers are Available',
@@ -165,9 +164,10 @@ class Question extends React.Component {
           position: 'tr',
         });
       } else {
+        console.log(taskId, data);
         this.notificationSystem.addNotification({
           title: 'Error Finding New Answers',
-          message: 'We encountered an error while trying to find new answers for this quesiton. If this error persists please contact a system administrator.',
+          message: `We encountered an error while trying to find new answers for this quesiton. If this error persists please contact a system administrator.\r\n\r\nError Report:\r\n${data.result}`,
           level: 'error',
           dismissible: 'click',
           position: 'tr',
@@ -178,7 +178,7 @@ class Question extends React.Component {
   }
   notifyInitializer(taskId) {
     this.appConfig.taskStatus(taskId, (data) => {
-      const success = data !== 'FAILURE';
+      const success = data.state !== 'FAILURE';
       if (success) {
         this.notificationSystem.addNotification({
           title: 'Initial Answers are Available',
@@ -188,9 +188,10 @@ class Question extends React.Component {
           position: 'tr',
         });
       } else {
+        console.log(taskId, data);
         this.notificationSystem.addNotification({
           title: 'Error Finding Initial Answers',
-          message: 'We encountered an error while trying to find answers for this quesiton. Robokop may not be capable of answering the question as phrased.',
+          message: `We encountered an error while trying to find answers for this quesiton. Robokop may not be capable of answering the question as phrased.\r\n\r\nError Report:\r\n${data.result}`,
           level: 'error',
           dismissible: 'click',
           position: 'tr',
@@ -276,8 +277,9 @@ class Question extends React.Component {
         // Actually try to delete the question here.
         this.appConfig.questionDelete(
           q.id,
-          () => this.appConfig.redirect(this.appConfig.urls.questions),
-          () => {
+          () => {console.log('cool?'); this.appConfig.redirect(this.appConfig.urls.questions)},
+          (err) => {
+            console.log(err);
             this.dialogMessage({
               title: 'Question Not Deleted',
               text: 'We were unable to delete the question. This could due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',

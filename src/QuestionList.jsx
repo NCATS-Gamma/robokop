@@ -17,6 +17,8 @@ class QuestionList extends React.Component {
       user: {},
       questions: [],
     };
+
+    this.callbackQuestionNew = this.callbackQuestionNew.bind(this);
   }
 
   componentDidMount() {
@@ -28,6 +30,9 @@ class QuestionList extends React.Component {
       user: this.appConfig.ensureUser(data),
       userReady: true,
     }));
+  }
+  callbackQuestionNew() {
+    this.appConfig.redirect(this.appConfig.urls.questionDesign);
   }
   renderLoading() {
     return (
@@ -43,7 +48,7 @@ class QuestionList extends React.Component {
         />
         <QuestionListPres
           loginUrl={this.appConfig.urls.login}
-          questionNewUrl={this.appConfig.urls.questionDesign}
+          callbackQuestionNew={this.callbackQuestionNew}
           answersetUrlFunction={(q, a) => this.appConfig.urls.answerset(q.id, a.id)}
           callbackAnswersetSelect={(q, a) => this.appConfig.redirect(this.appConfig.urls.answerset(q.id, a.id))}
           callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}

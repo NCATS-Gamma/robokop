@@ -2,7 +2,7 @@ import React from 'react';
 import { Row, Col, Modal } from 'react-bootstrap';
 import AnswersetInteractiveSelector from './AnswersetInteractiveSelector';
 import AnswerExplorer from '../shared/AnswerExplorer';
-import FeedbackEditor from '../shared/FeedbackEditor'
+import FeedbackEditor from '../shared/FeedbackEditor';
 
 class AnswersetInteractive extends React.Component {
   constructor(props) {
@@ -41,11 +41,18 @@ class AnswersetInteractive extends React.Component {
       nodeSelection: [],
     };
 
+    this.renderNoAnswers = this.renderNoAnswers.bind(this);
+    this.renderValid = this.renderValid.bind(this);
+
     this.initializeNodeSelection = this.initializeNodeSelection.bind(this);
+    this.selectAnswerById = this.selectAnswerById.bind(this);
+
     this.handleNodeSelectionChange = this.handleNodeSelectionChange.bind(this);
+
+    this.onSelectionAnswerIndex = this.onSelectionAnswerIndex.bind(this);
     this.onSelectionCallback = this.onSelectionCallback.bind(this);
     this.onGraphClick = this.onGraphClick.bind(this);
-    
+
     this.feedbackModalOpen = this.feedbackModalOpen.bind(this);
     this.feedbackModalClose = this.feedbackModalClose.bind(this);
     this.feedbackUpdate = this.feedbackUpdate.bind(this);
@@ -53,12 +60,24 @@ class AnswersetInteractive extends React.Component {
   componentDidMount() {
     // this.updateSelectedSubGraphIndex(0);
     this.initializeNodeSelection();
+    if (('answerId' in this.props) && this.props.answerId && Number.isSafeInteger(this.props.answerId)) {
+      this.selectAnswerById(this.props.answerId);
+    }
   }
   componentWillReceiveProps(newProps) {
     // this.setState({ selectedSubGraphIndex: 0, selectedSubGraphEdge: null });
     this.initializeNodeSelection();
+    if (('answerId' in newProps) && newProps.answerId && Number.isSafeInteger(newProps.answerId)) {
+      this.selectAnswerById(newProps.answerId);
+    }
   }
+  onSelectionAnswerIndex(index) {
+    // We must make a nodeSelection that specifies this exact answer
+    const nodeSelection = this.props.answers[index].nodes.map(n => n.id);
 
+    this.handleNodeSelectionChange(nodeSelection);
+    this.setState({ nodeSelection });
+  }
   onSelectionCallback(index, selectedOption) {
     const { nodeSelection } = this.state;
     if (selectedOption == null) {
@@ -79,9 +98,19 @@ class AnswersetInteractive extends React.Component {
   }
 
   initializeNodeSelection() {
-    const nodeSelection = this.props.answers[0].nodes.map(n => null);
+    const noAnswers = !(('answers' in this.props) && Array.isArray(this.props.answers) && this.props.answers.length > 0);
+    if (noAnswers) {
+      return;
+    }
+    const nodeSelection = this.props.answers[0].nodes.map(() => null);
     this.handleNodeSelectionChange(nodeSelection);
     this.setState({ nodeSelection });
+  }
+  selectAnswerById(answerId) {
+    const index = this.props.answers.findIndex(a => a.id === answerId);
+    if (Number.isSafeInteger(index) && index >= 0) {
+      this.onSelectionAnswerIndex(index);
+    }
   }
   handleNodeSelectionChange(nodeSelection) {
     // find all paths such that nodes match selection template
@@ -113,6 +142,14 @@ class AnswersetInteractive extends React.Component {
     }
 
     this.setState({ selectedSubGraphIndex, selectedSubGraphPossibilities: subgraphPossibilities });
+
+    // Change the url, if there is exactly one possibility in each dimension
+    if (subgraphPossibilities.every(p => p.length === 1)) {
+      this.props.callbackAnswerSelected(this.props.answers[selectedSubGraphIndex]);
+    } else {
+      this.props.callbackNoAnswerSelected();
+    }
+
   }
   feedbackModalOpen() {
     this.setState({ feedbackModalShow: true });
@@ -121,16 +158,32 @@ class AnswersetInteractive extends React.Component {
     this.setState({ feedbackModalShow: false });
   }
   feedbackUpdate(newFeedback) {
-    console.log('New Feedback', newFeedback);
+
+    this.props.callbackFeedbackSubmit(newFeedback);
     this.feedbackModalClose();
   }
 
-  render() {
+  renderNoAnswers() {
+    return (
+      <Row>
+        <Col md={12}>
+          We were unable to find any answers for this question.
+        </Col>
+      </Row>
+    );
+  }
+  renderValid() {
+    const answer = this.props.answers[this.state.selectedSubGraphIndex];
+
+    // this.props.user.email
+    const answerFeedback = { answerId: answer.id, accuracy: 4, impact: 3, notes: 'This is a great answer' };
+
     return (
       <Row className="modal-container">
         <Col md={3}>
           <AnswersetInteractiveSelector
-            subgraph={this.props.answers[this.state.selectedSubGraphIndex]}
+            subgraph={answer}
+            nodeSelection={this.state.nodeSelection}
             subgraphPossibilities={this.state.selectedSubGraphPossibilities}
             onSelectionCallback={this.onSelectionCallback}
           />
@@ -138,7 +191,8 @@ class AnswersetInteractive extends React.Component {
         <Col md={9}>
           <AnswerExplorer
             answerset={this.props.answerset}
-            subgraph={this.props.answers[this.state.selectedSubGraphIndex]}
+            subgraph={answer}
+            feedback={this.props.feedback}
             subgraphs={this.props.answers}
             selectedSubgraphIndex={this.state.selectedSubGraphIndex}
             selectedEdge={this.state.selectedSubGraphEdge}
@@ -158,7 +212,7 @@ class AnswersetInteractive extends React.Component {
           </Modal.Header>
           <Modal.Body>
             <FeedbackEditor
-              feedback={{ accuracy: 4, interest: 3, notes: 'This one seems about right.' }}
+              feedback={answerFeedback}
               callbackUpdate={this.feedbackUpdate}
               callbackClose={this.feedbackModalClose}
             />
@@ -166,6 +220,15 @@ class AnswersetInteractive extends React.Component {
         </Modal>
       </Row>
     );
+  }
+  render() {
+    const hasAnswers = ('answers' in this.props) && Array.isArray(this.props.answers) && this.props.answers.length > 0;
+    return (
+      <div>
+        {hasAnswers && this.renderValid()}
+        {!hasAnswers && this.renderNoAnswers()}
+      </div>
+    )
   }
 }
 
