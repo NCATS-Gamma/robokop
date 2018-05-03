@@ -5,7 +5,7 @@ from flask_security import Security, SQLAlchemySessionUserDatastore
 
 # Include these so that all the associated postgres tables get created.
 from question import Question
-from answer import Answer, AnswerSet
+from answer import Answer, Answerset
 from feedback import Feedback
 
 with app.app_context():
