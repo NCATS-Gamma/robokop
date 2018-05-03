@@ -23,8 +23,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..
 from builder import tokenize_path, run_query, generate_query
 
 # set up Celery
-app.config['broker_url'] = os.environ["CELERY_BROKER_URL"]
-app.config['result_backend'] = os.environ["CELERY_RESULT_BACKEND"]
+app.config['broker_url'] = os.environ["MANAGER_CELERY_BROKER_URL"]
+app.config['result_backend'] = os.environ["MANAGER_CELERY_RESULT_BACKEND"]
 celery = Celery(app.name, broker=app.config['broker_url'])
 celery.conf.update(app.config)
 celery.conf.task_queues = (
