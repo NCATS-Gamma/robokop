@@ -42,8 +42,9 @@ class QuestionGraphViewer extends React.Component {
         from: e.start,
         to: e.end,
       }));
+    const nodes = this.props.graph.nodes.map(n => ({ ...n })); // Deep copy.
 
-    const graph = { nodes: this.props.graph.nodes, edges };
+    const graph = { nodes, edges };
     return graph;
   }
 

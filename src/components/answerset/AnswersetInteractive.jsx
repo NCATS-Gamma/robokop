@@ -2,7 +2,7 @@ import React from 'react';
 import { Row, Col, Modal } from 'react-bootstrap';
 import AnswersetInteractiveSelector from './AnswersetInteractiveSelector';
 import AnswerExplorer from '../shared/AnswerExplorer';
-import FeedbackEditor from '../shared/FeedbackEditor'
+import FeedbackEditor from '../shared/FeedbackEditor';
 
 class AnswersetInteractive extends React.Component {
   constructor(props) {
@@ -40,6 +40,9 @@ class AnswersetInteractive extends React.Component {
       selectedSubGraphEdge: null,
       nodeSelection: [],
     };
+
+    this.renderNoAnswers = this.renderNoAnswers.bind(this);
+    this.renderValid = this.renderValid.bind(this);
 
     this.initializeNodeSelection = this.initializeNodeSelection.bind(this);
     this.selectAnswerById = this.selectAnswerById.bind(this);
@@ -95,6 +98,10 @@ class AnswersetInteractive extends React.Component {
   }
 
   initializeNodeSelection() {
+    const noAnswers = !(('answers' in this.props) && Array.isArray(this.props.answers) && this.props.answers.length > 0);
+    if (noAnswers) {
+      return;
+    }
     const nodeSelection = this.props.answers[0].nodes.map(() => null);
     this.handleNodeSelectionChange(nodeSelection);
     this.setState({ nodeSelection });
@@ -151,16 +158,31 @@ class AnswersetInteractive extends React.Component {
     this.setState({ feedbackModalShow: false });
   }
   feedbackUpdate(newFeedback) {
-    console.log('New Feedback', newFeedback);
+
+    this.props.callbackFeedbackSubmit(newFeedback);
     this.feedbackModalClose();
   }
 
-  render() {
+  renderNoAnswers() {
+    return (
+      <Row>
+        <Col md={12}>
+          We were unable to find any answers for this question.
+        </Col>
+      </Row>
+    );
+  }
+  renderValid() {
+    const answer = this.props.answers[this.state.selectedSubGraphIndex];
+
+    // this.props.user.email
+    const answerFeedback = { answerId: answer.id, accuracy: 4, impact: 3, notes: 'This is a great answer' };
+
     return (
       <Row className="modal-container">
         <Col md={3}>
           <AnswersetInteractiveSelector
-            subgraph={this.props.answers[this.state.selectedSubGraphIndex]}
+            subgraph={answer}
             nodeSelection={this.state.nodeSelection}
             subgraphPossibilities={this.state.selectedSubGraphPossibilities}
             onSelectionCallback={this.onSelectionCallback}
@@ -169,7 +191,8 @@ class AnswersetInteractive extends React.Component {
         <Col md={9}>
           <AnswerExplorer
             answerset={this.props.answerset}
-            subgraph={this.props.answers[this.state.selectedSubGraphIndex]}
+            subgraph={answer}
+            feedback={this.props.feedback}
             subgraphs={this.props.answers}
             selectedSubgraphIndex={this.state.selectedSubGraphIndex}
             selectedEdge={this.state.selectedSubGraphEdge}
@@ -189,7 +212,7 @@ class AnswersetInteractive extends React.Component {
           </Modal.Header>
           <Modal.Body>
             <FeedbackEditor
-              feedback={{ accuracy: 4, interest: 3, notes: 'This one seems about right.' }}
+              feedback={answerFeedback}
               callbackUpdate={this.feedbackUpdate}
               callbackClose={this.feedbackModalClose}
             />
@@ -197,6 +220,15 @@ class AnswersetInteractive extends React.Component {
         </Modal>
       </Row>
     );
+  }
+  render() {
+    const hasAnswers = ('answers' in this.props) && Array.isArray(this.props.answers) && this.props.answers.length > 0;
+    return (
+      <div>
+        {hasAnswers && this.renderValid()}
+        {!hasAnswers && this.renderNoAnswers()}
+      </div>
+    )
   }
 }
 

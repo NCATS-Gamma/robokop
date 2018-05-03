@@ -76,19 +76,23 @@ class AnswersetSelector extends React.Component {
     const d = new Date(answerset.timestamp);
     const timeString = d.toLocaleString();
 
+    let { message } = answerset;
+    if (message == null || message.length < 1) {
+      message = 'No Message Provided';
+    }
     return (
-      <div style={{paddingTop: '5px'}}>
+      <div style={{ paddingTop: '5px' }}>
         <Row>
           <Col md={12}>
             <h4>{answerset.creator}</h4>
             <h5>{timeString}</h5>
             <pre>
-              {answerset.message}
+              {message}
             </pre>
           </Col>
         </Row>
         <Row>
-          <Col md={4} mdOffset={1}>
+          <Col md={4} mdOffset={4}>
             <Button
               bsStyle="primary"
               bsSize="large"
@@ -119,12 +123,30 @@ class AnswersetSelector extends React.Component {
         }
         {!this.props.initializerBusy &&
           <div>
-            <h4>
-              No answer sets available.
-            </h4>
-            <p>
-              This may indicate a problem in the construction of the question, or a lack of available information.
-            </p>
+            <Row>
+              <Col md={12}>
+                <h4>
+                  No answer sets available.
+                </h4>
+                <p>
+                  This may indicate a problem in the construction of the question, or a lack of available information.
+                </p>
+              </Col>
+            </Row>
+            <Row style={{ paddingTop: '10px' }}>
+              <Col md={4} mdOffset={4}>
+                <Button
+                  bsSize="large"
+                  alt="Get a New Answer Set"
+                  onClick={this.props.callbackAnswersetNew}
+                  disabled={!this.props.enableNewButton}
+                >
+                  Get New Answers
+                  <br />
+                  <GoPlaybackPlay />
+                </Button>
+              </Col>
+            </Row>
           </div>
         }
       </div>
@@ -142,10 +164,9 @@ class AnswersetSelector extends React.Component {
         <div id="answersetSelect" style={{ display: 'table', width: '100%' }}>
           {!moreThanOne &&
             <div>
-              <div style={{ display: 'table-cell', width: '40%' }}>
+              <div style={{ display: 'table-cell', width: '100%' }}>
                 {`Answers from ${options[0].label}`}
               </div>
-              <div style={{ display: 'table-cell', width: '50%' }} />
             </div>
           }
           {moreThanOne &&

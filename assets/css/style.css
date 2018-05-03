@@ -7,8 +7,11 @@
 }
 
 /* When you click on AG grid rows it highlights the cell for somereason */
+.ag-theme-material .ag-cell:focus {
+  outline: none;
+}
 .ag-theme-material .ag-cell-focus {
-  border: none;
+  border: none !important;
   outline: initial;
 }
 

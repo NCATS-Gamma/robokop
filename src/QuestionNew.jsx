@@ -81,7 +81,7 @@ class QuestionNew extends React.Component {
       name: this.state.name,
       natural: this.state.natural,
       notes: this.state.notes,
-      machineQuestion: this.state.machineQuestion,
+      machine_question: this.state.machineQuestion,
     };
 
     // Splash wait overlay

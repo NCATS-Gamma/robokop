@@ -32,7 +32,7 @@ class AppConfig {
       questionAnswer: questionId => this.url(`api/q/${questionId}/answer`),
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg`),
       taskStatus: taskId => this.url(`api/t/${taskId}`),
-      tasks: this.url('api/tasks'),
+      feedback: this.url('api/feedback/'),
     };
 
     this.url = this.url.bind(this);
@@ -56,8 +56,7 @@ class AppConfig {
     this.taskStatus = this.taskStatus.bind(this);
 
     this.conceptSearch = this.conceptSearch.bind(this);
-    // this.monarchSearch = this.monarchSearch.bind(this);
-
+    
     // Read config parameters for enabling controls
     this.enableNewAnswersets = ((config.ui !== null) && (config.ui.enableNewAnswersets !== null)) ? config.ui.enableNewAnswersets : true;
     this.enableNewQuestions = ((config.ui !== null) && (config.ui.enableNewQuestions !== null)) ? config.ui.enableNewQuestions : true;
@@ -204,13 +203,18 @@ class AppConfig {
 
   taskStatus(taskId, successFun) {
     this.getRequest(
-      this.api.taskStatus(taskId),
+      this.apis.taskStatus(taskId),
       successFun,
     );
   }
 
   answerFeedback(data, successFun, failureFun) {
-    console.log("Set feedback here");
+    this.postRequest(
+      this.apis.feedback,
+      data,
+      successFun,
+      failureFun,
+    );
   }
 
   open(url) {
@@ -223,11 +227,9 @@ class AppConfig {
     window.history.back();
   }
   replaceUrl(title, url) {
-    console.log('New URL', url)
     history.replaceState({}, title, url);
   }
   // setUrl(title, url) {
-  //   console.log('New URL', url)
   //   history.pushState({}, title, url);
   // }
 
@@ -279,7 +281,6 @@ class AppConfig {
 
   deleteRequest(
     addr,
-    data,
     successFunction = () => {},
     failureFunction = (err) => {
       window.alert('There was a problem contacting the server.');
@@ -288,7 +289,7 @@ class AppConfig {
     },
   ) {
     this.comms.delete(addr).then((result) => {
-      successFunction(result.data);
+      successFunction(result);
     }).catch((err) => {
       failureFunction(err);
     });

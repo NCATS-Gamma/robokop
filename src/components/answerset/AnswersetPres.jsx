@@ -28,10 +28,13 @@ class AnswersetPres extends React.Component {
         />
         <br />
         <AnswersetInteractive
+          user={this.props.user}
           answers={this.props.answers}
+          feedback={this.props.answersetFeedback}
           answerId={this.props.answerId} // Monitored for select by parameter or page load
           callbackAnswerSelected={this.props.callbackAnswerSelect}
           callbackNoAnswerSelected={this.props.callbackNoAnswerSelect}
+          callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
         />
       </Grid>
     );
@@ -39,12 +42,15 @@ class AnswersetPres extends React.Component {
 };
 
 AnswersetPres.propTypes = {
+  callbackNoAnswerSelect: PropTypes.func.isRequired, 
   callbackAnswersetSelect: PropTypes.func.isRequired,
   callbackQuestionSelect: PropTypes.func.isRequired,
   callbackAnswerSelect: PropTypes.func.isRequired,
+  callbackFeedbackSubmit: PropTypes.func.isRequired,
   question: PropTypes.object.isRequired,
   otherQuestions: PropTypes.arrayOf(PropTypes.object).isRequired,
   answerset: PropTypes.object.isRequired,
+  answerId: PropTypes.oneOfType([PropTypes.number, PropTypes.array]).isRequired,
   otherAnswersets: PropTypes.arrayOf(PropTypes.object).isRequired,
   answers: PropTypes.arrayOf(PropTypes.object).isRequired,
 };

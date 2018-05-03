@@ -24,6 +24,8 @@ class Answerset extends React.Component {
       answersetGraph: {},
       answersetFeedback: [],
     };
+
+    this.callbackFeedbackSubmit = this.callbackFeedbackSubmit.bind(this);
   }
 
   componentDidMount() {
@@ -37,7 +39,7 @@ class Answerset extends React.Component {
         answers: data.answers,
         answerCount: data.answer_num,
         answersetGraph: data.answerset_graph,
-        answersetFeedback: data.answerset_feedback,
+        answersetFeedback: data.feedback,
         otherAnswersets: data.other_answersets,
         otherQuestions: data.other_questions,
         dataReady: true,
@@ -54,6 +56,20 @@ class Answerset extends React.Component {
     }));
   }
 
+  callbackFeedbackSubmit(newPartialFeedback) {
+    const newFeedback = { ...newPartialFeedback, ...{ question_id: this.state.question.id } };
+    console.log(newFeedback);
+
+    this.appConfig.answerFeedback(
+      newFeedback,
+      () => {}, // All good
+      (err) => {
+        window.alert('Sorry. There was a problem submitting the feedback data to the server.');
+        console.log('Problem with post request:');
+        console.log(err);
+      },
+    );
+  }
   renderLoading() {
     return (
       <Loading />
@@ -94,6 +110,7 @@ class Answerset extends React.Component {
         }
         {this.state.isValid &&
           <AnswersetPres
+            user={this.state.user}
             question={this.state.question}
             answerset={this.state.answerset}
             answerId={this.props.answerId}
@@ -107,6 +124,7 @@ class Answerset extends React.Component {
             callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
             callbackAnswerSelect={a => this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, a.id))}
             callbackNoAnswerSelect={() => this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answerset(this.state.question.id, this.state.answerset.id))}
+            callbackFeedbackSubmit={this.callbackFeedbackSubmit}
           />
         }
       </div>

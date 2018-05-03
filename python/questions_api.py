@@ -31,7 +31,7 @@ class QuestionsAPI(Resource):
         name = request.json['name']
         natural_question = request.json['natural']
         notes = request.json['notes']
-        nodes, edges = Question.dictionary_to_graph(request.json['query'])
+        nodes, edges = Question.dictionary_to_graph(request.json['machine_question'])
         qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
         q = Question(id=qid, user_id=user_id, name=name, natural_question=natural_question, notes=notes, nodes=nodes, edges=edges)
 
