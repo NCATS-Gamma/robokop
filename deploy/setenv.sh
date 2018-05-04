@@ -1,15 +1,10 @@
-#!/bin/bash
-### every exit != 0 fails the script
-set -e
-
-cd $ROBOKOP_HOME
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+export ROBOKOP_HOME="$DIR/../.."
+export $(cat $ROBOKOP_HOME/shared/robokop.env | grep -v ^# | xargs)
 
 export CELERY_BROKER_URL="redis://$REDIS_HOST:$REDIS_PORT/$MANAGER_REDIS_DB"
 export CELERY_RESULT_BACKEND="redis://$REDIS_HOST:$REDIS_PORT/$MANAGER_REDIS_DB"
 export FLOWER_BROKER_API="redis://$REDIS_HOST:$REDIS_PORT/$MANAGER_REDIS_DB"
 export FLOWER_PORT="$MANAGER_FLOWER_PORT"
-
-# set up postgres tables
-python ./python/initialize_data.py
-
-exec "$@"
+export FLOWER_BASIC_AUTH=${FLOWER_USER}:${FLOWER_PASSWORD}
+export SUPERVISOR_PORT=$MANAGER_SUPERVISOR_PORT

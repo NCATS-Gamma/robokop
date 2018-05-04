@@ -13,11 +13,7 @@ RUN apt-get upgrade -y
 
 ## Install basic tools
 RUN apt-get install -yq \
-    vim \
-    gcc \
-    wget \
-    git \
-    curl
+    vim
 
 ## Install NodeJS
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
@@ -32,7 +28,6 @@ RUN useradd -m -s /bin/bash murphy
 WORKDIR /home/murphy
 
 ## Get ROBOKOP software
-RUN git clone https://github.com/NCATS-Gamma/robokop-rank.git
 RUN git clone https://github.com/NCATS-Gamma/robokop.git
 
 WORKDIR /home/murphy/robokop
@@ -45,8 +40,12 @@ RUN pip install -r ./requirements.txt
 RUN npm install
 RUN npm run webpackProd
 
+WORKDIR /home/murphy
+RUN rm -r /home/murphy/robokop
+
 ## Finish up
 ENV HOME=/home/murphy
+ENV USER=murphy
 COPY ./startup.sh /home/murphy/startup.sh
 COPY ./supervisord.conf /home/murphy/supervisord.conf
 
