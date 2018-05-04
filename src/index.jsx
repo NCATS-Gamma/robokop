@@ -12,6 +12,7 @@ import QuestionNew from './QuestionNew';
 import Question from './Question';
 import QuestionList from './QuestionList';
 import Answerset from './Answerset';
+import AnswersetApp from './AnswersetApp';
 
 // Our actual CSS and other images etc.
 import '../assets/css/style.css';
@@ -65,6 +66,14 @@ const robokop = {
         config={config}
         id={answersetId}
         answerId={answerId}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  app_answerset: () => {
+    ReactDOM.render(
+      <AnswersetApp
+        config={config}
       />,
       document.getElementById('reactEntry'),
     );

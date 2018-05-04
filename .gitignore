@@ -3,10 +3,8 @@
 /pack/*
 /logs/*
 /dist
-npm-debug.log
-python/__pycache__/*
-ranker/__pycache__/*
-builder/__pycache__/*
+*.log
+*.pyc
 *.db
 *.bak
 *.log
@@ -19,8 +17,7 @@ python/robokop_setup_environ.py
 *.pid
 sandbox
 neo4j_plugins
-shared/setenv.sh
-shared/startupInstructions.md
+shared/robokop.env
 .eslintrc.json
 .babelrc
 AllDxCounts.txt
