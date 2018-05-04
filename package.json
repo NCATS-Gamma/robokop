@@ -48,6 +48,7 @@
     "react-dnd-html5-backend": "^2.5.4",
     "react-dom": "^15.0.0",
     "react-dom-factories": "^1.0.2",
+    "react-dropzone": "^4.2.9",
     "react-graph-vis": "^1.0.2",
     "react-icons": "^2.2.7",
     "react-notification-system": "^0.2.17",
