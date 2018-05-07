@@ -143,7 +143,7 @@ class Question extends React.Component {
         console.log(taskId, data);
         this.notificationSystem.addNotification({
           title: 'Error Updating Knowledge Graph',
-          message: `We encountered an error while trying to update the knowledge graph for this quesiton. If this error persists please contact a system administrator.\r\n\r\nError Report:\r\n${data.result}`,
+          message: `We encountered an error while trying to update the knowledge graph for this question. If this error persists please contact a system administrator.\r\n\r\nError Report:\r\n${data.result}`,
           level: 'error',
           dismissible: 'click',
           position: 'tr',
@@ -158,7 +158,7 @@ class Question extends React.Component {
       if (success) {
         this.notificationSystem.addNotification({
           title: 'New Answers are Available',
-          message: 'We finished finding new answers for this quesiton. Go check them out!',
+          message: 'We finished finding new answers for this question. Go check them out!',
           level: 'success',
           dismissible: 'click',
           position: 'tr',
@@ -167,7 +167,7 @@ class Question extends React.Component {
         console.log(taskId, data);
         this.notificationSystem.addNotification({
           title: 'Error Finding New Answers',
-          message: `We encountered an error while trying to find new answers for this quesiton. If this error persists please contact a system administrator.\r\n\r\nError Report:\r\n${data.result}`,
+          message: `We encountered an error while trying to find new answers for this question. If this error persists please contact a system administrator.\r\n\r\nError Report:\r\n${data.result}`,
           level: 'error',
           dismissible: 'click',
           position: 'tr',
@@ -182,7 +182,7 @@ class Question extends React.Component {
       if (success) {
         this.notificationSystem.addNotification({
           title: 'Initial Answers are Available',
-          message: 'We finished finding initial answers for this quesiton. Go check them out!',
+          message: 'We finished finding initial answers for this question. Go check them out!',
           level: 'success',
           dismissible: 'click',
           position: 'tr',
@@ -191,7 +191,7 @@ class Question extends React.Component {
         console.log(taskId, data);
         this.notificationSystem.addNotification({
           title: 'Error Finding Initial Answers',
-          message: `We encountered an error while trying to find answers for this quesiton. Robokop may not be capable of answering the question as phrased.\r\n\r\nError Report:\r\n${data.result}`,
+          message: `We encountered an error while trying to find answers for this question. Robokop may not be capable of answering the question as phrased.\r\n\r\nError Report:\r\n${data.result}`,
           level: 'error',
           dismissible: 'click',
           position: 'tr',
