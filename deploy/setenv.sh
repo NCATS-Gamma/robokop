@@ -1,6 +1,8 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export ROBOKOP_HOME="$DIR/../.."
-export $(cat $ROBOKOP_HOME/shared/robokop.env | grep -v ^# | xargs)
+if [ "$DEPLOY" != "docker" ]; then
+    export $(cat $ROBOKOP_HOME/shared/robokop.env | grep -v ^# | xargs)
+fi
 
 export CELERY_BROKER_URL="redis://$REDIS_HOST:$REDIS_PORT/$MANAGER_REDIS_DB"
 export CELERY_RESULT_BACKEND="redis://$REDIS_HOST:$REDIS_PORT/$MANAGER_REDIS_DB"

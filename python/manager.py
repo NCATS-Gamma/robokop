@@ -16,10 +16,6 @@ import q_api
 import a_api
 import feedback_api
 
-greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
-sys.path.insert(0, greent_path)
-from greent import node_types
-
 @api.route('/tasks')
 class Tasks(Resource):
     @api.response(200, 'Success')
@@ -37,7 +33,7 @@ class TaskStatus(Resource):
         # task = celery.AsyncResult(task_id)
         # return task.state
 
-        flower_url = f'http://{os.environ["FLOWER_ADDRESS"]}:{os.environ["FLOWER_PORT"]}/api/task/result/{task_id}'
+        flower_url = f'http://{os.environ["FLOWER_HOST"]}:{os.environ["FLOWER_PORT"]}/api/task/result/{task_id}'
         response = requests.get(flower_url, auth=(os.environ['FLOWER_USER'], os.environ['FLOWER_PASSWORD']))
         return response.json()
 
@@ -46,8 +42,8 @@ class Concepts(Resource):
     @api.response(200, 'Success')
     def get(self):
         """Get known biomedical concepts"""
-        concepts = list(node_types.node_types - {'UnspecifiedType'})
-        return concepts
+        r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/concepts")
+        return r.json()
 
 @api.route('/user')
 class User(Resource):

@@ -12,9 +12,8 @@ services:
       - NEO4J_HOST=neo4j
       - REDIS_HOST=redis
       - POSTGRES_HOST=postgres
-      - ROBOKOP_HOST=0.0.0.0
-      - FLOWER_ADDRESS=0.0.0.0
-      - SUPERVISOR_HOST=0.0.0.0
+      - BUILDER_HOST=interfaces
+      - RANKER_HOST=rank
     ports:
       - "${MANAGER_PORT}:${MANAGER_PORT}"
       - "${FLOWER_PORT}:${FLOWER_PORT}"

@@ -6,7 +6,7 @@ import os
 import json
 
 # Get host and port from environmental variables
-server_host = os.environ['ROBOKOP_HOST']
+server_host = '0.0.0.0' #os.environ['ROBOKOP_HOST']
 server_port = os.environ['MANAGER_PORT']
 
 bind = '{}:{}'.format(server_host, server_port)

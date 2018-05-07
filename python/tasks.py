@@ -15,10 +15,6 @@ from answer import get_answerset_by_id, Answerset
 from question import get_question_by_id, list_questions_by_hash
 from logging_config import logger
 
-greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
-sys.path.insert(0, greent_path)
-from greent import node_types
-
 # set up Celery
 app.config['broker_url'] = os.environ["CELERY_BROKER_URL"]
 app.config['result_backend'] = os.environ["CELERY_RESULT_BACKEND"]
@@ -101,7 +97,7 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
     question = get_question_by_id(question_id)
 
     try:
-        r = requests.post(f'http://{os.environ["ROBOKOP_HOST"]}:6010/api/', json=question.toJSON())
+        r = requests.post(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/', json=question.toJSON())
         # wait here for response
         answerset_json = r.json()
         logger.info(answerset_json)
@@ -145,8 +141,8 @@ def update_kg(self, question_hash, question_id=None, user_email=None):
     question = get_question_by_id(question_id)
 
     try:
-        r = requests.post(f'http://{os.environ["ROBOKOP_HOST"]}:6011/api/', json=question.toJSON())
-        polling_url = r.json()['poll']
+        r = requests.post(f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question.toJSON())
+        polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{r.json()['task id']}"
         
         for i in range(60*60*24): # wait up to 1 day
             r = requests.get(polling_url, auth=(os.environ['FLOWER_USER'], os.environ['FLOWER_PASSWORD']))

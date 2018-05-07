@@ -70,7 +70,7 @@ def show_tasks():
 if __name__ == '__main__':
 
     # Get host and port from environmental variables
-    server_host = os.environ['ROBOKOP_HOST']
+    server_host = '0.0.0.0' #os.environ['ROBOKOP_HOST']
     server_port = int(os.environ['MANAGER_PORT'])
 
     app.run(host=server_host,\

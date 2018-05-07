@@ -3,7 +3,7 @@
 FROM python:3
 
 LABEL maintainer="patrick@covar.com"
-ENV REFRESHED_AT 2018-05-03
+ENV REFRESHED_AT 2018-05-04
 
 ENV LANG=C.UTF-8 \
     LC_ALL=C.UTF-8
@@ -39,6 +39,7 @@ RUN pip install -r ./requirements.txt
 ## Set up the website
 RUN npm install
 RUN npm run webpackProd
+RUN pip install git+https://github.com/Supervisor/supervisor@master
 
 WORKDIR /home/murphy
 RUN rm -r /home/murphy/robokop
