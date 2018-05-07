@@ -47,18 +47,21 @@ def initialize_question(self, question_hash, question_id=None, user_email=None):
 
     if answerset and answerset.answers:
         if user_email:
-            with app.app_context():
-                question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}'
-                answerset_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}/a/{answerset_id}'
-                lines = [f'We have finished initializing your question: <a href="{question_url}">"{question.natural_question}"</a>.']
-                lines.append(f'<a href="{answerset_url}">ANSWERS</a>')
-                lines.append('Answers were found without refreshing the knowledge graph. You may be able to get more answers by refreshing the knowledge graph and answering again.')
-                html = '<br />\n'.join(lines)
-                msg = Message("ROBOKOP: Answers Ready",
-                              sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
-                              recipients=['patrick@covar.com'], #[user_email],
-                              html=html)
-                mail.send(msg)
+            try:
+                with app.app_context():
+                    question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}'
+                    answerset_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}/a/{answerset_id}'
+                    lines = [f'We have finished initializing your question: <a href="{question_url}">"{question.natural_question}"</a>.']
+                    lines.append(f'<a href="{answerset_url}">ANSWERS</a>')
+                    lines.append('Answers were found without refreshing the knowledge graph. You may be able to get more answers by refreshing the knowledge graph and answering again.')
+                    html = '<br />\n'.join(lines)
+                    msg = Message("ROBOKOP: Answers Ready",
+                                sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
+                                recipients=['patrick@covar.com'], #[user_email],
+                                html=html)
+                    mail.send(msg)
+            except Exception as err:
+                raise RuntimeError(f"Failed to send 'completed initialization' email: {err}")
         return
 
     logger.info("Empty anwerset. Refreshing KG...")
@@ -70,17 +73,20 @@ def initialize_question(self, question_hash, question_id=None, user_email=None):
     answerset_id = answer_question.apply_async(args=[question.hash]).get(disable_sync_subtasks=False) # don't send email here
 
     if user_email:
-        with app.app_context():
-            question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}'
-            answerset_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}/a/{answerset_id}'
-            lines = [f'We have finished initializing your question: <a href="{question_url}">"{question.natural_question}"</a>.']
-            lines.append(f'<a href="{answerset_url}">ANSWERS</a>')
-            html = '<br />\n'.join(lines)
-            msg = Message("ROBOKOP: Answers Ready",
-                          sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
-                          recipients=['patrick@covar.com'], #[user_email],
-                          html=html)
-            mail.send(msg)
+        try:
+            with app.app_context():
+                question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}'
+                answerset_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}/a/{answerset_id}'
+                lines = [f'We have finished initializing your question: <a href="{question_url}">"{question.natural_question}"</a>.']
+                lines.append(f'<a href="{answerset_url}">ANSWERS</a>')
+                html = '<br />\n'.join(lines)
+                msg = Message("ROBOKOP: Answers Ready",
+                            sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
+                            recipients=['patrick@covar.com'], #[user_email],
+                            html=html)
+                mail.send(msg)
+        except Exception as err:
+            raise RuntimeError(f"Failed to send 'completed initialization' email: {err}")
 
     logger.info("Done initializing.")
 
@@ -113,17 +119,20 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
         raise ValueError("Question answering completed: no answers found.")
 
     if user_email:
-        with app.app_context():
-            question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}'
-            answerset_url = f'http://{os.environ["ROBOKOP_HOST"]}/a/{answerset.id}'
-            lines = [f'We have finished answering your question: <a href="{question_url}">"{question.natural_question}"</a>.']
-            lines.append(f'<a href="{answerset_url}">ANSWERS</a>')
-            html = '<br />\n'.join(lines)
-            msg = Message("ROBOKOP: Answers Ready",
-                          sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
-                          recipients=['patrick@covar.com'], #[user_email],
-                          html=html)
-            mail.send(msg)
+        try:
+            with app.app_context():
+                question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}'
+                answerset_url = f'http://{os.environ["ROBOKOP_HOST"]}/a/{answerset.id}'
+                lines = [f'We have finished answering your question: <a href="{question_url}">"{question.natural_question}"</a>.']
+                lines.append(f'<a href="{answerset_url}">ANSWERS</a>')
+                html = '<br />\n'.join(lines)
+                msg = Message("ROBOKOP: Answers Ready",
+                            sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
+                            recipients=['patrick@covar.com'], #[user_email],
+                            html=html)
+                mail.send(msg)
+        except Exception as err:
+            raise RuntimeError(f"Failed to send 'completed answer' email: {err}")
 
     logger.info("Done answering.")
     return answerset.id
@@ -152,6 +161,12 @@ def update_kg(self, question_hash, question_id=None, user_email=None):
         else:
             raise RuntimeError("KG updating has not completed after 1 day. It will continue working, but we must return to the manager.")
 
+
+    except Exception as err:
+        logger.exception("Something went wrong with updating KG.")
+        raise err
+
+    try:
         if user_email:
             # send completion email
             question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}'
@@ -159,14 +174,12 @@ def update_kg(self, question_hash, question_id=None, user_email=None):
             html = '<br />\n'.join(lines)
             with app.app_context():
                 msg = Message("ROBOKOP: Knowledge Graph Update Complete",
-                              sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
-                              recipients=['patrick@covar.com'], #[user_email],
-                              html=html)
+                            sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
+                            recipients=['patrick@covar.com'], #[user_email],
+                            html=html)
                 mail.send(msg)
+    except Exception as err:
+        raise RuntimeError(f"Failed to send 'completed KG update' email: {err}")
 
         logger.info("Done updating.")
         return "You updated the KG!"
-
-    except Exception as err:
-        logger.exception("Something went wrong with updating KG.")
-        raise err
