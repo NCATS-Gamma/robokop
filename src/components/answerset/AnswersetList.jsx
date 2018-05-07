@@ -1,7 +1,6 @@
 import React from 'react';
-import { PanelGroup, Panel } from 'react-bootstrap';
-import SubGraphViewer from './SubGraphViewer';
-import SubGraphInfo from './SubGraphInfo';
+import { Row, Col, PanelGroup, Panel } from 'react-bootstrap';
+import SubGraphViewer from '../shared/SubGraphViewer';
 
 const shortid = require('shortid');
 
@@ -36,23 +35,11 @@ class AnswersetList extends React.Component {
     };
     this.state = {
       selectedSubGraphIndex: 0,
-      selectedSubGraphEdge: null,
     };
 
     this.updateSelectedSubGraphIndex = this.updateSelectedSubGraphIndex.bind(this);
-    this.onGraphClick = this.onGraphClick.bind(this);
-  }
-  componentWillReceiveProps(newProps) {
-    this.setState({ selectedSubGraphIndex: 0, selectedSubGraphEdge: null });
   }
 
-  onGraphClick(event) {
-    if (event.edges.length !== 0) { // Clicked on an Edge
-      this.setState({ selectedSubGraphEdge: event.edges[0] });
-    } else { // Reset things since something else was clicked
-      this.setState({ selectedSubGraphEdge: null });
-    }
-  }
   getListGroup() {
     const listEntries = this.props.answers.map((s, ind) => {
       const isActive = ind === this.state.selectedSubGraphIndex;
@@ -60,13 +47,8 @@ class AnswersetList extends React.Component {
       if (isActive) {
         bsStyle = 'primary';
       }
-      const scoreProp = s.score;
-      let cScore = 0;
-      if (!(scoreProp == null)) {
-        cScore = scoreProp.rank_score.toFixed(4);
-      }
+      const cScore = s.confidence.toFixed(3);
       return (
-        // <ListGroupItem key={shortid.generate()} onClick={() => this.updateSelectedSubGraphIndex(ind)} active={isActive}>
         <Panel
           key={shortid.generate()}
           bsStyle={bsStyle}
@@ -75,7 +57,7 @@ class AnswersetList extends React.Component {
         >
           <Panel.Heading>
             <Panel.Title>
-              {`${ind + 1} - ${'TODO:short answer names'}`}
+              {`${ind + 1} - ${s.text}`}
             </Panel.Title>
           </Panel.Heading>
           <Panel.Body>
@@ -93,30 +75,24 @@ class AnswersetList extends React.Component {
     );
   }
   updateSelectedSubGraphIndex(ind) {
-    this.setState({ selectedSubGraphIndex: ind, selectedSubGraphEdge: null });
+    this.setState({ selectedSubGraphIndex: ind });
   }
   render() {
     return (
-      <div id="AnswersetList_Explorer" className="col-md-12">
-        <div className="row" style={this.styles.mainContent}>
-          <div className={'col-md-3'} style={this.styles.listGroup}>
-            {this.getListGroup()}
-          </div>
-          <div className={'col-md-3'} style={this.styles.graph}>
-            <SubGraphViewer
-              subgraph={this.props.answers[this.state.selectedSubGraphIndex]}
-              callbackOnGraphClick={this.onGraphClick}
-            />
-          </div>
-          <div className={'col-md-6'} style={this.styles.explorer}>
-            <SubGraphInfo
-              subgraphs={this.props.answers}
-              selectedSubgraphIndex={this.state.selectedSubGraphIndex}
-              selectedEdge={this.state.selectedSubGraphEdge}
-            />
-          </div>
-        </div>
-      </div>
+      <Row>
+        <Col md={12}>
+          <Row>
+            <Col md={3}>
+              {this.getListGroup()}
+            </Col>
+            <Col md={9}>
+              <SubGraphViewer
+                subgraph={this.props.answers[this.state.selectedSubGraphIndex].result_graph}
+              />
+            </Col>
+          </Row>
+        </Col>
+      </Row>
     );
   }
 }

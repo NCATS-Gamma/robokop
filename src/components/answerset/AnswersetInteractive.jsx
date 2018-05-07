@@ -8,31 +8,6 @@ class AnswersetInteractive extends React.Component {
   constructor(props) {
     super(props);
 
-    this.styles = {
-      mainContent: {
-        height: '70vh',
-        border: '1px solid #d1d1d1',
-        overflow: 'hidden',
-        borderTopLeftRadius: '5px',
-        borderTopRightRadius: '5px',
-      },
-      listGroup: {
-        paddingLeft: '2px',
-        paddingRight: '2px',
-        height: '100%',
-        overflow: 'auto',
-      },
-      graph: {
-        paddingLeft: '0',
-        paddingRight: '0',
-        height: '100%',
-        overflow: 'auto',
-      },
-      explorer: {
-        height: '100%',
-        overflow: 'auto',
-      },
-    };
     this.state = {
       feedbackModalShow: false,
       selectedSubGraphIndex: 0,
@@ -60,14 +35,14 @@ class AnswersetInteractive extends React.Component {
   componentDidMount() {
     // this.updateSelectedSubGraphIndex(0);
     this.initializeNodeSelection();
-    if (('answerId' in this.props) && this.props.answerId && Number.isSafeInteger(this.props.answerId)) {
+    if (this.props.answerId && Number.isSafeInteger(this.props.answerId)) {
       this.selectAnswerById(this.props.answerId);
     }
   }
   componentWillReceiveProps(newProps) {
     // this.setState({ selectedSubGraphIndex: 0, selectedSubGraphEdge: null });
     this.initializeNodeSelection();
-    if (('answerId' in newProps) && newProps.answerId && Number.isSafeInteger(newProps.answerId)) {
+    if (newProps.answerId && Number.isSafeInteger(newProps.answerId)) {
       this.selectAnswerById(newProps.answerId);
     }
   }
@@ -102,7 +77,8 @@ class AnswersetInteractive extends React.Component {
     if (noAnswers) {
       return;
     }
-    const nodeSelection = this.props.answers[0].nodes.map(() => null);
+
+    const nodeSelection = this.props.answers[0].result_graph.node_list.map(() => null);
     this.handleNodeSelectionChange(nodeSelection);
     this.setState({ nodeSelection });
   }
@@ -114,16 +90,16 @@ class AnswersetInteractive extends React.Component {
   }
   handleNodeSelectionChange(nodeSelection) {
     // find all paths such that nodes match selection template
-    const isKept = this.props.answers.map(s => s.nodes.reduce((keep, n, ind) => keep && ((nodeSelection[ind] == null) || (nodeSelection[ind] === n.id)), true));
+    const isKept = this.props.answers.map(s => s.result_graph.node_list.reduce((keep, n, ind) => keep && ((nodeSelection[ind] == null) || (nodeSelection[ind] === n.id)), true));
 
     // convert isKept into ranked lists of nodes
     // loop through path positions
-    const subgraphPossibilities = this.props.answers[0].nodes.map((n, ind) => {
+    const subgraphPossibilities = this.props.answers[0].result_graph.node_list.map((n, ind) => {
       // loop through paths
       const theseNodes = this.props.answers.map((s) => {
         // extract node at position
-        const n2 = s.nodes[ind];
-        n2.score = s.score.rank_score;
+        const n2 = s.result_graph.node_list[ind];
+        n2.score = s.confidence;
         return n2;
         // filter out user-constrained nodes
       }).filter((id, ind2) => isKept[ind2]);
@@ -144,13 +120,13 @@ class AnswersetInteractive extends React.Component {
     this.setState({ selectedSubGraphIndex, selectedSubGraphPossibilities: subgraphPossibilities });
 
     // Change the url, if there is exactly one possibility in each dimension
-    if (subgraphPossibilities.every(p => p.length === 1)) {
+    if (this.props.enableUrlChange && (subgraphPossibilities.every(p => p.length === 1))) {
       this.props.callbackAnswerSelected(this.props.answers[selectedSubGraphIndex]);
     } else {
       this.props.callbackNoAnswerSelected();
     }
-
   }
+
   feedbackModalOpen() {
     this.setState({ feedbackModalShow: true });
   }
@@ -167,7 +143,7 @@ class AnswersetInteractive extends React.Component {
     return (
       <Row>
         <Col md={12}>
-          We were unable to find any answers for this question.
+          There does not appear to be any answers for this question.
         </Col>
       </Row>
     );
@@ -190,13 +166,14 @@ class AnswersetInteractive extends React.Component {
         </Col>
         <Col md={9}>
           <AnswerExplorer
-            answerset={this.props.answerset}
-            subgraph={answer}
+            answer={answer}
             feedback={this.props.feedback}
             subgraphs={this.props.answers}
             selectedSubgraphIndex={this.state.selectedSubGraphIndex}
             selectedEdge={this.state.selectedSubGraphEdge}
+
             callbackOnGraphClick={this.onGraphClick}
+            enableFeedbackSubmit={this.props.enableFeedbackSubmit}
             callbackOpenFeedback={this.feedbackModalOpen}
           />
         </Col>

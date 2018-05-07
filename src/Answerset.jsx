@@ -120,10 +120,13 @@ class Answerset extends React.Component {
             answersetFeedback={this.state.answersetFeedback}
             otherQuestions={this.state.otherQuestions}
             otherAnswersets={this.state.otherAnswersets}
+            enableUrlChange
+            enableQuestionSelect
+            enableFeedbackSubmit
             callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
             callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
-            callbackAnswerSelect={a => this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, a.id))}
-            callbackNoAnswerSelect={() => this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answerset(this.state.question.id, this.state.answerset.id))}
+            callbackAnswerSelected={a => this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, a.id))}
+            callbackNoAnswerSelected={() => this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answerset(this.state.question.id, this.state.answerset.id))}
             callbackFeedbackSubmit={this.callbackFeedbackSubmit}
           />
         }

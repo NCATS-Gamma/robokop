@@ -20,15 +20,16 @@ class AnswersetInteractiveSelector extends React.Component {
   getAllDropDowns() {
     const sgp = this.props.subgraphPossibilities;
     const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
+    console.log(sgp);
     return sgp.map((p, ind) => {
       const opts = p.map(e => ({
         value: e.id,
-        label: `${e.score.toFixed(2)}: ${e.name}`,
+        label: `${e.score.toFixed(2)}: ${e.description}`,
         score: e.score,
-        name: e.name,
+        name: e.description,
       }));
       const background = nodeTypeColorMap(p[0].type);
-      const value = this.props.subgraph.nodes[ind].id;
+      const value = this.props.subgraph.result_graph.node_list[ind].id;
       const numOptions = opts.length;
       const isOnlyOne = numOptions === 1;
 
