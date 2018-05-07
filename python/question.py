@@ -20,18 +20,6 @@ from user import User
 from setup import db
 from logging_config import logger
 
-# robokop-rank modules
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-rank'))
-from nagaProto import ProtocopRank
-
-# robokop-interfaces modules
-greent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'robokop-interfaces')
-sys.path.insert(0, greent_path)
-from builder.lookup_utils import lookup_identifier
-from greent import node_types
-from greent.graph_components import KNode
-from greent.synonymizers.disease_synonymizer import synonymize
-
 
 class Question(db.Model):
     '''

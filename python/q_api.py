@@ -5,6 +5,7 @@ Blueprint for /api/q/* endpoints
 import os
 import sys
 import re
+import logging
 from datetime import datetime
 import requests
 from flask import jsonify, request
@@ -177,7 +178,6 @@ class QuestionSubgraph(Resource):
             question = get_question_by_id(question_id)
         except Exception as err:
             return "Invalid question key.", 404
-            
-        subgraph = question.relevant_subgraph()
 
-        return subgraph, 200
+        r = requests.post(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/subgraph", json=question.toJSON())
+        return r.json(), 200

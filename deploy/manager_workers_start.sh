@@ -2,11 +2,6 @@
 
 cd $ROBOKOP_HOME/robokop/python
 
-export CELERY_BROKER_URL="redis://$REDIS_HOST:$REDIS_PORT/$MANAGER_REDIS_DB"
-export CELERY_RESULT_BACKEND="redis://$REDIS_HOST:$REDIS_PORT/$MANAGER_REDIS_DB"
-export FLOWER_BROKER_API="redis://$REDIS_HOST:$REDIS_PORT/$MANAGER_REDIS_DB"
-export FLOWER_PORT="$MANAGER_FLOWER_PORT"
-
 echo "Starting worker..."
 celery multi start \
     manager_answerer@robokop manager_updater@robokop manager_initializer@robokop \

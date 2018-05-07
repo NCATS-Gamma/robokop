@@ -78,7 +78,7 @@ class QuestionHeader extends React.Component {
       <Popover id="popover-edit-name" title="Edit Question Name" style={{ minWidth: '500px' }}>
         <FormGroup role="form">
           <p>
-          This will change the public name of this quesiton and will impact how this question shows up in search results.
+          This will change the public name of this question and will impact how this question shows up in search results.
           </p>
           <FormControl
             type="text"
