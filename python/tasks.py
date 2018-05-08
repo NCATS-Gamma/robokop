@@ -5,6 +5,7 @@ Tasks for Celery workers
 import os
 import sys
 import time
+import json
 import requests
 from celery import Celery
 from kombu import Queue
@@ -105,7 +106,10 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
     try:
         r = requests.post(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/', json=question.toJSON())
         # wait here for response
-        answerset_json = r.json()
+        try:
+            answerset_json = r.json()
+        except json.decoder.JSONDecodeError as err:
+            raise ValueError(f"Response is not json: {r.text}")
         logger.info(answerset_json)
         answerset = Answerset(answerset_json)
     except Exception as err:
