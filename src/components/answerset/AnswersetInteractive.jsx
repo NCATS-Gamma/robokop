@@ -20,6 +20,7 @@ class AnswersetInteractive extends React.Component {
     this.renderValid = this.renderValid.bind(this);
 
     this.initializeNodeSelection = this.initializeNodeSelection.bind(this);
+    this.initializeStructureGroup = this.initializeStructureGroup.bind(this);
     this.selectAnswerById = this.selectAnswerById.bind(this);
 
     this.handleNodeSelectionChange = this.handleNodeSelectionChange.bind(this);
@@ -34,6 +35,7 @@ class AnswersetInteractive extends React.Component {
   }
   componentDidMount() {
     // this.updateSelectedSubGraphIndex(0);
+    this.initializeStructureGroup();
     this.initializeNodeSelection();
     if (this.props.answerId && Number.isSafeInteger(this.props.answerId)) {
       this.selectAnswerById(this.props.answerId);
@@ -41,6 +43,7 @@ class AnswersetInteractive extends React.Component {
   }
   componentWillReceiveProps(newProps) {
     // this.setState({ selectedSubGraphIndex: 0, selectedSubGraphEdge: null });
+    this.initializeStructureGroup();
     this.initializeNodeSelection();
     if (newProps.answerId && Number.isSafeInteger(newProps.answerId)) {
       this.selectAnswerById(newProps.answerId);
@@ -71,7 +74,19 @@ class AnswersetInteractive extends React.Component {
       this.setState({ selectedSubGraphEdge: null });
     }
   }
+  initializeStructureGroup() {
+    // We have answers and we need to assign each answer to a structural group based on its graph
 
+    // Find all unique node types
+    const nodeTypes = Set();
+    this.props.answers.forEach((a) => {
+      const g = a.result_graph;
+      g.node_list.forEach(n => nodeTypes.add(n.type));
+    });
+
+    // For each graph, form a connectivity matrix
+    
+  }
   initializeNodeSelection() {
     const noAnswers = !(('answers' in this.props) && Array.isArray(this.props.answers) && this.props.answers.length > 0);
     if (noAnswers) {

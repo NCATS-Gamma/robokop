@@ -57,12 +57,18 @@ class Answerset extends React.Component {
           const answers = object.result_list;
 
 
-          const nodes = [];
-          const edges = [];
+          const nodesSet = Set();
+          const edgesSet = Set();
           // Parse answerset specific graph here
           // For each answer find new nodes and edges that haven't already been added
-
+          answers.forEach((a) => {
+            const g = a.result_graph;
+            g.node_list.forEach(node => nodesSet.add(node)); // Depend on Set() to do the right thing
+            g.edge_list.forEach(edge => edgesSet.add(edge)); // Depend on Set() to do the right thing
+          });
           // Package
+          const nodes = Array.from(nodesSet);
+          const edges = Array.from(edgesSet);
           const answersetGraph = { nodes, edges };
 
           this.setState({

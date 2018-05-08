@@ -1,5 +1,6 @@
 import React from 'react';
 import { Row, Col, PanelGroup, Panel } from 'react-bootstrap';
+import { List } from 'react-virtualized';
 import SubGraphViewer from '../shared/SubGraphViewer';
 
 const shortid = require('shortid');
@@ -40,7 +41,7 @@ class AnswersetList extends React.Component {
     this.updateSelectedSubGraphIndex = this.updateSelectedSubGraphIndex.bind(this);
   }
 
-  getListGroup() {
+  rowRender() {
     const listEntries = this.props.answers.map((s, ind) => {
       const isActive = ind === this.state.selectedSubGraphIndex;
       let bsStyle = 'default';
