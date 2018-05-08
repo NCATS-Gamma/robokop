@@ -115,13 +115,10 @@ class SubGraphViewer extends React.Component {
         }
         return sum;
       }, '');
-      let edgeTypeString = 'Supporting';
-      if (edge.type === 'Result') {
-        edgeTypeString = 'Primary';
-      } 
-      if (edge.type === 'Lookup') {
-        edgeTypeString = 'Lookup';
-      } 
+      let edgeTypeString = 'Primary';
+      if (edge.type === 'Support') {
+        edgeTypeString = 'Supporting';
+      }
       return (
         `<div class="vis-tooltip-inner">
           <div><span class="title">${edgeTypeString} Edge</span></div>
@@ -151,7 +148,7 @@ class SubGraphViewer extends React.Component {
     const rng = seedrandom('fixed seed'); // Set seed so re-renders look the same
     g.edges = g.edges.map((e) => {
       let edgeParams = {};
-      if (e.type === 'Result' || e.type === 'Lookup') {
+      if (e.type !== 'Support') {
         edgeParams = { smooth: { type: 'curvedCW', roundness: 0 }};
       } else {
         edgeParams = {

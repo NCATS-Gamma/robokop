@@ -113,7 +113,7 @@ class KnowledgeGraphViewer extends React.Component {
     });
 
     // Prune out support edges
-    g.edges = g.edges.filter(e => e.type === 'Result' || e.type === 'Lookup'); // Keep only result edges for this graph display
+    g.edges = g.edges.filter(e => e.type !== 'Support'); // Keep only result edges for this graph display
     return g;
   }
 
