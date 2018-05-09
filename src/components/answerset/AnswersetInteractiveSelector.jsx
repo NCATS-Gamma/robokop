@@ -20,7 +20,6 @@ class AnswersetInteractiveSelector extends React.Component {
   getAllDropDowns() {
     const sgp = this.props.subgraphPossibilities;
     const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
-    console.log(sgp);
     return sgp.map((p, ind) => {
       const opts = p.map(e => ({
         value: e.id,

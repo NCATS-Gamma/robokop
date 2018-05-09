@@ -78,14 +78,48 @@ class AnswersetInteractive extends React.Component {
     // We have answers and we need to assign each answer to a structural group based on its graph
 
     // Find all unique node types
-    const nodeTypes = Set();
+    const nodeTypes = new Set();
     this.props.answers.forEach((a) => {
       const g = a.result_graph;
       g.node_list.forEach(n => nodeTypes.add(n.type));
     });
+    const nodeTypesArray = Array.from(nodeTypes);
+
+    const connectivitySet = new Set();
+    this.props.answers.forEach((a) => {
+      // Initialize connectivity matrix (as a vector) to all 0s
+      const connectivity = [];
+      for (let ij = 0; ij < (nodeTypesArray.length * nodeTypesArray.length); ij += 1) {
+        connectivity.push(0);
+      }
+
+      const edges = a.result_graph.edge_list;
+      const nodes = a.result_graph.node_list;
+      edges.forEach((e) => {
+        const sourceNode = nodes.find(n => n.id === e.source_id);
+        const targetNode = nodes.find(n => n.id === e.target_id);
+
+        const i = nodeTypesArray.findIndex(nt => nt === sourceNode.type);
+        const j = nodeTypesArray.findIndex(nt => nt === targetNode.type);
+
+        connectivity[(i * nodeTypesArray.length) + j] = 1;
+      });
+      let connectivityChar = '';
+      connectivity.forEach((c) => {
+        connectivityChar += c;
+      });
+
+      if (!connectivitySet.has(connectivityChar)) {
+        // It's new!
+        connectivitySet.add(connectivityChar);
+        console.log('New', connectivityChar);
+      } else {
+        // Which one is it?
+        console.log('Repeat', connectivityChar);
+      }
+    });
 
     // For each graph, form a connectivity matrix
-    
   }
   initializeNodeSelection() {
     const noAnswers = !(('answers' in this.props) && Array.isArray(this.props.answers) && this.props.answers.length > 0);

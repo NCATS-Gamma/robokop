@@ -84,7 +84,7 @@ class AnswersetList extends React.Component {
         <Col md={12}>
           <Row>
             <Col md={3}>
-              {this.getListGroup()}
+              {this.rowRender()}
             </Col>
             <Col md={9}>
               <SubGraphViewer

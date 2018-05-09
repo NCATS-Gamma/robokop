@@ -5,6 +5,7 @@ import { Grid, Tabs, Tab } from 'react-bootstrap';
 import QuestionHeader from '../shared/QuestionHeader';
 import AnswersetList from './AnswersetList';
 import AnswersetInteractive from './AnswersetInteractive';
+import SubGraphViewer from '../shared/SubGraphViewer';
 
 class AnswersetPres extends React.Component {
   constructor(props) {
@@ -87,7 +88,10 @@ class AnswersetPres extends React.Component {
             eventKey={3}
             title="Graph"
           >
-            Graph Goes here
+            <SubGraphViewer
+              subgraph={this.props.answersetGraph}
+              callbackOnGraphClick={() => {}}
+            />
           </Tab>
 
         </Tabs>

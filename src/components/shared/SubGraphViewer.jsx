@@ -83,56 +83,19 @@ class SubGraphViewer extends React.Component {
 
   // Bind network fit callbacks to resize graph and cancel fit callbacks on start of zoom/pan
   setNetworkCallbacks() {
-    this.network.on('afterDrawing', () => this.network.fit());
-    this.network.on('doubleClick', () => this.network.fit());
-    this.network.on('zoom', () => this.network.off('afterDrawing'));
-    this.network.on('dragStart', () => this.network.off('afterDrawing'));
+    try {
+      this.network.on('afterDrawing', () => this.network.fit());
+      this.network.on('doubleClick', () => this.network.fit());
+      this.network.on('zoom', () => this.network.off('afterDrawing'));
+      this.network.on('dragStart', () => this.network.off('afterDrawing'));
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   // Method to add requisite tags to graph definition JSON before passing to vis.js
   addTagsToGraph(graph) {
     // Generate innerHTML string for tooltip contents for a given edge
-<<<<<<< HEAD
-
-    // function createTooltip(edge) {
-    //   const defaultNames = {
-    //     num_pubs: { name: 'Publications', precision: 0 },
-    //     // pub_weight: { name: 'Confidence', precision: 4 },
-    //     spect_weight: { name: 'Support Confidence', precision: 4 },
-    //     edge_proba: { name: 'Combined Weight', precision: 4 },
-    //     // proba_query: { name: 'Importance', precision: 4 },
-    //     // proba_info: { name: 'Informativeness', precision: 4 },
-    //   };
-    //   // const defaultOrder = ['num_pubs', 'pub_weight', 'spect_weight', 'edge_proba'];
-    //   const defaultOrder = ['num_pubs', 'spect_weight', 'edge_proba'];
-    //   const innerHtml = defaultOrder.reduce((sum, k) => {
-    //     if (_.hasIn(edge.scoring, k)) {
-    //       return (
-    //         `${sum}
-    //         <div>
-    //           <span class="field-name">${defaultNames[k].name}: </span>
-    //           <span class="field-value">${edge.scoring[k].toFixed(defaultNames[k].precision)}</span>
-    //         </div>`
-    //       );
-    //     }
-    //     return sum;
-    //   }, '');
-    //   let edgeTypeString = 'Supporting';
-    //   if (edge.type === 'Result') {
-    //     edgeTypeString = 'Primary';
-    //   } 
-    //   if (edge.type === 'Lookup') {
-    //     edgeTypeString = 'Lookup';
-    //   } 
-    //   return (
-    //     `<div class="vis-tooltip-inner">
-    //       <div><span class="title">${edgeTypeString} Edge</span></div>
-    //       ${innerHtml}
-    //     </div>`
-    //   );
-    // }
-
-=======
     function createTooltip(edge) {
       const defaultNames = {
         num_pubs: { name: 'Publications', precision: 0 },
@@ -167,7 +130,6 @@ class SubGraphViewer extends React.Component {
         </div>`
       );
     }
->>>>>>> 6001e2117e08710a83c41766cc3c85c0ec783a5c
     // Adds vis.js specific tags primarily to style graph as desired
     const g = _.cloneDeep(graph);
     const nodeTypeColorMap = getNodeTypeColorMap(); // We could put standardized concepts here
