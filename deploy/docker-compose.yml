@@ -19,6 +19,7 @@ services:
       - "${FLOWER_PORT}:${FLOWER_PORT}"
       - "${SUPERVISOR_PORT}:${SUPERVISOR_PORT}"
     volumes:
+      - ../../logs:/home/murphy/logs
       - ../../shared:/home/murphy/shared
       - ..:/home/murphy/robokop
     # stdin_open: true
