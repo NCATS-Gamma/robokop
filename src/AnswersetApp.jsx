@@ -18,9 +18,9 @@ class Answerset extends React.Component {
       userReady: false,
       isValid: false,
       user: {},
+      question: {},
       answerset: {},
       answers: [],
-      answerCount: null,
       answersetGraph: {},
     };
   }
@@ -43,25 +43,48 @@ class Answerset extends React.Component {
           const object = JSON.parse(fileContents);
           console.log(object);
 
-          const d = new Date(object.datetime);
-          object.timestamp = d.toISOString();
-          this.setState({
-            answerset: object,
-            answers: object.result_list,
-            question: {
-              natural_question: object.original_question_text,
-              description: object.restated_question_text,
-            },
-            isValid: true,
-          })
+          const answerset = { // These are the required fields for our question header
+            creator: object.tool_version,
+            timestamp: object.timestamp,
+          };
 
-        } catch(err) {
-          window.alert('Failed to this Answerset File. Are you sure this is valid?');
+          const question = { // These are the required fields for our question header
+            name: object.original_question_text, // This may seem backwards between name an natural but it looks better
+            natural_question: object.id,
+            notes: object.message, // We use the notes area to display the message
+          };
+
+          const answers = object.result_list;
+
+
+          const nodesSet = Set();
+          const edgesSet = Set();
+          // Parse answerset specific graph here
+          // For each answer find new nodes and edges that haven't already been added
+          answers.forEach((a) => {
+            const g = a.result_graph;
+            g.node_list.forEach(node => nodesSet.add(node)); // Depend on Set() to do the right thing
+            g.edge_list.forEach(edge => edgesSet.add(edge)); // Depend on Set() to do the right thing
+          });
+          // Package
+          const nodes = Array.from(nodesSet);
+          const edges = Array.from(edgesSet);
+          const answersetGraph = { nodes, edges };
+
+          this.setState({
+            question,
+            answerset,
+            answers,
+            answersetGraph,
+            isValid: true,
+          });
+        } catch (err) {
+          window.alert('Failed to load this Answerset file. Are you sure this is valid?');
           console.log(err);
         }
       };
       fr.onerror = () => {
-        window.alert('Sorry but there was a problem uploading the file');
+        window.alert('Sorry but there was a problem uploading the file. The file may be invalid.');
       }
       fr.readAsText(file);
 
@@ -103,26 +126,13 @@ class Answerset extends React.Component {
   }
   renderBodyValid() {
     return (
-      /* <AnswersetPres
-          user={this.state.user}
-          question={this.state.question}
-          answerset={this.state.answerset}
-          answerId={this.props.answerId}
-          answers={this.state.answers}
-          answerCount={this.state.answerCount}
-          answersetGraph={this.state.answersetGraph}
-          answersetFeedback={this.state.answersetFeedback}
-          otherQuestions={this.state.otherQuestions}
-          otherAnswersets={this.state.otherAnswersets}
-          callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
-          callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
-          callbackAnswerSelect={a => this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, a.id))}
-          callbackNoAnswerSelect={() => this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answerset(this.state.question.id, this.state.answerset.id))}
-          callbackFeedbackSubmit={this.callbackFeedbackSubmit}
-        /> */
-      <div>
-        We are good to go!
-      </div>
+      <AnswersetPres
+        user={this.state.user}
+        question={this.state.question}
+        answerset={this.state.answerset}
+        answers={this.state.answers}
+        answersetGraph={this.state.answersetGraph}
+      />
     );
   }
   renderLoaded() {

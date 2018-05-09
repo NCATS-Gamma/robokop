@@ -12,7 +12,7 @@ class SubGraphViewer extends React.Component {
 
     this.addTagsToGraph = this.addTagsToGraph.bind(this);
     this.setNetworkCallbacks = this.setNetworkCallbacks.bind(this);
-    this.clickCallback = event => this.props.callbackOnGraphClick(event);
+    // this.clickCallback = event => this.props.callbackOnGraphClick(event);
 
     this.styles = {
       supportEdgeColors: {
@@ -23,12 +23,12 @@ class SubGraphViewer extends React.Component {
     };
     this.graphOptions = {
       height: '500px',
-      physics: false,
-      layout: {
-        hierarchical: {
-          enabled: false,
-        },
-      },
+      physics: true,
+      // layout: {
+      //   hierarchical: {
+      //     enabled: false,
+      //   },
+      // },
       edges: {
         smooth: true,
         color: {
@@ -92,6 +92,47 @@ class SubGraphViewer extends React.Component {
   // Method to add requisite tags to graph definition JSON before passing to vis.js
   addTagsToGraph(graph) {
     // Generate innerHTML string for tooltip contents for a given edge
+<<<<<<< HEAD
+
+    // function createTooltip(edge) {
+    //   const defaultNames = {
+    //     num_pubs: { name: 'Publications', precision: 0 },
+    //     // pub_weight: { name: 'Confidence', precision: 4 },
+    //     spect_weight: { name: 'Support Confidence', precision: 4 },
+    //     edge_proba: { name: 'Combined Weight', precision: 4 },
+    //     // proba_query: { name: 'Importance', precision: 4 },
+    //     // proba_info: { name: 'Informativeness', precision: 4 },
+    //   };
+    //   // const defaultOrder = ['num_pubs', 'pub_weight', 'spect_weight', 'edge_proba'];
+    //   const defaultOrder = ['num_pubs', 'spect_weight', 'edge_proba'];
+    //   const innerHtml = defaultOrder.reduce((sum, k) => {
+    //     if (_.hasIn(edge.scoring, k)) {
+    //       return (
+    //         `${sum}
+    //         <div>
+    //           <span class="field-name">${defaultNames[k].name}: </span>
+    //           <span class="field-value">${edge.scoring[k].toFixed(defaultNames[k].precision)}</span>
+    //         </div>`
+    //       );
+    //     }
+    //     return sum;
+    //   }, '');
+    //   let edgeTypeString = 'Supporting';
+    //   if (edge.type === 'Result') {
+    //     edgeTypeString = 'Primary';
+    //   } 
+    //   if (edge.type === 'Lookup') {
+    //     edgeTypeString = 'Lookup';
+    //   } 
+    //   return (
+    //     `<div class="vis-tooltip-inner">
+    //       <div><span class="title">${edgeTypeString} Edge</span></div>
+    //       ${innerHtml}
+    //     </div>`
+    //   );
+    // }
+
+=======
     function createTooltip(edge) {
       const defaultNames = {
         num_pubs: { name: 'Publications', precision: 0 },
@@ -126,27 +167,30 @@ class SubGraphViewer extends React.Component {
         </div>`
       );
     }
+>>>>>>> 6001e2117e08710a83c41766cc3c85c0ec783a5c
     // Adds vis.js specific tags primarily to style graph as desired
     const g = _.cloneDeep(graph);
-    const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
+    const nodeTypeColorMap = getNodeTypeColorMap(); // We could put standardized concepts here
 
-    g.nodes = g.nodes.map((n, i) => {
+    // nodes -> node_list
+    g.nodes = g.node_list.map((n, i) => {
       const backgroundColor = nodeTypeColorMap(n.type);
       n.color = {
         background: backgroundColor,
         highlight: { background: backgroundColor },
         hover: { background: backgroundColor },
       };
-      n.label = n.name;
-      n.x = 100; // Position nodes vertically
-      n.y = i * 100;
+      n.label = n.description;
+      // n.x = 100; // Position nodes vertically
+      // n.y = i * 100;
       return n;
     });
-    
+
     // g.edges = g.edges.map(e => ({ ...e, ...{ label: e.scoring.spect_weight.toFixed(2) } }));
     // Add parameters to edges like curvature if Support edge
     const rng = seedrandom('fixed seed'); // Set seed so re-renders look the same
-    g.edges = g.edges.map((e) => {
+    // edges -> edge_list
+    g.edges = g.edge_list.map((e) => {
       let edgeParams = {};
       if (e.type !== 'Support') {
         edgeParams = { smooth: { type: 'curvedCW', roundness: 0 }};
@@ -157,14 +201,20 @@ class SubGraphViewer extends React.Component {
           dashes: [2, 4],
         };
       }
-      let label = e.scoring.num_pubs !== 0 ? `Pubs: ${e.scoring.num_pubs}` : '';
-      const toId = e.to;
-      const fromId = e.from;
-      // console.log(e, e.to, e.from)
-      if ((typeof toId === 'string' && toId.startsWith('NAME.')) || (typeof fromId === 'string' && e.from.startsWith('NAME.'))) {
-        label = '';
-      }
-      return { ...e, ...{ label, ...edgeParams, title: createTooltip(e) } };
+
+      const label = e.type;
+      e.from = e.source_id;
+      e.to = e.target_id;
+
+      // const toId = e.source_id;
+      // const fromId = e.target_id;
+
+      // let label = e.scoring.num_pubs !== 0 ? `Pubs: ${e.scoring.num_pubs}` : '';
+      // if ((typeof toId === 'string' && toId.startsWith('NAME.')) || (typeof fromId === 'string' && e.from.startsWith('NAME.'))) {
+      //   label = '';
+      // }
+      // title: createTooltip(e)
+      return { ...e, ...{ label, ...edgeParams } };
     });
     return g;
   }
@@ -172,7 +222,7 @@ class SubGraphViewer extends React.Component {
   render() {
     let graph = this.props.subgraph;
 
-    const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'nodes'));
+    const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'node_list'));
     if (isValid) {
       graph = this.addTagsToGraph(graph);
     }
@@ -187,8 +237,7 @@ class SubGraphViewer extends React.Component {
               graph={graph}
               style={{ width: '100%' }}
               options={this.graphOptions}
-              events={{ click: this.clickCallback }}
-              getNetwork={(network) => { this.network = network }} // Store network reference in the component
+              getNetwork={(network) => { this.network = network; }} // Store network reference in the component
             />
           </div>
         </div>
@@ -197,5 +246,7 @@ class SubGraphViewer extends React.Component {
     );
   }
 }
+
+// events={{ click: this.clickCallback }}
 
 export default SubGraphViewer;

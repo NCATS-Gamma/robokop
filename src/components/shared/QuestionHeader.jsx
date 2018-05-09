@@ -195,7 +195,12 @@ class QuestionHeader extends React.Component {
             }
             <div style={{ position: 'relative' }}>
               <h1 style={{ paddingRight: '50px' }}>
-                {name}
+                {this.props.enableQuestionSelect &&
+                  <span onClick={() => this.props.callbackQuestionSelect(this.props.question)} style={{ cursor: 'pointer' }}>{name}</span>
+                }
+                {!this.props.enableQuestionSelect &&
+                  name
+                }
                 {this.props.enableQuestionEdit &&
                   <div style={{ display: 'inline', fontSize: '12px' }}>
                     &nbsp;
@@ -288,6 +293,8 @@ QuestionHeader.defaultProps = {
   enableQuestionEdit: false,
   enableQuestionDelete: false,
   enableQuestionFork: false,
+
+  enableQuestionSelect: false,
 
   showOtherQuestions: false,
   otherQuestions: [],

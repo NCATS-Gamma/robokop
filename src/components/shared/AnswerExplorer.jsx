@@ -18,32 +18,38 @@ class AnswerExplorer extends React.Component {
   render() {
     return (
       <div>
-        <h4>
-          Answer {this.props.selectedSubgraphIndex + 1} of {this.props.subgraphs.length}
-          <span className="pull-right">
-            <Button onClick={()=>this.props.callbackOpenFeedback()} style={{ padding: '5px' }}>
-              Feedback
-            </Button>
-          </span>
-        </h4>
         <Row>
-          <Col md={4}>
+          <Col md={12}>
+            <h4>
+              Answer {this.props.selectedSubgraphIndex + 1}
+              {this.props.enableFeedbackSubmit &&
+                <span className="pull-right">
+                  <Button onClick={()=>this.props.callbackOpenFeedback()} style={{ padding: '5px' }}>
+                    Feedback
+                  </Button>
+                </span>
+              }
+            </h4>
             <SubGraphViewer
-              subgraph={this.props.subgraph}
+              subgraph={this.props.answer.result_graph}
               callbackOnGraphClick={this.props.callbackOnGraphClick}
             />
           </Col>
-          <Col md={8}>
-            <SubGraphInfo
-              subgraphs={this.props.subgraphs}
-              selectedSubgraphIndex={this.props.selectedSubgraphIndex}
-              selectedEdge={this.props.selectedEdge}
-            />
+        </Row>
+        <Row>
+          <Col md={12}>
+            {this.props.selectedEdge}
           </Col>
         </Row>
       </div>
     );
   }
 }
+
+// <SubGraphInfo
+//               subgraphs={this.props.subgraphs}
+//               selectedSubgraphIndex={this.props.selectedSubgraphIndex}
+//               selectedEdge={this.props.selectedEdge}
+//             />
 
 export default AnswerExplorer;

@@ -117,7 +117,6 @@ class KnowledgeGraphViewer extends React.Component {
     return g;
   }
 
-  
   renderGraph() {
     const graph = this.addTagsToGraph(this.props.graph);
 
