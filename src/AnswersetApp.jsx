@@ -41,7 +41,6 @@ class Answerset extends React.Component {
         const fileContents = e.target.result;
         try {
           const object = JSON.parse(fileContents);
-          console.log(object);
 
           const answerset = { // These are the required fields for our question header
             creator: object.tool_version,
@@ -80,7 +79,6 @@ class Answerset extends React.Component {
             });
           });
           // Package
-          console.log(edges);
           const answersetGraph = { node_list: nodes, edge_list: edges };
 
           this.setState({

@@ -85,14 +85,15 @@ class AnswersetInteractive extends React.Component {
     });
     const nodeTypesArray = Array.from(nodeTypes);
 
-    const connectivitySet = new Set();
-    this.props.answers.forEach((a) => {
+    const connectivityArray = [];
+    const answerGroup = this.props.answers.map((a) => {
       // Initialize connectivity matrix (as a vector) to all 0s
       const connectivity = [];
       for (let ij = 0; ij < (nodeTypesArray.length * nodeTypesArray.length); ij += 1) {
         connectivity.push(0);
       }
 
+      // For each graph, form a connectivity matrix
       const edges = a.result_graph.edge_list;
       const nodes = a.result_graph.node_list;
       edges.forEach((e) => {
@@ -103,23 +104,25 @@ class AnswersetInteractive extends React.Component {
         const j = nodeTypesArray.findIndex(nt => nt === targetNode.type);
 
         connectivity[(i * nodeTypesArray.length) + j] = 1;
+        connectivity[(j * nodeTypesArray.length) + i] = 1; // Undirected
       });
+
+      // Hash connectivity to a string
       let connectivityChar = '';
       connectivity.forEach((c) => {
         connectivityChar += c;
       });
 
-      if (!connectivitySet.has(connectivityChar)) {
+      const groupIndex = connectivityArray.indexOf(connectivityChar);
+      if (groupIndex < 0) {
         // It's new!
-        connectivitySet.add(connectivityChar);
-        console.log('New', connectivityChar);
-      } else {
-        // Which one is it?
-        console.log('Repeat', connectivityChar);
+        connectivityArray.push(connectivityChar);
+        // console.log('New', connectivityChar);
+        return connectivityArray.length - 1; // The newest one
       }
+      return groupIndex;
     });
-
-    // For each graph, form a connectivity matrix
+    console.log(answerGroup);
   }
   initializeNodeSelection() {
     const noAnswers = !(('answers' in this.props) && Array.isArray(this.props.answers) && this.props.answers.length > 0);

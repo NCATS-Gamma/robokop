@@ -1,9 +1,7 @@
 import React from 'react';
-import { Row, Col, PanelGroup, Panel } from 'react-bootstrap';
+import { Row, Col } from 'react-bootstrap';
 import { AutoSizer, List } from 'react-virtualized';
 import SubGraphViewer from '../shared/SubGraphViewer';
-
-const shortid = require('shortid');
 
 class AnswersetList extends React.Component {
   constructor(props) {
@@ -11,16 +9,15 @@ class AnswersetList extends React.Component {
 
     this.styles = {
       list: {
-        width: '100%',
         border: '1px solid #DDD',
         marginTop: '15px',
+        outline: 'none',
       },
       row: {
-        height: '100%',
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        padding: '0 25px',
+        padding: '5px',
         backgroundColor: '#fff',
         borderBottom: '1px solid #e0e0e0',
         cursor: 'pointer',
@@ -29,19 +26,25 @@ class AnswersetList extends React.Component {
         display: 'inline-block',
         height: '40px',
         width: '40px',
+        minWidth: '40px',
         lineHeight: '40px',
         textAlign: 'center',
         borderRadius: '40px',
         color: 'white',
+        backgroundColor: '#b8c6db',
         fontSize: '1.5em',
-        marginRight: '25px',
+        marginRight: '5px',
       },
       name: {
+        height: '1.25em',
         fontWeight: 'bold',
         marginBottom: '2px',
+        whiteSpace: 'nowrap',
+        textOverflow: 'ellipsis',
+        overflow: 'hidden',
       },
       score: {
-        color: '#37474f',
+        color: '#333',
       },
     };
 
@@ -55,7 +58,12 @@ class AnswersetList extends React.Component {
     this.updateSelectedSubGraphIndex = this.updateSelectedSubGraphIndex.bind(this);
   }
 
-  rowRenderer({index, isScrolling, key, style}) {
+  rowRenderer({
+    index,
+    isScrolling,
+    key,
+    style,
+  }) {
     const answer = this.props.answers[index];
     const isActive = index === this.state.selectedSubGraphIndex;
     const cScore = answer.confidence.toFixed(3);
@@ -63,23 +71,25 @@ class AnswersetList extends React.Component {
 
     const backgroundColorStyle = { backgroundColor: '#fff' };
     if (isActive) {
-      backgroundColorStyle.backgroundColor = '#eee';
+      backgroundColorStyle.backgroundColor = '#f5f7fa';
     }
 
     return (
       <div
-        style={this.styles.row}
+        style={{ ...style, ...this.styles.row, ...backgroundColorStyle }}
         key={key}
         onClick={() => this.updateSelectedSubGraphIndex(index)}
       >
-        <div
-          style={{ ...this.styles.letter, ...backgroundColorStyle }}
-        >
-          {index + 1}
+        <div style={this.styles.letter}>
+          {`${index + 1}`}
         </div>
         <div>
-          <div className={this.styles.name}>{cText}</div>
-          <div className={this.styles.score}>{cScore}</div>
+          <div style={this.styles.name}>
+            {cText}
+          </div>
+          <div style={this.styles.score}>
+            {cScore}
+          </div>
         </div>
       </div>
     );
@@ -89,42 +99,43 @@ class AnswersetList extends React.Component {
       <div>
         {"There doesn't seem to be any answers!?!"}
       </div>
-    )
+    );
   }
 
   updateSelectedSubGraphIndex(ind) {
+    this.list.forceUpdateGrid();
     this.setState({ selectedSubGraphIndex: ind });
   }
+
+  // this.list.scrollToRow (index: number)
+
   render() {
     const listHeight = 500;
     const rowCount = this.props.answers.length;
-    // scrollToIndex={scrollToIndex}
+
     return (
       <Row>
-        <Col md={12}>
-          <Row>
-            <Col md={3}>
-              <AutoSizer disableHeight>
-                {({ width }) => (
-                  <List
-                    style={this.styles.list}
-                    height={listHeight}
-                    overscanRowCount={10}
-                    rowCount={rowCount}
-                    rowHeight={50}
-                    noRowsRenderer={this.noRowsRenderer}
-                    rowRenderer={this.rowRenderer}
-                    width={width}
-                  />
-                )}
-              </AutoSizer>
-            </Col>
-            <Col md={9}>
-              <SubGraphViewer
-                subgraph={this.props.answers[this.state.selectedSubGraphIndex].result_graph}
+        <Col md={3}>
+          <AutoSizer disableHeight defaultWidth={100}>
+            {({ width }) => (
+              <List
+                ref={(ref) => { this.list = ref; }}
+                style={this.styles.list}
+                height={listHeight}
+                overscanRowCount={10}
+                rowCount={rowCount}
+                rowHeight={50}
+                noRowsRenderer={this.noRowsRenderer}
+                rowRenderer={this.rowRenderer}
+                width={width}
               />
-            </Col>
-          </Row>
+            )}
+          </AutoSizer>
+        </Col>
+        <Col md={9}>
+          <SubGraphViewer
+            subgraph={this.props.answers[this.state.selectedSubGraphIndex].result_graph}
+          />
         </Col>
       </Row>
     );
