@@ -1,6 +1,6 @@
 import React from 'react';
 import { Row, Col, PanelGroup, Panel } from 'react-bootstrap';
-import { List } from 'react-virtualized';
+import { AutoSizer, List } from 'react-virtualized';
 import SubGraphViewer from '../shared/SubGraphViewer';
 
 const shortid = require('shortid');
@@ -10,81 +10,114 @@ class AnswersetList extends React.Component {
     super(props);
 
     this.styles = {
-      mainContent: {
-        height: '70vh',
-        border: '1px solid #d1d1d1',
-        overflow: 'hidden',
-        borderTopLeftRadius: '5px',
-        borderTopRightRadius: '5px',
+      list: {
+        width: '100%',
+        border: '1px solid #DDD',
+        marginTop: '15px',
       },
-      listGroup: {
-        paddingLeft: '2px',
-        paddingRight: '2px',
+      row: {
         height: '100%',
-        overflow: 'auto',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: '0 25px',
+        backgroundColor: '#fff',
+        borderBottom: '1px solid #e0e0e0',
+        cursor: 'pointer',
       },
-      graph: {
-        paddingLeft: '0',
-        paddingRight: '0',
-        height: '100%',
-        overflow: 'auto',
+      letter: {
+        display: 'inline-block',
+        height: '40px',
+        width: '40px',
+        lineHeight: '40px',
+        textAlign: 'center',
+        borderRadius: '40px',
+        color: 'white',
+        fontSize: '1.5em',
+        marginRight: '25px',
       },
-      explorer: {
-        height: '100%',
-        overflow: 'auto',
+      name: {
+        fontWeight: 'bold',
+        marginBottom: '2px',
+      },
+      score: {
+        color: '#37474f',
       },
     };
+
     this.state = {
       selectedSubGraphIndex: 0,
     };
 
+    this.noRowsRenderer = this.noRowsRenderer.bind(this);
+    this.rowRenderer = this.rowRenderer.bind(this);
+
     this.updateSelectedSubGraphIndex = this.updateSelectedSubGraphIndex.bind(this);
   }
 
-  rowRender() {
-    const listEntries = this.props.answers.map((s, ind) => {
-      const isActive = ind === this.state.selectedSubGraphIndex;
-      let bsStyle = 'default';
-      if (isActive) {
-        bsStyle = 'primary';
-      }
-      const cScore = s.confidence.toFixed(3);
-      return (
-        <Panel
-          key={shortid.generate()}
-          bsStyle={bsStyle}
-          onClick={() => this.updateSelectedSubGraphIndex(ind)}
-          style={{ cursor: 'pointer' }}
-        >
-          <Panel.Heading>
-            <Panel.Title>
-              {`${ind + 1} - ${s.text}`}
-            </Panel.Title>
-          </Panel.Heading>
-          <Panel.Body>
-            {`Score: ${cScore}`}
-          </Panel.Body>
-        </Panel>
-        // </ListGroupItem>
-      );
-    });
+  rowRenderer({index, isScrolling, key, style}) {
+    const answer = this.props.answers[index];
+    const isActive = index === this.state.selectedSubGraphIndex;
+    const cScore = answer.confidence.toFixed(3);
+    const cText = answer.text;
+
+    const backgroundColorStyle = { backgroundColor: '#fff' };
+    if (isActive) {
+      backgroundColorStyle.backgroundColor = '#eee';
+    }
 
     return (
-      <PanelGroup id="Answers" key={shortid.generate()}>
-        {listEntries}
-      </PanelGroup>
+      <div
+        style={this.styles.row}
+        key={key}
+        onClick={() => this.updateSelectedSubGraphIndex(index)}
+      >
+        <div
+          style={{ ...this.styles.letter, ...backgroundColorStyle }}
+        >
+          {index + 1}
+        </div>
+        <div>
+          <div className={this.styles.name}>{cText}</div>
+          <div className={this.styles.score}>{cScore}</div>
+        </div>
+      </div>
     );
   }
+  noRowsRenderer() {
+    return (
+      <div>
+        {"There doesn't seem to be any answers!?!"}
+      </div>
+    )
+  }
+
   updateSelectedSubGraphIndex(ind) {
     this.setState({ selectedSubGraphIndex: ind });
   }
   render() {
+    const listHeight = 500;
+    const rowCount = this.props.answers.length;
+    // scrollToIndex={scrollToIndex}
     return (
       <Row>
         <Col md={12}>
           <Row>
             <Col md={3}>
-              {this.rowRender()}
+              <AutoSizer disableHeight>
+                {({ width }) => (
+                  <List
+                    style={this.styles.list}
+                    height={listHeight}
+                    overscanRowCount={10}
+                    rowCount={rowCount}
+                    rowHeight={50}
+                    noRowsRenderer={this.noRowsRenderer}
+                    rowRenderer={this.rowRenderer}
+                    width={width}
+                  />
+                )}
+              </AutoSizer>
             </Col>
             <Col md={9}>
               <SubGraphViewer
