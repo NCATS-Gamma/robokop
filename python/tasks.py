@@ -7,7 +7,7 @@ import sys
 import time
 import json
 import requests
-from celery import Celery
+from celery import Celery, signals
 from kombu import Queue
 from flask_mail import Message
 
@@ -26,6 +26,11 @@ celery.conf.task_queues = (
     Queue('manager_update', routing_key='manager_update'),
     Queue('manager_initialize', routing_key='manager_initialize'),
 )
+# Tell celery not to mess with logging at all
+@signals.setup_logging.connect
+def setup_celery_logging(**kwargs):
+    pass
+celery.log.setup()
 
 @celery.task(bind=True, queue='manager_initialize')
 def initialize_question(self, question_hash, question_id=None, user_email=None):

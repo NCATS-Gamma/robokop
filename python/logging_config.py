@@ -2,7 +2,7 @@ import logging
 import os
 
 # create formatter
-formatter = logging.Formatter('"%(asctime)s %(name)-15s %(levelname)-8s %(processName)-10s %(message)s"')
+formatter = logging.Formatter("[%(asctime)s: %(levelname)s/%(name)s(%(processName)s)]: %(message)s")
 
 # create console handler and set level to info
 console_handler = logging.StreamHandler() #"ext://sys.stdout")
@@ -10,7 +10,7 @@ console_handler.setLevel(logging.INFO)
 console_handler.setFormatter(formatter)
 
 # create file handler and set level to debug
-file_handler = logging.FileHandler("robokop.log", mode="a", encoding="utf-8")
+file_handler = logging.FileHandler(f"{os.environ['ROBOKOP_HOME']}/logs/robokop.log", mode="a", encoding="utf-8")
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(formatter)
 
