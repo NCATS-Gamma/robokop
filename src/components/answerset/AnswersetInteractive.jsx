@@ -1,14 +1,19 @@
 import React from 'react';
 import { Row, Col, Modal } from 'react-bootstrap';
+import Select from 'react-select/lib/Select';
+
 import AnswersetInteractiveSelector from './AnswersetInteractiveSelector';
 import AnswerExplorer from '../shared/AnswerExplorer';
 import FeedbackEditor from '../shared/FeedbackEditor';
+
 
 class AnswersetInteractive extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
+      groups: [],
+      groupSelection: 0,
       feedbackModalShow: false,
       selectedSubGraphIndex: 0,
       selectedSubGraphPossibilities: [],
@@ -25,6 +30,7 @@ class AnswersetInteractive extends React.Component {
 
     this.handleNodeSelectionChange = this.handleNodeSelectionChange.bind(this);
 
+    this.onGroupSelectionChange = this.onGroupSelectionChange.bind(this);
     this.onSelectionAnswerIndex = this.onSelectionAnswerIndex.bind(this);
     this.onSelectionCallback = this.onSelectionCallback.bind(this);
     this.onGraphClick = this.onGraphClick.bind(this);
@@ -36,7 +42,6 @@ class AnswersetInteractive extends React.Component {
   componentDidMount() {
     // this.updateSelectedSubGraphIndex(0);
     this.initializeStructureGroup();
-    this.initializeNodeSelection();
     if (this.props.answerId && Number.isSafeInteger(this.props.answerId)) {
       this.selectAnswerById(this.props.answerId);
     }
@@ -44,17 +49,20 @@ class AnswersetInteractive extends React.Component {
   componentWillReceiveProps(newProps) {
     // this.setState({ selectedSubGraphIndex: 0, selectedSubGraphEdge: null });
     this.initializeStructureGroup();
-    this.initializeNodeSelection();
     if (newProps.answerId && Number.isSafeInteger(newProps.answerId)) {
       this.selectAnswerById(newProps.answerId);
     }
   }
+  onGroupSelectionChange(selection) {
+    const index = selection.value;
+    this.initializeNodeSelection(index);
+  }
   onSelectionAnswerIndex(index) {
     // We must make a nodeSelection that specifies this exact answer
-    const nodeSelection = this.props.answers[index].nodes.map(n => n.id);
+    console.log("fix me to be aware of groups")
+    // const nodeSelection = this.props.answers[index].nodes.map(n => n.id);
 
-    this.handleNodeSelectionChange(nodeSelection);
-    this.setState({ nodeSelection });
+    // this.handleNodeSelectionChange(this. nodeSelection);
   }
   onSelectionCallback(index, selectedOption) {
     const { nodeSelection } = this.state;
@@ -64,8 +72,7 @@ class AnswersetInteractive extends React.Component {
       nodeSelection[index] = selectedOption.value;
     }
 
-    this.handleNodeSelectionChange(nodeSelection);
-    this.setState({ nodeSelection });
+    this.handleNodeSelectionChange(this.state.groupSelection, nodeSelection);
   }
   onGraphClick(event) {
     if (event.edges.length !== 0) { // Clicked on an Edge
@@ -86,6 +93,7 @@ class AnswersetInteractive extends React.Component {
     const nodeTypesArray = Array.from(nodeTypes);
 
     const connectivityArray = [];
+    const connectivityHashArray = [];
     const answerGroup = this.props.answers.map((a) => {
       // Initialize connectivity matrix (as a vector) to all 0s
       const connectivity = [];
@@ -93,7 +101,7 @@ class AnswersetInteractive extends React.Component {
         connectivity.push(0);
       }
 
-      // For each graph, form a connectivity matrix
+      // Form a connectivity matrix between concepts
       const edges = a.result_graph.edge_list;
       const nodes = a.result_graph.node_list;
       edges.forEach((e) => {
@@ -112,43 +120,94 @@ class AnswersetInteractive extends React.Component {
       connectivity.forEach((c) => {
         connectivityChar += c;
       });
+      connectivityChar += `_${nodes.length}`; // Take number nodes on to the end
 
-      const groupIndex = connectivityArray.indexOf(connectivityChar);
+      const groupIndex = connectivityHashArray.indexOf(connectivityChar);
       if (groupIndex < 0) {
         // It's new!
-        connectivityArray.push(connectivityChar);
+        connectivityHashArray.push(connectivityChar);
+        connectivityArray.push(connectivity);
         // console.log('New', connectivityChar);
-        return connectivityArray.length - 1; // The newest one
+        return connectivityHashArray.length - 1; // The newest one
       }
       return groupIndex;
     });
-    console.log(answerGroup);
+
+    const nGroups = connectivityArray.length;
+    const groups = [];
+    for (let iGroup = 0; iGroup < nGroups; iGroup += 1) {
+      const groupAnswers = [];
+      let maxConf = -Infinity;
+      for (let iAnswer = 0; iAnswer < this.props.answers.length; iAnswer += 1) {
+        if (answerGroup[iAnswer] === iGroup) {
+          groupAnswers.push({ ...this.props.answers[iAnswer] }); // Obj copy using spread
+          if (maxConf < this.props.answers[iAnswer].confidence) {
+            maxConf = this.props.answers[iAnswer].confidence;
+          }
+        }
+      }
+
+      // Get the order of types for the first answer in this group
+      const typeOrder = groupAnswers[0].result_graph.node_list.map(n => n.type);
+
+      // Resort all answers in this group so that the types go in the same order
+      groupAnswers.forEach((a) => {
+        const newNodeList = [];
+        typeOrder.forEach((t) => {
+          a.result_graph.node_list.forEach((n) => {
+            if (n.type === t) {
+              newNodeList.push(n);
+            }
+          })
+        });
+        a.result_graph.node_list = newNodeList;
+      });
+
+      const nNodes = groupAnswers[0].result_graph.node_list.length;
+
+      groups.push({
+        nNodes,
+        connectivity: connectivityArray[iGroup],
+        connectivityHash: connectivityHashArray[iGroup],
+        maxConfidence: maxConf,
+        answers: groupAnswers,
+      });
+    }
+
+    this.setState({ groups });
+    this.initializeNodeSelection(0);
   }
-  initializeNodeSelection() {
-    const noAnswers = !(('answers' in this.props) && Array.isArray(this.props.answers) && this.props.answers.length > 0);
+
+  initializeNodeSelection(index) {
+    if (this.state.groups.length < 1) {
+      return;
+    }
+    const group = this.state.groups[index];
+    const noAnswers = group.length < 1;
     if (noAnswers) {
       return;
     }
 
-    const nodeSelection = this.props.answers[0].result_graph.node_list.map(() => null);
-    this.handleNodeSelectionChange(nodeSelection);
-    this.setState({ nodeSelection });
+    const nodeSelection = group.answers[0].result_graph.node_list.map(() => null);
+    this.handleNodeSelectionChange(index, nodeSelection);
   }
   selectAnswerById(answerId) {
+    console.log("Fix this to be aware of groups!!!")
     const index = this.props.answers.findIndex(a => a.id === answerId);
     if (Number.isSafeInteger(index) && index >= 0) {
       this.onSelectionAnswerIndex(index);
     }
   }
-  handleNodeSelectionChange(nodeSelection) {
+  handleNodeSelectionChange(groupIndex, nodeSelection) {
     // find all paths such that nodes match selection template
-    const isKept = this.props.answers.map(s => s.result_graph.node_list.reduce((keep, n, ind) => keep && ((nodeSelection[ind] == null) || (nodeSelection[ind] === n.id)), true));
+    const group = this.state.groups[groupIndex];
+    const isKept = group.answers.map(s => s.result_graph.node_list.reduce((keep, n, ind) => keep && ((nodeSelection[ind] == null) || (nodeSelection[ind] === n.id)), true));
 
     // convert isKept into ranked lists of nodes
     // loop through path positions
-    const subgraphPossibilities = this.props.answers[0].result_graph.node_list.map((n, ind) => {
+    const subgraphPossibilities = group.answers[0].result_graph.node_list.map((n, ind) => {
       // loop through paths
-      const theseNodes = this.props.answers.map((s) => {
+      const theseNodes = group.answers.map((s) => {
         // extract node at position
         const n2 = s.result_graph.node_list[ind];
         n2.score = s.confidence;
@@ -169,11 +228,11 @@ class AnswersetInteractive extends React.Component {
       this.setState({ selectedSubGraphEdge: null });
     }
 
-    this.setState({ selectedSubGraphIndex, selectedSubGraphPossibilities: subgraphPossibilities });
+    this.setState({ groupSelection: groupIndex, nodeSelection, selectedSubGraphIndex, selectedSubGraphPossibilities: subgraphPossibilities });
 
     // Change the url, if there is exactly one possibility in each dimension
     if (this.props.enableUrlChange && (subgraphPossibilities.every(p => p.length === 1))) {
-      this.props.callbackAnswerSelected(this.props.answers[selectedSubGraphIndex]);
+      this.props.callbackAnswerSelected(group.answers[selectedSubGraphIndex]);
     } else {
       this.props.callbackNoAnswerSelected();
     }
@@ -201,33 +260,55 @@ class AnswersetInteractive extends React.Component {
     );
   }
   renderValid() {
-    const answer = this.props.answers[this.state.selectedSubGraphIndex];
+    const group = this.state.groups[this.state.groupSelection];
+    const answer = group.answers[this.state.selectedSubGraphIndex];
+
+    const selectOptions = this.state.groups.map((g, i) => {
+      return { value: i, label: `Group ${i + 1}: ${g.answers.length} answers each with ${g.nNodes} nodes.` };
+    });
+    const oneGroup = selectOptions.length === 1;
 
     // this.props.user.email
     const answerFeedback = { answerId: answer.id, accuracy: 4, impact: 3, notes: 'This is a great answer' };
 
     return (
       <Row className="modal-container">
-        <Col md={3}>
-          <AnswersetInteractiveSelector
-            subgraph={answer}
-            nodeSelection={this.state.nodeSelection}
-            subgraphPossibilities={this.state.selectedSubGraphPossibilities}
-            onSelectionCallback={this.onSelectionCallback}
-          />
-        </Col>
-        <Col md={9}>
-          <AnswerExplorer
-            answer={answer}
-            feedback={this.props.feedback}
-            subgraphs={this.props.answers}
-            selectedSubgraphIndex={this.state.selectedSubGraphIndex}
-            selectedEdge={this.state.selectedSubGraphEdge}
+        <Col md={12}>
+          {!oneGroup &&
+            <Row>
+              <Col md={12}>
+                <Select
+                  name="form-field-name"
+                  value={selectOptions[this.state.groupSelection].value}
+                  onChange={this.onGroupSelectionChange}
+                  options={selectOptions}
+                />
+              </Col>
+            </Row>
+          }
+          <Row>
+            <Col md={3}>
+              <AnswersetInteractiveSelector
+                subgraph={answer}
+                nodeSelection={this.state.nodeSelection}
+                subgraphPossibilities={this.state.selectedSubGraphPossibilities}
+                onSelectionCallback={this.onSelectionCallback}
+              />
+            </Col>
+            <Col md={9}>
+              <AnswerExplorer
+                answer={answer}
+                feedback={this.props.feedback}
+                subgraphs={this.props.answers}
+                selectedSubgraphIndex={this.state.selectedSubGraphIndex}
+                selectedEdge={this.state.selectedSubGraphEdge}
 
-            callbackOnGraphClick={this.onGraphClick}
-            enableFeedbackSubmit={this.props.enableFeedbackSubmit}
-            callbackOpenFeedback={this.feedbackModalOpen}
-          />
+                callbackOnGraphClick={this.onGraphClick}
+                enableFeedbackSubmit={this.props.enableFeedbackSubmit}
+                callbackOpenFeedback={this.feedbackModalOpen}
+              />
+            </Col>
+          </Row>
         </Col>
         <Modal
           show={this.state.feedbackModalShow}
@@ -251,13 +332,13 @@ class AnswersetInteractive extends React.Component {
     );
   }
   render() {
-    const hasAnswers = ('answers' in this.props) && Array.isArray(this.props.answers) && this.props.answers.length > 0;
+    const hasAnswers = (this.state.groups.length > 0 && this.state.groups[this.state.groupSelection] && this.state.groups[this.state.groupSelection].answers.length > 0);
     return (
       <div>
         {hasAnswers && this.renderValid()}
         {!hasAnswers && this.renderNoAnswers()}
       </div>
-    )
+    );
   }
 }
 
