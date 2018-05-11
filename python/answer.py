@@ -68,6 +68,31 @@ class Answerset(db.Model):
         if 'timestamp' in struct:
             struct['timestamp'] = struct['timestamp'].isoformat()
         return struct
+    
+    def toStandard(self):
+        '''
+        context
+        datetime
+        id
+        message
+        original_question_text
+        restated_question_text
+        result_code
+        result_list
+        '''
+        json = self.toJSON()
+        natural_question = json['question_info']['natural_question']
+        output = {
+            'context': 'context',
+            'datetime': json['timestamp'],
+            'id': 'uid',
+            'message': f"{len(self.answers)} potential answers found.",
+            'original_question_text': natural_question,
+            'restated_question_text': f"An improved version of '{natural_question}'?",
+            'result_code': 'OK' if self.answers else 'EMPTY',
+            'result_list': [a.toStandard() for a in self.answers]
+        }
+        return output
 
     def add(self, answer):
         '''
@@ -165,20 +190,104 @@ class Answer(db.Model):
         struct = {key:getattr(self, key) for key in keys}
         return struct
 
-    def construct_name(self):
-        ''' Construct short name summarizing each subgraph. '''
-        names = []
-        for node in self.nodes:
-            names.append(node['name'])
+    def toStandard(self):
+        '''
+        confidence
+        id
+        result_graph:
+            edge_list:
+                confidence
+                origin_list
+                source_id
+                target_id
+                type
+            node_list:
+                accession
+                description
+                id
+                name
+                node_attributes
+                symbol
+                type
+        text
+        '''
+        json = self.toJSON()
+        output = {
+            'confidence': json['score']['rank_score'],
+            'id': json['id'],
+            'result_graph': {
+                'node_list': [standardize_node(n) for n in json['nodes']],
+                'edge_list': [standardize_edge(e) for e in json['edges']]
+            },
+            'text': generate_summary(json['nodes'], json['edges'])
+        }
+        return output
 
-        short_name = ''
-        for name_idx, name in enumerate(names):
-            if name_idx > 0:
-                #short_name = short_name + '→'
-                short_name = short_name + ' » '
-            short_name = short_name + name[0:min(len(name), 4)]
+def generate_summary(nodes, edges):
+    # assume that the first node is at one end
+    summary = nodes[0]['name']
+    latest_node_id = nodes[0]['id']
+    node_ids = [n['id'] for n in nodes]
+    edge_starts = [e['start'] for e in edges]
+    edge_ends = [e['end'] for e in edges]
+    while True:
+        if latest_node_id in edge_starts:
+            idx = edge_starts.index(latest_node_id)
+            edge_starts.pop(idx)
+            edge_ends.pop(idx)
+            edge = edges.pop(idx)
+            latest_node_id = edge['end']
+            latest_node = nodes[node_ids.index(latest_node_id)]
+            summary += f" -{edge['predicate']}-> {latest_node['name']}"
+        elif latest_node_id in edge_ends:
+            idx = edge_ends.index(latest_node_id)
+            edge_starts.pop(idx)
+            edge_ends.pop(idx)
+            edge = edges.pop(idx)
+            latest_node_id = edge['start']
+            latest_node = nodes[node_ids.index(latest_node_id)]
+            summary += f" <-{edge['predicate']}- {latest_node['name']}"
+        else:
+            break
+    return summary
 
-        return short_name
+def standardize_edge(edge):
+    '''
+    confidence
+    origin_list
+    source_id
+    target_id
+    type
+    '''
+    output = {
+        'confidence': edge['scoring']['edge_proba'],
+        'origin_list': edge['edge_source'],
+        'source_id': edge['start'],
+        'target_id': edge['end'],
+        'type': edge['predicate']
+    }
+    return output
+
+def standardize_node(node):
+    '''
+    accession
+    description
+    id
+    name
+    node_attributes
+    symbol
+    type
+    '''
+    output = {
+        'accession': 'accession',
+        'description': node['name'],
+        'id': node['id'],
+        'name': node['id'],
+        'node_attributes': None,
+        'symbol': None,
+        'type': node['type']
+    }
+    return output
 
 def list_answersets():
     return db.session.query(Answerset).all()
