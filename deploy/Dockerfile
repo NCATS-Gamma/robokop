@@ -39,7 +39,6 @@ RUN pip install -r ./requirements.txt
 ## Set up the website
 RUN npm install
 RUN npm run webpackProd
-RUN pip install git+https://github.com/Supervisor/supervisor@master
 
 WORKDIR /home/murphy
 RUN rm -r /home/murphy/robokop
@@ -47,8 +46,6 @@ RUN rm -r /home/murphy/robokop
 ## Finish up
 ENV HOME=/home/murphy
 ENV USER=murphy
-COPY ./startup.sh /home/murphy/startup.sh
-COPY ./supervisord.conf /home/murphy/supervisord.conf
 
-ENTRYPOINT ["./startup.sh"]
-CMD ["supervisord", "-c", "./supervisord.conf"]
+ENTRYPOINT ["./robokop/deploy/startup.sh"]
+CMD ["supervisord", "-c", "./robokop/deploy/supervisord.conf"]
