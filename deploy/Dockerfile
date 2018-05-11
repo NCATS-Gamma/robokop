@@ -3,15 +3,13 @@
 FROM python:3
 
 LABEL maintainer="patrick@covar.com"
-ENV REFRESHED_AT 2018-05-04
+ENV REFRESHED_AT 2018-05-07
 
 ENV LANG=C.UTF-8 \
     LC_ALL=C.UTF-8
 
-RUN apt-get update
-RUN apt-get upgrade -y
-
 ## Install basic tools
+RUN apt-get update
 RUN apt-get install -yq \
     vim
 
@@ -31,14 +29,13 @@ WORKDIR /home/murphy
 RUN git clone https://github.com/NCATS-Gamma/robokop.git
 
 WORKDIR /home/murphy/robokop
-RUN git checkout divorce
 
 ## Install all requirements
-RUN pip install -r ./requirements.txt
+RUN pip install -r ./requirements.txt --src /usr/local/src
 
 ## Set up the website
-RUN npm install
-RUN npm run webpackProd
+# RUN npm install
+# RUN npm run webpackProd
 
 WORKDIR /home/murphy
 RUN rm -r /home/murphy/robokop
