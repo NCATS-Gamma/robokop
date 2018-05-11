@@ -88,7 +88,7 @@ class Question(db.Model):
                 identifiers = [n['meta']['identifier']]
                 n['identifiers'] = identifiers
             else:
-                n['identifiers'] = None
+                n['identifiers'] = []
 
         self.hash = self.compute_hash()
 
