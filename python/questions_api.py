@@ -12,7 +12,7 @@ from flask_restplus import Resource
 
 from util import getAuthData, get_tasks
 from question import list_questions, list_questions_by_username, Question
-from tasks import initialize_question
+from tasks import update_kg, answer_question
 from setup import api
 
 # New Question Submission
@@ -37,7 +37,10 @@ class QuestionsAPI(Resource):
 
         # To speed things along we start a answerset generation task for this question
         # This isn't the standard answerset generation task because we might also trigger a KG Update
-        task = initialize_question.apply_async(args=[q.hash], kwargs={'question_id':qid, 'user_email':current_user.email})
+        ug_task = update_kg.signature(args=[q.hash], kwargs={'question_id':qid, 'user_email':current_user.email}, immutable=True)
+        as_task = answer_question.signature(args=[q.hash], kwargs={'question_id':qid, 'user_email':current_user.email}, immutable=True)
+        task = answer_question.apply_async(args=[q.hash], kwargs={'question_id':qid, 'user_email':current_user.email},
+            link_error=ug_task|as_task)
 
         return qid, 201
 

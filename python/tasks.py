@@ -32,6 +32,9 @@ def setup_celery_logging(**kwargs):
     pass
 celery.log.setup()
 
+class NoAnswersException(Exception):
+    pass
+
 @celery.task(bind=True, queue='manager_initialize')
 def initialize_question(self, question_hash, question_id=None, user_email=None):
     '''
@@ -108,24 +111,18 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
     question_id = question_id if question_id else list_questions_by_hash(question_hash)[0].id
     question = get_question_by_id(question_id)
 
-    try:
         r = requests.post(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/', json=question.toJSON())
         # wait here for response
+    if r.status_code == 204:
+        # found 0 answers
+        raise NoAnswersException("Question answering complete, no answers found.")
+    self.update_state(state='ANSWERS FOUND')
+    logger.info("Answers found.")
         try:
             answerset_json = r.json()
         except json.decoder.JSONDecodeError as err:
             raise ValueError(f"Response is not json: {r.text}")
-        logger.info(answerset_json)
         answerset = Answerset(answerset_json, question_hash=question_hash)
-    except Exception as err:
-        logger.exception("Something went wrong with question answering.")
-        raise err
-    if answerset.answers:
-        self.update_state(state='ANSWERS FOUND')
-        logger.info("Answers found.")
-    else:
-        logger.exception("Question answering completed: no answers found.")
-        raise ValueError("Question answering completed: no answers found.")
 
     if user_email:
         try:
@@ -141,7 +138,7 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
                             html=html)
                 mail.send(msg)
         except Exception as err:
-            raise RuntimeError(f"Failed to send 'completed answer' email: {err}")
+            logger.error(f"Failed to send 'completed answer' email: {err}")
 
     logger.info("Done answering.")
     return answerset.id
@@ -188,7 +185,7 @@ def update_kg(self, question_hash, question_id=None, user_email=None):
                             html=html)
                 mail.send(msg)
     except Exception as err:
-        raise RuntimeError(f"Failed to send 'completed KG update' email: {err}")
+        logger.error(f"Failed to send 'completed KG update' email: {err}")
 
         logger.info("Done updating.")
         return "You updated the KG!"
