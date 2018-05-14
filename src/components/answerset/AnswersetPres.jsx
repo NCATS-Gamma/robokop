@@ -5,7 +5,7 @@ import { Grid, Tabs, Tab } from 'react-bootstrap';
 import QuestionHeader from '../shared/QuestionHeader';
 import AnswersetList from './AnswersetList';
 import AnswersetInteractive from './AnswersetInteractive';
-import SubGraphViewer from '../shared/SubGraphViewer';
+import AnswersetGraph from './AnswersetGraph';
 
 class AnswersetPres extends React.Component {
   constructor(props) {
@@ -76,7 +76,6 @@ class AnswersetPres extends React.Component {
               feedback={this.props.answersetFeedback}
               answerId={this.props.answerId} // Monitored for select by parameter or page load
 
-              enableUrlChange={this.props.enableUrlChange}
               enableFeedbackSubmit={this.props.enableFeedbackSubmit}
 
               callbackAnswerSelected={this.props.callbackAnswerSelected}
@@ -88,9 +87,8 @@ class AnswersetPres extends React.Component {
             eventKey={3}
             title="Graph"
           >
-            <SubGraphViewer
-              subgraph={this.props.answersetGraph}
-              callbackOnGraphClick={() => {}}
+            <AnswersetGraph
+              answersetGraph={this.props.answersetGraph}
             />
           </Tab>
 

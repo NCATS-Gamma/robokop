@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from 'react-bootstrap';
 import GoSync from 'react-icons/lib/go/sync';
 
-import getNodeTypeColorMap from '../questionNew/ColorUtils';
+import getNodeTypeColorMap from '../util/colorUtils';
 
 const Graph = require('react-graph-vis').default;
 const _ = require('lodash');

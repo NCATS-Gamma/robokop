@@ -4,7 +4,7 @@ import { Panel, PanelGroup, Badge } from 'react-bootstrap';
 
 import GoSync from 'react-icons/lib/go/sync';
 
-import getNodeTypeColorMap from '../questionNew/ColorUtils';
+import getNodeTypeColorMap from '../util/colorUtils';
 
 const shortid = require('shortid');
 
@@ -95,19 +95,23 @@ class AnswersetInteractiveSelector extends React.Component {
     const showReset = this.props.nodeSelection.reduce((val, n) => val || n !== null, false);
 
     return (
-      <div>
-        <h4>
-          Answer Explorer
-          {showReset &&
-            <span className="pull-right">
-              <GoSync style={{ cursor: 'pointer' }} onClick={this.handleClearAll} />
-            </span>
-          }
-        </h4>
-        <PanelGroup id="AnswerSetExplorer">
-          {dropDowns}
-        </PanelGroup>
-      </div>
+      <Panel>
+        <Panel.Heading>
+          <Panel.Title componentClass="h3">
+            Answer Selector
+            {showReset &&
+              <span className="pull-right">
+                <GoSync style={{ cursor: 'pointer' }} onClick={this.handleClearAll} />
+              </span>
+            }
+          </Panel.Title>
+        </Panel.Heading>
+        <Panel.Body style={{ padding: 0 }}>
+          <PanelGroup id="AnswerSetExplorer">
+            {dropDowns}
+          </PanelGroup>
+        </Panel.Body>
+      </Panel>
     );
   }
 }

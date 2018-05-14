@@ -44,7 +44,7 @@ class AnswersetAPI(Resource):
 
         return {'user': user,\
                 'question': question.toJSON(),\
-                'answerset': answerset.toJSON(),\
+                'answerset': answerset.toStandard(),\
                 'answers': [a.toJSON() for a in answers],\
                 'feedback': [f.toJSON() for f in feedback],\
                 'other_answersets': [aset.toJSON() for aset in answersets],

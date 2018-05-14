@@ -1,6 +1,6 @@
 import React from 'react';
 
-import getNodeTypeColorMap from '../questionNew/ColorUtils';
+import getNodeTypeColorMap from '../util/colorUtils';
 
 const Graph = require('react-graph-vis').default;
 

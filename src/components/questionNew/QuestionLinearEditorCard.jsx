@@ -7,12 +7,17 @@ import { DragSource, DropTarget } from 'react-dnd'
 import MdCancel from 'react-icons/md/cancel'
 
 import CardTypes from './QuestionNewCardTypes';
-import getNodeTypeColorMap from './ColorUtils';
+import getNodeTypeColorMap from '../util/colorUtils';
 
 import Select from 'react-select';
 
 const _ = require('lodash');
 const shortid = require('shortid');
+
+const entityNameDisplay = (str) => {
+  str = str.replace('_',' ');
+  return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+};
 
 const styles = {
   cardBar: {
@@ -108,9 +113,6 @@ class QuestionLinearEditorCard extends Component {
     this.handleChangeMaxNodes = this.handleChangeMaxNodes.bind(this);
     this.handleChangeMinNodes = this.handleChangeMinNodes.bind(this);
 
-    // Store colormap from nodeType to color for titlebar coloring of cards
-    this.nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
-
   }
 
   getCard() {
@@ -167,14 +169,14 @@ class QuestionLinearEditorCard extends Component {
     this.props.callbackUpdateCard(card);
   }
 
-  getSearchOptions (input,nodeType) {
+  getSearchOptions (input, nodeType) {
     if (!input || (input.length < 3)) {
       return Promise.resolve({ options: [] });
     }
-
-    return this.props.callbackSearch(input, nodeType);
+    const output = this.props.callbackSearch(input, nodeType);
+    console.log(output)
+    return output;
   }
-  
 
   render() {
     const {
@@ -203,12 +205,19 @@ class QuestionLinearEditorCard extends Component {
     let contentFragment = [];
 
     // Setup background color for titlebar
-    const undefinedColor = '#aaa';
-    let backgroundColor = {backgroundColor: this.nodeTypeColorMap(displayType)};
+    const undefinedColor = '#dddddd';
 
+    // Store colormap from nodeType to color for titlebar coloring of cards
+    const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
+    let color = nodeTypeColorMap(displayType);
+    if (!color) {
+      color = undefinedColor;
+    }
+    let backgroundColor = {backgroundColor: color};
+    
     let nodeTypeKeys = this.props.concepts; 
     const nodeTypeOptions = nodeTypeKeys.map((k) => {
-      return {value: k, label: k};
+      return {value: k, label: entityNameDisplay(k)};
     });
     
     switch (type) {
@@ -235,8 +244,6 @@ class QuestionLinearEditorCard extends Component {
                   valueRenderer={opt => (<div>{opt.label}<span className="pull-right" style={{ paddingRight: '15px' }}> {opt.value} </span></div>)}
                   optionRenderer={opt => (<div>{opt.label}<span className="pull-right"> {opt.value} </span></div>)}
                   onChange={this.handleChangeName}
-                  valueKey="value"
-                  labelKey="label"
                   loadOptions={(input) => this.getSearchOptions(input, nodeType)}
                   backspaceRemoves={true}
                 />

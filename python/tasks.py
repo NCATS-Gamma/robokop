@@ -115,7 +115,6 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
             answerset_json = r.json()
         except json.decoder.JSONDecodeError as err:
             raise ValueError(f"Response is not json: {r.text}")
-        logger.info(answerset_json)
         answerset = Answerset(answerset_json)
     except Exception as err:
         logger.exception("Something went wrong with question answering.")

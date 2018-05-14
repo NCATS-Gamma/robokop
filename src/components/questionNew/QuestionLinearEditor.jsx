@@ -62,7 +62,7 @@ class QuestionLinearEditor extends React.Component {
     this.updateCard = this.updateCard.bind(this);
     this.deleteCard = this.deleteCard.bind(this);
 	}
-  newCard(){
+  newCard() {
     const newCard = Object.assign({}, this.defaultCard);
     newCard.id = shortid.generate();
     

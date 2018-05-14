@@ -1,7 +1,7 @@
 import React from 'react';
-import { Row, Col } from 'react-bootstrap';
+import { Row, Col, Panel } from 'react-bootstrap';
 import { AutoSizer, List } from 'react-virtualized';
-import SubGraphViewer from '../shared/SubGraphViewer';
+import AnswerExplorer from '../shared/AnswerExplorer';
 
 class AnswersetList extends React.Component {
   constructor(props) {
@@ -10,7 +10,7 @@ class AnswersetList extends React.Component {
     this.styles = {
       list: {
         border: '1px solid #DDD',
-        marginTop: '15px',
+        marginTop: '0px',
         outline: 'none',
       },
       row: {
@@ -96,45 +96,65 @@ class AnswersetList extends React.Component {
   }
   noRowsRenderer() {
     return (
-      <div>
-        {"There doesn't seem to be any answers!?!"}
-      </div>
+      <Row>
+        <Col md={12}>
+          <h5>
+            {"There doesn't seem to be any answers!?!"}
+          </h5>
+        </Col>
+      </Row>
     );
   }
 
   updateSelectedSubGraphIndex(ind) {
+    this.props.callbackAnswerSelected(this.props.answers[ind]);
+    this.list.scrollToRow(ind);
+
     this.list.forceUpdateGrid();
     this.setState({ selectedSubGraphIndex: ind });
   }
-
-  // this.list.scrollToRow (index: number)
 
   render() {
     const listHeight = 500;
     const rowCount = this.props.answers.length;
 
+    const answer = this.props.answers[this.state.selectedSubGraphIndex];
+    const answerFeedback = { answerId: answer.id, accuracy: 4, impact: 3, notes: 'This is a great answer' };
+
     return (
       <Row>
-        <Col md={3}>
-          <AutoSizer disableHeight defaultWidth={100}>
-            {({ width }) => (
-              <List
-                ref={(ref) => { this.list = ref; }}
-                style={this.styles.list}
-                height={listHeight}
-                overscanRowCount={10}
-                rowCount={rowCount}
-                rowHeight={50}
-                noRowsRenderer={this.noRowsRenderer}
-                rowRenderer={this.rowRenderer}
-                width={width}
-              />
-            )}
-          </AutoSizer>
+        <Col md={3} style={{ paddingRight: 0 }}>
+          <Panel>
+            <Panel.Heading>
+              <Panel.Title componentClass="h3">Ranked Answers</Panel.Title>
+            </Panel.Heading>
+            <Panel.Body style={{ padding: 0 }}>
+              <AutoSizer disableHeight defaultWidth={100}>
+                {({ width }) => (
+                  <List
+                    ref={(ref) => { this.list = ref; }}
+                    style={this.styles.list}
+                    height={listHeight}
+                    overscanRowCount={10}
+                    rowCount={rowCount}
+                    rowHeight={50}
+                    noRowsRenderer={this.noRowsRenderer}
+                    rowRenderer={this.rowRenderer}
+                    width={width}
+                  />
+                )}
+              </AutoSizer>
+            </Panel.Body>
+          </Panel>
         </Col>
-        <Col md={9}>
-          <SubGraphViewer
-            subgraph={this.props.answers[this.state.selectedSubGraphIndex].result_graph}
+        <Col md={9} style={{ paddingLeft: 0 }}>
+          <AnswerExplorer
+            answer={answer}
+            answerIndex={this.state.selectedSubGraphIndex}
+            feedback={answerFeedback}
+
+            callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
+            enableFeedbackSubmit={this.props.enableFeedbackSubmit}
           />
         </Col>
       </Row>

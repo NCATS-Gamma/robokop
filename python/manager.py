@@ -43,7 +43,34 @@ class Concepts(Resource):
     def get(self):
         """Get known biomedical concepts"""
         r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/concepts")
-        return r.json()
+        concepts = r.json()
+        bad_concepts =['NAME.DISEASE', 'NAME.PHENOTYPE', 'NAME.DRUG', "disease_or_phenotypic_feature", "biological_process_or_molecular_activity"]
+        concepts = [c for c in concepts if not c in bad_concepts]
+        return concepts
+
+@api.route('/search/<term>/<category>')
+class Search(Resource):
+    @api.response(200, 'Success')
+    def get(self, term, category):
+        """Look up biomedical search term using bionames service"""
+        url = f"https://bionames.renci.org/lookup/{term}/{category}/"
+        r = requests.get(url)
+        all_results = r.json()
+        results = []
+        for r in all_results:
+            if not 'id' in r:
+                continue
+            if 'label' in r:
+                r['label'] = r['label'] or r['id']
+            elif 'desc' in r:
+                r['label'] = r['desc'] or r['id']
+                r.pop('desc')
+            else:
+                continue
+            results.append(r)
+
+        results = list({r['id']:r for r in all_results}.values())
+        return results
 
 @api.route('/user')
 class User(Resource):
