@@ -12,7 +12,7 @@ class SubGraphViewer extends React.Component {
 
     this.addTagsToGraph = this.addTagsToGraph.bind(this);
     this.setNetworkCallbacks = this.setNetworkCallbacks.bind(this);
-    // this.clickCallback = event => this.props.callbackOnGraphClick(event);
+    this.clickCallback = event => this.props.callbackOnGraphClick(event);
 
     this.styles = {
       supportEdgeColors: {
@@ -29,6 +29,9 @@ class SubGraphViewer extends React.Component {
       //     enabled: false,
       //   },
       // },
+      layout: {
+        randomSeed: 0,
+      },
       edges: {
         smooth: true,
         color: {
@@ -93,6 +96,39 @@ class SubGraphViewer extends React.Component {
     }
   }
 
+  getGraphOptions() {
+    const { graphOptions } = this;
+
+    graphOptions.height = `${this.props.height}px`;
+    let modifiedOptions = {};
+    if (this.props.layoutStyle === 'auto') {
+      modifiedOptions = {
+        layout: {
+          randomSeed: this.props.layoutRandomSeed,
+          hierarchical: {
+            enabled: false,
+          },
+        },
+        physics: true,
+      };
+    }
+
+    if ((this.props.layoutStyle === 'vertical') || (this.props.layoutStyle === 'horizontal')) {
+      modifiedOptions = {
+        layout: {
+          randomSeed: this.props.layoutRandomSeed,
+          hierarchical: {
+            enabled: false,
+          },
+        },
+        physics: false,
+      };
+    }
+
+    return { ...graphOptions, ...modifiedOptions };
+  }
+
+
   // Method to add requisite tags to graph definition JSON before passing to vis.js
   addTagsToGraph(graph) {
     // Generate innerHTML string for tooltip contents for a given edge
@@ -135,6 +171,8 @@ class SubGraphViewer extends React.Component {
     const nodeTypeColorMap = getNodeTypeColorMap(); // We could put standardized concepts here
 
     // nodes -> node_list
+    const isVert = this.props.layoutStyle === 'vertical';
+    const isHorz = this.props.layoutStyle === 'horizontal';
     g.nodes = g.node_list.map((n, i) => {
       const backgroundColor = nodeTypeColorMap(n.type);
       n.color = {
@@ -143,8 +181,15 @@ class SubGraphViewer extends React.Component {
         hover: { background: backgroundColor },
       };
       n.label = n.description;
-      // n.x = 100; // Position nodes vertically
-      // n.y = i * 100;
+
+      if (isVert) {
+        n.x = 100; // Position nodes vertically
+        n.y = i * 100;
+      }
+      if (isHorz) {
+        n.y = 100; // Position nodes horizontally
+        n.x = i * 500;
+      }
       return n;
     });
 
@@ -188,6 +233,7 @@ class SubGraphViewer extends React.Component {
     if (isValid) {
       graph = this.addTagsToGraph(graph);
     }
+    const graphOptions = this.getGraphOptions();
 
     return (
       <div>
@@ -198,7 +244,8 @@ class SubGraphViewer extends React.Component {
               key={shortid.generate()} // Forces component remount
               graph={graph}
               style={{ width: '100%' }}
-              options={this.graphOptions}
+              options={graphOptions}
+              events={{ click: this.clickCallback }}
               getNetwork={(network) => { this.network = network; }} // Store network reference in the component
             />
           </div>
@@ -209,6 +256,12 @@ class SubGraphViewer extends React.Component {
   }
 }
 
-// events={{ click: this.clickCallback }}
+SubGraphViewer.defaultProps = {
+  layoutRandomSeed: 0,
+  layoutStyle: 'auto',
+  height: 500,
+  showSupport: false,
+  callbackOnGraphClick: () => {},
+};
 
 export default SubGraphViewer;

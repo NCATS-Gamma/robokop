@@ -235,7 +235,12 @@ class AnswersetInteractive extends React.Component {
     // then update the selectedSubGraphIndex to be the 'highest' one left
     const selectedSubGraphIndex = isKept.indexOf(true);
 
-    this.setState({ groupSelection: groupIndex, nodeSelection, selectedSubGraphIndex, selectedSubGraphPossibilities: subgraphPossibilities });
+    this.setState({
+      groupSelection: groupIndex,
+      nodeSelection,
+      selectedSubGraphIndex,
+      selectedSubGraphPossibilities: subgraphPossibilities,
+    });
 
     // Change the url, if there is exactly one possibility in each dimension
     if (subgraphPossibilities.every(p => p.length === 1)) {
@@ -245,12 +250,12 @@ class AnswersetInteractive extends React.Component {
     }
   }
   renderError() {
-    console.log(this.state.error)
+    console.log('Interactive Viewer Error Message', this.state.error);
     return (
       <Row>
         <Col md={12}>
           <h4>
-            {"We ran in to problems setting up the interactive viewer for this answerset."}
+            {'Sorry but we ran in to problems setting up the interactive viewer for this answer set.'}
           </h4>
           <p>
             Error Message:
@@ -290,12 +295,12 @@ class AnswersetInteractive extends React.Component {
               <Col md={12}>
                 <Panel>
                   <Panel.Heading>
-                    <Panel.Title componentClass="h3">Multiple Answer Structures</Panel.Title>
+                    <Panel.Title componentClass="h3">Multiple Answer Structures Found</Panel.Title>
                   </Panel.Heading>
                   <Panel.Body>
                     <Col md={6}>
                       <p>
-                        Multiple answer graph structures found. The interactive viewer supports a single structure at a time. Please select a structure group to explore.
+                        The interactive viewer supports a single structure at a time. Please select a structure group to explore.
                       </p>
                     </Col>
                     <Col md={6}>

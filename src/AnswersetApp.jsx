@@ -8,6 +8,8 @@ import Header from './components/Header';
 import Loading from './components/Loading';
 import AnswersetPres from './components/answerset/AnswersetPres';
 
+const shortid = require('shortid');
+
 class Answerset extends React.Component {
   constructor(props) {
     super(props);
@@ -54,7 +56,13 @@ class Answerset extends React.Component {
           };
 
           const answers = object.result_list;
-
+          answers.forEach((a) => {
+            a.result_graph.edge_list.forEach((edge) => {
+              if (!('id' in edge)) {
+                edge.id = shortid.generate();
+              }
+            });
+          });
 
           const nodesIdSet = new Set();
           const edgesIdSet = new Set();
@@ -111,22 +119,23 @@ class Answerset extends React.Component {
       <Grid>
         <Row>
           <Col md={12}>
-            <h1>
-              Robokop Generalized Answerset Browser
-            </h1>
-          </Col>
-        </Row>
-        <Row>
-          <Col md={12}>
             <Dropzone
               onDrop={(acceptedFiles, rejectedFiles) => this.onDrop(acceptedFiles, rejectedFiles) }
               multiple={false}
-              style={{ width: 'calc(100%-50px)', height: '200px', backgroundColor: this.appConfig.colors.blue, border: 'none', padding: '10px', margin: '25px', textAlign: 'center',  }}
+              style={{ width: 'calc(100%-50px)', height: '200px', backgroundColor: this.appConfig.colors.blue, border: 'none', padding: '20px', margin: '25px', }}
             >
               <div>
-                <h2>
+                <h1>
+                  Robokop Answer Set Explorer
+                  <br />
+                  <small>
+                    {'This allows you to use a the Robokop Answerset UI from answerset files create from other sources.'}
+                  </small>
+                </h1>
+                <br />
+                <h4>
                   Drag and drop your answer set file, or click to browse.
-                </h2>
+                </h4>
               </div>
             </Dropzone>
           </Col>
