@@ -73,6 +73,7 @@ class AnswerExplorer extends React.Component {
             subgraph={this.props.answer.result_graph}
             layoutRandomSeed={this.props.answerIndex}
             callbackOnGraphClick={this.onGraphClick}
+            showSupport
           />
           <Modal
             show={this.state.modalShow}

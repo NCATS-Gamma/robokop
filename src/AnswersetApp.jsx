@@ -64,6 +64,15 @@ class Answerset extends React.Component {
             });
           });
 
+          answers.forEach((a, i) => {
+            const answerNodeIds = new Set();
+            if (answerNodeIds.has(a.id)) {
+              console.log(`Answer ${i} has multiple nodes with id ${a.id}. Future errors will result.`);
+            } else {
+              answerNodeIds.add(a.id);
+            }
+          });
+
           const nodesIdSet = new Set();
           const edgesIdSet = new Set();
           // Parse answerset specific graph here

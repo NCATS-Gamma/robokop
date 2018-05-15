@@ -18,7 +18,7 @@ class SubGraphViewer extends React.Component {
       supportEdgeColors: {
         color: '#aaa',
         highlight: '#3da4ed',
-        hover: '#444',
+        hover: '#aaa',
       },
     };
     this.graphOptions = {
@@ -166,17 +166,24 @@ class SubGraphViewer extends React.Component {
       let edgeParams = {};
       let label = e.type;
       if (e.type !== 'literature_co-occurrence') {
-        edgeParams = { smooth: { type: 'curvedCW', roundness: 0 } };
+        edgeParams = {
+          smooth: {type: 'curvedCW', roundness: 0 },
+          width: 2,
+        };
+
+      } else {
         label = '';
         if (('publications' in e) && Array.isArray(e.publications) && e.publications.length > 0) {
           label = String(e.publications.length);
         }
-
-      } else {
         edgeParams = {
           smooth: { type: rng() < 0.5 ? 'curvedCW' : 'curvedCCW', roundness: 0.6 },
           color: this.styles.supportEdgeColors,
           dashes: [2, 4],
+          width: 1,
+          hoverWidth: 0,
+          physics: false,
+          
         };
       }
       e.from = e.source_id;
@@ -193,7 +200,7 @@ class SubGraphViewer extends React.Component {
       return { ...e, ...{ label, ...edgeParams } };
     });
     if (!this.props.showSupport) {
-      g.edges = g.edges.filter(e => e !== 'literature_co-occurrence');
+      g.edges = g.edges.filter(e => e.type !== 'literature_co-occurrence');
     }
 
     return g;

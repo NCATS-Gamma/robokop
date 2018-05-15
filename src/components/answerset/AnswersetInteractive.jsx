@@ -81,6 +81,10 @@ class AnswersetInteractive extends React.Component {
       });
       const nodeTypesArray = Array.from(nodeTypes);
 
+      const someNullTypes = nodeTypesArray.some(nt => (nt == null || nt === undefined));
+      if (someNullTypes) {
+        throw new Error('The interactive answer browser requires types on all nodes.');
+      }
       // We will keep a track of the unique connectivities
       const nodeTypeCountsArray = [];
       const connectivityArray = [];
@@ -97,14 +101,16 @@ class AnswersetInteractive extends React.Component {
         const edges = a.result_graph.edge_list;
         const nodes = a.result_graph.node_list;
         edges.forEach((e) => {
-          const sourceNode = nodes.find(n => n.id === e.source_id);
-          const targetNode = nodes.find(n => n.id === e.target_id);
+          if (e.type !== 'literature_co-occurrence') {
+            const sourceNode = nodes.find(n => n.id === e.source_id);
+            const targetNode = nodes.find(n => n.id === e.target_id);
 
-          const i = nodeTypesArray.findIndex(nt => nt === sourceNode.type);
-          const j = nodeTypesArray.findIndex(nt => nt === targetNode.type);
+            const i = nodeTypesArray.findIndex(nt => nt === sourceNode.type);
+            const j = nodeTypesArray.findIndex(nt => nt === targetNode.type);
 
-          connectivity[(i * nodeTypesArray.length) + j] = 1;
-          connectivity[(j * nodeTypesArray.length) + i] = 1; // Undirected
+            connectivity[(i * nodeTypesArray.length) + j] = 1;
+            connectivity[(j * nodeTypesArray.length) + i] = 1; // Undirected
+          }
         });
 
         // Count the types of each node
@@ -128,7 +134,7 @@ class AnswersetInteractive extends React.Component {
             nodeCountChar += '-';
           }
         });
-        connectivityChar += `_${nodes.length}_${nodeCountChar}`; // Take number nodes on to the end
+        connectivityChar += `_${nodes.length}_${nodeCountChar}`; // Tack number nodes on to the end
 
         const groupIndex = connectivityHashArray.indexOf(connectivityChar);
         if (groupIndex < 0) {
@@ -149,7 +155,7 @@ class AnswersetInteractive extends React.Component {
         let maxConf = -Infinity;
         for (let iAnswer = 0; iAnswer < this.props.answers.length; iAnswer += 1) {
           if (answerGroup[iAnswer] === iGroup) {
-            groupAnswers.push(_.cloneDeep(this.props.answers[iAnswer])); // Obj copy using spread
+            groupAnswers.push(_.cloneDeep(this.props.answers[iAnswer]));
             if (maxConf < this.props.answers[iAnswer].confidence) {
               maxConf = this.props.answers[iAnswer].confidence;
             }
@@ -158,7 +164,7 @@ class AnswersetInteractive extends React.Component {
 
         // Get the order of types for the first answer in this group
         const typeOrder = groupAnswers[0].result_graph.node_list.map(n => n.type);
-
+        
         // Resort all answers in this group so that the types go in the same order
         groupAnswers.forEach((a) => {
           const newNodeList = [];

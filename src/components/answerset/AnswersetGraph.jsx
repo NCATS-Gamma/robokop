@@ -2,7 +2,7 @@ import React from 'react';
 import { Row, Col, Panel } from 'react-bootstrap';
 import SubGraphViewer from '../shared/SubGraphViewer';
 
-class AnswersetList extends React.Component {
+class AnswersetGraph extends React.Component {
   constructor(props) {
     super(props);
   }
@@ -27,4 +27,4 @@ class AnswersetList extends React.Component {
   }
 }
 
-export default AnswersetList;
+export default AnswersetGraph;
