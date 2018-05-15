@@ -131,41 +131,6 @@ class SubGraphViewer extends React.Component {
 
   // Method to add requisite tags to graph definition JSON before passing to vis.js
   addTagsToGraph(graph) {
-    // Generate innerHTML string for tooltip contents for a given edge
-    function createTooltip(edge) {
-      const defaultNames = {
-        num_pubs: { name: 'Publications', precision: 0 },
-        // pub_weight: { name: 'Confidence', precision: 4 },
-        spect_weight: { name: 'Support Confidence', precision: 4 },
-        edge_proba: { name: 'Combined Weight', precision: 4 },
-        // proba_query: { name: 'Importance', precision: 4 },
-        // proba_info: { name: 'Informativeness', precision: 4 },
-      };
-      // const defaultOrder = ['num_pubs', 'pub_weight', 'spect_weight', 'edge_proba'];
-      const defaultOrder = ['num_pubs', 'spect_weight', 'edge_proba'];
-      const innerHtml = defaultOrder.reduce((sum, k) => {
-        if (_.hasIn(edge.scoring, k)) {
-          return (
-            `${sum}
-            <div>
-              <span class="field-name">${defaultNames[k].name}: </span>
-              <span class="field-value">${edge.scoring[k].toFixed(defaultNames[k].precision)}</span>
-            </div>`
-          );
-        }
-        return sum;
-      }, '');
-      let edgeTypeString = 'Primary';
-      if (edge.type === 'Support') {
-        edgeTypeString = 'Supporting';
-      }
-      return (
-        `<div class="vis-tooltip-inner">
-          <div><span class="title">${edgeTypeString} Edge</span></div>
-          ${innerHtml}
-        </div>`
-      );
-    }
     // Adds vis.js specific tags primarily to style graph as desired
     const g = _.cloneDeep(graph);
     const nodeTypeColorMap = getNodeTypeColorMap(); // We could put standardized concepts here
@@ -199,8 +164,14 @@ class SubGraphViewer extends React.Component {
     // edges -> edge_list
     g.edges = g.edge_list.map((e) => {
       let edgeParams = {};
-      if (e.type !== 'Support') {
-        edgeParams = { smooth: { type: 'curvedCW', roundness: 0 }};
+      let label = e.type;
+      if (e.type !== 'literature_co-occurrence') {
+        edgeParams = { smooth: { type: 'curvedCW', roundness: 0 } };
+        label = '';
+        if (('publications' in e) && Array.isArray(e.publications) && e.publications.length > 0) {
+          label = String(e.publications.length);
+        }
+
       } else {
         edgeParams = {
           smooth: { type: rng() < 0.5 ? 'curvedCW' : 'curvedCCW', roundness: 0.6 },
@@ -208,8 +179,6 @@ class SubGraphViewer extends React.Component {
           dashes: [2, 4],
         };
       }
-
-      const label = e.type;
       e.from = e.source_id;
       e.to = e.target_id;
 
@@ -223,6 +192,10 @@ class SubGraphViewer extends React.Component {
       // title: createTooltip(e)
       return { ...e, ...{ label, ...edgeParams } };
     });
+    if (!this.props.showSupport) {
+      g.edges = g.edges.filter(e => e !== 'literature_co-occurrence');
+    }
+
     return g;
   }
 

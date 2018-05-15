@@ -5,6 +5,7 @@ import Select from 'react-select/lib/Select';
 import AnswersetInteractiveSelector from './AnswersetInteractiveSelector';
 import AnswerExplorer from '../shared/AnswerExplorer';
 
+const _ = require('lodash');
 
 class AnswersetInteractive extends React.Component {
   constructor(props) {
@@ -148,7 +149,7 @@ class AnswersetInteractive extends React.Component {
         let maxConf = -Infinity;
         for (let iAnswer = 0; iAnswer < this.props.answers.length; iAnswer += 1) {
           if (answerGroup[iAnswer] === iGroup) {
-            groupAnswers.push({ ...this.props.answers[iAnswer] }); // Obj copy using spread
+            groupAnswers.push(_.cloneDeep(this.props.answers[iAnswer])); // Obj copy using spread
             if (maxConf < this.props.answers[iAnswer].confidence) {
               maxConf = this.props.answers[iAnswer].confidence;
             }

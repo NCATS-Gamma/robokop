@@ -109,6 +109,7 @@ class AnswerExplorerInfo extends React.Component {
       // https://www.ebi.ac.uk/ols/ontologies/mondo/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMONDO_0022308
       urls.push({ label: 'EMBL-EBI', url: `https://www.ebi.ac.uk/ols/ontologies/${onto.toLowerCase()}/terms?iri=${encodeURIComponent(ontobeeUrl)}` });
     }
+    urls.push({ label: 'N2T', url: `http://n2t.net/${id}` });
 
     return urls;
   }

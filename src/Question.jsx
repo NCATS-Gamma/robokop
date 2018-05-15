@@ -113,10 +113,12 @@ class Question extends React.Component {
         }),
       );
       this.notifyInitializer(prevTasks.initializers[0].uuid);
+      setTimeout(this.pullTasks, this.taskPollingWaitTime);
       return;
     }
     if (refreshFinished && !initializerBusy) {
       this.notifyRefresh(prevTasks.updaters[0].uuid);
+      setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
     if (answerFinished && !initializerBusy) {
       this.appConfig.questionData(
@@ -126,6 +128,7 @@ class Question extends React.Component {
         }),
       );
       this.notifyAnswers(prevTasks.answerers[0].uuid);
+      setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
   }
   notifyRefresh(taskId) {
@@ -147,7 +150,6 @@ class Question extends React.Component {
           level: 'error',
           dismissible: 'click',
           position: 'tr',
-          autoDismiss: 0,
         });
       }
     });
@@ -171,7 +173,6 @@ class Question extends React.Component {
           level: 'error',
           dismissible: 'click',
           position: 'tr',
-          autoDismiss: 0,
         });
       }
     });
@@ -195,7 +196,6 @@ class Question extends React.Component {
           level: 'error',
           dismissible: 'click',
           position: 'tr',
-          autoDismiss: 0,
         });
       }
     });

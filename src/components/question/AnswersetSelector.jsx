@@ -48,9 +48,9 @@ class AnswersetSelector extends React.Component {
     if (haveAnAnswerSet) {
       // Find the newest answerset
       let newest = props.answersets[0];
-      let newestDate = new Date(newest.timestamp);
+      let newestDate = new Date(newest.datetime);
       props.answersets.forEach((a) => {
-        const d = new Date(a.timestamp);
+        const d = new Date(a.datetime);
         if (d > newestDate) {
           // JS Date object works with standard caomparator
           newestDate = d;
@@ -73,7 +73,7 @@ class AnswersetSelector extends React.Component {
     // }
     const answerset = answersetFilter[0];
 
-    const d = new Date(answerset.timestamp);
+    const d = new Date(answerset.datetime);
     const timeString = d.toLocaleString();
 
     let { message } = answerset;
@@ -111,6 +111,7 @@ class AnswersetSelector extends React.Component {
   }
 
   renderOverlay() {
+    const disableNewButton = !this.props.answerBusy || !this.props.refreshBusy || !this.props.initializerBusy;
     return (
       <div>
         {this.props.initializerBusy &&
@@ -121,7 +122,7 @@ class AnswersetSelector extends React.Component {
             <Loading />
           </div>
         }
-        {!this.props.initializerBusy &&
+        {!this.props.initializerBusy && !(this.props.answerBusy || this.props.refreshBusy) &&
           <div>
             <Row>
               <Col md={12}>
@@ -139,7 +140,6 @@ class AnswersetSelector extends React.Component {
                   bsSize="large"
                   alt="Get a New Answer Set"
                   onClick={this.props.callbackAnswersetNew}
-                  disabled={!this.props.enableNewButton}
                 >
                   Get New Answers
                   <br />
@@ -149,6 +149,27 @@ class AnswersetSelector extends React.Component {
             </Row>
           </div>
         }
+        {!this.props.initializerBusy && (this.props.answerBusy || this.props.refreshBusy) &&
+          <div>
+            <Row>
+              <Col md={12}>
+                <h4>
+                  {this.props.answerBusy &&
+                    <span>
+                      We are working on getting new answers for this question. Please wait.
+                    </span>
+                  }
+                  {this.props.refreshBusy &&
+                    <span>
+                      We are working on updating the knowledge graph for this question. Please wait.
+                    </span>
+                  }
+                </h4>
+              </Col>
+            </Row>
+            <Loading />
+          </div>
+        }
       </div>
     );
   }
@@ -156,9 +177,10 @@ class AnswersetSelector extends React.Component {
     const { showNewButton } = this.props;
     const moreThanOne = this.props.answersets.length > 1;
     const options = this.props.answersets.map((a) => {
-      const d = new Date(a.timestamp);
+      const d = new Date(a.datetime);
       return { value: a.id, label: `${d.toLocaleString()} - ${a.creator}` };
     });
+    const disableNewButton = !this.props.answerBusy || !this.props.refreshBusy || !this.props.initializerBusy;
     return (
       <div>
         <div id="answersetSelect" style={{ display: 'table', width: '100%' }}>
@@ -193,7 +215,7 @@ class AnswersetSelector extends React.Component {
                 style={{ padding: '5px 13px' }}
                 alt="Get a New Answer Set"
                 onClick={this.props.callbackAnswersetNew}
-                disabled={!this.props.enableNewButton}
+                disabled={disableNewButton}
               >
                 <GoPlaybackPlay />
               </Button>
