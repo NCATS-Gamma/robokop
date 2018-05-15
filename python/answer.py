@@ -260,7 +260,7 @@ def standardize_edge(edge):
     type
     '''
     output = {
-        'confidence': edge['scoring']['edge_proba'],
+        'confidence': edge['weight'],
         'origin_list': edge['edge_source'],
         'source_id': edge['start'],
         'target_id': edge['end'],
@@ -285,7 +285,7 @@ def standardize_node(node):
         'name': node['id'],
         'node_attributes': None,
         'symbol': None,
-        'type': node['type']
+        'type': node['node_type']
     }
     return output
 
