@@ -233,23 +233,20 @@ def generate_summary(nodes, edges):
     node_ids = [n['id'] for n in nodes]
     edge_starts = [e['start'] for e in edges]
     edge_ends = [e['end'] for e in edges]
+    edge_predicates = [e['predicate'] for e in edges]
     while True:
         if latest_node_id in edge_starts:
             idx = edge_starts.index(latest_node_id)
             edge_starts.pop(idx)
-            edge_ends.pop(idx)
-            edge = edges.pop(idx)
-            latest_node_id = edge['end']
+            latest_node_id = edge_ends.pop(idx)
             latest_node = nodes[node_ids.index(latest_node_id)]
-            summary += f" -{edge['predicate']}-> {latest_node['name']}"
+            summary += f" -{edge_predicates.pop(idx)}-> {latest_node['name']}"
         elif latest_node_id in edge_ends:
             idx = edge_ends.index(latest_node_id)
-            edge_starts.pop(idx)
             edge_ends.pop(idx)
-            edge = edges.pop(idx)
-            latest_node_id = edge['start']
+            latest_node_id = edge_starts.pop(idx)
             latest_node = nodes[node_ids.index(latest_node_id)]
-            summary += f" <-{edge['predicate']}- {latest_node['name']}"
+            summary += f" <-{edge_predicates.pop(idx)}- {latest_node['name']}"
         else:
             break
     return summary
