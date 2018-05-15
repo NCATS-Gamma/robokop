@@ -36,6 +36,7 @@ class Answerset extends React.Component {
     this.appConfig.answersetData(
       this.props.id,
       (data) => {
+        console.log(data)
         const { answers } = data;
         answers.forEach((a) => {
           a.result_graph.edge_list.forEach((e) => {
@@ -81,12 +82,15 @@ class Answerset extends React.Component {
           otherQuestions: data.other_questions,
           dataReady: true,
           isValid: true,
-        })
+        });
       },
-      () => this.setState({
-        dataReady: true,
-        isValid: false,
-      }),
+      (err) => {
+        console.log(err);
+        this.setState({
+          dataReady: true,
+          isValid: false,
+        });
+      }
     );
     this.appConfig.user(data => this.setState({
       user: this.appConfig.ensureUser(data),

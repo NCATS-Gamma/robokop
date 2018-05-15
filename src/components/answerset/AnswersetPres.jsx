@@ -96,7 +96,7 @@ class AnswersetPres extends React.Component {
       </Grid>
     );
   }
-};
+}
 
 
 AnswersetPres.defaultProps = {
