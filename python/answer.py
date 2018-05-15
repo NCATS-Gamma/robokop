@@ -32,6 +32,7 @@ class Answerset(db.Model):
     def __init__(self, *args, **kwargs):
         self.answers = []
         self.question_hash = None
+        self.question_info = None
         self.filename = None
         self.creator = 'ROBOKOP'
         self.__idx = 0
@@ -44,6 +45,8 @@ class Answerset(db.Model):
                 if key in attributes:
                     if key=='answers':
                         struct[key] = [Answer(a) for a in struct[key]]
+                    if key=='question_info':
+                        setattr(self, 'question_hash', struct[key]['question_hash'])
 
                     setattr(self, key, struct[key])
                 else:
@@ -81,11 +84,11 @@ class Answerset(db.Model):
         result_list
         '''
         json = self.toJSON()
-        natural_question = json['question_info']['natural_question']
+        natural_question = json['question_info']['natural_question'] if 'question_info' in json else None
         output = {
             'context': 'context',
             'datetime': json['timestamp'],
-            'id': 'uid',
+            'id': json['id'],
             'message': f"{len(self.answers)} potential answers found.",
             'original_question_text': natural_question,
             'restated_question_text': f"An improved version of '{natural_question}'?",
