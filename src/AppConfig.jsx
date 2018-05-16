@@ -1,6 +1,8 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 
+const shortid = require('shortid');
+
 class AppConfig {
   constructor(config) {
     this.config = config;
@@ -248,13 +250,9 @@ class AppConfig {
     const addr = `${this.apis.search}${encodeURIComponent(input)}/${encodeURIComponent(category)}`;
     // Because this method is called by react-select Async we must return a promise that will return the values
     return this.comms.get(addr).then((result) => {
-      console.log(result);
       return {
         options: result.data.map((d) => {
-          let l = d.label;
-          l = l.replace(':', ' ');
-          l = l.charAt(0).toLowerCase() + l.substr(1);
-          return { value: d.id, label: l };
+          return { value: d.id, label: d.label };
         }),
       };
     });

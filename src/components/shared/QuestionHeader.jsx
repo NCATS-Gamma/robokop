@@ -188,7 +188,7 @@ class QuestionHeader extends React.Component {
         <Row>
           <Col md={12}>
             {active &&
-              <Alert bsStyle="success">
+              <Alert bsStyle="success" style={{ padding: '5px 10px 5px 10px' }}>
                 {activityMessage}
                 <ProgressBar striped active style={{ marginBottom: '5px' }} bsStyle="success" now={100} />
               </Alert>

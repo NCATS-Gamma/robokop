@@ -55,10 +55,13 @@ class QuestionListPres extends React.Component {
       <Grid>
         <Row>
           <Col md={12}>
-            <h3>Robokop Question Library</h3>
-            <p>
-              {nQuestions} questions have been asked using Robokop.
-            </p>
+            <h1>
+              Robokop Question Library
+              <br />
+              <small>
+                {nQuestions} questions have been asked using Robokop.
+              </small>
+            </h1>
           </Col>
           <Col md={12}>
             {showLogIn &&

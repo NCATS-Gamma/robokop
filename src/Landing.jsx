@@ -20,10 +20,16 @@ class Landing extends React.Component {
   }
 
   componentDidMount() {
-    this.appConfig.user(data => this.setState({
-      user: data,
-      ready: true,
-    }));
+    this.appConfig.user(
+      data => this.setState({
+        user: data,
+        ready: true,
+      }),
+      (err) => {
+        console.log('Failed to retrieve user informaiton. This may indicate a connection issue.')
+        console.log(err);
+      },
+    );
   }
 
   renderLoading() {

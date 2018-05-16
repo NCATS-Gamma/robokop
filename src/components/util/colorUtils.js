@@ -14,13 +14,14 @@ const colors = [
   '#fbb4ae',
   '#b3cde3',
   '#ccebc5',
-  '#decbe4',
-  '#fed9a6',
+  '#decbe4', // purple
+  '#fed9a6', // orange
   '#ffffcc',
   '#e5d8bd',
   '#b3de69',
   '#fddaec',
   '#f2f2f2',
+  '#b3cde3', // Dupplicate for also molecular_activity
 ];
 const concepts = [
   'anatomical_entity',
@@ -33,6 +34,7 @@ const concepts = [
   'molecular_function',
   'pathway',
   'phenotypic_feature',
+  'biological_process_or_molecular_activity',
 ];
 
 export default function getNodeTypeColorMap(types = concepts) {

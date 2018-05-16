@@ -3,21 +3,16 @@ import PropTypes from 'prop-types'
 
 import { Button, Form, FormGroup, ControlLabel, FormControl, HelpBlock } from 'react-bootstrap';
 import { DragSource, DropTarget } from 'react-dnd'
+import Select from 'react-select';
 
 import MdCancel from 'react-icons/md/cancel'
 
 import CardTypes from './QuestionNewCardTypes';
 import getNodeTypeColorMap from '../util/colorUtils';
-
-import Select from 'react-select';
+import entityNameDisplay from '../util/entityNameDisplay';
 
 const _ = require('lodash');
 const shortid = require('shortid');
-
-const entityNameDisplay = (str) => {
-  str = str.replace('_',' ');
-  return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-};
 
 const styles = {
   cardBar: {
@@ -38,7 +33,7 @@ const styles = {
   },
   cardParent: {//cursor: 'move',
     backgroundColor: 'white',
-    boxShadow: '0px 0px 6px #3c3c3c',
+    boxShadow: '0px 0px 2px 0px #9e9e9e',
     // border: '1px solid #a0a0a0',
     borderTopRightRadius: '5px',
     borderTopLeftRadius: '5px',
@@ -173,9 +168,7 @@ class QuestionLinearEditorCard extends Component {
     if (!input || (input.length < 3)) {
       return Promise.resolve({ options: [] });
     }
-    const output = this.props.callbackSearch(input, nodeType);
-    console.log(output)
-    return output;
+    return this.props.callbackSearch(input, nodeType);
   }
 
   render() {
@@ -246,6 +239,11 @@ class QuestionLinearEditorCard extends Component {
                   onChange={this.handleChangeName}
                   loadOptions={(input) => this.getSearchOptions(input, nodeType)}
                   backspaceRemoves={true}
+                  filterOptions={(options, filter, currentValues) => {
+                    // Do no filtering, just return all options
+                    // We need to disable filtering so taht search results do not have to contain our input string.
+                    return options;
+                  }}
                 />
               </div>
             </div>

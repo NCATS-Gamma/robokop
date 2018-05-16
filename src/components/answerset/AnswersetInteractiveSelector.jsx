@@ -5,6 +5,7 @@ import { Panel, PanelGroup, Badge } from 'react-bootstrap';
 import GoSync from 'react-icons/lib/go/sync';
 
 import getNodeTypeColorMap from '../util/colorUtils';
+import entityNameDisplay from '../util/entityNameDisplay';
 
 const shortid = require('shortid');
 
@@ -46,7 +47,7 @@ class AnswersetInteractiveSelector extends React.Component {
       return (
         <Panel key={shortid.generate()}>
           <Panel.Heading style={{ backgroundColor: background }}>
-            {p[0].type}
+            {entityNameDisplay(p[0].type)}
             {!thisIsRealySelected &&
               <span>
                 &nbsp;
