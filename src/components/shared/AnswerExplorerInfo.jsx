@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Row, Col, Panel } from 'react-bootstrap';
 import SubGraphViewer from './SubGraphViewer';
+import PubmedList from './PubmedList';
 
 const shortid = require('shortid');
 
@@ -13,7 +14,8 @@ class AnswerExplorerInfo extends React.Component {
       selectedEdge: null,
       selectedNode: null,
       edge: null,
-      subgraph: {node_list: [], edge_list: []},
+      subgraph: { node_list: [], edge_list: [] },
+      disbleGraphClick: false,
     };
 
     this.onGraphClick = this.onGraphClick.bind(this);
@@ -24,6 +26,10 @@ class AnswerExplorerInfo extends React.Component {
   }
 
   onGraphClick(event) {
+    if (this.state.disbleGraphClick) {
+      return;
+    }
+
     if (event.edges.length !== 0) { // Clicked on an Edge
       this.setState({ selectedEdge: event.edges[0], selectedNode: null });
     } else if (event.nodes.length !== 0) { // Clicked on an Edge
@@ -35,25 +41,40 @@ class AnswerExplorerInfo extends React.Component {
   getPublicationsFrag() {
     const somethingSelected = this.state.selectedEdge || this.state.selectedNode;
     let publicationListFrag = <div>Publication list... </div>;
+    let publicationsTitle = 'Publications';
+
     if (somethingSelected && this.state.selectedEdge) {
       // Edge is selected
       const edge = this.state.subgraph.edge_list.find(e => e.id === this.state.selectedEdge);
-      publicationListFrag = <div>Publication list for {edge.id}</div>;
+      const sourceNode = this.state.subgraph.node_list.find(n => n.id === edge.source_id);
+      const targetNode = this.state.subgraph.node_list.find(n => n.id === edge.target_id);
+      publicationsTitle = `Publications for ${sourceNode.description} and ${targetNode.description}`;
+      let publications = [];
+      if ('publications' in edge && Array.isArray(edge.publications)) {
+        publications = edge.publications;
+      }
+      publicationListFrag = <PubmedList publications={publications} />;
     } else if (somethingSelected && this.state.selectedNode) {
       // Node is selected
       const node = this.state.subgraph.node_list.find(n => n.id === this.state.selectedNode);
-      publicationListFrag = <div>Publication list for {node.id}</div>;
+      publicationsTitle = `Publications for ${node.description}`;
+      let publications = [];
+      if ('publications' in node && Array.isArray(node.publications)) {
+        publications = node.publications;
+      }
+      publicationListFrag = <PubmedList publications={publications} />;
     }
+
     return (
       <div>
         {somethingSelected &&
         <Panel style={{ marginTop: '15px' }}>
           <Panel.Heading>
             <Panel.Title componentClass="h3">
-              Publications
+              {publicationsTitle}
             </Panel.Title>
           </Panel.Heading>
-          <Panel.Body>
+          <Panel.Body style={{ padding: 0 }}>
             {publicationListFrag}
           </Panel.Body>
         </Panel>
@@ -79,7 +100,7 @@ class AnswerExplorerInfo extends React.Component {
             {n.description}
           </Panel.Title>
         </Panel.Heading>
-        <Panel.Body>
+        <Panel.Body style={{ minHeight: '100px' }}>
           <h5>
             {n.type} - {n.name}
           </h5>
@@ -132,7 +153,7 @@ class AnswerExplorerInfo extends React.Component {
             {edge.type}
           </Panel.Title>
         </Panel.Heading>
-        <Panel.Body>
+        <Panel.Body style={{ minHeight: '100px' }}>
           <h5>
             Established using {origin}
           </h5>
@@ -146,11 +167,31 @@ class AnswerExplorerInfo extends React.Component {
     const edge = answer.result_graph.edge_list.find(e => e.id === selectedEdge);
     const node_list = answer.result_graph.node_list.filter(n => ((n.id === edge.source_id) || (n.id === edge.target_id)));
     const node_list_ids = node_list.map(n => n.id);
-    const edge_list = answer.result_graph.edge_list.filter(e => (node_list_ids.includes(e.source_id) && node_list_ids.includes(e.target_id)));
+    const edge_list_full = answer.result_graph.edge_list.filter(e => (node_list_ids.includes(e.source_id) && node_list_ids.includes(e.target_id)));
+
+    // Note duplicate code from SubGraphViewer...
+    // Combine support and regular edges together if between the same nodes
+    const edgesRegular = edge_list_full.filter(e => e.type !== 'literature_co-occurrence');
+    const edgesSupport = edge_list_full.filter(e => e.type === 'literature_co-occurrence');
+    edgesSupport.forEach((e) => { e.duplicateEdge = false; });
+    edgesRegular.forEach((e) => {
+      const sameNodesSupportEdge = edgesSupport.find(s => (((e.source_id === s.source_id) && (e.target_id === s.target_id)) || ((e.source_id === s.target_id) && (e.target_id === s.source_id))) );
+      if (sameNodesSupportEdge) {
+        // We have a repeated edge
+        e.publications = sameNodesSupportEdge.publications;
+        sameNodesSupportEdge.duplicateEdge = true;
+      } else if (!('publications' in e)) {
+        e.publications = [];
+      }
+    });
+    const edge_list = [].concat(edgesSupport.filter(s => !s.duplicateEdge), edgesRegular);
 
     const subgraph = { node_list, edge_list };
-
     this.setState({ subgraph, edge });
+
+    if (edge_list.length === 1) {
+      this.setState({ selectedEdge: edge_list[0].id, selectedNode: null, disbleGraphClick: true });
+    }
   }
 
   render() {
@@ -162,8 +203,9 @@ class AnswerExplorerInfo extends React.Component {
               <SubGraphViewer
                 height={200}
                 subgraph={this.state.subgraph}
-                layoutStyle="horizontal"
-                layoutRandomSeed={0}
+                layoutStyle="auto"
+                layoutRandomSeed={1}
+                showSupport
                 callbackOnGraphClick={this.onGraphClick}
               />
             </Col>

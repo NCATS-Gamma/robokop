@@ -39,14 +39,15 @@ class PubmedEntry extends React.Component {
   }
 
   getPubmedInformation(pmid) {
+    const pmidNum = pmid.substr(pmid.indexOf(':') + 1);
     const postUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi';
-    const postData = { db: 'pubmed', id: pmid.toString(), retmode: 'json', tool: 'protocop', email: 'kenny@covar.com' };
+    const postData = { db: 'pubmed', id: pmidNum.toString(), version: '2.0', retmode: 'json' };
 
     const defaultInfo = Object.assign({}, this.defaultFailureInfo);
     $.post(postUrl, postData, (data) => {
       let info = defaultInfo;
-      if (Object.prototype.hasOwnProperty.call(data.result, pmid)) {
-        const paperInfo = data.result[pmid];
+      if (pmidNum in data.result) {
+        const paperInfo = data.result[pmidNum];
         info = {
           id: pmid,
           title: paperInfo.title,
@@ -54,7 +55,7 @@ class PubmedEntry extends React.Component {
           journal: paperInfo.fulljournalname,
           source: paperInfo.source,
           pubdate: paperInfo.pubdate,
-          url: `https://www.ncbi.nlm.nih.gov/pubmed/${pmid}/`,
+          url: `https://www.ncbi.nlm.nih.gov/pubmed/${pmidNum}/`,
           doid: paperInfo.elocationid,
         };
       }
@@ -92,14 +93,14 @@ class PubmedEntry extends React.Component {
     return (
       <Media>
         <Media.Left>
-          <Button className="btn" type="button" disabled={linkDisable} onClick={() => window.open(linkUrl, '_blank')}>
+          <Button disabled={linkDisable} onClick={() => window.open(linkUrl, '_blank')}>
             <GoFileText />
           </Button>
         </Media.Left>
         <Media.Body>
           <Media.Heading>{this.state.info.title}</Media.Heading>
-          <p>{this.state.info.journal} - {this.state.info.pubdate}</p>
-          <p>{authorFrag}</p>
+          <p style={{ margin: '2px' }}>{this.state.info.journal} - {this.state.info.pubdate}</p>
+          <p style={{ margin: '2px' }}>{authorFrag}</p>
         </Media.Body>
       </Media>
     );

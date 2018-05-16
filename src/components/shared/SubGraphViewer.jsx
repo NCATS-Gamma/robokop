@@ -23,20 +23,22 @@ class SubGraphViewer extends React.Component {
     };
     this.graphOptions = {
       height: '500px',
-      physics: true,
-      // layout: {
-      //   hierarchical: {
-      //     enabled: false,
-      //   },
-      // },
+      physics: {
+        barnesHut: {
+          gravitationalConstant: -1000,
+          centralGravity: 0.3,
+          springLength: 500,
+          avoidOverlap: 0,
+          damping: 0.4,
+        },
+      },
       layout: {
         randomSeed: 0,
       },
       edges: {
-        smooth: true,
         color: {
           color: '#000',
-          highlight: '#3da4ed',
+          highlight: '#000',
           hover: '#000',
         },
         width: 1.5,
@@ -105,11 +107,7 @@ class SubGraphViewer extends React.Component {
       modifiedOptions = {
         layout: {
           randomSeed: this.props.layoutRandomSeed,
-          hierarchical: {
-            enabled: false,
-          },
         },
-        physics: true,
       };
     }
 
@@ -117,9 +115,6 @@ class SubGraphViewer extends React.Component {
       modifiedOptions = {
         layout: {
           randomSeed: this.props.layoutRandomSeed,
-          hierarchical: {
-            enabled: false,
-          },
         },
         physics: false,
       };
@@ -133,12 +128,20 @@ class SubGraphViewer extends React.Component {
   addTagsToGraph(graph) {
     // Adds vis.js specific tags primarily to style graph as desired
     const g = _.cloneDeep(graph);
+    
+    // nodes -> node_list
+    // g.edges = _.cloneDeep(g.edge_list);
+    g.edges = g.edge_list;
+    delete g.edge_list;
+    // g.nodes = _.cloneDeep(g.node_list);
+    g.nodes = g.node_list;
+    delete g.node_list;
+
     const nodeTypeColorMap = getNodeTypeColorMap(); // We could put standardized concepts here
 
-    // nodes -> node_list
     const isVert = this.props.layoutStyle === 'vertical';
     const isHorz = this.props.layoutStyle === 'horizontal';
-    g.nodes = g.node_list.map((n, i) => {
+    g.nodes.forEach((n, i) => {
       const backgroundColor = nodeTypeColorMap(n.type);
       n.color = {
         background: backgroundColor,
@@ -155,49 +158,67 @@ class SubGraphViewer extends React.Component {
         n.y = 100; // Position nodes horizontally
         n.x = i * 500;
       }
-      return n;
     });
 
-    // g.edges = g.edges.map(e => ({ ...e, ...{ label: e.scoring.spect_weight.toFixed(2) } }));
-    // Add parameters to edges like curvature if Support edge
-    const rng = seedrandom('fixed seed'); // Set seed so re-renders look the same
-    // edges -> edge_list
-    g.edges = g.edge_list.map((e) => {
-      let edgeParams = {};
-      let label = e.type;
-      if (e.type !== 'literature_co-occurrence') {
-        edgeParams = {
-          smooth: {type: 'curvedCW', roundness: 0 },
-          width: 2,
-        };
+    // Combine support and regular edges together if between the same nodes
+    const edgesRegular = g.edges.filter(e => e.type !== 'literature_co-occurrence');
+    const edgesSupport = g.edges.filter(e => e.type === 'literature_co-occurrence');
+    edgesSupport.forEach((e) => { e.duplicateEdge = false; });
+    edgesRegular.forEach((e) => {
+      const sameNodesSupportEdge = edgesSupport.find(s => (((e.source_id === s.source_id) && (e.target_id === s.target_id)) || ((e.source_id === s.target_id) && (e.target_id === s.source_id))) );
+      if (sameNodesSupportEdge) {
+        // We have a repeated edge
+        e.publications = sameNodesSupportEdge.publications;
+        sameNodesSupportEdge.duplicateEdge = true;
+      } else if (!('publications' in e)) {
+        e.publications = [];
+      }
+    });
 
-      } else {
-        label = '';
-        if (('publications' in e) && Array.isArray(e.publications) && e.publications.length > 0) {
-          label = String(e.publications.length);
-        }
-        edgeParams = {
-          smooth: { type: rng() < 0.5 ? 'curvedCW' : 'curvedCCW', roundness: 0.6 },
+    g.edges = [].concat(edgesSupport.filter(s => !s.duplicateEdge), edgesRegular);
+    // Add parameters to edges like curvature and labels and such
+    // edges -> edge_list
+    g.edges = g.edges.map((e) => {
+      let typeDependentParams = {};
+      let label = e.type;
+      const nPublications = e.publications.length;
+      const value = ((Math.log(nPublications + 1) / Math.log(10))) + 1;
+
+      if (e.type === 'literature_co-occurrence') {
+        // Publication Edge
+        label = `${nPublications}`;
+        typeDependentParams = {
           color: this.styles.supportEdgeColors,
-          dashes: [2, 4],
-          width: 1,
-          hoverWidth: 0,
+          // dashes: [2, 4],
           physics: false,
-          
+          font: {
+            color: '#777',
+            align: 'middle',
+            strokeColor: '#fff',
+          },
         };
       }
+
       e.from = e.source_id;
       e.to = e.target_id;
+      const defaultParams = {
+        label,
+        labelHighlightBold: false,
+        value,
+        font: {
+          color: '#000',
+          align: 'middle',
+          strokeColor: '#fff',
+        },
+        smooth: { enabled: true, type: 'dynamic' },
+        scaling: {
+          min: 1,
+          max: 10,
+          label: false,
+        },
+      }
 
-      // const toId = e.source_id;
-      // const fromId = e.target_id;
-
-      // let label = e.scoring.num_pubs !== 0 ? `Pubs: ${e.scoring.num_pubs}` : '';
-      // if ((typeof toId === 'string' && toId.startsWith('NAME.')) || (typeof fromId === 'string' && e.from.startsWith('NAME.'))) {
-      //   label = '';
-      // }
-      // title: createTooltip(e)
-      return { ...e, ...{ label, ...edgeParams } };
+      return { ...e, ...defaultParams, ...typeDependentParams };
     });
     if (!this.props.showSupport) {
       g.edges = g.edges.filter(e => e.type !== 'literature_co-occurrence');

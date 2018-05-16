@@ -106,8 +106,8 @@ class Answerset extends React.Component {
             isValid: true,
           });
         } catch (err) {
-          window.alert('Failed to load this Answerset file. Are you sure this is valid?');
           console.log(err);
+          window.alert('Failed to load this Answerset file. Are you sure this is valid?');
         }
       };
       fr.onerror = () => {

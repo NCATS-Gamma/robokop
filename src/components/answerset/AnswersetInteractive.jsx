@@ -18,7 +18,7 @@ class AnswersetInteractive extends React.Component {
       selectedSubGraphPossibilities: [],
       nodeSelection: [],
       isError: false,
-      error: null, 
+      error: null,
     };
 
     this.renderNoAnswers = this.renderNoAnswers.bind(this);
@@ -42,9 +42,18 @@ class AnswersetInteractive extends React.Component {
     }
   }
   componentWillReceiveProps(newProps) {
-    // this.setState({ selectedSubGraphIndex: 0, selectedSubGraphEdge: null });
-    this.initializeStructureGroup();
-    if (newProps.answerId && Number.isSafeInteger(newProps.answerId)) {
+    // const userEqual = _.isEqual(this.props.user, newProps.user);
+    // const answersEqual = _.isEqual(this.props.answers, newProps.answers);
+    const answersEqual = false;
+    // const feedbackEqual = _.isEqual(this.props.answersetFeedback, newProps.answersetFeedback);
+    // const answerIdEqual = _.isEqual(this.props.answerId, newProps.answerId); // Monitored for select by parameter or page load
+    const answerIdEqual = false;
+
+    if (!answersEqual) {
+      this.initializeStructureGroup();
+    }
+
+    if (!answerIdEqual && newProps.answerId && Number.isSafeInteger(newProps.answerId)) {
       this.selectAnswerById(newProps.answerId);
     }
   }
@@ -164,7 +173,7 @@ class AnswersetInteractive extends React.Component {
 
         // Get the order of types for the first answer in this group
         const typeOrder = groupAnswers[0].result_graph.node_list.map(n => n.type);
-        
+
         // Resort all answers in this group so that the types go in the same order
         groupAnswers.forEach((a) => {
           const newNodeList = [];
