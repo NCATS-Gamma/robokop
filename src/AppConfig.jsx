@@ -93,7 +93,7 @@ class AppConfig {
   }
 
   concepts(fun) { this.getRequest(`${this.apis.concepts}`, fun); }
-  user(fun) { this.getRequest(`${this.apis.user}`, fun); }
+  user(successFun, failureFun) { this.getRequest(`${this.apis.user}`, successFun, failureFun); }
   questionListData(fun) { this.getRequest(`${this.apis.questions}`, fun); }
   questionData(id, successFun, failureFun) { this.getRequest(`${this.apis.question(id)}`, successFun, failureFun); }
   questionSubgraph(id, fun) { this.getRequest(`${this.apis.question(id)}/subgraph`, fun); }
