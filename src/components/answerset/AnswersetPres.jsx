@@ -68,7 +68,7 @@ class AnswersetPres extends React.Component {
           </Tab>
           <Tab
             eventKey={2}
-            title="Interactive"
+            title="Interactive Selector"
           >
             <AnswersetInteractive
               user={this.props.user} // Needed to parse feedback to know what is yours
@@ -85,7 +85,7 @@ class AnswersetPres extends React.Component {
           </Tab>
           <Tab
             eventKey={3}
-            title="Graph"
+            title="Aggregate Graph"
           >
             <AnswersetGraph
               answersetGraph={this.props.answersetGraph}

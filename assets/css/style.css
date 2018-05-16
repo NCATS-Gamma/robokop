@@ -2,6 +2,10 @@
   display: none;
 }
 
+body :focus {
+  outline: none;
+}
+
 .ag-row:hover {
   cursor: hand;
 }

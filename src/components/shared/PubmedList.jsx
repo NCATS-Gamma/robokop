@@ -48,7 +48,7 @@ class PubmedList extends React.Component {
     return (
       <Row>
         <Col md={12}>
-          <h5>
+          <h5 style={{ padding: '15px' }}>
             {'No Publications Found'}
           </h5>
         </Col>
