@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from setup import app, db
 from user import User, Role
@@ -19,24 +20,11 @@ with app.app_context():
     user_datastore.find_or_create_role(name='admin', description='Administrator')
     user_datastore.find_or_create_role(name='user', description='End user')
 
-    # Create users for testing purposes -- unless they already exists.
-    users = ['homer', 'marge', 'bart', 'lisa', 'maggie']
-    for u in users:
-        u_email = u + '@simpsons.com'
-        if not user_datastore.get_user(u_email):
-            user_datastore.create_user(
-                email=u_email,
-                username=u_email,
-                password='abcd',
-                active=True,
-                confirmed_at=datetime.now(),
-            )
-
-    if not user_datastore.get_user('admin@admin.com'):
+    if not user_datastore.get_user('patrick@covar.com'):
         user_datastore.create_user(
-            email='admin@admin.com',
-            username='admin@admin.com',
-            password='1234',
+            email='patrick@covar.com',
+            username='admin',
+            password=os.environ['ADMIN_PASSWORD'],
             active=True,
             confirmed_at=datetime.now(),
         )
@@ -44,13 +32,7 @@ with app.app_context():
     # Commit any database changes; the User and Roles must exist before we can add a Role to the User
     db.session.commit()
 
-    # Give users "user" role, and admin the "admin" role. (This will have no effect if the
-    # users already have these Roles.)
-    for u in users:
-        u_email = u + '@simpsons.com'
-        user_datastore.add_role_to_user(u_email, 'user')
-
-    user_datastore.add_role_to_user('admin@admin.com', 'admin')
+    user_datastore.add_role_to_user('patrick@covar.com', 'admin')
 
     # Again, commit any database changes.
     db.session.commit()
