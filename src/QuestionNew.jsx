@@ -110,7 +110,7 @@ class QuestionNew extends React.Component {
   }
 
   onSearch(input, nodeType) {
-    return this.appConfig.conceptSearch(input, nodeType);
+    return this.appConfig.questionNewSearch(input, nodeType);
   }
   onValidate(postData) {
     this.appConfig.questionNewValidate(postData);

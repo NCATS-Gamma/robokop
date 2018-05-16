@@ -1,11 +1,11 @@
 import React from 'react';
-import { Row, Col, Modal } from 'react-bootstrap';
+import { Row, Col, Panel } from 'react-bootstrap';
 import Select from 'react-select/lib/Select';
 
 import AnswersetInteractiveSelector from './AnswersetInteractiveSelector';
 import AnswerExplorer from '../shared/AnswerExplorer';
-import FeedbackEditor from '../shared/FeedbackEditor';
 
+const _ = require('lodash');
 
 class AnswersetInteractive extends React.Component {
   constructor(props) {
@@ -14,11 +14,11 @@ class AnswersetInteractive extends React.Component {
     this.state = {
       groups: [],
       groupSelection: 0,
-      feedbackModalShow: false,
       selectedSubGraphIndex: 0,
       selectedSubGraphPossibilities: [],
-      selectedSubGraphEdge: null,
       nodeSelection: [],
+      isError: false,
+      error: null,
     };
 
     this.renderNoAnswers = this.renderNoAnswers.bind(this);
@@ -33,11 +33,6 @@ class AnswersetInteractive extends React.Component {
     this.onGroupSelectionChange = this.onGroupSelectionChange.bind(this);
     this.onSelectionAnswerIndex = this.onSelectionAnswerIndex.bind(this);
     this.onSelectionCallback = this.onSelectionCallback.bind(this);
-    this.onGraphClick = this.onGraphClick.bind(this);
-
-    this.feedbackModalOpen = this.feedbackModalOpen.bind(this);
-    this.feedbackModalClose = this.feedbackModalClose.bind(this);
-    this.feedbackUpdate = this.feedbackUpdate.bind(this);
   }
   componentDidMount() {
     // this.updateSelectedSubGraphIndex(0);
@@ -47,9 +42,18 @@ class AnswersetInteractive extends React.Component {
     }
   }
   componentWillReceiveProps(newProps) {
-    // this.setState({ selectedSubGraphIndex: 0, selectedSubGraphEdge: null });
-    this.initializeStructureGroup();
-    if (newProps.answerId && Number.isSafeInteger(newProps.answerId)) {
+    // const userEqual = _.isEqual(this.props.user, newProps.user);
+    // const answersEqual = _.isEqual(this.props.answers, newProps.answers);
+    const answersEqual = false;
+    // const feedbackEqual = _.isEqual(this.props.answersetFeedback, newProps.answersetFeedback);
+    // const answerIdEqual = _.isEqual(this.props.answerId, newProps.answerId); // Monitored for select by parameter or page load
+    const answerIdEqual = false;
+
+    if (!answersEqual) {
+      this.initializeStructureGroup();
+    }
+
+    if (!answerIdEqual && newProps.answerId && Number.isSafeInteger(newProps.answerId)) {
       this.selectAnswerById(newProps.answerId);
     }
   }
@@ -74,108 +78,131 @@ class AnswersetInteractive extends React.Component {
 
     this.handleNodeSelectionChange(this.state.groupSelection, nodeSelection);
   }
-  onGraphClick(event) {
-    if (event.edges.length !== 0) { // Clicked on an Edge
-      this.setState({ selectedSubGraphEdge: event.edges[0] });
-    } else { // Reset things since something else was clicked
-      this.setState({ selectedSubGraphEdge: null });
-    }
-  }
   initializeStructureGroup() {
-    // We have answers and we need to assign each answer to a structural group based on its graph
+    try {
+      // We have answers and we need to assign each answer to a structural group based on its graph
 
-    // Find all unique node types
-    const nodeTypes = new Set();
-    this.props.answers.forEach((a) => {
-      const g = a.result_graph;
-      g.node_list.forEach(n => nodeTypes.add(n.type));
-    });
-    const nodeTypesArray = Array.from(nodeTypes);
+      // Find all unique node types
+      const nodeTypes = new Set();
+      this.props.answers.forEach((a) => {
+        const g = a.result_graph;
+        g.node_list.forEach(n => nodeTypes.add(n.type));
+      });
+      const nodeTypesArray = Array.from(nodeTypes);
 
-    const connectivityArray = [];
-    const connectivityHashArray = [];
-    const answerGroup = this.props.answers.map((a) => {
-      // Initialize connectivity matrix (as a vector) to all 0s
-      const connectivity = [];
-      for (let ij = 0; ij < (nodeTypesArray.length * nodeTypesArray.length); ij += 1) {
-        connectivity.push(0);
+      const someNullTypes = nodeTypesArray.some(nt => (nt == null || nt === undefined));
+      if (someNullTypes) {
+        throw new Error('The interactive answer browser requires types on all nodes.');
       }
+      // We will keep a track of the unique connectivities
+      const nodeTypeCountsArray = [];
+      const connectivityArray = [];
+      const connectivityHashArray = [];
+      // For each answer we need to figure out which group its in.
+      const answerGroup = this.props.answers.map((a) => {
+        // Initialize connectivity matrix (as a vector) to all 0s
+        const connectivity = [];
+        for (let ij = 0; ij < (nodeTypesArray.length * nodeTypesArray.length); ij += 1) {
+          connectivity.push(0);
+        }
 
-      // Form a connectivity matrix between concepts
-      const edges = a.result_graph.edge_list;
-      const nodes = a.result_graph.node_list;
-      edges.forEach((e) => {
-        const sourceNode = nodes.find(n => n.id === e.source_id);
-        const targetNode = nodes.find(n => n.id === e.target_id);
+        // Form a connectivity matrix between concepts
+        const edges = a.result_graph.edge_list;
+        const nodes = a.result_graph.node_list;
+        edges.forEach((e) => {
+          if (e.type !== 'literature_co-occurrence') {
+            const sourceNode = nodes.find(n => n.id === e.source_id);
+            const targetNode = nodes.find(n => n.id === e.target_id);
 
-        const i = nodeTypesArray.findIndex(nt => nt === sourceNode.type);
-        const j = nodeTypesArray.findIndex(nt => nt === targetNode.type);
+            const i = nodeTypesArray.findIndex(nt => nt === sourceNode.type);
+            const j = nodeTypesArray.findIndex(nt => nt === targetNode.type);
 
-        connectivity[(i * nodeTypesArray.length) + j] = 1;
-        connectivity[(j * nodeTypesArray.length) + i] = 1; // Undirected
+            connectivity[(i * nodeTypesArray.length) + j] = 1;
+            connectivity[(j * nodeTypesArray.length) + i] = 1; // Undirected
+          }
+        });
+
+        // Count the types of each node
+        const nodeTypeCount = nodeTypesArray.map(() => 0);
+        nodes.forEach((n) => {
+          const ind = nodeTypesArray.findIndex(t => t === n.type);
+          if (ind > -1) {
+            nodeTypeCount[ind] += 1;
+          }
+        });
+
+        // Hash connectivity to a string
+        let connectivityChar = '';
+        connectivity.forEach((c) => {
+          connectivityChar += c;
+        });
+        let nodeCountChar = '';
+        nodeTypeCount.forEach((c, i) => {
+          nodeCountChar += c;
+          if (i < (nodeTypeCount.length - 1)) {
+            nodeCountChar += '-';
+          }
+        });
+        connectivityChar += `_${nodes.length}_${nodeCountChar}`; // Tack number nodes on to the end
+
+        const groupIndex = connectivityHashArray.indexOf(connectivityChar);
+        if (groupIndex < 0) {
+          // It's new!
+          connectivityHashArray.push(connectivityChar);
+          connectivityArray.push(connectivity);
+          nodeTypeCountsArray.push(nodeTypeCount);
+          // console.log('New', connectivityChar);
+          return connectivityHashArray.length - 1; // The newest one
+        }
+        return groupIndex;
       });
 
-      // Hash connectivity to a string
-      let connectivityChar = '';
-      connectivity.forEach((c) => {
-        connectivityChar += c;
-      });
-      connectivityChar += `_${nodes.length}`; // Take number nodes on to the end
-
-      const groupIndex = connectivityHashArray.indexOf(connectivityChar);
-      if (groupIndex < 0) {
-        // It's new!
-        connectivityHashArray.push(connectivityChar);
-        connectivityArray.push(connectivity);
-        // console.log('New', connectivityChar);
-        return connectivityHashArray.length - 1; // The newest one
-      }
-      return groupIndex;
-    });
-
-    const nGroups = connectivityArray.length;
-    const groups = [];
-    for (let iGroup = 0; iGroup < nGroups; iGroup += 1) {
-      const groupAnswers = [];
-      let maxConf = -Infinity;
-      for (let iAnswer = 0; iAnswer < this.props.answers.length; iAnswer += 1) {
-        if (answerGroup[iAnswer] === iGroup) {
-          groupAnswers.push({ ...this.props.answers[iAnswer] }); // Obj copy using spread
-          if (maxConf < this.props.answers[iAnswer].confidence) {
-            maxConf = this.props.answers[iAnswer].confidence;
+      const nGroups = connectivityArray.length;
+      const groups = [];
+      for (let iGroup = 0; iGroup < nGroups; iGroup += 1) {
+        const groupAnswers = [];
+        let maxConf = -Infinity;
+        for (let iAnswer = 0; iAnswer < this.props.answers.length; iAnswer += 1) {
+          if (answerGroup[iAnswer] === iGroup) {
+            groupAnswers.push(_.cloneDeep(this.props.answers[iAnswer]));
+            if (maxConf < this.props.answers[iAnswer].confidence) {
+              maxConf = this.props.answers[iAnswer].confidence;
+            }
           }
         }
+
+        // Get the order of types for the first answer in this group
+        const typeOrder = groupAnswers[0].result_graph.node_list.map(n => n.type);
+
+        // Resort all answers in this group so that the types go in the same order
+        groupAnswers.forEach((a) => {
+          const newNodeList = [];
+          typeOrder.forEach((t) => {
+            a.result_graph.node_list.forEach((n) => {
+              if (n.type === t) {
+                newNodeList.push(n);
+              }
+            });
+          });
+          a.result_graph.node_list = newNodeList;
+        });
+
+        const nNodes = groupAnswers[0].result_graph.node_list.length;
+
+        groups.push({
+          nNodes,
+          connectivity: connectivityArray[iGroup],
+          connectivityHash: connectivityHashArray[iGroup],
+          maxConfidence: maxConf,
+          answers: groupAnswers,
+        });
       }
 
-      // Get the order of types for the first answer in this group
-      const typeOrder = groupAnswers[0].result_graph.node_list.map(n => n.type);
-
-      // Resort all answers in this group so that the types go in the same order
-      groupAnswers.forEach((a) => {
-        const newNodeList = [];
-        typeOrder.forEach((t) => {
-          a.result_graph.node_list.forEach((n) => {
-            if (n.type === t) {
-              newNodeList.push(n);
-            }
-          })
-        });
-        a.result_graph.node_list = newNodeList;
-      });
-
-      const nNodes = groupAnswers[0].result_graph.node_list.length;
-
-      groups.push({
-        nNodes,
-        connectivity: connectivityArray[iGroup],
-        connectivityHash: connectivityHashArray[iGroup],
-        maxConfidence: maxConf,
-        answers: groupAnswers,
-      });
+      this.setState({ groups });
+      this.initializeNodeSelection(0);
+    } catch (err) {
+      this.setState({ groups: [], isError: true, error: err })
     }
-
-    this.setState({ groups });
-    this.initializeNodeSelection(0);
   }
 
   initializeNodeSelection(index) {
@@ -224,37 +251,43 @@ class AnswersetInteractive extends React.Component {
     // then update the selectedSubGraphIndex to be the 'highest' one left
     const selectedSubGraphIndex = isKept.indexOf(true);
 
-    if (selectedSubGraphIndex !== this.state.selectedSubGraphIndex) {
-      this.setState({ selectedSubGraphEdge: null });
-    }
-
-    this.setState({ groupSelection: groupIndex, nodeSelection, selectedSubGraphIndex, selectedSubGraphPossibilities: subgraphPossibilities });
+    this.setState({
+      groupSelection: groupIndex,
+      nodeSelection,
+      selectedSubGraphIndex,
+      selectedSubGraphPossibilities: subgraphPossibilities,
+    });
 
     // Change the url, if there is exactly one possibility in each dimension
-    if (this.props.enableUrlChange && (subgraphPossibilities.every(p => p.length === 1))) {
+    if (subgraphPossibilities.every(p => p.length === 1)) {
       this.props.callbackAnswerSelected(group.answers[selectedSubGraphIndex]);
     } else {
       this.props.callbackNoAnswerSelected();
     }
   }
-
-  feedbackModalOpen() {
-    this.setState({ feedbackModalShow: true });
+  renderError() {
+    console.log('Interactive Viewer Error Message', this.state.error);
+    return (
+      <Row>
+        <Col md={12}>
+          <h4>
+            {'Sorry but we ran in to problems setting up the interactive viewer for this answer set.'}
+          </h4>
+          <p>
+            Error Message:
+          </p>
+          <pre>
+            {this.state.error.message}
+          </pre>
+        </Col>
+      </Row>
+    );
   }
-  feedbackModalClose() {
-    this.setState({ feedbackModalShow: false });
-  }
-  feedbackUpdate(newFeedback) {
-
-    this.props.callbackFeedbackSubmit(newFeedback);
-    this.feedbackModalClose();
-  }
-
   renderNoAnswers() {
     return (
       <Row>
         <Col md={12}>
-          There does not appear to be any answers for this question.
+          {"There does not appear to be any answers for this question."}
         </Col>
       </Row>
     );
@@ -264,30 +297,43 @@ class AnswersetInteractive extends React.Component {
     const answer = group.answers[this.state.selectedSubGraphIndex];
 
     const selectOptions = this.state.groups.map((g, i) => {
-      return { value: i, label: `Group ${i + 1}: ${g.answers.length} answers each with ${g.nNodes} nodes.` };
+      return { value: i, label: `${i + 1} - ${g.answers.length} answers each with ${g.nNodes} nodes.` };
     });
     const oneGroup = selectOptions.length === 1;
 
-    // this.props.user.email
     const answerFeedback = { answerId: answer.id, accuracy: 4, impact: 3, notes: 'This is a great answer' };
 
     return (
-      <Row className="modal-container">
+      <Row>
         <Col md={12}>
           {!oneGroup &&
             <Row>
               <Col md={12}>
-                <Select
-                  name="form-field-name"
-                  value={selectOptions[this.state.groupSelection].value}
-                  onChange={this.onGroupSelectionChange}
-                  options={selectOptions}
-                />
+                <Panel>
+                  <Panel.Heading>
+                    <Panel.Title componentClass="h3">Multiple Answer Structures Found</Panel.Title>
+                  </Panel.Heading>
+                  <Panel.Body>
+                    <Col md={6}>
+                      <p>
+                        The interactive viewer supports a single structure at a time. Please select a structure group to explore.
+                      </p>
+                    </Col>
+                    <Col md={6}>
+                      <Select
+                        name="structure_select"
+                        value={selectOptions[this.state.groupSelection].value}
+                        onChange={this.onGroupSelectionChange}
+                        options={selectOptions}
+                      />
+                    </Col>
+                  </Panel.Body>
+                </Panel>
               </Col>
             </Row>
           }
           <Row>
-            <Col md={3}>
+            <Col md={3} style={{ paddingRight: 0 }}>
               <AnswersetInteractiveSelector
                 subgraph={answer}
                 nodeSelection={this.state.nodeSelection}
@@ -295,48 +341,30 @@ class AnswersetInteractive extends React.Component {
                 onSelectionCallback={this.onSelectionCallback}
               />
             </Col>
-            <Col md={9}>
+            <Col md={9} style={{ paddingLeft: 0 }}>
               <AnswerExplorer
                 answer={answer}
-                feedback={this.props.feedback}
-                subgraphs={this.props.answers}
-                selectedSubgraphIndex={this.state.selectedSubGraphIndex}
-                selectedEdge={this.state.selectedSubGraphEdge}
+                answerIndex={this.state.selectedSubGraphIndex}
+                feedback={answerFeedback}
 
-                callbackOnGraphClick={this.onGraphClick}
+                callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
                 enableFeedbackSubmit={this.props.enableFeedbackSubmit}
-                callbackOpenFeedback={this.feedbackModalOpen}
               />
             </Col>
           </Row>
         </Col>
-        <Modal
-          show={this.state.feedbackModalShow}
-          onHide={this.feedbackModalClose}
-          container={this}
-          bsSize="large"
-          aria-labelledby="FeebackModal"
-        >
-          <Modal.Header closeButton>
-            <Modal.Title id="FeebackModal">Feedback</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <FeedbackEditor
-              feedback={answerFeedback}
-              callbackUpdate={this.feedbackUpdate}
-              callbackClose={this.feedbackModalClose}
-            />
-          </Modal.Body>
-        </Modal>
       </Row>
     );
   }
   render() {
+    const { isError } = this.state;
     const hasAnswers = (this.state.groups.length > 0 && this.state.groups[this.state.groupSelection] && this.state.groups[this.state.groupSelection].answers.length > 0);
+
     return (
       <div>
-        {hasAnswers && this.renderValid()}
-        {!hasAnswers && this.renderNoAnswers()}
+        {isError && this.renderError()}
+        {!isError && hasAnswers && this.renderValid()}
+        {!isError && !hasAnswers && this.renderNoAnswers()}
       </div>
     );
   }

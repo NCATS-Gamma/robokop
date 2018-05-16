@@ -106,7 +106,7 @@ class QuestionPres extends React.Component {
           <br />
           <p>
             {'\
-            Even this small sub-graph might be quite large, so wait to load it until requested.\
+            Even this small subgraph might be quite large, so wait to load it until requested.\
             '
             }
           </p>
@@ -168,6 +168,8 @@ class QuestionPres extends React.Component {
                 <AnswersetSelector
                   showNewButton={enableNewAnswersets}
                   enableNewButton={!this.props.answerBusy}
+                  refreshBusy={this.props.refreshBusy}
+                  answerBusy={this.props.answerBusy}
                   initializerBusy={this.props.initializerBusy}
                   answersets={this.props.answersets}
                   callbackAnswersetNew={this.props.callbackNewAnswerset}

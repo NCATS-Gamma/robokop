@@ -155,23 +155,19 @@ def update_kg(self, question_hash, question_id=None, user_email=None):
     question = get_question_by_id(question_id)
 
     logger.info(f"Updating the knowledge graph for '{question.name}'...")
-
-    try:
-        r = requests.post(f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question.toJSON())
-        polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{r.json()['task id']}"
+    
+    r = requests.post(f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question.toJSON())
+    polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{r.json()['task id']}"
         
-        for i in range(60*60*24): # wait up to 1 day
-            r = requests.get(polling_url, auth=(os.environ['FLOWER_USER'], os.environ['FLOWER_PASSWORD']))
-            if r.json()['state'] == 'SUCCESS':
-                break
-            time.sleep(1)
-        else:
-            raise RuntimeError("KG updating has not completed after 1 day. It will continue working, but we must return to the manager.")
-
-
-    except Exception as err:
-        logger.exception("Something went wrong with updating KG.")
-        raise err
+    for _ in range(60*60*24): # wait up to 1 day
+        r = requests.get(polling_url)
+        if r.json()['state'] == 'FAILURE':
+            raise RuntimeError('Builder failed.')
+        if r.json()['state'] == 'SUCCESS':
+            break
+        time.sleep(1)
+    else:
+        raise RuntimeError("KG updating has not completed after 1 day. It will continue working, but we must return to the manager.")
 
     try:
         if user_email:

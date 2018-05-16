@@ -7,6 +7,8 @@ import Header from './components/Header';
 import Loading from './components/Loading';
 import AnswersetPres from './components/answerset/AnswersetPres';
 
+const shortid = require('shortid');
+
 class Answerset extends React.Component {
   constructor(props) {
     super(props);
@@ -33,22 +35,62 @@ class Answerset extends React.Component {
     // uses the result to set this.state
     this.appConfig.answersetData(
       this.props.id,
-      data => this.setState({
-        question: data.question,
-        answerset: data.answerset,
-        answers: data.answers,
-        answerCount: data.answer_num,
-        answersetGraph: data.answerset_graph,
-        answersetFeedback: data.feedback,
-        otherAnswersets: data.other_answersets,
-        otherQuestions: data.other_questions,
-        dataReady: true,
-        isValid: true,
-      }),
-      () => this.setState({
-        dataReady: true,
-        isValid: false,
-      }),
+      (data) => {
+        console.log(data)
+        const { answers } = data;
+        answers.forEach((a) => {
+          a.result_graph.edge_list.forEach((e) => {
+            if (!('id' in e)) {
+              e.id = shortid.generate();
+            }
+          });
+        });
+
+        const nodesIdSet = new Set();
+        const edgesIdSet = new Set();
+        // Parse answerset specific graph here
+        // For each answer find new nodes and edges that haven't already been added
+        const nodes = [];
+        const edges = [];
+        answers.forEach((a) => {
+          const g = a.result_graph;
+          g.node_list.forEach((node) => {
+            if (!nodesIdSet.has(node.id)) {
+              nodesIdSet.add(node.id);
+              nodes.push(node);
+            }
+          });
+          g.edge_list.forEach((edge) => {
+            const edgeId = `${edge.source_id} ${edge.target_id}`;
+            if (!edgesIdSet.has(edgeId)) {
+              edgesIdSet.add(edgeId);
+              edges.push(edge);
+            }
+          });
+        });
+        // Package
+        const answersetGraph = { node_list: nodes, edge_list: edges };
+
+        this.setState({
+          question: data.question,
+          answerset: data.answerset,
+          answers,
+          answerCount: data.answer_num,
+          answersetGraph,
+          answersetFeedback: data.feedback,
+          otherAnswersets: data.other_answersets,
+          otherQuestions: data.other_questions,
+          dataReady: true,
+          isValid: true,
+        });
+      },
+      (err) => {
+        console.log(err);
+        this.setState({
+          dataReady: true,
+          isValid: false,
+        });
+      }
     );
     this.appConfig.user(data => this.setState({
       user: this.appConfig.ensureUser(data),

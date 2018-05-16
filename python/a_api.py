@@ -38,18 +38,16 @@ class AnswersetAPI(Resource):
         questions.pop(idx)
         idx = answersets.index(answerset)
         answersets.pop(idx)
-        answerset_graph = None
-        
+
         feedback = list_feedback_by_question_answerset(question, answerset)
 
         return {'user': user,\
                 'question': question.toJSON(),\
-                'answerset': answerset.toJSON(),\
-                'answers': [a.toJSON() for a in answers],\
+                'answerset': answerset.toStandard(),\
+                'answers': [a.toStandard() for a in answers],\
                 'feedback': [f.toJSON() for f in feedback],\
-                'other_answersets': [aset.toJSON() for aset in answersets],
-                'other_questions': [q.toJSON() for q in questions],\
-                'answerset_graph': answerset_graph}, 200
+                'other_answersets': [aset.toStandard() for aset in answersets],
+                'other_questions': [q.toJSON() for q in questions]}, 200
 
 @api.route('/a/<qa_id>/<int:answer_id>')
 @api.param('qa_id', 'An answerset id, prefixed by the question hash, i.e. "<question_id>_<answerset_id>"')

@@ -40,7 +40,7 @@ class QuestionAPI(Resource):
         return {'user': user,
                 'question': question.toJSON(),
                 'owner': question.user.email,
-                'answerset_list': [a.toJSON() for a in answerset_list]}, 200
+                'answerset_list': [a.toStandard() for a in answerset_list]}, 200
 
     @auth_required('session', 'basic')
     @api.response(200, 'Question edited')

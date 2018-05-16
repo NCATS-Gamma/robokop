@@ -1,6 +1,8 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 
+const shortid = require('shortid');
+
 class AppConfig {
   constructor(config) {
     this.config = config;
@@ -18,6 +20,7 @@ class AppConfig {
       question: questionId => this.url(`q/${questionId}`),
       answerset: (questionId, answersetId) => this.url(`a/${questionId}_${answersetId}`),
       answer: (questionId, answersetId, answerId) => this.url(`a/${questionId}_${answersetId}/${answerId}`),
+      appAnswerset: this.url('app/answerset'),
     };
 
     // Other URLs that are primarily used for API calls
@@ -33,6 +36,7 @@ class AppConfig {
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg`),
       taskStatus: taskId => this.url(`api/t/${taskId}`),
       feedback: this.url('api/feedback/'),
+      search: this.url('api/search/'),
     };
 
     this.url = this.url.bind(this);
@@ -55,7 +59,9 @@ class AppConfig {
     this.questionTasks = this.questionTasks.bind(this);
     this.taskStatus = this.taskStatus.bind(this);
 
-    this.conceptSearch = this.conceptSearch.bind(this);
+    this.questionNewValidate = this.questionNewValidate.bind(this);
+    this.questionNewTranslate = this.questionNewTranslate.bind(this);
+    this.questionNewSearch = this.questionNewSearch.bind(this);
     
     // Read config parameters for enabling controls
     this.enableNewAnswersets = ((config.ui !== null) && (config.ui.enableNewAnswersets !== null)) ? config.ui.enableNewAnswersets : true;
@@ -87,7 +93,7 @@ class AppConfig {
   }
 
   concepts(fun) { this.getRequest(`${this.apis.concepts}`, fun); }
-  user(fun) { this.getRequest(`${this.apis.user}`, fun); }
+  user(successFun, failureFun) { this.getRequest(`${this.apis.user}`, successFun, failureFun); }
   questionListData(fun) { this.getRequest(`${this.apis.questions}`, fun); }
   questionData(id, successFun, failureFun) { this.getRequest(`${this.apis.question(id)}`, successFun, failureFun); }
   questionSubgraph(id, fun) { this.getRequest(`${this.apis.question(id)}/subgraph`, fun); }
@@ -240,10 +246,16 @@ class AppConfig {
     console.log('Transle the question here');
   }
 
-  conceptSearch(input, category) {
-    const addr = `https://bionames.renci.org/lookup/${encodeURIComponent(input)}/${encodeURIComponent(category)}/`;
+  questionNewSearch(input, category) {
+    const addr = `${this.apis.search}${encodeURIComponent(input)}/${encodeURIComponent(category)}`;
     // Because this method is called by react-select Async we must return a promise that will return the values
-    return this.comms.get(addr).then(result => ({ options: result.data.map(d => ({ value: d.id, label: d.label })) }));
+    return this.comms.get(addr).then((result) => {
+      return {
+        options: result.data.map((d) => {
+          return { value: d.id, label: d.label };
+        }),
+      };
+    });
   }
 
   getRequest(

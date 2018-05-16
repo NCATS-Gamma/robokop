@@ -125,7 +125,7 @@ class QuestionNewPres extends React.Component {
             id: shortid.generate(),
             type: CardTypes.NAMEDNODETYPE,
             name: 'Imatinib',
-            nameId: '',
+            nameId: 'CHEMBL:CHEMBL941',
             nameEntry: {},
             nameIsValid: false,
             nodeType: 'chemical_substance',
@@ -249,13 +249,14 @@ class QuestionNewPres extends React.Component {
     );
 
     const isValid = true;
+
     return (
       <Grid>
         <Row>
           <Col md={12}>
             {!this.props.isFork &&
               <div>
-                <h2>Start a New Question</h2>
+                <h1>Start a New Question</h1>
                 <p>
                   Questions are created using the interface below.
                   <br />
@@ -292,12 +293,12 @@ class QuestionNewPres extends React.Component {
         </Row>
         <Row style={{ paddingBottom: '10px', paddingTop: '10px' }}>
           <Col md={6}>
-            <h5>
+            <h4>
               <bold style={{ fontWeight: '600' }}>Question Information:</bold>
               <OverlayTrigger placement="right" overlay={infoHelp}>
                 <span> {'    '} <GoQuestion /> </span>
               </OverlayTrigger>
-            </h5>
+            </h4>
             <div>
               <FormControl
                 type="text"
@@ -326,12 +327,12 @@ class QuestionNewPres extends React.Component {
         </Row>
         <Row>
           <Col md={6}>
-            <h5>
+            <h4>
               <bold style={{ fontWeight: '600' }}>Question Specification:</bold>
               <OverlayTrigger placement="right" overlay={queryBuilderHelp}>
                 <span> {'    '} <GoQuestion /> </span>
               </OverlayTrigger>
-            </h5>
+            </h4>
             <QuestionLinearEditor
               ref={(r) => { this.editorComponent = r; }}
               handleChange={this.props.handleChangeMachineQuestion}
@@ -340,10 +341,17 @@ class QuestionNewPres extends React.Component {
             />
           </Col>
           <Col md={6}>
-            <h5 style={{ textAlign: 'center' }}><bold style={{ fontWeight: '600' }}>Query Visualization</bold></h5>
-            <QuestionLinearGraph
-              machineQuestion={this.props.machineQuestion}
-            />
+            <h4 style={{ textAlign: 'center' }}><bold style={{ fontWeight: '600' }}>Machine Question</bold></h4>
+            <Row>
+              <Col md={12} mdOffset={1} style={{ fontFamily: 'Monospace' }}>
+                <div style={{ boxShadow: '0px 0px 2px 0px #9e9e9e' }}>
+                  <QuestionLinearGraph
+                    machineQuestion={this.props.machineQuestion}
+                    concepts={this.props.concepts}
+                  />
+                </div>
+              </Col>
+            </Row>
           </Col>
         </Row>
         <Row>

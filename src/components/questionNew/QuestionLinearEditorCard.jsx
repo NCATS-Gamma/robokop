@@ -3,13 +3,13 @@ import PropTypes from 'prop-types'
 
 import { Button, Form, FormGroup, ControlLabel, FormControl, HelpBlock } from 'react-bootstrap';
 import { DragSource, DropTarget } from 'react-dnd'
+import Select from 'react-select';
 
 import MdCancel from 'react-icons/md/cancel'
 
 import CardTypes from './QuestionNewCardTypes';
-import getNodeTypeColorMap from './ColorUtils';
-
-import Select from 'react-select';
+import getNodeTypeColorMap from '../util/colorUtils';
+import entityNameDisplay from '../util/entityNameDisplay';
 
 const _ = require('lodash');
 const shortid = require('shortid');
@@ -33,7 +33,7 @@ const styles = {
   },
   cardParent: {//cursor: 'move',
     backgroundColor: 'white',
-    boxShadow: '0px 0px 6px #3c3c3c',
+    boxShadow: '0px 0px 2px 0px #9e9e9e',
     // border: '1px solid #a0a0a0',
     borderTopRightRadius: '5px',
     borderTopLeftRadius: '5px',
@@ -108,9 +108,6 @@ class QuestionLinearEditorCard extends Component {
     this.handleChangeMaxNodes = this.handleChangeMaxNodes.bind(this);
     this.handleChangeMinNodes = this.handleChangeMinNodes.bind(this);
 
-    // Store colormap from nodeType to color for titlebar coloring of cards
-    this.nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
-
   }
 
   getCard() {
@@ -167,14 +164,12 @@ class QuestionLinearEditorCard extends Component {
     this.props.callbackUpdateCard(card);
   }
 
-  getSearchOptions (input,nodeType) {
+  getSearchOptions (input, nodeType) {
     if (!input || (input.length < 3)) {
       return Promise.resolve({ options: [] });
     }
-
     return this.props.callbackSearch(input, nodeType);
   }
-  
 
   render() {
     const {
@@ -203,12 +198,19 @@ class QuestionLinearEditorCard extends Component {
     let contentFragment = [];
 
     // Setup background color for titlebar
-    const undefinedColor = '#aaa';
-    let backgroundColor = {backgroundColor: this.nodeTypeColorMap(displayType)};
+    const undefinedColor = '#dddddd';
 
+    // Store colormap from nodeType to color for titlebar coloring of cards
+    const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
+    let color = nodeTypeColorMap(displayType);
+    if (!color) {
+      color = undefinedColor;
+    }
+    let backgroundColor = {backgroundColor: color};
+    
     let nodeTypeKeys = this.props.concepts; 
     const nodeTypeOptions = nodeTypeKeys.map((k) => {
-      return {value: k, label: k};
+      return {value: k, label: entityNameDisplay(k)};
     });
     
     switch (type) {
@@ -235,10 +237,13 @@ class QuestionLinearEditorCard extends Component {
                   valueRenderer={opt => (<div>{opt.label}<span className="pull-right" style={{ paddingRight: '15px' }}> {opt.value} </span></div>)}
                   optionRenderer={opt => (<div>{opt.label}<span className="pull-right"> {opt.value} </span></div>)}
                   onChange={this.handleChangeName}
-                  valueKey="value"
-                  labelKey="label"
                   loadOptions={(input) => this.getSearchOptions(input, nodeType)}
                   backspaceRemoves={true}
+                  filterOptions={(options, filter, currentValues) => {
+                    // Do no filtering, just return all options
+                    // We need to disable filtering so taht search results do not have to contain our input string.
+                    return options;
+                  }}
                 />
               </div>
             </div>

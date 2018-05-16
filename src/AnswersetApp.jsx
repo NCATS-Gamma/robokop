@@ -2,11 +2,15 @@ import React from 'react';
 
 import { Grid, Row, Col, Button } from 'react-bootstrap';
 import Dropzone from 'react-dropzone';
+import FaCloudUpload from 'react-icons/lib/fa/cloud-upload';
+
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
 import Loading from './components/Loading';
 import AnswersetPres from './components/answerset/AnswersetPres';
+
+const shortid = require('shortid');
 
 class Answerset extends React.Component {
   constructor(props) {
@@ -54,7 +58,22 @@ class Answerset extends React.Component {
           };
 
           const answers = object.result_list;
+          answers.forEach((a) => {
+            a.result_graph.edge_list.forEach((edge) => {
+              if (!('id' in edge)) {
+                edge.id = shortid.generate();
+              }
+            });
+          });
 
+          answers.forEach((a, i) => {
+            const answerNodeIds = new Set();
+            if (answerNodeIds.has(a.id)) {
+              console.log(`Answer ${i} has multiple nodes with id ${a.id}. Future errors will result.`);
+            } else {
+              answerNodeIds.add(a.id);
+            }
+          });
 
           const nodesIdSet = new Set();
           const edgesIdSet = new Set();
@@ -89,8 +108,8 @@ class Answerset extends React.Component {
             isValid: true,
           });
         } catch (err) {
-          window.alert('Failed to load this Answerset file. Are you sure this is valid?');
           console.log(err);
+          window.alert('Failed to load this Answerset file. Are you sure this is valid?');
         }
       };
       fr.onerror = () => {
@@ -112,21 +131,33 @@ class Answerset extends React.Component {
         <Row>
           <Col md={12}>
             <h1>
-              Robokop Generalized Answerset Browser
+              Robokop Answer Set Explorer
+              <br />
+              <small>
+                {'Use the Robokop Answerset UI with answer files create from other sources.'}
+              </small>
             </h1>
-          </Col>
-        </Row>
-        <Row>
-          <Col md={12}>
             <Dropzone
               onDrop={(acceptedFiles, rejectedFiles) => this.onDrop(acceptedFiles, rejectedFiles) }
               multiple={false}
-              style={{ width: 'calc(100%-50px)', height: '200px', backgroundColor: this.appConfig.colors.blue, border: 'none', padding: '10px', margin: '25px', textAlign: 'center',  }}
+              style={{
+                width: '100%',
+                height: '400px',
+                backgroundColor: this.appConfig.colors.bluegray,
+                textAlign: 'center',
+                display: 'table',
+                border: '1px solid transparent',
+                borderColor: '#e7e7e7',
+                borderRadius: '4px',
+              }}
             >
-              <div>
-                <h2>
+              <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
+                <h1 style={{ fontSize: '48px' }}>
+                  <FaCloudUpload />
+                </h1>
+                <h3>
                   Drag and drop your answer set file, or click to browse.
-                </h2>
+                </h3>
               </div>
             </Dropzone>
           </Col>
