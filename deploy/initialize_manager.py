@@ -20,6 +20,7 @@ with app.app_context():
     user_datastore.find_or_create_role(name='admin', description='Administrator')
     user_datastore.find_or_create_role(name='user', description='End user')
 
+    # create admin user
     if not user_datastore.get_user('patrick@covar.com'):
         user_datastore.create_user(
             email='patrick@covar.com',
@@ -32,6 +33,8 @@ with app.app_context():
     # Commit any database changes; the User and Roles must exist before we can add a Role to the User
     db.session.commit()
 
+    # Give users "user" role, and admin the "admin" role. (This will have no effect if the
+    # users already have these Roles.)
     user_datastore.add_role_to_user('patrick@covar.com', 'admin')
 
     # Again, commit any database changes.
