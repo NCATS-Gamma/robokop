@@ -6,7 +6,7 @@ cd $ROBOKOP_HOME/robokop
 source ./deploy/setenv.sh
 
 # set up postgres tables
-python ./python/initialize_data.py
+python ./deploy/initialize_manager.py
 
 cd - > /dev/null
 exec "$@"

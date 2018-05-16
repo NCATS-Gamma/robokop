@@ -13,15 +13,10 @@
 *.sqlite
 bundle.js
 .vscode/
-python/robokop_setup_environ.py
 *.pid
 sandbox
 neo4j_plugins
-shared/robokop.env
 .eslintrc.json
 .babelrc
-AllDxCounts.txt
-ICD_Combo_Chi2.txt
-chemotext.words.txt
 *.tsv
 *.tsv.gz

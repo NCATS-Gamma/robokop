@@ -115,7 +115,7 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
     # wait here for response
     if r.status_code == 204:
         # found 0 answers
-        raise NoAnswersException("Question answering complete, no answers found.")
+        raise NoAnswersException("Question answering complete, found 0 answers.")
     self.update_state(state='ANSWERS FOUND')
     logger.info("Answers found.")
     try:
@@ -150,11 +150,12 @@ def update_kg(self, question_hash, question_id=None, user_email=None):
     '''
 
     self.update_state(state='UPDATING KG')
-    logger.info("Updating the knowledge graph...")
 
     question_id = question_id if question_id else list_questions_by_hash(question_hash)[0].id
     question = get_question_by_id(question_id)
 
+    logger.info(f"Updating the knowledge graph for '{question.name}'...")
+    
     r = requests.post(f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question.toJSON())
     polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{r.json()['task id']}"
         
@@ -183,5 +184,5 @@ def update_kg(self, question_hash, question_id=None, user_email=None):
     except Exception as err:
         logger.error(f"Failed to send 'completed KG update' email: {err}")
 
-    logger.info("Done updating.")
+    logger.info(f"Done updating for '{question.name}'.")
     return "You updated the KG!"
