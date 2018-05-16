@@ -164,7 +164,7 @@ class Answerset extends React.Component {
             otherAnswersets={this.state.otherAnswersets}
             enableUrlChange
             enableQuestionSelect
-            enableFeedbackSubmit
+            enableFeedbackSubmit={false}
             callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
             callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
             callbackAnswerSelected={a => this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, a.id))}

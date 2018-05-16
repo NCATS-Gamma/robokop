@@ -9,7 +9,7 @@ class AnswersetList extends React.Component {
 
     this.styles = {
       list: {
-        border: '1px solid #DDD',
+        border: 'none',
         marginTop: '0px',
         outline: 'none',
       },
@@ -123,7 +123,7 @@ class AnswersetList extends React.Component {
 
     return (
       <Row>
-        <Col md={3} style={{ paddingRight: 0 }}>
+        <Col md={3} style={{ paddingRight: '5px', marginTop: '10px' }}>
           <Panel>
             <Panel.Heading>
               <Panel.Title componentClass="h3">Ranked Answers</Panel.Title>
@@ -147,7 +147,7 @@ class AnswersetList extends React.Component {
             </Panel.Body>
           </Panel>
         </Col>
-        <Col md={9} style={{ paddingLeft: 0 }}>
+        <Col md={9} style={{ paddingLeft: '5px', marginTop: '10px' }}>
           <AnswerExplorer
             answer={answer}
             answerIndex={this.state.selectedSubGraphIndex}

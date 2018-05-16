@@ -21,6 +21,7 @@ class Answerset extends React.Component {
     this.state = {
       userReady: false,
       isValid: false,
+      isReading: false,
       user: {},
       question: {},
       answerset: {},
@@ -41,6 +42,8 @@ class Answerset extends React.Component {
   onDrop(acceptedFiles, rejectedFiles) {
     acceptedFiles.forEach((file) => {
       const fr = new window.FileReader();
+      fr.onloadstart = () => this.setState({ isReading: true });
+      fr.onloadend = () => this.setState({ isReading: false });
       fr.onload = (e) => {
         const fileContents = e.target.result;
         try {
@@ -165,6 +168,25 @@ class Answerset extends React.Component {
       </Grid>
     );
   }
+  renderBodyReading() {
+    return (
+      <Grid>
+        <Row>
+          <Col md={12}>
+            <h1>
+              Loading Answers...
+              <br />
+              <small>
+                Please Wait.
+              </small>
+            </h1>
+            <Loading />
+          </Col>
+        </Row>
+      </Grid>
+    );
+  }
+
   renderBodyValid() {
     return (
       <AnswersetPres
@@ -177,14 +199,15 @@ class Answerset extends React.Component {
     );
   }
   renderLoaded() {
-    const { isValid } = this.state;
+    const { isValid, isReading } = this.state;
     return (
       <div>
         <Header
           config={this.props.config}
           user={this.state.user}
         />
-        {!isValid && this.renderBodyUpload()}
+        {!isValid && !isReading && this.renderBodyUpload()}
+        {!isValid && isReading && this.renderBodyReading()}
         {isValid && this.renderBodyValid()}
       </div>
     );
