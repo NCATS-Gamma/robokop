@@ -64,7 +64,7 @@ class Landing extends React.Component {
               Browse Questions
             </Button>
             {shownNewQuestion &&
-              <Button bsSize="large" href={this.appConfig.urls.questionNew}>
+              <Button bsSize="large" href={this.appConfig.urls.questionDesign}>
                 Ask a Question
               </Button>
             }
