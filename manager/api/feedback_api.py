@@ -6,8 +6,8 @@ from flask import request
 from flask_security import auth_required, current_user
 from flask_restplus import Resource
 
-from feedback import Feedback
-from setup import api
+from manager.feedback import Feedback
+from manager.setup import api
 
 # New Feedback Submission
 @api.route('/feedback/')

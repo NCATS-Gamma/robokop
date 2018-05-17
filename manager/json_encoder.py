@@ -2,7 +2,7 @@ from flask.json import JSONEncoder
 
 import datetime
 
-from setup import app
+from manager.setup import app
 
 # adapted from: http://flask.pocoo.org/snippets/119/
 class CustomJSONEncoder(JSONEncoder):

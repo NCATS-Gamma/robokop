@@ -6,14 +6,33 @@ from datetime import datetime
 import re
 import random
 import string
+import logging
 from flask import jsonify, request
 from flask_security import auth_required, current_user
 from flask_restplus import Resource
 
-from util import getAuthData, get_tasks
-from question import list_questions, list_questions_by_username, Question
-from tasks import update_kg, answer_question
-from setup import api
+from manager.util import getAuthData, get_tasks
+from manager.question import list_questions, list_questions_by_username, Question
+from manager.tasks import update_kg, answer_question
+from manager.setup import api
+
+logger = logging.getLogger(__name__)
+
+# question conversion
+@api.route('/questions/convert')
+class QuestionConversionAPI(Resource):
+    @api.response(201, 'Question converted')
+    def post(self):
+        """Create new question"""
+        user_id = 1
+        name = request.json['name']
+        natural_question = request.json['natural']
+        notes = request.json['notes']
+        nodes, edges = Question.dictionary_to_graph(request.json['machine_question'])
+        qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
+        q = Question(id=qid, user_id=user_id, name=name, natural_question=natural_question, notes=notes, nodes=nodes, edges=edges)
+
+        return q.toJSON(), 201
 
 # New Question Submission
 @api.route('/questions/')

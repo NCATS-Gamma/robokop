@@ -1,8 +1,8 @@
-from setup import db
 from flask_security import UserMixin, RoleMixin
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Boolean, DateTime, Column, Integer, \
                        String, ForeignKey
+from manager.setup import db
 
 class RolesUsers(db.Model):
     __tablename__ = 'roles_users'

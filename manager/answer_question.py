@@ -4,12 +4,12 @@ import argparse
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 
-from user import User, Role
-from question import Question
-from answer import Answer, Answerset
-from feedback import Feedback
+from manager.user import User, Role
+from manager.question import Question
+from manager.answer import Answer, Answerset
+from manager.feedback import Feedback
 
-from setup import db
+from manager.setup import db
 
 def answer_question(question_json_filename):
     # get struct from json file

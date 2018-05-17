@@ -8,15 +8,15 @@ import re
 from flask import render_template
 from flask_security import Security, SQLAlchemySessionUserDatastore
 
-from setup import app, db
-from logging_config import logger
-from user import User, Role
-from questions_blueprint import questions
-from q_blueprint import q
-from a_blueprint import a
-from util import get_tasks, getAuthData
+from manager.setup import app, db
+from manager.logging_config import logger
+from manager.user import User, Role
+from manager.questions_blueprint import questions
+from manager.q_blueprint import q
+from manager.a_blueprint import a
+from manager.util import get_tasks, getAuthData
 
-import manager
+import manager.api.misc_api
 
 # Setup flask-security with user tables
 user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
@@ -75,5 +75,5 @@ if __name__ == '__main__':
 
     app.run(host=server_host,\
         port=server_port,\
-        debug=False,\
-        use_reloader=False)
+        debug=True,\
+        use_reloader=True)

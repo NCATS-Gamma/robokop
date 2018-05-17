@@ -6,13 +6,12 @@ from datetime import datetime
 from flask import jsonify
 from flask_restplus import Resource
 
-from question import get_question_by_id, list_questions_by_hash
-from answer import list_answersets_by_question_hash, get_answer_by_id, get_answerset_by_id, list_answers_by_answerset
-from util import getAuthData
-
-from feedback import list_feedback_by_question_answer, list_feedback_by_question_answerset
-from logging_config import logger
-from setup import app, api
+from manager.question import get_question_by_id, list_questions_by_hash
+from manager.answer import list_answersets_by_question_hash, get_answer_by_id, get_answerset_by_id, list_answers_by_answerset
+from manager.util import getAuthData
+from manager.feedback import list_feedback_by_question_answer, list_feedback_by_question_answerset
+from manager.logging_config import logger
+from manager.setup import app, api
 
 @api.route('/a/<qa_id>')
 @api.param('qa_id', 'An answerset id, prefixed by the question hash, i.e. "<question_id>_<answerset_id>"')

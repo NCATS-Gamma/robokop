@@ -13,13 +13,13 @@ from flask_security import auth_required
 from flask_security.core import current_user
 from flask_restplus import Resource
 
-from question import get_question_by_id
-from answer import list_answersets_by_question_hash
-from feedback import list_feedback_by_question
-from tasks import answer_question, update_kg
-from util import getAuthData, get_tasks
-from setup import db, api
-from logging_config import logger
+from manager.question import get_question_by_id
+from manager.answer import list_answersets_by_question_hash
+from manager.feedback import list_feedback_by_question
+from manager.tasks import answer_question, update_kg
+from manager.util import getAuthData, get_tasks
+from manager.setup import db, api
+from manager.logging_config import logger
 
 @api.route('/q/<question_id>')
 @api.param('question_id', 'A question id')

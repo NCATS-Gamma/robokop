@@ -15,10 +15,10 @@ from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref
 
 # our modules
-from answer import list_answersets_by_question_hash
-from user import User
-from setup import db
-from logging_config import logger
+from manager.answer import list_answersets_by_question_hash
+from manager.user import User
+from manager.setup import db
+from manager.logging_config import logger
 
 
 class Question(db.Model):

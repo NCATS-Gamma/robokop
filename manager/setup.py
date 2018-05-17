@@ -1,4 +1,3 @@
-import logging.config
 import os
 import json
 import sys

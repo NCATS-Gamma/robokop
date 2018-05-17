@@ -1,8 +1,8 @@
 #!/bin/bash
 
-cd $ROBOKOP_HOME/robokop/python
+cd $ROBOKOP_HOME/robokop
 
 exec flower \
-    -A tasks.celery \
+    -A manager.tasks.celery \
     --broker=$CELERY_BROKER_URL \
     --broker_api=$CELERY_BROKER_URL

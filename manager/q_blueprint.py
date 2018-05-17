@@ -13,12 +13,12 @@ from flask import Blueprint, jsonify, render_template, request
 from flask_security import auth_required
 from flask_security.core import current_user
 
-from question import Question, get_question_by_id
-from answer import list_answersets_by_question_hash
-from tasks import initialize_question, answer_question, update_kg
-from util import getAuthData, get_tasks
-from setup import db
-from logging_config import logger
+from manager.question import Question, get_question_by_id
+from manager.answer import list_answersets_by_question_hash
+from manager.tasks import initialize_question, answer_question, update_kg
+from manager.util import getAuthData, get_tasks
+from manager.setup import db
+from manager.logging_config import logger
 
 q = Blueprint('question', __name__,
               template_folder='templates')

@@ -7,11 +7,11 @@ import datetime
 from sqlalchemy import Column, DateTime, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref
 
-from question import Question
-from answer import Answer
-from user import User
-from setup import db
-from util import DictLikeMixin
+from manager.question import Question
+from manager.answer import Answer
+from manager.user import User
+from manager.setup import db
+from manager.util import DictLikeMixin
 
 class Feedback(db.Model, DictLikeMixin):
     '''

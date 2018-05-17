@@ -8,13 +8,13 @@ import sys
 import requests
 from flask_restplus import Resource
 
-from setup import app, api
-from logging_config import logger
-from util import get_tasks, getAuthData
-import questions_api
-import q_api
-import a_api
-import feedback_api
+from manager.setup import app, api
+from manager.logging_config import logger
+from manager.util import get_tasks, getAuthData
+import manager.api.questions_api
+import manager.api.q_api
+import manager.api.a_api
+import manager.api.feedback_api
 
 @api.route('/tasks')
 class Tasks(Resource):

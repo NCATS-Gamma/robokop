@@ -11,10 +11,10 @@ from celery import Celery, signals
 from kombu import Queue
 from flask_mail import Message
 
-from setup import app, mail
-from answer import get_answerset_by_id, Answerset
-from question import get_question_by_id, list_questions_by_hash
-from logging_config import logger
+from manager.setup import app, mail
+from manager.answer import get_answerset_by_id, Answerset
+from manager.question import get_question_by_id, list_questions_by_hash
+from manager.logging_config import logger
 
 # set up Celery
 app.config['broker_url'] = os.environ["CELERY_BROKER_URL"]
@@ -66,7 +66,7 @@ def initialize_question(self, question_hash, question_id=None, user_email=None):
                     html = '<br />\n'.join(lines)
                     msg = Message("ROBOKOP: Answers Ready",
                                 sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
-                                recipients=['patrick@covar.com'], #[user_email],
+                                recipients=[user_email],
                                 html=html)
                     mail.send(msg)
             except Exception as err:
@@ -91,7 +91,7 @@ def initialize_question(self, question_hash, question_id=None, user_email=None):
                 html = '<br />\n'.join(lines)
                 msg = Message("ROBOKOP: Answers Ready",
                             sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
-                            recipients=['patrick@covar.com'], #[user_email],
+                            recipients=[user_email],
                             html=html)
                 mail.send(msg)
         except Exception as err:
@@ -134,7 +134,7 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
                 html = '<br />\n'.join(lines)
                 msg = Message("ROBOKOP: Answers Ready",
                             sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
-                            recipients=['patrick@covar.com'], #[user_email],
+                            recipients=[user_email],
                             html=html)
                 mail.send(msg)
         except Exception as err:
@@ -178,7 +178,7 @@ def update_kg(self, question_hash, question_id=None, user_email=None):
             with app.app_context():
                 msg = Message("ROBOKOP: Knowledge Graph Update Complete",
                             sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
-                            recipients=['patrick@covar.com'], #[user_email],
+                            recipients=[user_email],
                             html=html)
                 mail.send(msg)
     except Exception as err:

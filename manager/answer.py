@@ -5,16 +5,19 @@ Answer class
 import time
 import json
 import datetime
+import logging
 import warnings
+
 from sqlalchemy.types import ARRAY as Array
 from sqlalchemy import Column, DateTime, String, Integer, Float, ForeignKey
 from sqlalchemy.types import JSON
 from sqlalchemy.orm import relationship, backref
-
-from setup import db
-
 from sqlalchemy import event
 from sqlalchemy import DDL
+
+from manager.setup import db
+
+logger = logging.getLogger(__name__)
 
 class Answerset(db.Model):
     '''
