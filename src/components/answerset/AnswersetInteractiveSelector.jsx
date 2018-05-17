@@ -45,7 +45,7 @@ class AnswersetInteractiveSelector extends React.Component {
       }
 
       return (
-        <Panel key={shortid.generate()}>
+        <Panel key={shortid.generate()} style={{ margin: '5px 5px 0 5px' }}>
           <Panel.Heading style={{ backgroundColor: background }}>
             {entityNameDisplay(p[0].type)}
             {!thisIsRealySelected &&
@@ -107,7 +107,7 @@ class AnswersetInteractiveSelector extends React.Component {
             }
           </Panel.Title>
         </Panel.Heading>
-        <Panel.Body style={{ padding: 0 }}>
+        <Panel.Body style={{ backgroundColor: '#f5f7fa', padding: '2px' }}>
           <PanelGroup id="AnswerSetExplorer">
             {dropDowns}
           </PanelGroup>

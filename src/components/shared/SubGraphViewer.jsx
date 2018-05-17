@@ -163,13 +163,25 @@ class SubGraphViewer extends React.Component {
     // Combine support and regular edges together if between the same nodes
     const edgesRegular = g.edges.filter(e => e.type !== 'literature_co-occurrence');
     const edgesSupport = g.edges.filter(e => e.type === 'literature_co-occurrence');
-    edgesSupport.forEach((e) => { e.duplicateEdge = false; });
+    edgesSupport.forEach((e) => {
+      e.duplicateEdge = false;
+      if (('publications' in e && Array.isArray(e.publications))) {
+        // Everything is good
+      } else if (('publications' in e && !Array.isArray(e.publications))) {
+        // Single entry
+        e.publications = [e.publications];
+      } else if (!('publications' in e)) {
+        e.publications = [];
+      }
+    });
     edgesRegular.forEach((e) => {
       const sameNodesSupportEdge = edgesSupport.find(s => (((e.source_id === s.source_id) && (e.target_id === s.target_id)) || ((e.source_id === s.target_id) && (e.target_id === s.source_id))) );
       if (sameNodesSupportEdge) {
         // We have a repeated edge
         e.publications = sameNodesSupportEdge.publications;
         sameNodesSupportEdge.duplicateEdge = true;
+      } else if (('publications' in e && !Array.isArray(e.publications))) {
+        e.publications = [e.publications];
       } else if (!('publications' in e)) {
         e.publications = [];
       }

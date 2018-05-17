@@ -28,7 +28,6 @@ class AnswerExplorer extends React.Component {
     this.feedbackUpdate = this.feedbackUpdate.bind(this);
   }
   onGraphClick(event) {
-    console.log(event);
     if (event.edges.length !== 0) { // Clicked on an Edge
       this.setState({ selectedEdge: event.edges[0], modalShow: true, modalType: 'info' });
     } else { // Reset things since something else was clicked
@@ -50,7 +49,7 @@ class AnswerExplorer extends React.Component {
     const { modalType } = this.state;
     const modalIsFeedback = modalType === 'feedback';
     const modalIsInfo = modalType === 'info';
-    const modalTitle = modalIsFeedback ? 'Answer Feedback' : (modalIsInfo ? 'Edge Information' : '');
+    const modalTitle = modalIsFeedback ? 'Answer Feedback' : (modalIsInfo ? 'Edge Explorer' : '');
     // className="modal-container"
     return (
       <Panel>

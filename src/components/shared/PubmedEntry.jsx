@@ -1,7 +1,7 @@
 import React from 'react';
 import { Media, Button } from 'react-bootstrap';
 
-import GoFileText from 'react-icons/go/file-text';
+import FaExternalLink from 'react-icons/lib/fa/external-link';
 
 const shortid = require('shortid');
 
@@ -10,6 +10,8 @@ class PubmedEntry extends React.Component {
     super(props);
 
     this.state = {
+      ready: false,
+      isFailure: false,
       info: {
         id: '',
         title: 'Loading...',
@@ -32,42 +34,76 @@ class PubmedEntry extends React.Component {
       url: '',
       doid: '',
     };
+
+    this.updateInformation = this.updateInformation.bind(this);
+    this.getPubmedInformation = this.getPubmedInformation.bind(this);
   }
 
   componentDidMount() {
-    this.getPubmedInformation(this.props.pmid);
+    this.updateInformation(this.props);
+  }
+  componentWillReceiveProps(newProps) {
+    if (newProps.pmid !== this.props.pmid) {
+      this.updateInformation(newProps);
+    }
   }
 
-  getPubmedInformation(pmid) {
+  getPubmedInformation(pmid, successFun, failFun) {
     const pmidNum = pmid.substr(pmid.indexOf(':') + 1);
     const postUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi';
     const postData = { db: 'pubmed', id: pmidNum.toString(), version: '2.0', retmode: 'json' };
 
-    const defaultInfo = Object.assign({}, this.defaultFailureInfo);
-    $.post(postUrl, postData, (data) => {
-      let info = defaultInfo;
-      if (pmidNum in data.result) {
-        const paperInfo = data.result[pmidNum];
-        info = {
-          id: pmid,
-          title: paperInfo.title,
-          authors: paperInfo.authors,
-          journal: paperInfo.fulljournalname,
-          source: paperInfo.source,
-          pubdate: paperInfo.pubdate,
-          url: `https://www.ncbi.nlm.nih.gov/pubmed/${pmidNum}/`,
-          doid: paperInfo.elocationid,
-        };
+    $.post(postUrl, postData, data => successFun(data.result)).fail(err => failFun(err));
+  }
+  updateInformation(newProps) {
+    const { pmid } = newProps;
+    this.getPubmedInformation(
+      pmid,
+      (data) => {
+        const pmidNum = pmid.substr(pmid.indexOf(':') + 1);
+        if (pmidNum in data) {
+          const paperInfo = data[pmidNum];
+          let info = Object.assign({}, this.defaultFailureInfo);
+          info = {
+            id: pmid,
+            title: paperInfo.title,
+            authors: paperInfo.authors,
+            journal: paperInfo.fulljournalname,
+            source: paperInfo.source,
+            pubdate: paperInfo.pubdate,
+            url: `https://www.ncbi.nlm.nih.gov/pubmed/${pmidNum}/`,
+            doid: paperInfo.elocationid,
+          };
+          this.setState({ info, ready: true, isFailure: false, });
+        } else {
+          const info = Object.assign({}, this.defaultFailureInfo);
+          this.setState({ info, isFailure: true });
+        }
+      },
+      (err) => {
+        console.log('Error fetching from pubmed', err);
+        this.setState({ info: Object.assign({}, this.defaultFailureInfo), isFailure: true })
       }
-      this.setState({ info });
-    }).fail(() => {
-      const info = defaultInfo;
-
-      this.setState({ info });
-    });
+    );
   }
 
-  render() {
+  renderFailure() {
+    return (
+      <div style={{ color: '#ccc' }}>
+        Failed to retrieve publication information
+      </div>
+    );
+  }
+
+  renderLoading() {
+    return (
+      <div style={{ color: '#ccc' }}>
+        Loading...
+      </div>
+    );
+  }
+
+  renderValid() {
     let linkUrl = '#';
     let linkDisable = true;
     if (this.state.info.url) {
@@ -94,7 +130,9 @@ class PubmedEntry extends React.Component {
       <Media>
         <Media.Left>
           <Button disabled={linkDisable} onClick={() => window.open(linkUrl, '_blank')}>
-            <GoFileText />
+            <div style={{ fontSize: '36px' }}>
+              <FaExternalLink />
+            </div>
           </Button>
         </Media.Left>
         <Media.Body>
@@ -103,6 +141,16 @@ class PubmedEntry extends React.Component {
           <p style={{ margin: '2px' }}>{authorFrag}</p>
         </Media.Body>
       </Media>
+    );
+  }
+  render() {
+    const { ready, isFailure } = this.state;
+    return (
+      <div>
+        {!ready && !isFailure && this.renderLoading()}
+        {!ready && isFailure && this.renderFailure()}
+        {ready && this.renderValid()}
+      </div>
     );
   }
 }

@@ -16,7 +16,7 @@ class AnswersetGraph extends React.Component {
     return (
       <Row>
         <Col md={12}>
-          <Panel>
+          <Panel style={{ marginTop: '10px' }}>
             <Panel.Heading>
               <Panel.Title componentClass="h3">Aggregate Answer Graph</Panel.Title>
             </Panel.Heading>

@@ -309,7 +309,7 @@ class AnswersetInteractive extends React.Component {
           {!oneGroup &&
             <Row>
               <Col md={12}>
-                <Panel>
+                <Panel style={{ margin: '10px 0 10px 0' }}>
                   <Panel.Heading>
                     <Panel.Title componentClass="h3">Multiple Answer Structures Found</Panel.Title>
                   </Panel.Heading>
@@ -325,6 +325,7 @@ class AnswersetInteractive extends React.Component {
                         value={selectOptions[this.state.groupSelection].value}
                         onChange={this.onGroupSelectionChange}
                         options={selectOptions}
+                        clearable={false}
                       />
                     </Col>
                   </Panel.Body>
@@ -333,7 +334,7 @@ class AnswersetInteractive extends React.Component {
             </Row>
           }
           <Row>
-            <Col md={3} style={{ paddingRight: 0 }}>
+            <Col md={3} style={{ paddingRight: '5px' }}>
               <AnswersetInteractiveSelector
                 subgraph={answer}
                 nodeSelection={this.state.nodeSelection}
@@ -341,7 +342,7 @@ class AnswersetInteractive extends React.Component {
                 onSelectionCallback={this.onSelectionCallback}
               />
             </Col>
-            <Col md={9} style={{ paddingLeft: 0 }}>
+            <Col md={9} style={{ paddingLeft: '5px' }}>
               <AnswerExplorer
                 answer={answer}
                 answerIndex={this.state.selectedSubGraphIndex}

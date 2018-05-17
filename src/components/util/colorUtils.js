@@ -20,8 +20,9 @@ const colors = [
   '#e5d8bd',
   '#b3de69',
   '#fddaec',
-  '#f2f2f2',
+  '#fccde5', // Light grayish pink'
   '#b3cde3', // Dupplicate for also molecular_activity
+  '#f2f2f2', // Silver, extra?
 ];
 const concepts = [
   'anatomical_entity',

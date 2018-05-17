@@ -9,7 +9,7 @@ class PubmedList extends React.Component {
 
     this.styles = {
       list: {
-        border: '1px solid #DDD',
+        border: 'none',
         marginTop: '0px',
         outline: 'none',
       },
