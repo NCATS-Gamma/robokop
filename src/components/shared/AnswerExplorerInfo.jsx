@@ -48,20 +48,20 @@ class AnswerExplorerInfo extends React.Component {
       const edge = this.state.subgraph.edge_list.find(e => e.id === this.state.selectedEdge);
       const sourceNode = this.state.subgraph.node_list.find(n => n.id === edge.source_id);
       const targetNode = this.state.subgraph.node_list.find(n => n.id === edge.target_id);
-      publicationsTitle = `Publications for ${sourceNode.description} and ${targetNode.description}`;
       let publications = [];
       if ('publications' in edge && Array.isArray(edge.publications)) {
         publications = edge.publications;
       }
+      publicationsTitle = `${publications.length} Publications for ${sourceNode.description} and ${targetNode.description}`;
       publicationListFrag = <PubmedList publications={publications} />;
     } else if (somethingSelected && this.state.selectedNode) {
       // Node is selected
       const node = this.state.subgraph.node_list.find(n => n.id === this.state.selectedNode);
-      publicationsTitle = `Publications for ${node.description}`;
       let publications = [];
       if ('publications' in node && Array.isArray(node.publications)) {
         publications = node.publications;
       }
+      publicationsTitle = `${publications.length} Publications for ${node.description}`;
       publicationListFrag = <PubmedList publications={publications} />;
     }
 

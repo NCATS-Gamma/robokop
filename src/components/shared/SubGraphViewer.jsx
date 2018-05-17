@@ -41,7 +41,6 @@ class SubGraphViewer extends React.Component {
           highlight: '#000',
           hover: '#000',
         },
-        width: 1.5,
         hoverWidth: 1,
         selectionWidth: 1,
       },
@@ -164,41 +163,62 @@ class SubGraphViewer extends React.Component {
     const edgesRegular = g.edges.filter(e => e.type !== 'literature_co-occurrence');
     const edgesSupport = g.edges.filter(e => e.type === 'literature_co-occurrence');
     edgesSupport.forEach((e) => {
-      e.duplicateEdge = false;
+      // Make sure support edges actually have publications
+      e.duplicateEdge = false; // Also by default do not delete support edges unles duplicate
       if (('publications' in e && Array.isArray(e.publications))) {
         // Everything is good
       } else if (('publications' in e && !Array.isArray(e.publications))) {
-        // Single entry
+        // Single entry comes as a string
         e.publications = [e.publications];
       } else if (!('publications' in e)) {
-        e.publications = [];
+        e.publications = []; // How did this happen?
       }
     });
     edgesRegular.forEach((e) => {
+      // Find support edges between the same two nodes and merge publication lists
+
+      // Find existing publications attached to the edge.
+      let edgePublications = [];
+      if ('publications' in e) {
+        if (Array.isArray(e.publications)) {
+          edgePublications = e.publications;
+        } else if (typeof myVar === 'string') {
+          edgePublications = [e.publications];
+        }
+      }
+
+      // Find a corresponding support edge
       const sameNodesSupportEdge = edgesSupport.find(s => (((e.source_id === s.source_id) && (e.target_id === s.target_id)) || ((e.source_id === s.target_id) && (e.target_id === s.source_id))) );
       if (sameNodesSupportEdge) {
         // We have a repeated edge
-        e.publications = sameNodesSupportEdge.publications;
-        sameNodesSupportEdge.duplicateEdge = true;
-      } else if (('publications' in e && !Array.isArray(e.publications))) {
-        e.publications = [e.publications];
-      } else if (!('publications' in e)) {
-        e.publications = [];
+        sameNodesSupportEdge.duplicateEdge = true; // Mark for deletion
+
+        const supportPublications = sameNodesSupportEdge.publications;
+        edgePublications = edgePublications.concat(supportPublications);
+        edgePublications = edgePublications.filter((p, i, self) => self.indexOf(p) === i); // Unique
       }
+      e.publications = edgePublications;
     });
 
+    // Remove the duplicated support edges
     g.edges = [].concat(edgesSupport.filter(s => !s.duplicateEdge), edgesRegular);
+
     // Add parameters to edges like curvature and labels and such
-    // edges -> edge_list
     g.edges = g.edges.map((e) => {
       let typeDependentParams = {};
       let label = e.type;
       const nPublications = e.publications.length;
-      const value = ((Math.log(nPublications + 1) / Math.log(10))) + 1;
+      if (nPublications > 0) {
+        label = `${e.type} (${nPublications})`;
+      }
+
+      // const value = Math.ceil((Math.log(nPublications + 1) / Math.log(5)) * 2) + 1;
+      // const value = Math.ceil((15 / (1 + Math.exp(-1 * (-1 + (0.02 * nPublications))))) - 3);
+      const value = (4 / (1 + Math.exp(-1 * (-1 + (0.01 * nPublications))))) - 1;
 
       if (e.type === 'literature_co-occurrence') {
         // Publication Edge
-        label = `${nPublications}`;
+        label = `${nPublications}`; // Remove the type labeled to keep it small
         typeDependentParams = {
           color: this.styles.supportEdgeColors,
           // dashes: [2, 4],
@@ -224,18 +244,20 @@ class SubGraphViewer extends React.Component {
         },
         smooth: { enabled: true, type: 'dynamic' },
         scaling: {
-          min: 1,
+          min: 0.1,
           max: 10,
           label: false,
+          customScalingFunction: (min, max, total, val) => Math.max(val, 0),
         },
-      }
+        arrowStrikethrough: false,
+      };
 
       return { ...e, ...defaultParams, ...typeDependentParams };
     });
     if (!this.props.showSupport) {
       g.edges = g.edges.filter(e => e.type !== 'literature_co-occurrence');
     }
-
+    console.log(g)
     return g;
   }
 
