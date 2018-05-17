@@ -267,7 +267,8 @@ def standardize_edge(edge):
         'origin_list': edge['edge_source'],
         'source_id': edge['start'],
         'target_id': edge['end'],
-        'type': edge['predicate']
+        'type': edge['predicate'],
+        'publications': edge['publications']
     }
     return output
 
