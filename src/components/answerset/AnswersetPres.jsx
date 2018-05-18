@@ -62,7 +62,7 @@ class AnswersetPres extends React.Component {
           otherAnswersets={this.props.otherAnswersets}
           callbackAnswersetSelect={this.props.callbackAnswersetSelect}
 
-          showDownload={this.showDownload}
+          showDownload
           callbackDownload={this.onDownload}
         />
         <br />
@@ -80,7 +80,7 @@ class AnswersetPres extends React.Component {
             <AnswersetList
               user={this.props.user} // Needed to parse feedback to know what is yours
               answers={this.props.answers}
-              feedback={this.props.answersetFeedback}
+              answersetFeedback={this.props.answersetFeedback}
               answerId={this.props.answerId} // Monitored for select by parameter or page load
 
               enableUrlChange={this.props.enableUrlChange}
@@ -100,7 +100,7 @@ class AnswersetPres extends React.Component {
             <AnswersetInteractive
               user={this.props.user} // Needed to parse feedback to know what is yours
               answers={this.props.answers}
-              feedback={this.props.answersetFeedback}
+              answersetFeedback={this.props.answersetFeedback}
               answerId={this.props.answerId} // Monitored for select by parameter or page load
 
               enableFeedbackSubmit={this.props.enableFeedbackSubmit}
@@ -132,6 +132,7 @@ AnswersetPres.defaultProps = {
   enableUrlChange: false,
   enableQuestionSelect: false,
   enableFeedbackSubmit: false,
+  enableFeedbackView: false,
 
   callbackNoAnswerSelected: () => {},
   callbackAnswerSelected: () => {},
@@ -153,6 +154,7 @@ AnswersetPres.propTypes = {
   enableUrlChange: PropTypes.bool,
   enableQuestionSelect: PropTypes.bool,
   enableFeedbackSubmit: PropTypes.bool,
+  enableFeedbackView: PropTypes.bool,
 
   callbackNoAnswerSelected: PropTypes.func,
   callbackAnswerSelected: PropTypes.func,

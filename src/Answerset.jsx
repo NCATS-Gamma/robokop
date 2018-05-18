@@ -154,6 +154,7 @@ class Answerset extends React.Component {
     );
   }
   renderLoaded() {
+    const isAuth = this.state.user.is_authenticated;
     return (
       <div>
         <Header
@@ -178,6 +179,7 @@ class Answerset extends React.Component {
             enableUrlChange
             enableQuestionSelect
             enableFeedbackSubmit={false}
+            enableFeedbackView={false}
             callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
             callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
             callbackAnswerSelected={this.handleAnswerSelect}

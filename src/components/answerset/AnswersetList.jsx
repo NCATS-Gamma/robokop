@@ -141,7 +141,7 @@ class AnswersetList extends React.Component {
     const rowCount = this.props.answers.length;
 
     const answer = this.props.answers[this.state.selectedSubGraphIndex];
-    const answerFeedback = { answerId: answer.id, accuracy: 4, impact: 3, notes: 'This is a great answer' };
+    const answerFeedback = this.props.answersetFeedback.filter(f => f.answerId === answer.id);
 
     return (
       <Row>
@@ -171,11 +171,13 @@ class AnswersetList extends React.Component {
         </Col>
         <Col md={9} style={{ paddingLeft: '5px', marginTop: '10px' }}>
           <AnswerExplorer
+            user={this.props.user}
             answer={answer}
             answerIndex={this.state.selectedSubGraphIndex}
-            feedback={answerFeedback}
+            answerFeedback={answerFeedback}
 
             callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
+            enableFeedbackView={this.props.enableFeedbackView}
             enableFeedbackSubmit={this.props.enableFeedbackSubmit}
             enabledAnswerLink={this.props.enabledAnswerLink}
             getAnswerUrl={this.props.getAnswerUrl}

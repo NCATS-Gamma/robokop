@@ -87,6 +87,9 @@ class Question extends React.Component {
     const tasks = this.state.runningTasks;
     const prevTasks = this.state.prevRunningTasks;
 
+    
+    console.log('Checking for finished tasks', prevTasks, tasks);
+
     const refreshBusy = tasks.updaters.length > 0;
     const answerBusy = tasks.answerers.length > 0;
     const initializerBusy = false;
@@ -112,12 +115,16 @@ class Question extends React.Component {
           answersets: data.answerset_list,
         }),
       );
-      this.notifyInitializer(prevTasks.initializers[0].uuid);
+      if ('uuid' in prevTasks.initializers[0]) {
+        this.notifyInitializer(prevTasks.initializers[0].uuid);
+      }
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
       return;
     }
     if (refreshFinished && !initializerBusy) {
-      this.notifyRefresh(prevTasks.updaters[0].uuid);
+      if ('uuid' in prevTasks.updaters[0]) {
+        this.notifyRefresh(prevTasks.updaters[0].uuid);
+      }
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
     if (answerFinished && !initializerBusy) {
@@ -127,7 +134,9 @@ class Question extends React.Component {
           answersets: data.answerset_list,
         }),
       );
-      this.notifyAnswers(prevTasks.answerers[0].uuid);
+      if ('uuid' in prevTasks.answerers[0]) {
+        this.notifyAnswers(prevTasks.answerers[0].uuid);
+      }
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
   }
@@ -277,7 +286,7 @@ class Question extends React.Component {
         // Actually try to delete the question here.
         this.appConfig.questionDelete(
           q.id,
-          () => {console.log('cool?'); this.appConfig.redirect(this.appConfig.urls.questions)},
+          () => {console.log('Question Deleted'); this.appConfig.redirect(this.appConfig.urls.questions)},
           (err) => {
             console.log(err);
             this.dialogMessage({
@@ -378,15 +387,41 @@ class Question extends React.Component {
     });
   }
   addToTaskList(newTask) {
-    const answerBusy = Boolean(newTask.answersetTask);
-    const refreshBusy = Boolean(newTask.questionTask);
+    const isAnswerTask = Boolean(newTask.answersetTask);
+    const isRefreshTask = Boolean(newTask.questionTask);
 
-    this.setState(
-      {
-        answerBusy,
-        refreshBusy,
+    this.appConfig.questionTasks(
+      this.props.id,
+      (data) => {
+        console.log('Initialized a new task', data);
+        // FIX ME this assumes a single new task at a time!
+        this.setState({ prevRunningTasks: data, runningTasks: data, answerBusy: isAnswerTask, refreshBusy: isRefreshTask }, this.updateTaskStatus);
+        if (isAnswerTask) {
+          const ind = data.answerers.findIndex(a => a.uuid === newTask.answersetTask);
+          if (ind < 0) {
+            console.log('Missing Answerer Task!!?!', newTask.answersetTask);
+            this.dialogMessage({
+              title: 'Trouble Queuing Answer Set Generation',
+              text: 'We have lost track of your tasks. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+              buttonText: 'OK',
+              buttonAction: () => {},
+            });
+          }
+        }
+        if (isRefreshTask) {
+          const ind = data.updaters.findIndex(a => a.uuid === newTask.questionTask);
+          if (ind < 0) {
+            console.log('Missing Quesetion Task!!?!', newTask.questionTask);
+            this.dialogMessage({
+              title: 'Trouble Queuing Knowledge Graph Update',
+              text: 'We have lost track of your tasks. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+              buttonText: 'OK',
+              buttonAction: () => {},
+            });
+          }
+        }
       },
-      this.pullTasks,
+      err => console.log('Issues fetching active tasks', err),
     );
   }
   renderLoading() {
