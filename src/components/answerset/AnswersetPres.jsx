@@ -20,16 +20,23 @@ class AnswersetPres extends React.Component {
   }
   onDownload() {
     console.log('Not finished yet.');
-    // let data = this.props.answerset;
+    const data = this.props.answerset;
 
-    // var json = JSON.stringify(data);
-    // var blob = new Blob([json], {type: "application/json"});
-    // var url  = URL.createObjectURL(blob);
+    // Transform the data into a json blob and give it a url
+    const json = JSON.stringify(data);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
 
-    // var a = document.createElement('a');
-    // a.download = "answerset.json";
-    // a.href = url;
-    // a.textContent = "Download answerset.json";
+    // This doesn't use Blob() might also work
+    // var url = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+
+    // Create a link with that URL and click it.
+    const a = document.createElement('a');
+    a.download = 'answerset.json';
+    a.href = url;
+    a.click();
+    a.remove();
+
   }
 
   handleTabSelect(tabKey) {
@@ -55,7 +62,7 @@ class AnswersetPres extends React.Component {
           otherAnswersets={this.props.otherAnswersets}
           callbackAnswersetSelect={this.props.callbackAnswersetSelect}
 
-          showDownload={false}
+          showDownload={this.showDownload}
           callbackDownload={this.onDownload}
         />
         <br />
