@@ -43,9 +43,8 @@ class AnswersetAPI(Resource):
         return {'user': user,\
                 'question': question.toJSON(),\
                 'answerset': answerset.toStandard(),\
-                'answers': [a.toStandard() for a in answers],\
                 'feedback': [f.toJSON() for f in feedback],\
-                'other_answersets': [aset.toStandard() for aset in answersets],
+                'other_answersets': [aset.toStandard(data=False) for aset in answersets],
                 'other_questions': [q.toJSON() for q in questions]}, 200
 
 @api.route('/a/<qa_id>/<int:answer_id>')
