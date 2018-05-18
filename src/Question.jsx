@@ -87,8 +87,7 @@ class Question extends React.Component {
     const tasks = this.state.runningTasks;
     const prevTasks = this.state.prevRunningTasks;
 
-    
-    console.log('Checking for finished tasks', prevTasks, tasks);
+    // console.log('Checking for finished tasks', prevTasks, tasks);
 
     const refreshBusy = tasks.updaters.length > 0;
     const answerBusy = tasks.answerers.length > 0;
@@ -115,14 +114,14 @@ class Question extends React.Component {
           answersets: data.answerset_list,
         }),
       );
-      if ('uuid' in prevTasks.initializers[0]) {
+      if (('initializers' in prevTasks) && Array.isArray(prevTasks.initializers) && (prevTasks.initializers.length > 0) && ('uuid' in prevTasks.initializers[0])) {
         this.notifyInitializer(prevTasks.initializers[0].uuid);
       }
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
       return;
     }
     if (refreshFinished && !initializerBusy) {
-      if ('uuid' in prevTasks.updaters[0]) {
+      if (('updaters' in prevTasks) && Array.isArray(prevTasks.updaters) && (prevTasks.updaters.length > 0) && ('uuid' in prevTasks.updaters[0])) {
         this.notifyRefresh(prevTasks.updaters[0].uuid);
       }
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
@@ -134,7 +133,7 @@ class Question extends React.Component {
           answersets: data.answerset_list,
         }),
       );
-      if ('uuid' in prevTasks.answerers[0]) {
+      if (('answerers' in prevTasks) && Array.isArray(prevTasks.answerers) && (prevTasks.answerers.length > 0) && ('uuid' in prevTasks.answerers[0])) {
         this.notifyAnswers(prevTasks.answerers[0].uuid);
       }
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
