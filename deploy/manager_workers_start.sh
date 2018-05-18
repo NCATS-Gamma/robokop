@@ -4,11 +4,11 @@ cd $ROBOKOP_HOME/robokop
 
 echo "Starting worker..."
 celery multi start \
-    manager_answerer@robokop manager_updater@robokop manager_initializer@robokop \
+    manager_answerer@robokop manager_updater@robokop \
     -A manager.tasks.celery \
     -l info \
-    -c:1 4 -c:2 1 -c:3 4 \
-    -Q:1 manager_answer -Q:2 manager_update -Q:3 manager_initialize
+    -c:1 $NUM_RANKERS -c:2 $NUM_BUILDERS \
+    -Q:1 manager_answer -Q:2 manager_update
 #   celery -A tasks.celery worker --loglevel=info -c 4 -n answerer@robokop -Q answer
 #   celery -A tasks.celery worker --loglevel=info -c 1 -n updater@robokop -Q update
 echo "Worker started."

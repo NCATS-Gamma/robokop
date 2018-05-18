@@ -107,7 +107,7 @@ class AnswerQuestion(Resource):
             return "Invalid question key.", 404
         username = current_user.username
         # Answer a question
-        task = answer_question.apply_async(args=[question.hash], kwargs={'question_id':question_id, 'user_email':username})
+        task = answer_question.apply_async(args=[question.hash], kwargs={'question_id':question_id, 'user_email':current_user.email})
         return {'task_id':task.id}, 200
 
 @api.route('/q/<question_id>/refresh_kg')
@@ -125,7 +125,7 @@ class RefreshKG(Resource):
         question_hash = question.hash
         username = current_user.username
         # Update the knowledge graph for a question
-        task = update_kg.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':username})
+        task = update_kg.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':current_user.email})
         return {'task_id':task.id}, 202
 
 @api.route('/q/<question_id>/tasks')
@@ -145,26 +145,25 @@ class QuestionTasks(Resource):
 
         tasks = list(get_tasks().values())
 
+        # filter out the SUCCESS/FAILURE tasks
+        tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE' or t['state'] == 'REVOKED')]
+
         # filter out tasks for other questions
         question_tasks = []
         for t in tasks:
             if not t['args']:
                 continue
-            match = re.match(r"\['(.*)'\]", t['args'])
-            if match and match.group(1) == question_hash:
-                question_tasks.append(t)
-
-        # filter out the SUCCESS/FAILURE tasks
-        question_tasks = [t for t in question_tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE' or t['state'] == 'REVOKED')]
+            match = re.match(r"[\[(]'(.*)',?[)\]]", t['args'])
+            if match:
+                if match.group(1) == question_hash:
+                    question_tasks.append(t)
 
         # split into answer and update tasks
-        answerers = [t for t in question_tasks if t['name'] == 'tasks.answer_question']
-        updaters = [t for t in question_tasks if t['name'] == 'tasks.update_kg']
-        initializers = [t for t in question_tasks if t['name'] == 'tasks.initialize_question']
+        answerers = [t for t in question_tasks if t['name'] == 'manager.tasks.answer_question']
+        updaters = [t for t in question_tasks if t['name'] == 'manager.tasks.update_kg']
 
         return {'answerers': answerers,
-                'updaters': updaters,
-                'initializers': initializers}, 200
+                'updaters': updaters}, 200
 
 @api.route('/q/<question_id>/subgraph')
 @api.param('question_id', 'A question id')
@@ -179,5 +178,10 @@ class QuestionSubgraph(Resource):
         except Exception as err:
             return "Invalid question key.", 404
 
+        logger.debug(question.toJSON())
         r = requests.post(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/subgraph", json=question.toJSON())
-        return r.json(), 200
+        try:
+            output = r.json()
+        except Exception as err:
+            raise ValueError("Response is not JSON.")
+        return output, 200

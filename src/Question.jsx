@@ -89,11 +89,11 @@ class Question extends React.Component {
 
     const refreshBusy = tasks.updaters.length > 0;
     const answerBusy = tasks.answerers.length > 0;
-    const initializerBusy = tasks.initializers.length > 0;
+    const initializerBusy = false;
 
     const refreshFinished = !refreshBusy && this.state.refreshBusy;
     const answerFinished = !answerBusy && this.state.answerBusy;
-    const initializerFinished = !initializerBusy && this.state.initializerBusy;
+    const initializerFinished = false;
 
     this.setState({
       refreshBusy,
