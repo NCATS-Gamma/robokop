@@ -315,7 +315,7 @@ class AnswersetInteractive extends React.Component {
           {!oneGroup &&
             <Row>
               <Col md={12}>
-                <Panel style={{ margin: '10px 0 10px 0' }}>
+                <Panel style={{ margin: '10px 0 0px 0' }}>
                   <Panel.Heading>
                     <Panel.Title componentClass="h3">Multiple Answer Structures Found</Panel.Title>
                   </Panel.Heading>
@@ -339,7 +339,7 @@ class AnswersetInteractive extends React.Component {
               </Col>
             </Row>
           }
-          <Row>
+          <Row style={{ marginTop: '10px' }}>
             <Col md={3} style={{ paddingRight: '5px' }}>
               <AnswersetInteractiveSelector
                 subgraph={answer}

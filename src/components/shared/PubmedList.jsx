@@ -57,8 +57,8 @@ class PubmedList extends React.Component {
   }
 
   render() {
-    const listHeight = 500;
     const rowCount = this.props.publications.length;
+    const listHeight = Math.max(Math.min((rowCount * 100), 500), 100);
 
     return (
       <AutoSizer disableHeight defaultWidth={100}>
