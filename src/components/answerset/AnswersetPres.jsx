@@ -16,6 +16,20 @@ class AnswersetPres extends React.Component {
     };
 
     this.handleTabSelect = this.handleTabSelect.bind(this);
+    this.onDownload = this.onDownload.bind(this);
+  }
+  onDownload() {
+    console.log('Not finished yet.');
+    // let data = this.props.answerset;
+
+    // var json = JSON.stringify(data);
+    // var blob = new Blob([json], {type: "application/json"});
+    // var url  = URL.createObjectURL(blob);
+
+    // var a = document.createElement('a');
+    // a.download = "answerset.json";
+    // a.href = url;
+    // a.textContent = "Download answerset.json";
   }
 
   handleTabSelect(tabKey) {
@@ -40,6 +54,9 @@ class AnswersetPres extends React.Component {
           showOtherAnswersets={showOtherAnswersets}
           otherAnswersets={this.props.otherAnswersets}
           callbackAnswersetSelect={this.props.callbackAnswersetSelect}
+
+          showDownload={false}
+          callbackDownload={this.onDownload}
         />
         <br />
         <Tabs
@@ -47,6 +64,7 @@ class AnswersetPres extends React.Component {
           onSelect={this.handleTabSelect}
           animation
           id="answerset_tabs"
+          mountOnEnter
         >
           <Tab
             eventKey={1}
@@ -64,6 +82,8 @@ class AnswersetPres extends React.Component {
               callbackAnswerSelected={this.props.callbackAnswerSelected}
               callbackNoAnswerSelected={this.props.callbackNoAnswerSelected}
               callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
+              enabledAnswerLink={this.props.enabledAnswerLink}
+              getAnswerUrl={this.props.getAnswerUrl}
             />
           </Tab>
           <Tab
@@ -81,6 +101,8 @@ class AnswersetPres extends React.Component {
               callbackAnswerSelected={this.props.callbackAnswerSelected}
               callbackNoAnswerSelected={this.props.callbackNoAnswerSelected}
               callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
+              enabledAnswerLink={this.props.enabledAnswerLink}
+              getAnswerUrl={this.props.getAnswerUrl}
             />
           </Tab>
           <Tab
@@ -115,6 +137,9 @@ AnswersetPres.defaultProps = {
 
   answerId: [],
   answersetGraph: { nodes: [], edges: [] },
+
+  enabledAnswerLink: false,
+  getAnswerUrl: () => '',
 };
 
 AnswersetPres.propTypes = {
@@ -148,6 +173,9 @@ AnswersetPres.propTypes = {
     nodes: PropTypes.arrayOf(PropTypes.object),
     edges: PropTypes.arrayOf(PropTypes.object),
   }),
+
+  enabledAnswerLink: PropTypes.bool,
+  getAnswerUrl: PropTypes.func,
 };
 
 export default AnswersetPres;

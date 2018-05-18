@@ -8,6 +8,7 @@ import Loading from './components/Loading';
 import AnswersetPres from './components/answerset/AnswersetPres';
 
 const shortid = require('shortid');
+const _ = require('lodash');
 
 class Answerset extends React.Component {
   constructor(props) {
@@ -25,9 +26,12 @@ class Answerset extends React.Component {
       answerCount: null,
       answersetGraph: {},
       answersetFeedback: [],
+      answerId: [],
     };
 
     this.callbackFeedbackSubmit = this.callbackFeedbackSubmit.bind(this);
+    this.handleAnswerSelect = this.handleAnswerSelect.bind(this);
+    this.handleNoAnswerSelect = this.handleNoAnswerSelect.bind(this);
   }
 
   componentDidMount() {
@@ -36,8 +40,7 @@ class Answerset extends React.Component {
     this.appConfig.answersetData(
       this.props.id,
       (data) => {
-        console.log(data)
-        const { answers } = data;
+        const answers = _.cloneDeep(data.answerset.result_list);
         answers.forEach((a) => {
           a.result_graph.edge_list.forEach((e) => {
             if (!('id' in e)) {
@@ -82,6 +85,7 @@ class Answerset extends React.Component {
           otherQuestions: data.other_questions,
           dataReady: true,
           isValid: true,
+          answerId: this.props.answerId,
         });
       },
       (err) => {
@@ -111,6 +115,15 @@ class Answerset extends React.Component {
         console.log(err);
       },
     );
+  }
+  handleAnswerSelect(answer) {
+    // This creates subtle oddities between list and interactive view so it has been disabled.
+    this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, answer.id));
+    this.setState({ answerId: answer.id });
+  }
+  handleNoAnswerSelect() {
+    this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answerset(this.state.question.id, this.state.answerset.id));
+    this.setState({ answerId: [] });
   }
   renderLoading() {
     return (
@@ -155,7 +168,7 @@ class Answerset extends React.Component {
             user={this.state.user}
             question={this.state.question}
             answerset={this.state.answerset}
-            answerId={this.props.answerId}
+            answerId={this.state.answerId}
             answers={this.state.answers}
             answerCount={this.state.answerCount}
             answersetGraph={this.state.answersetGraph}
@@ -167,8 +180,10 @@ class Answerset extends React.Component {
             enableFeedbackSubmit={false}
             callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
             callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
-            callbackAnswerSelected={a => this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, a.id))}
-            callbackNoAnswerSelected={() => this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answerset(this.state.question.id, this.state.answerset.id))}
+            callbackAnswerSelected={this.handleAnswerSelect}
+            callbackNoAnswerSelected={this.handleNoAnswerSelect}
+            enabledAnswerLink
+            getAnswerUrl={answer => this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, answer.id)}
             callbackFeedbackSubmit={this.callbackFeedbackSubmit}
           />
         }

@@ -3,6 +3,8 @@ import { Row, Col, Panel } from 'react-bootstrap';
 import { AutoSizer, List } from 'react-virtualized';
 import AnswerExplorer from '../shared/AnswerExplorer';
 
+const _ = require('lodash');
+
 class AnswersetList extends React.Component {
   constructor(props) {
     super(props);
@@ -56,6 +58,20 @@ class AnswersetList extends React.Component {
     this.rowRenderer = this.rowRenderer.bind(this);
 
     this.updateSelectedSubGraphIndex = this.updateSelectedSubGraphIndex.bind(this);
+    this.updateSelectedSubGraphIndexById = this.updateSelectedSubGraphIndexById.bind(this);
+  }
+
+  componentDidMount() {
+    // this.updateSelectedSubGraphIndex(0);
+    if (this.props.answerId && Number.isSafeInteger(this.props.answerId)) {
+      this.updateSelectedSubGraphIndexById(this.props.answerId);
+    }
+  }
+  componentWillReceiveProps(newProps) {
+    const answerIdEqual = _.isEqual(this.props.answerId, newProps.answerId); // Monitored for select by parameter or page load
+    if (!answerIdEqual && newProps.answerId && Number.isSafeInteger(newProps.answerId)) {
+      this.updateSelectedSubGraphIndexById(newProps.answerId);
+    }
   }
 
   rowRenderer({
@@ -113,6 +129,12 @@ class AnswersetList extends React.Component {
     this.list.forceUpdateGrid();
     this.setState({ selectedSubGraphIndex: ind });
   }
+  updateSelectedSubGraphIndexById(id) {
+    const idIndex = this.props.answers.findIndex(a => a.id === id);
+    if (idIndex > -1 && idIndex < this.props.answers.length) {
+      this.updateSelectedSubGraphIndex(idIndex);
+    }
+  }
 
   render() {
     const listHeight = 500;
@@ -155,6 +177,8 @@ class AnswersetList extends React.Component {
 
             callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
             enableFeedbackSubmit={this.props.enableFeedbackSubmit}
+            enabledAnswerLink={this.props.enabledAnswerLink}
+            getAnswerUrl={this.props.getAnswerUrl}
           />
         </Col>
       </Row>

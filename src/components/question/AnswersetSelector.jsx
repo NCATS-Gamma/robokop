@@ -80,11 +80,15 @@ class AnswersetSelector extends React.Component {
     if (message == null || message.length < 1) {
       message = 'No Message Provided';
     }
+    let { creator } = answerset;
+    if (creator === undefined || creator == null) {
+      creator = '';
+    }
     return (
       <div style={{ paddingTop: '5px' }}>
         <Row>
           <Col md={12}>
-            <h4>{answerset.creator}</h4>
+            <h4>{creator}</h4>
             <h5>{timeString}</h5>
             <pre>
               {message}
@@ -178,9 +182,15 @@ class AnswersetSelector extends React.Component {
     const moreThanOne = this.props.answersets.length > 1;
     const options = this.props.answersets.map((a) => {
       const d = new Date(a.datetime);
-      return { value: a.id, label: `${d.toLocaleString()} - ${a.creator}` };
+      let { creator } = a;
+      if (creator === undefined || creator == null) {
+        creator = '';
+      } else {
+        creator = ` - ${creator}`;
+      }
+      return { value: a.id, label: `${d.toLocaleString()} ${creator}` };
     });
-    const disableNewButton = !this.props.answerBusy || !this.props.refreshBusy || !this.props.initializerBusy;
+    const disableNewButton = this.props.answerBusy || this.props.refreshBusy || this.props.initializerBusy;
     return (
       <div>
         <div id="answersetSelect" style={{ display: 'table', width: '100%' }}>

@@ -3,6 +3,7 @@ import React from 'react';
 import { Row, Col, Alert, FormGroup, FormControl, Popover, OverlayTrigger, ProgressBar, DropdownButton, MenuItem } from 'react-bootstrap';
 
 import GoPencil from 'react-icons/lib/go/pencil';
+import FaDownload from 'react-icons/lib/fa/download';
 
 import QuestionToolbar from './QuestionToolbar';
 
@@ -241,6 +242,9 @@ class QuestionHeader extends React.Component {
                       enableQuestionFork={this.props.enableQuestionFork}
                     />
                   }
+                  {this.props.showDownload &&
+                    <FaDownload style={{ cursor: 'pointer' }} onClick={() => this.props.callbackDownload()} />
+                  }
                 </div>
               </h1>
             </div>
@@ -303,6 +307,9 @@ QuestionHeader.defaultProps = {
   showOtherAnswersets: false,
   otherAnswersets: [],
   callbackAnswersetSelect: () => {},
+
+  showDownload: false,
+  callbackDownload: () => {},
 };
 
 export default QuestionHeader;

@@ -26,48 +26,32 @@ class AnswersetInteractive extends React.Component {
 
     this.initializeNodeSelection = this.initializeNodeSelection.bind(this);
     this.initializeStructureGroup = this.initializeStructureGroup.bind(this);
-    this.selectAnswerById = this.selectAnswerById.bind(this);
+    this.getAnswerIndexById = this.getAnswerIndexById.bind(this);
 
     this.handleNodeSelectionChange = this.handleNodeSelectionChange.bind(this);
 
     this.onGroupSelectionChange = this.onGroupSelectionChange.bind(this);
-    this.onSelectionAnswerIndex = this.onSelectionAnswerIndex.bind(this);
     this.onSelectionCallback = this.onSelectionCallback.bind(this);
   }
   componentDidMount() {
-    // this.updateSelectedSubGraphIndex(0);
-    this.initializeStructureGroup();
+    let afterInitializationSelection = null;
     if (this.props.answerId && Number.isSafeInteger(this.props.answerId)) {
-      this.selectAnswerById(this.props.answerId);
+      afterInitializationSelection = this.props.answerId;
     }
+    this.initializeStructureGroup(afterInitializationSelection);
   }
   componentWillReceiveProps(newProps) {
-    // const userEqual = _.isEqual(this.props.user, newProps.user);
-    // const answersEqual = _.isEqual(this.props.answers, newProps.answers);
-    const answersEqual = false;
-    // const feedbackEqual = _.isEqual(this.props.answersetFeedback, newProps.answersetFeedback);
-    // const answerIdEqual = _.isEqual(this.props.answerId, newProps.answerId); // Monitored for select by parameter or page load
-    const answerIdEqual = false;
-
-    if (!answersEqual) {
-      this.initializeStructureGroup();
-    }
+    const answerIdEqual = _.isEqual(this.props.answerId, newProps.answerId); // Monitored for select by parameter or page load
 
     if (!answerIdEqual && newProps.answerId && Number.isSafeInteger(newProps.answerId)) {
-      this.selectAnswerById(newProps.answerId);
+      this.initializeStructureGroup(newProps.answerId);
     }
   }
   onGroupSelectionChange(selection) {
     const index = selection.value;
     this.initializeNodeSelection(index);
   }
-  onSelectionAnswerIndex(index) {
-    // We must make a nodeSelection that specifies this exact answer
-    console.log("fix me to be aware of groups")
-    // const nodeSelection = this.props.answers[index].nodes.map(n => n.id);
 
-    // this.handleNodeSelectionChange(this. nodeSelection);
-  }
   onSelectionCallback(index, selectedOption) {
     const { nodeSelection } = this.state;
     if (selectedOption == null) {
@@ -78,12 +62,28 @@ class AnswersetInteractive extends React.Component {
 
     this.handleNodeSelectionChange(this.state.groupSelection, nodeSelection);
   }
-  initializeStructureGroup() {
+
+  getAnswerIndexById(answerId) {
+    let selectedGroupIndex = null;
+    let selectedGroupWithinIndex = null;
+    this.state.groups.forEach((g, groupIndex) => {
+      const thisSubGroupAnswerIndex = g.answers.findIndex(a => a.id === answerId);
+      if (thisSubGroupAnswerIndex >= 0) {
+        selectedGroupWithinIndex = thisSubGroupAnswerIndex;
+        selectedGroupIndex = groupIndex;
+      }
+    });
+
+    return [selectedGroupIndex, selectedGroupWithinIndex];
+  }
+
+  initializeStructureGroup(afterSelection = null) {
     try {
       // We have answers and we need to assign each answer to a structural group based on its graph
 
       // Find all unique node types
       const nodeTypes = new Set();
+      const answers = _.cloneDeep(this.props.answers);
       this.props.answers.forEach((a) => {
         const g = a.result_graph;
         g.node_list.forEach(n => nodeTypes.add(n.type));
@@ -99,7 +99,7 @@ class AnswersetInteractive extends React.Component {
       const connectivityArray = [];
       const connectivityHashArray = [];
       // For each answer we need to figure out which group its in.
-      const answerGroup = this.props.answers.map((a) => {
+      const answerGroup = answers.map((a) => {
         // Initialize connectivity matrix (as a vector) to all 0s
         const connectivity = [];
         for (let ij = 0; ij < (nodeTypesArray.length * nodeTypesArray.length); ij += 1) {
@@ -156,17 +156,16 @@ class AnswersetInteractive extends React.Component {
         }
         return groupIndex;
       });
-
       const nGroups = connectivityArray.length;
       const groups = [];
       for (let iGroup = 0; iGroup < nGroups; iGroup += 1) {
         const groupAnswers = [];
         let maxConf = -Infinity;
-        for (let iAnswer = 0; iAnswer < this.props.answers.length; iAnswer += 1) {
+        for (let iAnswer = 0; iAnswer < answers.length; iAnswer += 1) {
           if (answerGroup[iAnswer] === iGroup) {
-            groupAnswers.push(_.cloneDeep(this.props.answers[iAnswer]));
-            if (maxConf < this.props.answers[iAnswer].confidence) {
-              maxConf = this.props.answers[iAnswer].confidence;
+            groupAnswers.push(_.cloneDeep(answers[iAnswer]));
+            if (maxConf < answers[iAnswer].confidence) {
+              maxConf = answers[iAnswer].confidence;
             }
           }
         }
@@ -198,14 +197,20 @@ class AnswersetInteractive extends React.Component {
         });
       }
 
-      this.setState({ groups });
-      this.initializeNodeSelection(0);
+      this.setState({ groups }, () => {
+        let inds = [0, null];
+        if (afterSelection) {
+          inds = this.getAnswerIndexById(afterSelection);
+        }
+        this.initializeNodeSelection(inds[0], inds[1]);
+      });
     } catch (err) {
-      this.setState({ groups: [], isError: true, error: err })
+      this.setState({ groups: [], isError: true, error: err });
     }
   }
 
-  initializeNodeSelection(index) {
+  initializeNodeSelection(index, answerWithinIndex = null) {
+    // if answerWithinINdex is supplied we will intialize with that answer selected
     if (this.state.groups.length < 1) {
       return;
     }
@@ -215,16 +220,18 @@ class AnswersetInteractive extends React.Component {
       return;
     }
 
-    const nodeSelection = group.answers[0].result_graph.node_list.map(() => null);
-    this.handleNodeSelectionChange(index, nodeSelection);
-  }
-  selectAnswerById(answerId) {
-    console.log("Fix this to be aware of groups!!!")
-    const index = this.props.answers.findIndex(a => a.id === answerId);
-    if (Number.isSafeInteger(index) && index >= 0) {
-      this.onSelectionAnswerIndex(index);
+    let nodeSelection = [];
+    let resetUrl = true;
+    if (answerWithinIndex) {
+      nodeSelection = group.answers[answerWithinIndex].result_graph.node_list.map(n => n.id);
+      resetUrl = false;
+    } else {
+      nodeSelection = group.answers[0].result_graph.node_list.map(() => null);
     }
+
+    this.handleNodeSelectionChange(index, nodeSelection, resetUrl);
   }
+
   handleNodeSelectionChange(groupIndex, nodeSelection) {
     // find all paths such that nodes match selection template
     const group = this.state.groups[groupIndex];
@@ -245,7 +252,6 @@ class AnswersetInteractive extends React.Component {
       const nodeIds = theseNodes.map(n2 => n2.id);
       // keep first occurrence of each node
       return theseNodes.filter((val, ind3) => nodeIds.indexOf(val.id) === ind3);
-    //   return theseNodes.filter((val, ind3) => nodeNames.indexOf(val.name) === ind3);
     });
 
     // then update the selectedSubGraphIndex to be the 'highest' one left
@@ -350,6 +356,8 @@ class AnswersetInteractive extends React.Component {
 
                 callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
                 enableFeedbackSubmit={this.props.enableFeedbackSubmit}
+                enabledAnswerLink={this.props.enabledAnswerLink}
+                getAnswerUrl={this.props.getAnswerUrl}
               />
             </Col>
           </Row>

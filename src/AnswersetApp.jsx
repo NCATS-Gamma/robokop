@@ -11,6 +11,7 @@ import Loading from './components/Loading';
 import AnswersetPres from './components/answerset/AnswersetPres';
 
 const shortid = require('shortid');
+const _ = require('lodash');
 
 class Answerset extends React.Component {
   constructor(props) {
@@ -48,11 +49,9 @@ class Answerset extends React.Component {
         const fileContents = e.target.result;
         try {
           const object = JSON.parse(fileContents);
-
-          const answerset = { // These are the required fields for our question header
-            creator: object.tool_version,
-            timestamp: object.timestamp,
-          };
+          const answerset = object;
+          answerset.creator = object.tool_version;
+          answerset.timestamp = object.timestamp;
 
           const question = { // These are the required fields for our question header
             name: object.original_question_text, // This may seem backwards between name an natural but it looks better
@@ -60,7 +59,7 @@ class Answerset extends React.Component {
             notes: object.message, // We use the notes area to display the message
           };
 
-          const answers = object.result_list;
+          const answers = _.cloneDeep(object.result_list);
           answers.forEach((a) => {
             a.result_graph.edge_list.forEach((edge) => {
               if (!('id' in edge)) {
@@ -72,7 +71,7 @@ class Answerset extends React.Component {
           answers.forEach((a, i) => {
             const answerNodeIds = new Set();
             if (answerNodeIds.has(a.id)) {
-              console.log(`Answer ${i} has multiple nodes with id ${a.id}. Future errors will result.`);
+              console.log(`Answer ${i+1} has multiple nodes with id ${a.id}. Future errors will result.`);
             } else {
               answerNodeIds.add(a.id);
             }

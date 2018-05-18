@@ -355,7 +355,7 @@ class QuestionNewPres extends React.Component {
           </Col>
         </Row>
         <Row>
-          <Col md={6} style={{ marginTop: '20px' }}>
+          <Col md={6} style={{ marginTop: '20px', marginBottom: '20px' }}>
             <ButtonToolbar>
               <Button bsStyle="default" bsSize="lg" onClick={this.props.callbackCreate}>
                 Create

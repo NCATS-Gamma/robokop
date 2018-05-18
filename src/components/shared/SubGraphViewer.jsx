@@ -257,7 +257,7 @@ class SubGraphViewer extends React.Component {
     if (!this.props.showSupport) {
       g.edges = g.edges.filter(e => e.type !== 'literature_co-occurrence');
     }
-    console.log(g)
+
     return g;
   }
 

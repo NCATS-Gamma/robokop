@@ -1,5 +1,9 @@
 import React from 'react';
-import { Button, Panel, Modal } from 'react-bootstrap';
+import { Panel, Modal } from 'react-bootstrap';
+
+import FaCommentO from 'react-icons/lib/fa/comment-o';
+import FaCommentsO from 'react-icons/lib/fa/comments-o';
+
 import FeedbackEditor from '../shared/FeedbackEditor';
 import SubGraphViewer from './SubGraphViewer';
 import AnswerExplorerInfo from './AnswerExplorerInfo';
@@ -58,10 +62,9 @@ class AnswerExplorer extends React.Component {
             Answer {this.props.answerIndex + 1}
             <div className="pull-right">
               {this.props.enableFeedbackSubmit &&
-                <span className="pull-right">
-                  <Button onClick={() => this.props.callbackOpenFeedback()} style={{ padding: '5px' }}>
-                    Feedback
-                  </Button>
+                <span>
+                  <FaCommentO style={{ cursor: 'pointer' }} onClick={() => this.props.callbackOpenFeedback()} />
+                  <FaCommentsO style={{ cursor: 'pointer' }} onClick={() => {}} />
                 </span>
               }
             </div>
