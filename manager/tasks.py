@@ -138,7 +138,7 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
                             html=html)
                 mail.send(msg)
         except Exception as err:
-            logger.error(f"Failed to send 'completed answer' email: {err}")
+            logger.warning(f"Failed to send 'completed answer' email: {err}")
 
     logger.info("Done answering.")
     return answerset.id
@@ -182,7 +182,7 @@ def update_kg(self, question_hash, question_id=None, user_email=None):
                             html=html)
                 mail.send(msg)
     except Exception as err:
-        logger.error(f"Failed to send 'completed KG update' email: {err}")
+        logger.warning(f"Failed to send 'completed KG update' email: {err}")
 
     logger.info(f"Done updating for '{question.name}'.")
     return "You updated the KG!"
