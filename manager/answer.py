@@ -75,7 +75,7 @@ class Answerset(db.Model):
             struct['timestamp'] = struct['timestamp'].isoformat()
         return struct
     
-    def toStandard(self):
+    def toStandard(self, data=True):
         '''
         context
         datetime
@@ -96,7 +96,7 @@ class Answerset(db.Model):
             'original_question_text': natural_question,
             'restated_question_text': f"An improved version of '{natural_question}'?",
             'result_code': 'OK' if self.answers else 'EMPTY',
-            'result_list': [a.toStandard() for a in self.answers]
+            'result_list': [a.toStandard() for a in self.answers] if data else None
         }
         return output
 
