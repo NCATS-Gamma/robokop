@@ -70,11 +70,13 @@ class Answerset extends React.Component {
 
           answers.forEach((a, i) => {
             const answerNodeIds = new Set();
-            if (answerNodeIds.has(a.id)) {
-              console.log(`Answer ${i+1} has multiple nodes with id ${a.id}. Future errors will result.`);
-            } else {
-              answerNodeIds.add(a.id);
-            }
+            a.result_graph.node_list.forEach((n) => {
+              if (answerNodeIds.has(n.id)) {
+                console.log(`Answer ${i+1} has multiple nodes with id ${n.id}. Future errors will result.`);
+              } else {
+                answerNodeIds.add(n.id);
+              }
+            });
           });
 
           const nodesIdSet = new Set();
