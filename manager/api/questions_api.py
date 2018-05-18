@@ -15,6 +15,7 @@ from manager.util import getAuthData, get_tasks
 from manager.question import list_questions, list_questions_by_username, Question
 from manager.tasks import update_kg, answer_question
 from manager.setup import api
+import manager.logging_config
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,16 @@ class QuestionsAPI(Resource):
         tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE')]
 
         # get question hashes
-        question_hashes = [re.match(r"\['(.*)'\]", t['args']).group(1) if t['args'] else None for t in tasks]
+        question_hashes = []
+        for t in tasks:
+            if not t['args']:
+                question_hashes.append(None)
+                continue
+            match = re.match(r"[\[(]'(.*)',?[)\]]", t['args'])
+            if not match:
+                question_hashes.append(None)
+                continue
+            question_hashes.append(match.group(1))
 
         # split into answer and update tasks
         task_types = ['answering' if t['name'] == 'tasks.answer_question' else
