@@ -107,7 +107,7 @@ class AnswerQuestion(Resource):
             return "Invalid question key.", 404
         username = current_user.username
         # Answer a question
-        task = answer_question.apply_async(args=[question.hash], kwargs={'question_id':question_id, 'user_email':username})
+        task = answer_question.apply_async(args=[question.hash], kwargs={'question_id':question_id, 'user_email':current_user.email})
         return {'task_id':task.id}, 200
 
 @api.route('/q/<question_id>/refresh_kg')
@@ -125,7 +125,7 @@ class RefreshKG(Resource):
         question_hash = question.hash
         username = current_user.username
         # Update the knowledge graph for a question
-        task = update_kg.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':username})
+        task = update_kg.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':current_user.email})
         return {'task_id':task.id}, 202
 
 @api.route('/q/<question_id>/tasks')
