@@ -7,7 +7,7 @@ import Select from 'react-select';
 
 import MdCancel from 'react-icons/md/cancel'
 
-import CardTypes from './QuestionNewCardTypes';
+import CardTypes from '../util/questionNewCardTypes';
 import getNodeTypeColorMap from '../util/colorUtils';
 import entityNameDisplay from '../util/entityNameDisplay';
 

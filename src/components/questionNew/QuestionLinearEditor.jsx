@@ -8,7 +8,7 @@ import { Button } from 'react-bootstrap';
 import FaPlus from 'react-icons/fa/plus';
 
 import QuestionLinearEditorCard from './QuestionLinearEditorCard';
-import CardTypes from './QuestionNewCardTypes';
+import CardTypes from '../util/questionNewCardTypes';
 
 const shortid = require('shortid');
 

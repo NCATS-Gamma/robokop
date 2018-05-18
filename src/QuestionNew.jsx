@@ -6,7 +6,7 @@ import Header from './components/Header';
 import Loading from './components/Loading';
 
 import QuestionNewPres from './components/questionNew/QuestionNewPres';
-import CardTypes from './components/questionNew/QuestionNewCardTypes';
+import CardTypes from './components/util/questionNewCardTypes';
 
 class QuestionNew extends React.Component {
   constructor(props) {
