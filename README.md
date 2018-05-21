@@ -1,15 +1,15 @@
 # ROBOKOP
 
-ROBOKOP is a tool desinged for reasoning over structured biomedical knowledge databases as part of the NCATS translator and reasoner programs. The ROBOKOP system is a full web-application consisting of a user interface server, an API server, and several worker servers. The code is separated into three separate repositories.
+ROBOKOP is a tool for reasoning over structured biomedical knowledge databases as part of the NCATS translator and reasoner programs. The ROBOKOP system consists of a web based user interface, an API server, and several worker servers. The code is separated into three separate repositories.
 
 * robokop - https://github.com/ncats-Gamma/robokop - UI and entry point
 * robokop-interfaces - https://github.com/ncats-Gamma/robokop-interfaces - Knowledge source interfaces and knowledge graph building
-* robokop-rank - https://github.com/ncats-Gamma/robokop-rank - Scores subgraphs to relevance to a question
+* robokop-rank - https://github.com/ncats-Gamma/robokop-rank - Find and ranks subgraphs based on a supplied question
 
-This repository is the main repository for the user interface and common storage modules. It is also used for issues associated with the entire stack.
+This repository is the main repository for the user interface and common storage modules. It is also used f or issues associated with the entire stack.
 
 ## Example Installation
-See an instance at robokop.renci.org
+See an instance at http://robokop.renci.org
 
 * http://robokop.renci.org - The Robokop user interface
 * http://robokop.renci.org/api - The Robokop user interface API
@@ -17,13 +17,16 @@ See an instance at robokop.renci.org
 * http://robokop.renci.org/apidocs - The robokop-rank API
 * http://robokop.renci.org:7474 - NEO4j http interface
 * bolt://robokop.renci.org:7687 - NEO4j bolt interface
-* http://robokop.renci.org:5555 - UI to see the queues for the UI - Requires authentication
-* http://robokop.renci.org:5556 - UI to see the queues for the builder - Requires authentication
-* http://robokop.renci.org:5557 - UI to see the queues for the ranker - Requires authentication
+* http://robokop.renci.org:5555 - UI to see the worker queues for the UI - Requires authentication
+* http://robokop.renci.org:5556 - UI to see the worker queues for the builder - Requires authentication
+* http://robokop.renci.org:5557 - UI to see the worker queues for the ranker - Requires authentication
 
 ## Setup Instructions 
 
-### Get
+### Installation
+ROBOKOP uses several docker containers managed through docker-compose. Both should be installed and configured properly.
+
+### Source Code Structure
 
 We create a robokop directory and clone three repos into it: robokop, robokop-interfaces, and robokop-rank.
 
@@ -38,8 +41,8 @@ robokop
 ├── robokop
 ├── robokop-interfaces
 ├── robokop-rank
-├── shared
-└──── robokop.env
+└── shared
+    └── robokop.env
 ```
 
 ### Environment settings
@@ -119,7 +122,7 @@ Environemnts are configured in several docker containers managed by docker-compo
 * robokop/robokop/helpers - Common storage databases - Redis, Neo4j, Postgres
 * robokop/robokop/deploy - UI API and web server
 * robokop/robokop-interfaces/deploy - robokop-interfaces API server
-* robokop/robokop-interfaces/deploy - robokop-interfaces API server
+* robokop/robokop-rank/deploy - robokop-interfaces API server
 
 
 First we must build the containers. For each of robokop, robokop-interfaces, and robokop-rank,
@@ -138,7 +141,6 @@ With all containers started you can now monitor each component using the urls be
 
 ### Interfaces
 
-Visit 
 * http://127.0.0.1 - The Robokop user interface
 * http://127.0.0.1/api/ - The Robokop user interface API
 * http://127.0.0.1:6010/apidocs - The robokop-interfaces API
