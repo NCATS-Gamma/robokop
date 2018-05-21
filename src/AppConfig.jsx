@@ -99,7 +99,7 @@ class AppConfig {
   user(successFun, failureFun) { this.getRequest(`${this.apis.user}`, successFun, failureFun); }
   questionListData(fun) { this.getRequest(`${this.apis.questions}`, fun); }
   questionData(id, successFun, failureFun) { this.getRequest(`${this.apis.question(id)}`, successFun, failureFun); }
-  questionSubgraph(id, fun) { this.getRequest(`${this.apis.question(id)}/subgraph`, fun); }
+  questionSubgraph(id, successFun, failureFun) { this.getRequest(`${this.apis.question(id)}/subgraph`, successFun, failureFun); }
   answersetData(id, successFun, failureFun) { this.getRequest(`${this.apis.answerset(id)}`, successFun, failureFun); }
   answerData(setId, id, successFun, failureFun) { this.getRequest(`${this.apis.answer(setId, id)}`, successFun, failureFun); }
 
@@ -113,7 +113,7 @@ class AppConfig {
     //   query: {}, // Complex object matching current machine question syntax
     // };
 
-    // To make a new question we post to the questionNew with specifications for a question
+    // To make a new question we post to the questions page with specifications for a question
     this.postRequest(
       this.apis.questions,
       data,

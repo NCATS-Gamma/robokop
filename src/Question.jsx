@@ -311,8 +311,8 @@ class Question extends React.Component {
       },
     );
   }
-  callbackFetchGraph(afterDoneFun) {
-    this.appConfig.questionSubgraph(this.props.id, data => this.setState({ subgraph: data }, afterDoneFun()));
+  callbackFetchGraph(afterDoneFun, afterDoneFunFail) {
+    this.appConfig.questionSubgraph(this.props.id, data => this.setState({ subgraph: data }, afterDoneFun()), (err) => { console.log(err); this.setState({ subgraph: { edges: [], nodes: [] } }, afterDoneFunFail()); });
   }
   dialogConfirm(callbackToDo, inputOptions) {
     const defaultOptions = {

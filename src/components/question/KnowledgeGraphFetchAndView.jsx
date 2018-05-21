@@ -38,7 +38,7 @@ class KnowledgeGraphFetchAndView extends React.Component {
 
   fetch() {
     this.setState({ fetching: true });
-    this.props.callbackFetchGraph(() => this.setState({ fetching: false }, this.scrollGraphToTop()));
+    this.props.callbackFetchGraph(() => this.setState({ fetching: false }, this.scrollGraphToTop()), () => this.setState({ fetching: false }));
   }
 
   render() {
