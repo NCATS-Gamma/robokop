@@ -19,8 +19,10 @@ class Question extends React.Component {
     this.state = {
       dataReady: false,
       userReady: false,
+      conceptsReady: false,
       user: {},
       question: {},
+      concepts: [],
       answersets: [],
       subgraph: null,
       runningTasks: [],
@@ -31,7 +33,7 @@ class Question extends React.Component {
       isValid: false,
     };
 
-    this.taskPollingWaitTime = 1000; // in ms
+    this.taskPollingWaitTime = 2000; // in ms
 
     this.pullTasks = this.pullTasks.bind(this);
     this.updateTaskStatus = this.updateTaskStatus.bind(this);
@@ -71,6 +73,12 @@ class Question extends React.Component {
       user: this.appConfig.ensureUser(data),
       userReady: true,
     }));
+    this.appConfig.concepts((data) => {
+      this.setState({
+        concepts: data,
+        conceptsReady: true,
+      });
+    });
     this.pullTasks();
   }
   pullTasks() {
@@ -86,6 +94,8 @@ class Question extends React.Component {
   updateTaskStatus() {
     const tasks = this.state.runningTasks;
     const prevTasks = this.state.prevRunningTasks;
+
+    // console.log('Checking for finished tasks', prevTasks, tasks);
 
     const refreshBusy = tasks.updaters.length > 0;
     const answerBusy = tasks.answerers.length > 0;
@@ -112,12 +122,16 @@ class Question extends React.Component {
           answersets: data.answerset_list,
         }),
       );
-      this.notifyInitializer(prevTasks.initializers[0].uuid);
+      if (('initializers' in prevTasks) && Array.isArray(prevTasks.initializers) && (prevTasks.initializers.length > 0) && ('uuid' in prevTasks.initializers[0])) {
+        this.notifyInitializer(prevTasks.initializers[0].uuid);
+      }
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
       return;
     }
     if (refreshFinished && !initializerBusy) {
-      this.notifyRefresh(prevTasks.updaters[0].uuid);
+      if (('updaters' in prevTasks) && Array.isArray(prevTasks.updaters) && (prevTasks.updaters.length > 0) && ('uuid' in prevTasks.updaters[0])) {
+        this.notifyRefresh(prevTasks.updaters[0].uuid);
+      }
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
     if (answerFinished && !initializerBusy) {
@@ -127,7 +141,9 @@ class Question extends React.Component {
           answersets: data.answerset_list,
         }),
       );
-      this.notifyAnswers(prevTasks.answerers[0].uuid);
+      if (('answerers' in prevTasks) && Array.isArray(prevTasks.answerers) && (prevTasks.answerers.length > 0) && ('uuid' in prevTasks.answerers[0])) {
+        this.notifyAnswers(prevTasks.answerers[0].uuid);
+      }
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
   }
@@ -277,7 +293,7 @@ class Question extends React.Component {
         // Actually try to delete the question here.
         this.appConfig.questionDelete(
           q.id,
-          () => {console.log('cool?'); this.appConfig.redirect(this.appConfig.urls.questions)},
+          () => { console.log('Question Deleted'); this.appConfig.redirect(this.appConfig.urls.questions); },
           (err) => {
             console.log(err);
             this.dialogMessage({
@@ -295,8 +311,8 @@ class Question extends React.Component {
       },
     );
   }
-  callbackFetchGraph(afterDoneFun) {
-    this.appConfig.questionSubgraph(this.props.id, data => this.setState({ subgraph: data }, afterDoneFun()));
+  callbackFetchGraph(afterDoneFun, afterDoneFunFail) {
+    this.appConfig.questionSubgraph(this.props.id, data => this.setState({ subgraph: data }, afterDoneFun()), (err) => { console.log(err); this.setState({ subgraph: { edges: [], nodes: [] } }, afterDoneFunFail()); });
   }
   dialogConfirm(callbackToDo, inputOptions) {
     const defaultOptions = {
@@ -378,15 +394,81 @@ class Question extends React.Component {
     });
   }
   addToTaskList(newTask) {
-    const answerBusy = Boolean(newTask.answersetTask);
-    const refreshBusy = Boolean(newTask.questionTask);
+    const isAnswerTask = Boolean(newTask.answersetTask);
+    const isRefreshTask = Boolean(newTask.questionTask);
 
-    this.setState(
-      {
-        answerBusy,
-        refreshBusy,
+    if (isAnswerTask) {
+      console.log('Attempting to initializing new answerer task: ', newTask.answersetTask);
+    } else {
+      console.log('Attempting to initializing new updater task: ', newTask.questionTask);
+    }
+    setTimeout(
+      () => {
+        this.appConfig.questionTasks(
+          this.props.id,
+          (data) => {
+            console.log('Checking if our new task actually started', data);
+            let allOk = true;
+            if (isAnswerTask) {
+              const ind = data.answerers.findIndex(a => a.uuid === newTask.answersetTask);
+              if (ind < 0) {
+                console.log('Missing Answerer Task!!?!', newTask.answersetTask);
+                allOk = false;
+                this.dialogMessage({
+                  title: 'Trouble Queuing Answer Set Generation',
+                  text: 'We have lost track of your tasks. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+                  buttonText: 'OK',
+                  buttonAction: () => {},
+                });
+              }
+            }
+            if (isRefreshTask) {
+              const ind = data.updaters.findIndex(a => a.uuid === newTask.questionTask);
+              if (ind < 0) {
+                console.log('Missing Quesetion Task!!?!', newTask.questionTask);
+                allOk = false;
+                this.dialogMessage({
+                  title: 'Trouble Queuing Knowledge Graph Update',
+                  text: 'We have lost track of your tasks. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+                  buttonText: 'OK',
+                  buttonAction: () => {},
+                });
+              }
+            }
+            // FIX ME this assumes a single new task at a time!
+            if (allOk) {
+              this.setState(
+                {
+                  prevRunningTasks: data,
+                  runningTasks: data,
+                  answerBusy: isAnswerTask,
+                  refreshBusy: isRefreshTask,
+                },
+                this.updateTaskStatus,
+              );
+            } else {
+              if (isAnswerTask) {
+                this.dialogMessage({
+                  title: 'Trouble Queuing Answer Set Generation',
+                  text: 'We have lost track of your tasks. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+                  buttonText: 'OK',
+                  buttonAction: () => {},
+                });
+              }
+              if (isRefreshTask) {
+                this.dialogMessage({
+                  title: 'Trouble Queuing Knowledge Graph Update',
+                  text: 'We have lost track of your tasks. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+                  buttonText: 'OK',
+                  buttonAction: () => {},
+                });
+              }
+            }
+          },
+          err => console.log('Issues fetching active tasks', err),
+        );
       },
-      this.pullTasks,
+      500,
     );
   }
   renderLoading() {
@@ -438,6 +520,7 @@ class Question extends React.Component {
             question={this.state.question}
             answersets={this.state.answersets}
             subgraph={this.state.subgraph}
+            concepts={this.state.concepts}
             refreshBusy={this.state.refreshBusy}
             answerBusy={this.state.answerBusy}
             initializerBusy={this.state.initializerBusy}
@@ -460,7 +543,7 @@ class Question extends React.Component {
     );
   }
   render() {
-    const ready = this.state.dataReady && this.state.userReady;
+    const ready = this.state.dataReady && this.state.userReady && this.state.conceptsReady;
     return (
       <div>
         {!ready && this.renderLoading()}

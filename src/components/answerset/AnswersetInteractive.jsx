@@ -307,7 +307,7 @@ class AnswersetInteractive extends React.Component {
     });
     const oneGroup = selectOptions.length === 1;
 
-    const answerFeedback = { answerId: answer.id, accuracy: 4, impact: 3, notes: 'This is a great answer' };
+    const answerFeedback = this.props.answersetFeedback.filter(f => f.answerId === answer.id);
 
     return (
       <Row>
@@ -350,11 +350,14 @@ class AnswersetInteractive extends React.Component {
             </Col>
             <Col md={9} style={{ paddingLeft: '5px' }}>
               <AnswerExplorer
+                user={this.props.user}
                 answer={answer}
                 answerIndex={this.state.selectedSubGraphIndex}
-                feedback={answerFeedback}
+                answerFeedback={answerFeedback}
 
+                
                 callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
+                enableFeedbackView={this.props.enableFeedbackView}
                 enableFeedbackSubmit={this.props.enableFeedbackSubmit}
                 enabledAnswerLink={this.props.enabledAnswerLink}
                 getAnswerUrl={this.props.getAnswerUrl}
@@ -378,5 +381,9 @@ class AnswersetInteractive extends React.Component {
     );
   }
 }
+
+AnswersetInteractive.defaultProps = {
+  answersetFeedback: [],
+};
 
 export default AnswersetInteractive;

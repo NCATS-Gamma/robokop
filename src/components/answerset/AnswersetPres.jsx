@@ -17,48 +17,70 @@ class AnswersetPres extends React.Component {
 
     this.handleTabSelect = this.handleTabSelect.bind(this);
     this.onDownload = this.onDownload.bind(this);
+    this.renderNoAnswers = this.renderNoAnswers.bind(this);
+    this.renderAnswers = this.renderAnswers.bind(this);
   }
   onDownload() {
     console.log('Not finished yet.');
-    // let data = this.props.answerset;
+    const data = this.props.answerset;
 
-    // var json = JSON.stringify(data);
-    // var blob = new Blob([json], {type: "application/json"});
-    // var url  = URL.createObjectURL(blob);
+    // Transform the data into a json blob and give it a url
+    const json = JSON.stringify(data);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
 
-    // var a = document.createElement('a');
-    // a.download = "answerset.json";
-    // a.href = url;
-    // a.textContent = "Download answerset.json";
+    // This doesn't use Blob() might also work
+    // var url = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+
+    // Create a link with that URL and click it.
+    const a = document.createElement('a');
+    a.download = 'answerset.json';
+    a.href = url;
+    a.click();
+    a.remove();
+
   }
 
   handleTabSelect(tabKey) {
     this.setState({ tabKey });
   }
 
-  render() {
+  renderNoAnswers() {
+    return (
+      <Grid>
+        <h4>
+          No answers were found.
+        </h4>
+      </Grid>
+    );
+  }
+  renderAnswers() {
     const showOtherQuestions = this.props.otherQuestions.length > 0;
     const showOtherAnswersets = this.props.otherQuestions.length > 0;
 
     return (
       <Grid>
-        <QuestionHeader
-          question={this.props.question}
-          answerset={this.props.answerset}
+        {!this.props.omitHeader &&
+        <div>
+          <QuestionHeader
+            question={this.props.question}
+            answerset={this.props.answerset}
 
-          showOtherQuestions={showOtherQuestions}
-          otherQuestions={this.props.otherQuestions}
-          enableQuestionSelect={this.props.enableQuestionSelect}
-          callbackQuestionSelect={this.props.callbackQuestionSelect}
+            showOtherQuestions={showOtherQuestions}
+            otherQuestions={this.props.otherQuestions}
+            enableQuestionSelect={this.props.enableQuestionSelect}
+            callbackQuestionSelect={this.props.callbackQuestionSelect}
 
-          showOtherAnswersets={showOtherAnswersets}
-          otherAnswersets={this.props.otherAnswersets}
-          callbackAnswersetSelect={this.props.callbackAnswersetSelect}
+            showOtherAnswersets={showOtherAnswersets}
+            otherAnswersets={this.props.otherAnswersets}
+            callbackAnswersetSelect={this.props.callbackAnswersetSelect}
 
-          showDownload={false}
-          callbackDownload={this.onDownload}
-        />
-        <br />
+            showDownload
+            callbackDownload={this.onDownload}
+          />
+          <br />
+        </div>
+        }
         <Tabs
           activeKey={this.state.tabKey}
           onSelect={this.handleTabSelect}
@@ -73,7 +95,7 @@ class AnswersetPres extends React.Component {
             <AnswersetList
               user={this.props.user} // Needed to parse feedback to know what is yours
               answers={this.props.answers}
-              feedback={this.props.answersetFeedback}
+              answersetFeedback={this.props.answersetFeedback}
               answerId={this.props.answerId} // Monitored for select by parameter or page load
 
               enableUrlChange={this.props.enableUrlChange}
@@ -93,7 +115,7 @@ class AnswersetPres extends React.Component {
             <AnswersetInteractive
               user={this.props.user} // Needed to parse feedback to know what is yours
               answers={this.props.answers}
-              feedback={this.props.answersetFeedback}
+              answersetFeedback={this.props.answersetFeedback}
               answerId={this.props.answerId} // Monitored for select by parameter or page load
 
               enableFeedbackSubmit={this.props.enableFeedbackSubmit}
@@ -113,10 +135,18 @@ class AnswersetPres extends React.Component {
               answersetGraph={this.props.answersetGraph}
             />
           </Tab>
-
         </Tabs>
       </Grid>
     );
+  }
+  render() {
+    const hasAnswers = Array.isArray(this.props.answers) && this.props.answers.length > 0;
+    return (
+      <div>
+        {!hasAnswers && this.renderNoAnswers()}
+        {hasAnswers && this.renderAnswers()}
+      </div>
+    )
   }
 }
 
@@ -125,6 +155,9 @@ AnswersetPres.defaultProps = {
   enableUrlChange: false,
   enableQuestionSelect: false,
   enableFeedbackSubmit: false,
+  enableFeedbackView: false,
+
+  omitHeader: false,
 
   callbackNoAnswerSelected: () => {},
   callbackAnswerSelected: () => {},
@@ -146,6 +179,9 @@ AnswersetPres.propTypes = {
   enableUrlChange: PropTypes.bool,
   enableQuestionSelect: PropTypes.bool,
   enableFeedbackSubmit: PropTypes.bool,
+  enableFeedbackView: PropTypes.bool,
+
+  omitHeader: PropTypes.bool,
 
   callbackNoAnswerSelected: PropTypes.func,
   callbackAnswerSelected: PropTypes.func,

@@ -1,10 +1,10 @@
 import React from 'react';
 import { Panel, Modal } from 'react-bootstrap';
 
+import FaExternalLink from 'react-icons/lib/fa/external-link';
 import FaCommentO from 'react-icons/lib/fa/comment-o';
-import FaCommentsO from 'react-icons/lib/fa/comments-o';
 
-import FeedbackEditor from '../shared/FeedbackEditor';
+import FeedbackExplorer from '../shared/FeedbackExplorer';
 import SubGraphViewer from './SubGraphViewer';
 import AnswerExplorerInfo from './AnswerExplorerInfo';
 
@@ -42,7 +42,7 @@ class AnswerExplorer extends React.Component {
     this.setState({ modalShow: true, modalType: 'feedback' });
   }
   modalClose() {
-    this.setState({ modalShow: false, modalType: '' });
+    this.setState({ modalShow: false, modalType: null });
   }
   feedbackUpdate(newFeedback) {
     this.props.callbackFeedbackSubmit(newFeedback);
@@ -55,18 +55,35 @@ class AnswerExplorer extends React.Component {
     const modalIsInfo = modalType === 'info';
     const modalTitle = modalIsFeedback ? 'Answer Feedback' : (modalIsInfo ? 'Edge Explorer' : '');
     // className="modal-container"
+    let feedbackRight = -8;
+    if (this.props.enabledAnswerLink) {
+      feedbackRight = 25;
+    }
+    const hasFeedback = (this.props.answerFeedback) && (Array.isArray(this.props.answerFeedback)) && this.props.answerFeedback.length > 0;
+    const showFeedbackButton = this.props.enableFeedbackView || hasFeedback;
     return (
       <Panel>
         <Panel.Heading>
           <Panel.Title componentClass="h3">
             Answer {this.props.answerIndex + 1}
             <div className="pull-right">
-              {this.props.enableFeedbackSubmit &&
-                <span>
-                  <FaCommentO style={{ cursor: 'pointer' }} onClick={() => this.props.callbackOpenFeedback()} />
-                  <FaCommentsO style={{ cursor: 'pointer' }} onClick={() => {}} />
-                </span>
-              }
+              <div style={{ position: 'relative' }}>
+                {showFeedbackButton &&
+                  <div style={{ position: 'absolute', top: -2, right: feedbackRight }}>
+                    <span style={{ fontSize: '22px' }} title="Feedback">
+                      <FaCommentO style={{ cursor: 'pointer' }} onClick={() => this.feedbackModalOpen()} />
+                    </span>
+                  </div>
+                }
+                {this.props.enabledAnswerLink &&
+                  <div style={{ position: 'absolute', top: -3, right: -8 }}>
+                    <span style={{ fontSize: '22px' }} title="Direct Link to Answer">
+                      &nbsp;
+                      <a style={{ color: '#000' }} href={this.props.getAnswerUrl(this.props.answer)}><FaExternalLink style={{ cursor: 'pointer' }} /></a>
+                    </span>
+                  </div>
+                }
+              </div>
             </div>
           </Panel.Title>
         </Panel.Heading>
@@ -89,8 +106,11 @@ class AnswerExplorer extends React.Component {
             </Modal.Header>
             <Modal.Body>
               {modalIsFeedback &&
-              <FeedbackEditor
-                feedback={this.props.feedback}
+              <FeedbackExplorer
+                user={this.props.user}
+                answer={this.props.answer}
+                answerFeedback={this.props.answerFeedback}
+                enableSubmit={this.props.enableFeedbackSubmit}
                 callbackUpdate={this.feedbackUpdate}
                 callbackClose={this.feedbackModalClose}
               />

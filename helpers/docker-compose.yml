@@ -9,13 +9,18 @@ services:
     ports:
       - "${NEO4J_HTTP_PORT}:${NEO4J_HTTP_PORT}"
       - "${NEO4J_BOLT_PORT}:${NEO4J_BOLT_PORT}"
-    volumes:
-      - ./neo4j/logs:/logs
 
-  redis:
+  broker:
     image: redis
     ports:
-      - "${REDIS_PORT}:${REDIS_PORT}"
+      - "${BROKER_PORT}:${BROKER_PORT}"
+    command: --port ${BROKER_PORT}
+
+  cache:
+    image: redis
+    ports:
+      - "${CACHE_PORT}:${CACHE_PORT}"
+    command: --port ${CACHE_PORT}
 
   postgres:
     image: postgres

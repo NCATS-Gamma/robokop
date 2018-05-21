@@ -1,6 +1,8 @@
 import React from 'react';
 
+import CardTypes from '../util/questionNewCardTypes';
 import getNodeTypeColorMap from '../util/colorUtils';
+import entityNameDisplay from '../util/entityNameDisplay';
 
 const Graph = require('react-graph-vis').default;
 
@@ -36,12 +38,11 @@ class QuestionGraphViewer extends React.Component {
     }
 
     // Assume linear structure between the nodes
-    const edges = this.props.graph.edges.map(
-      e => ({
-        id: shortid.generate(),
-        from: e.start,
-        to: e.end,
-      }));
+    const edges = this.props.graph.edges.map(e => ({
+      id: shortid.generate(),
+      from: e.start,
+      to: e.end,
+    }));
     const nodes = this.props.graph.nodes.map(n => ({ ...n })); // Deep copy.
 
     const graph = { nodes, edges };
@@ -58,6 +59,9 @@ class QuestionGraphViewer extends React.Component {
         highlight: { background: backgroundColor },
         hover: { background: backgroundColor },
       };
+      if (n.nodeSpecType === CardTypes.NODETYPE) {
+        n.label = entityNameDisplay(n.label);
+      }
       return n;
     });
     return graph;

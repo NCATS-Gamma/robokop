@@ -63,6 +63,9 @@ class AppConfig {
     this.questionNewTranslate = this.questionNewTranslate.bind(this);
     this.questionNewSearch = this.questionNewSearch.bind(this);
     
+    this.externalTempalteCopRequestIndigo = this.externalTempalteCopRequestIndigo.bind(this);
+    this.externalTempalteCopRequestXray = this.externalTempalteCopRequestXray.bind(this);
+
     // Read config parameters for enabling controls
     this.enableNewAnswersets = ((config.ui !== null) && (config.ui.enableNewAnswersets !== null)) ? config.ui.enableNewAnswersets : true;
     this.enableNewQuestions = ((config.ui !== null) && (config.ui.enableNewQuestions !== null)) ? config.ui.enableNewQuestions : true;
@@ -96,7 +99,7 @@ class AppConfig {
   user(successFun, failureFun) { this.getRequest(`${this.apis.user}`, successFun, failureFun); }
   questionListData(fun) { this.getRequest(`${this.apis.questions}`, fun); }
   questionData(id, successFun, failureFun) { this.getRequest(`${this.apis.question(id)}`, successFun, failureFun); }
-  questionSubgraph(id, fun) { this.getRequest(`${this.apis.question(id)}/subgraph`, fun); }
+  questionSubgraph(id, successFun, failureFun) { this.getRequest(`${this.apis.question(id)}/subgraph`, successFun, failureFun); }
   answersetData(id, successFun, failureFun) { this.getRequest(`${this.apis.answerset(id)}`, successFun, failureFun); }
   answerData(setId, id, successFun, failureFun) { this.getRequest(`${this.apis.answer(setId, id)}`, successFun, failureFun); }
 
@@ -110,7 +113,7 @@ class AppConfig {
     //   query: {}, // Complex object matching current machine question syntax
     // };
 
-    // To make a new question we post to the questionNew with specifications for a question
+    // To make a new question we post to the questions page with specifications for a question
     this.postRequest(
       this.apis.questions,
       data,
@@ -256,6 +259,23 @@ class AppConfig {
         }),
       };
     });
+  }
+  // submitRequest(url, data) {
+  //   http.open("POST", url, true);
+  //   http.setRequestHeader("Content-type", "application/json");
+  //   http.setRequestHeader("Accept", "application/json");
+  //   http.send(JSON.stringify(request));
+  // }
+
+  externalTempalteCopRequestIndigo(disease, drug, successFun, failureFun) {
+    const url = 'https://indigo.ncats.io/reasoner/api/v0/query';
+    const postData = { terms: { disease, drug }, type: 'cop' };
+    this.postRequest(url, postData, successFun, failureFun);
+  }
+  externalTempalteCopRequestXray(disease, drug, successFun, failureFun) {
+    // const url = "http://rtx.ncats.io/api/rtx/v1/translate";
+    // const postData = { terms: { disease, drug }, type };
+    // this.postRequest(url, postData, successFun, failureFun);
   }
 
   getRequest(

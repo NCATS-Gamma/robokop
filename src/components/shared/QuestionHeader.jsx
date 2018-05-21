@@ -243,7 +243,9 @@ class QuestionHeader extends React.Component {
                     />
                   }
                   {this.props.showDownload &&
-                    <FaDownload style={{ cursor: 'pointer' }} onClick={() => this.props.callbackDownload()} />
+                    <span style={{ fontSize: '22px' }} title="Download">
+                      <FaDownload style={{ cursor: 'pointer' }} onClick={() => this.props.callbackDownload()} />
+                    </span>
                   }
                 </div>
               </h1>

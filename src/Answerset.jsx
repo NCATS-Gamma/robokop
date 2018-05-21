@@ -19,6 +19,7 @@ class Answerset extends React.Component {
     this.state = {
       dataReady: false,
       userReady: false,
+      conceptsReady: false,
       isValid: false,
       user: {},
       answerset: {},
@@ -100,6 +101,12 @@ class Answerset extends React.Component {
       user: this.appConfig.ensureUser(data),
       userReady: true,
     }));
+    this.appConfig.concepts((data) => {
+      this.setState({
+        concepts: data,
+        conceptsReady: true,
+      });
+    });
   }
 
   callbackFeedbackSubmit(newPartialFeedback) {
@@ -154,6 +161,7 @@ class Answerset extends React.Component {
     );
   }
   renderLoaded() {
+    const isAuth = this.state.user.is_authenticated;
     return (
       <div>
         <Header
@@ -178,6 +186,7 @@ class Answerset extends React.Component {
             enableUrlChange
             enableQuestionSelect
             enableFeedbackSubmit={false}
+            enableFeedbackView={false}
             callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
             callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
             callbackAnswerSelected={this.handleAnswerSelect}
@@ -191,7 +200,7 @@ class Answerset extends React.Component {
     );
   }
   render() {
-    const ready = this.state.dataReady && this.state.userReady;
+    const ready = this.state.dataReady && this.state.userReady && this.state.conceptsReady;
     return (
       <div>
         {!ready && this.renderLoading()}
