@@ -13,8 +13,8 @@ See an instance at http://robokop.renci.org
 
 * http://robokop.renci.org - The Robokop user interface
 * http://robokop.renci.org/api - The Robokop user interface API
-* http://robokop.renci.org/apidocs - The robokop-interfaces API
-* http://robokop.renci.org/apidocs - The robokop-rank API
+* http://robokop.renci.org:6010/apidocs - The robokop-interfaces API
+* http://robokop.renci.org:6011/apidocs - The robokop-rank API
 * http://robokop.renci.org:7474 - NEO4j http interface
 * bolt://robokop.renci.org:7687 - NEO4j bolt interface
 * http://robokop.renci.org:5555 - UI to see the worker queues for the UI - Requires authentication
