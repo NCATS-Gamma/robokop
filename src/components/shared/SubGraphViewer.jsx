@@ -203,6 +203,19 @@ class SubGraphViewer extends React.Component {
     // Remove the duplicated support edges
     g.edges = [].concat(edgesSupport.filter(s => !s.duplicateEdge), edgesRegular);
 
+    // Remove any straggler duplicate edges (Fix me)
+    const fromTo = [];
+    const deleteMe = g.edges.map((e) => {
+      const thisFromTo = `${e.source_id}_${e.target_id}`;
+      if (fromTo.includes(thisFromTo)) {
+        return true;
+      }
+      fromTo.push(thisFromTo);
+      return false;
+    });
+
+    g.edges = g.edges.filter((e, i) => !deleteMe[i]);
+
     // Add parameters to edges like curvature and labels and such
     g.edges = g.edges.map((e) => {
       let typeDependentParams = {};
