@@ -30,7 +30,7 @@ def getAuthData():
         username = "Anonymous"
         is_admin = False
     else:
-        username = current_user.username
+        username = current_user.email
         is_admin = current_user.has_role('admin')
 
     return {'is_authenticated': is_authenticated,\

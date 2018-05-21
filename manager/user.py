@@ -45,3 +45,8 @@ def get_user_by_id(id):
 def list_users():
     return db.session.query(User)\
         .all()
+
+def get_user_by_email(user_email):
+    return db.session.query(User)\
+        .filter(User.email == user_email)\
+        .first()

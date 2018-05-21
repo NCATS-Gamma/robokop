@@ -84,7 +84,7 @@ class Question(db.Model):
 
         # replace input node names with identifiers
         for n in self.nodes:
-            if n['nodeSpecType'] == 'Named Node':
+            if 'nodeSpecType' in n and n['nodeSpecType'] == 'Named Node':
                 identifiers = [n['meta']['identifier']]
                 n['identifiers'] = identifiers
             else:
