@@ -44,6 +44,11 @@ def app_answerset():
     """Answerset Browser with upload"""
     return render_template('app_answerset.html')
 
+@app.route('/app/comparison')
+def app_comparison():
+    """Template COP Comparison"""
+    return render_template('app_comparison.html')
+    
 # from celery.app.control import Inspect
 @app.route('/tasks')
 def show_tasks():

@@ -19,6 +19,7 @@ class Answerset extends React.Component {
     this.state = {
       dataReady: false,
       userReady: false,
+      conceptsReady: false,
       isValid: false,
       user: {},
       answerset: {},
@@ -100,6 +101,12 @@ class Answerset extends React.Component {
       user: this.appConfig.ensureUser(data),
       userReady: true,
     }));
+    this.appConfig.concepts((data) => {
+      this.setState({
+        concepts: data,
+        conceptsReady: true,
+      });
+    });
   }
 
   callbackFeedbackSubmit(newPartialFeedback) {
@@ -193,7 +200,7 @@ class Answerset extends React.Component {
     );
   }
   render() {
-    const ready = this.state.dataReady && this.state.userReady;
+    const ready = this.state.dataReady && this.state.userReady && this.state.conceptsReady;
     return (
       <div>
         {!ready && this.renderLoading()}

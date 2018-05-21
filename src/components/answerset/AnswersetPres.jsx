@@ -17,6 +17,8 @@ class AnswersetPres extends React.Component {
 
     this.handleTabSelect = this.handleTabSelect.bind(this);
     this.onDownload = this.onDownload.bind(this);
+    this.renderNoAnswers = this.renderNoAnswers.bind(this);
+    this.renderAnswers = this.renderAnswers.bind(this);
   }
   onDownload() {
     console.log('Not finished yet.');
@@ -43,29 +45,42 @@ class AnswersetPres extends React.Component {
     this.setState({ tabKey });
   }
 
-  render() {
+  renderNoAnswers() {
+    return (
+      <Grid>
+        <h4>
+          No answers were found.
+        </h4>
+      </Grid>
+    );
+  }
+  renderAnswers() {
     const showOtherQuestions = this.props.otherQuestions.length > 0;
     const showOtherAnswersets = this.props.otherQuestions.length > 0;
 
     return (
       <Grid>
-        <QuestionHeader
-          question={this.props.question}
-          answerset={this.props.answerset}
+        {!this.props.omitHeader &&
+        <div>
+          <QuestionHeader
+            question={this.props.question}
+            answerset={this.props.answerset}
 
-          showOtherQuestions={showOtherQuestions}
-          otherQuestions={this.props.otherQuestions}
-          enableQuestionSelect={this.props.enableQuestionSelect}
-          callbackQuestionSelect={this.props.callbackQuestionSelect}
+            showOtherQuestions={showOtherQuestions}
+            otherQuestions={this.props.otherQuestions}
+            enableQuestionSelect={this.props.enableQuestionSelect}
+            callbackQuestionSelect={this.props.callbackQuestionSelect}
 
-          showOtherAnswersets={showOtherAnswersets}
-          otherAnswersets={this.props.otherAnswersets}
-          callbackAnswersetSelect={this.props.callbackAnswersetSelect}
+            showOtherAnswersets={showOtherAnswersets}
+            otherAnswersets={this.props.otherAnswersets}
+            callbackAnswersetSelect={this.props.callbackAnswersetSelect}
 
-          showDownload
-          callbackDownload={this.onDownload}
-        />
-        <br />
+            showDownload
+            callbackDownload={this.onDownload}
+          />
+          <br />
+        </div>
+        }
         <Tabs
           activeKey={this.state.tabKey}
           onSelect={this.handleTabSelect}
@@ -120,10 +135,18 @@ class AnswersetPres extends React.Component {
               answersetGraph={this.props.answersetGraph}
             />
           </Tab>
-
         </Tabs>
       </Grid>
     );
+  }
+  render() {
+    const hasAnswers = Array.isArray(this.props.answers) && this.props.answers.length > 0;
+    return (
+      <div>
+        {!hasAnswers && this.renderNoAnswers()}
+        {hasAnswers && this.renderAnswers()}
+      </div>
+    )
   }
 }
 
@@ -133,6 +156,8 @@ AnswersetPres.defaultProps = {
   enableQuestionSelect: false,
   enableFeedbackSubmit: false,
   enableFeedbackView: false,
+
+  omitHeader: false,
 
   callbackNoAnswerSelected: () => {},
   callbackAnswerSelected: () => {},
@@ -155,6 +180,8 @@ AnswersetPres.propTypes = {
   enableQuestionSelect: PropTypes.bool,
   enableFeedbackSubmit: PropTypes.bool,
   enableFeedbackView: PropTypes.bool,
+
+  omitHeader: PropTypes.bool,
 
   callbackNoAnswerSelected: PropTypes.func,
   callbackAnswerSelected: PropTypes.func,

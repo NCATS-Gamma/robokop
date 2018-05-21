@@ -188,4 +188,9 @@ class AnswersetList extends React.Component {
   }
 }
 
+AnswersetList.defaultProps = {
+  answersetFeedback: [],
+};
+
+
 export default AnswersetList;

@@ -21,7 +21,8 @@ const colors = [
   '#b3de69',
   '#fddaec',
   '#fccde5', // Light grayish pink'
-  '#b3cde3', // Dupplicate for also molecular_activity
+  '#b3cde3', // Duplicate for also molecular_activity
+  '#fed9a6', // orange - duplicate 'disease_or_phenotypic_feature'
   '#f2f2f2', // Silver, extra?
 ];
 const concepts = [
@@ -36,6 +37,7 @@ const concepts = [
   'pathway',
   'phenotypic_feature',
   'biological_process_or_molecular_activity',
+  'disease_or_phenotypic_feature',
 ];
 
 export default function getNodeTypeColorMap(types = concepts) {
