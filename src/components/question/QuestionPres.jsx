@@ -150,6 +150,7 @@ class QuestionPres extends React.Component {
               <Panel.Body style={{ padding: 0 }}>
                 <QuestionGraphViewer
                   graph={questionGraph}
+                  concepts={this.props.concepts}
                 />
               </Panel.Body>
             </Panel>

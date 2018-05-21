@@ -382,4 +382,8 @@ class AnswersetInteractive extends React.Component {
   }
 }
 
+AnswersetInteractive.defaultProps = {
+  answersetFeedback: [],
+};
+
 export default AnswersetInteractive;

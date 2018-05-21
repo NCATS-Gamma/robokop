@@ -13,6 +13,7 @@ import Question from './Question';
 import QuestionList from './QuestionList';
 import Answerset from './Answerset';
 import AnswersetApp from './AnswersetApp';
+import ComparisonCop from './ComparisonCop';
 
 // Our actual CSS and other images etc.
 import '../assets/css/style.css';
@@ -73,6 +74,14 @@ const robokop = {
   app_answerset: () => {
     ReactDOM.render(
       <AnswersetApp
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  app_comparison: () => {
+    ReactDOM.render(
+      <ComparisonCop
         config={config}
       />,
       document.getElementById('reactEntry'),

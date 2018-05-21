@@ -63,6 +63,9 @@ class AppConfig {
     this.questionNewTranslate = this.questionNewTranslate.bind(this);
     this.questionNewSearch = this.questionNewSearch.bind(this);
     
+    this.externalTempalteCopRequestIndigo = this.externalTempalteCopRequestIndigo.bind(this);
+    this.externalTempalteCopRequestXray = this.externalTempalteCopRequestXray.bind(this);
+
     // Read config parameters for enabling controls
     this.enableNewAnswersets = ((config.ui !== null) && (config.ui.enableNewAnswersets !== null)) ? config.ui.enableNewAnswersets : true;
     this.enableNewQuestions = ((config.ui !== null) && (config.ui.enableNewQuestions !== null)) ? config.ui.enableNewQuestions : true;
@@ -256,6 +259,23 @@ class AppConfig {
         }),
       };
     });
+  }
+  // submitRequest(url, data) {
+  //   http.open("POST", url, true);
+  //   http.setRequestHeader("Content-type", "application/json");
+  //   http.setRequestHeader("Accept", "application/json");
+  //   http.send(JSON.stringify(request));
+  // }
+
+  externalTempalteCopRequestIndigo(disease, drug, successFun, failureFun) {
+    const url = 'https://indigo.ncats.io/reasoner/api/v0/query';
+    const postData = { terms: { disease, drug }, type: 'cop' };
+    this.postRequest(url, postData, successFun, failureFun);
+  }
+  externalTempalteCopRequestXray(disease, drug, successFun, failureFun) {
+    // const url = "http://rtx.ncats.io/api/rtx/v1/translate";
+    // const postData = { terms: { disease, drug }, type };
+    // this.postRequest(url, postData, successFun, failureFun);
   }
 
   getRequest(
