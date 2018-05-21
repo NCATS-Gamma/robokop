@@ -1,17 +1,29 @@
-# ROBOKOP Ranking and User Interface
+# ROBOKOP
 
-The user interface modules for ROBOKOP, an NCATS Reasoner.
+ROBOKOP is a tool desinged for reasoning over structured biomedical knowledge databases as part of the NCATS translator and reasoner programs. The ROBOKOP system is a full web-application consisting of a user interface server, an API server, and several worker servers. The code is separated into three separate repositories.
 
-![Example Knowledge graph](./cover.png?raw=true)
+* robokop - https://github.com/ncats-Gamma/robokop - UI and entry point
+* robokop-interfaces - https://github.com/ncats-Gamma/robokop-interfaces - Knowledge source interfaces and knowledge graph building
+* robokop-rank - https://github.com/ncats-Gamma/robokop-rank - Scores subgraphs to relevance to a question
 
-### For additional information see the following documentation.
-* [User Interface](./doc/ui/ui_doc.md)
-* [Ranking](./doc/ranking/ranking_doc.md)
-* [Web Server](./doc/webserver/webserver_doc.md )
+This repository is the main repository for the user interface and common storage modules. It is also used for issues associated with the entire stack.
 
-### Running 
+## Example Installation
+See an instance at robokop.renci.org
 
-## Get
+* http://robokop.renci.org - The Robokop user interface
+* http://robokop.renci.org/api - The Robokop user interface API
+* http://robokop.renci.org/apidocs - The robokop-interfaces API
+* http://robokop.renci.org/apidocs - The robokop-rank API
+* http://robokop.renci.org:7474 - NEO4j http interface
+* bolt://robokop.renci.org:7687 - NEO4j bolt interface
+* http://robokop.renci.org:5555 - UI to see the queues for the UI - Requires authentication
+* http://robokop.renci.org:5556 - UI to see the queues for the builder - Requires authentication
+* http://robokop.renci.org:5557 - UI to see the queues for the ranker - Requires authentication
+
+## Setup Instructions 
+
+### Get
 
 We create a robokop directory and clone three repos into it: robokop, robokop-interfaces, and robokop-rank.
 
@@ -26,13 +38,13 @@ robokop
 ├── robokop
 ├── robokop-interfaces
 ├── robokop-rank
-├── robokop.env
-└── shared
+├── shared
+└──── robokop.env
 ```
 
-## Environment settings
+### Environment settings
 
-Robokop env looks like this:
+robokop.env looks like this:
 ```
 #################### Locations of things ####################
 NEO4J_HTTP_PORT=7474
@@ -90,7 +102,7 @@ SUPERVISOR_PASSWORD=----------------------------------
 ROBOKOP_SECRET_KEY=----------------------------------
 ROBOKOP_SECURITY_PASSWORD_SALT=----------------------------------
 
-ROBOKOP_MAIL_SERVER=smtp.mailgun.org
+ROBOKOP_MAIL_SERVER=----------------------------------
 ROBOKOP_MAIL_USERNAME=----------------------------------
 ROBOKOP_MAIL_PASSWORD=----------------------------------
 ROBOKOP_DEFAULT_MAIL_SENDER=----------------------------------
@@ -100,27 +112,42 @@ ROBOKOP_SECURITY_EMAIL_SENDER=----------------------------------
 ```
 You'll need to supply values for the secret things at the end.
 
-## Build
+### Build
 
-For each of robokop, robokop-interfaces, and robokop-rank,
+Environemnts are configured in several docker containers managed by docker-compose.
+
+* robokop/robokop/helpers - Common storage databases - Redis, Neo4j, Postgres
+* robokop/robokop/deploy - UI API and web server
+* robokop/robokop-interfaces/deploy - robokop-interfaces API server
+* robokop/robokop-interfaces/deploy - robokop-interfaces API server
+
+
+First we must build the containers. For each of robokop, robokop-interfaces, and robokop-rank,
 * cd into <repo>/deploy
 * docker-compose build
 
-Then
+When those are all complete, we must start the helpers (storage containers).
 * cd robokop/robokop/helpers
 * docker-compose up
 
-When that's ready, for each of robokop, robokop-interfaces, and robokop-rank,
+Then for each of robokop, robokop-interfaces, and robokop-rank,
 * cd into <repo>/deploy
 * docker-compose up
-  
-## Interfaces
+
+With all containers started you can now monitor each component using the urls below.
+
+### Interfaces
 
 Visit 
 * http://127.0.0.1 - The Robokop user interface
-* http://127.0.0.1:6010/apidocs - The builder API
-* http://127.0.0.1:6011/apidocs - The ranker API
-* http://127.0.0.1:5555 - Flower UI to Celery
-* http://127.0.0.1:5556 - Flower UI to Celery
+* http://127.0.0.1/api/ - The Robokop user interface API
+* http://127.0.0.1:6010/apidocs - The robokop-interfaces API
+* http://127.0.0.1:6011/apidocs - The robokop-rank API
+* http://127.0.0.1:7474 - NEO4j http interface
+* bolt://127.0.0.1:7687 - NEO4j bolt interface
+* http://127.0.0.1:5555 - UI to see the queues for the UI - Requires authentication
+* http://127.0.0.1:5556 - UI to see the queues for the builder - Requires authentication
+* http://127.0.0.1:5557 - UI to see the queues for the ranker - Requires authentication
+
 
 
