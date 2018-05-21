@@ -273,8 +273,11 @@ class AppConfig {
     this.postRequest(url, postData, successFun, failureFun);
   }
   externalTempalteCopRequestXray(disease, drug, successFun, failureFun) {
-    // const url = "http://rtx.ncats.io/api/rtx/v1/translate";
-    // const postData = { terms: { disease, drug }, type };
+    // const translateUrl = 'http://rtx.ncats.io/api/rtx/v1/translate';
+    // const queryUrl = 'http://rtx.ncats.io/api/rtx/v1/translate';
+    // Post the question to translate
+    // Then post that result to query
+
     // this.postRequest(url, postData, successFun, failureFun);
   }
 
