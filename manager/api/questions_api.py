@@ -15,6 +15,7 @@ from manager.util import getAuthData, get_tasks
 from manager.question import list_questions, list_questions_by_username, Question
 from manager.tasks import update_kg, answer_question
 from manager.setup import api
+from manager.user import User, get_user_by_email
 import manager.logging_config
 
 logger = logging.getLogger(__name__)
@@ -47,19 +48,27 @@ class QuestionsAPI(Resource):
         'query': 'Machine-readable question'})
     def post(self):
         """Create new question"""
-        user_id = current_user.id
-        name = request.json['name']
-        natural_question = request.json['natural']
-        notes = request.json['notes']
-        nodes, edges = Question.dictionary_to_graph(request.json['machine_question'])
+        auth = request.authorization
+        if auth:
+            user_email = auth.username
+            user = get_user_by_email(user_email)
+            user_id = user.id
+        else:
+            user_id = current_user.id
+            user_email = current_user.email
+        logger.debug(f"Creating new question for user {user_email}.")
         qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
-        q = Question(id=qid, user_id=user_id, name=name, natural_question=natural_question, notes=notes, nodes=nodes, edges=edges)
+        if 'machine_question' in request.json:
+            nodes, edges = Question.dictionary_to_graph(request.json['machine_question'])
+            q = Question(request.json, id=qid, user_id=user_id, nodes=nodes, edges=edges)
+        else:
+            q = Question(request.json, id=qid, user_id=user_id)
 
         # To speed things along we start a answerset generation task for this question
         # This isn't the standard answerset generation task because we might also trigger a KG Update
-        ug_task = update_kg.signature(args=[q.hash], kwargs={'question_id':qid, 'user_email':current_user.email}, immutable=True)
-        as_task = answer_question.signature(args=[q.hash], kwargs={'question_id':qid, 'user_email':current_user.email}, immutable=True)
-        task = answer_question.apply_async(args=[q.hash], kwargs={'question_id':qid, 'user_email':current_user.email},
+        ug_task = update_kg.signature(args=[q.hash], kwargs={'question_id':qid, 'user_email':user_email}, immutable=True)
+        as_task = answer_question.signature(args=[q.hash], kwargs={'question_id':qid, 'user_email':user_email}, immutable=True)
+        task = answer_question.apply_async(args=[q.hash], kwargs={'question_id':qid, 'user_email':user_email},
             link_error=ug_task|as_task)
 
         return qid, 201
