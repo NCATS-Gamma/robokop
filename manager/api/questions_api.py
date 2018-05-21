@@ -64,12 +64,15 @@ class QuestionsAPI(Resource):
         else:
             q = Question(request.json, id=qid, user_id=user_id)
 
-        # To speed things along we start a answerset generation task for this question
-        # This isn't the standard answerset generation task because we might also trigger a KG Update
-        ug_task = update_kg.signature(args=[q.hash], kwargs={'question_id':qid, 'user_email':user_email}, immutable=True)
-        as_task = answer_question.signature(args=[q.hash], kwargs={'question_id':qid, 'user_email':user_email}, immutable=True)
-        task = answer_question.apply_async(args=[q.hash], kwargs={'question_id':qid, 'user_email':user_email},
-            link_error=ug_task|as_task)
+        if not 'RebuildCache' in request.headers or request.headers['RebuildCache'] == 'true':
+            # To speed things along we start a answerset generation task for this question
+            # This isn't the standard answerset generation task because we might also trigger a KG Update
+            ug_task = update_kg.signature(args=[q.hash], kwargs={'question_id':qid, 'user_email':user_email}, immutable=True)
+            as_task = answer_question.signature(args=[q.hash], kwargs={'question_id':qid, 'user_email':user_email}, immutable=True)
+            task = answer_question.apply_async(args=[q.hash], kwargs={'question_id':qid, 'user_email':user_email},
+                link_error=ug_task|as_task)
+        else:
+            task = answer_question.apply_async(args=[q.hash], kwargs={'question_id':qid, 'user_email':user_email})
 
         return qid, 201
 
