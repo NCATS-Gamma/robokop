@@ -27,9 +27,7 @@ class Header extends React.Component {
   getLoggedInFrag(user) {
     return (
       <NavDropdown eventKey={4} title={user.username} id="basic-nav-dropdown">
-        <MenuItem eventKey={4.1} href={this.appConfig.urls.account}>Account</MenuItem>
-        <MenuItem divider />
-        <MenuItem eventKey={4.2} href={this.appConfig.urls.logout}>Log Out</MenuItem>
+        <MenuItem eventKey={4.1} href={this.appConfig.urls.logout}>Log Out</MenuItem>
       </NavDropdown>
     );
   }
