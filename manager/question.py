@@ -84,11 +84,12 @@ class Question(db.Model):
 
         # replace input node names with identifiers
         for n in self.nodes:
-            if 'nodeSpecType' in n and n['nodeSpecType'] == 'Named Node':
-                identifiers = [n['meta']['identifier']]
-                n['identifiers'] = identifiers
-            else:
-                n['identifiers'] = []
+            if 'nodeSpecType' in n:
+                if n['nodeSpecType'] == 'Named Node':
+                    identifiers = [n['meta']['identifier']]
+                    n['identifiers'] = identifiers
+                else:
+                    n['identifiers'] = []
 
         self.hash = self.compute_hash()
 
