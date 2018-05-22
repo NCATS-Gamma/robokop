@@ -111,8 +111,9 @@ class ComparisonCop extends React.Component {
         user={this.state.user}
         disease={this.state.disease}
         drug={this.state.drug}
-        fetchFunXRay={this.appConfig.externalTempalteCopRequestXray}
-        fetchFunIndigo={this.appConfig.externalTempalteCopRequestIndigo}
+        fetchFunGamma={this.appConfig.externalTemplateCopRequestGamma}
+        fetchFunXray={this.appConfig.externalTemplateCopRequestXray}
+        fetchFunIndigo={this.appConfig.externalTemplateCopRequestIndigo}
       />
     );
   }

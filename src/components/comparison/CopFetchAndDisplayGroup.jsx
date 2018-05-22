@@ -43,18 +43,28 @@ class CopFetchAndDisplayGroup extends React.Component {
             >
               <Tab
                 eventKey={1}
+                title="Gamma"
+              >
+                <CopFetchAndDisplay
+                  user={this.props.user}
+                  disease={this.props.disease}
+                  drug={this.props.drug}
+                  fetchFun={this.props.fetchFunGamma}
+                />
+              </Tab>
+              <Tab
+                eventKey={2}
                 title="X-Ray"
               >
-                {/* <CopFetchAndDisplay
+                <CopFetchAndDisplay
                   user={this.props.user}
                   disease={this.props.disease}
                   drug={this.props.drug}
                   fetchFun={this.props.fetchFunXray}
-                /> */}
-                X-Ray goes here
+                />
               </Tab>
               <Tab
-                eventKey={2}
+                eventKey={3}
                 title="Indigo"
               >
                 <CopFetchAndDisplay
