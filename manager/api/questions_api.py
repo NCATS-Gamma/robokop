@@ -60,7 +60,8 @@ class QuestionsAPI(Resource):
         qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
         if 'machine_question' in request.json:
             nodes, edges = Question.dictionary_to_graph(request.json['machine_question'])
-            q = Question(request.json, id=qid, user_id=user_id, nodes=nodes, edges=edges)
+            natural_question = request.json['natural']
+            q = Question(request.json, natural_question=natural_question, id=qid, user_id=user_id, nodes=nodes, edges=edges)
         else:
             q = Question(request.json, id=qid, user_id=user_id)
 
