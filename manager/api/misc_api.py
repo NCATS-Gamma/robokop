@@ -20,7 +20,38 @@ import manager.api.feedback_api
 class Tasks(Resource):
     @api.response(200, 'Success')
     def get(self):
-        """Get list of tasks (queued and completed)"""
+        """Get list of tasks (queued and completed)
+        ---
+        parameters:
+          - in: xxx
+            name: xxx
+            description: xxx
+            schema:
+                $ref: '#/xxx'
+            required: xxx
+        responses:
+            200:
+                description: xxx
+                schema:
+                    type: xxx
+                    required:
+                      - xxx
+                    properties:
+                        xxx
+                            type: xxx
+                            description: xxx
+        """
+        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
+        # https://github.com/swagger-api/swagger-ui/issues/3641
+        """
+        requestBody:
+            description: xxx
+            required: xxx
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/xxx'
+        """
         tasks = get_tasks()
         return tasks
 
@@ -29,7 +60,38 @@ class Tasks(Resource):
 class TaskStatus(Resource):
     @api.response(200, 'Success')
     def get(self, task_id):
-        """Get status for task"""
+        """Get status for task
+        ---
+        parameters:
+          - in: xxx
+            name: xxx
+            description: xxx
+            schema:
+                $ref: '#/xxx'
+            required: xxx
+        responses:
+            200:
+                description: xxx
+                schema:
+                    type: xxx
+                    required:
+                      - xxx
+                    properties:
+                        xxx
+                            type: xxx
+                            description: xxx
+        """
+        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
+        # https://github.com/swagger-api/swagger-ui/issues/3641
+        """
+        requestBody:
+            description: xxx
+            required: xxx
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/xxx'
+        """
         # task = celery.AsyncResult(task_id)
         # return task.state
 
@@ -41,7 +103,38 @@ class TaskStatus(Resource):
 class Concepts(Resource):
     @api.response(200, 'Success')
     def get(self):
-        """Get known biomedical concepts"""
+        """Get known biomedical concepts
+        ---
+        parameters:
+          - in: xxx
+            name: xxx
+            description: xxx
+            schema:
+                $ref: '#/xxx'
+            required: xxx
+        responses:
+            200:
+                description: xxx
+                schema:
+                    type: xxx
+                    required:
+                      - xxx
+                    properties:
+                        xxx
+                            type: xxx
+                            description: xxx
+        """
+        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
+        # https://github.com/swagger-api/swagger-ui/issues/3641
+        """
+        requestBody:
+            description: xxx
+            required: xxx
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/xxx'
+        """
         r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/concepts")
         concepts = r.json()
         # bad_concepts =['NAME.DISEASE', 'NAME.PHENOTYPE', 'NAME.DRUG', "disease_or_phenotypic_feature", "biological_process_or_molecular_activity"]
@@ -54,7 +147,38 @@ class Concepts(Resource):
 class Search(Resource):
     @api.response(200, 'Success')
     def get(self, term, category):
-        """Look up biomedical search term using bionames service"""
+        """Look up biomedical search term using bionames service
+        ---
+        parameters:
+          - in: xxx
+            name: xxx
+            description: xxx
+            schema:
+                $ref: '#/xxx'
+            required: xxx
+        responses:
+            200:
+                description: xxx
+                schema:
+                    type: xxx
+                    required:
+                      - xxx
+                    properties:
+                        xxx
+                            type: xxx
+                            description: xxx
+        """
+        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
+        # https://github.com/swagger-api/swagger-ui/issues/3641
+        """
+        requestBody:
+            description: xxx
+            required: xxx
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/xxx'
+        """
         url = f"https://bionames.renci.org/lookup/{term}/{category}/"
         r = requests.get(url)
         all_results = r.json()
@@ -78,6 +202,37 @@ class Search(Resource):
 class User(Resource):
     @api.response(200, 'Success')
     def get(self):
-        """Get current user info"""
+        """Get current user info
+        ---
+        parameters:
+          - in: xxx
+            name: xxx
+            description: xxx
+            schema:
+                $ref: '#/xxx'
+            required: xxx
+        responses:
+            200:
+                description: xxx
+                schema:
+                    type: xxx
+                    required:
+                      - xxx
+                    properties:
+                        xxx
+                            type: xxx
+                            description: xxx
+        """
+        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
+        # https://github.com/swagger-api/swagger-ui/issues/3641
+        """
+        requestBody:
+            description: xxx
+            required: xxx
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/xxx'
+        """
         user = getAuthData()
         return user
