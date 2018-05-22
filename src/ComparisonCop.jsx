@@ -18,8 +18,8 @@ class ComparisonCop extends React.Component {
 
     this.state = {
       userReady: false,
-      drug: 'flupentixol',
-      disease: 'schizophrenia',
+      drug: 'ibuprofen',
+      disease: 'headache',
       submitted: false,
       user: {},
     };
@@ -60,7 +60,7 @@ class ComparisonCop extends React.Component {
               Reasonser COP Comparison Tool
               <br />
               <small>
-                Enter a disease and drug pair to explore COP answers from various reasoners.
+                Enter a drug to explore associated genes.
               </small>
             </h1>
           </Col>
@@ -80,7 +80,7 @@ class ComparisonCop extends React.Component {
             </FormGroup>
           </Col>
         </Row>
-        <Row>
+        {/* <Row>
           <Col md={12}>
             <FormGroup
               controlId="formBasicText"
@@ -94,7 +94,7 @@ class ComparisonCop extends React.Component {
               />
             </FormGroup>
           </Col>
-        </Row>
+        </Row> */}
         <Row>
           <Col md={12}>
             <Button onClick={this.onSubmit}>

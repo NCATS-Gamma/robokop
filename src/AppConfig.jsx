@@ -268,26 +268,51 @@ class AppConfig {
   //   http.send(JSON.stringify(request));
   // }
   externalTemplateCopRequestGamma(disease, drug, successFun, failureFun) {
-    failureFun(new Error('API is not yet finished!'));
-    return;
-
-    // const url = ''
-    // const postData = {}
-    // this.postRequest(url, postData, successFun, failureFun);
+    // bionames look up.
+    // const drugId = 'CHEMBL:CHEMBL521';
+    this.questionNewSearch(drug, 'drug').then((data) => {
+      return data.options.reverse().find(o => o.value.includes('CHEMBL:')).value;
+    }).then((drugId) => {
+      console.log(drugId)
+      const queryUrl = 'http://robokop.renci.org:6011/api/query';
+      const queryData = {
+        known_query_type_id: 'Q3',
+        terms: {
+          chemical_substance: drugId,
+        },
+      };
+      return this.comms.post(queryUrl, queryData);
+    }).then((data) => {
+      successFun(data.data);
+    }).catch((err) => {
+      failureFun(err);
+    });
   }
   externalTemplateCopRequestIndigo(disease, drug, successFun, failureFun) {
     const url = 'https://indigo.ncats.io/reasoner/api/v0/query';
-    const postData = { terms: { disease, drug }, type: 'cop' };
+    const postData = {
+      known_query_type_id: 'Q3',
+      terms: {
+        chemical_substance: 'CHEMBL:CHEMBL521',
+      },
+    };
     this.postRequest(url, postData, successFun, failureFun);
   }
   externalTemplateCopRequestXray(disease, drug, successFun, failureFun) {
     const translateUrl = 'http://rtx.ncats.io/api/rtx/v1/translate';
-    const queryUrl = 'http://rtx.ncats.io/api/rtx/v1/translate';
+    const queryUrl = 'http://rtx.ncats.io/api/rtx/v1/query';
     const translateData = {
       language: 'English',
-      text: `What is the clinical outcome pathway of ${drug} for treatment of ${disease}?`,
+      text: `What protein does ${drug} target?`,
     };
-    this.comms.post(translateUrl, translateData).then(queryData => this.comms.post(queryUrl, queryData)).then(data => successFun(data)).catch(err => failureFun(err));
+    this.comms.post(translateUrl, translateData).then((queryData) => {
+      console.log(queryData);
+      return this.comms.post(queryUrl, queryData.data);
+    }).then((data) => {
+      successFun(data.data);
+    }).catch((err) => {
+      failureFun(err);
+    });
     // Post the question to translate
     // Then post that result to query
 
