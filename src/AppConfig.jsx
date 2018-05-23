@@ -291,7 +291,7 @@ class AppConfig {
   externalTemplateCopRequestIndigo(disease, drug, successFun, failureFun) {
     const url = 'https://indigo.ncats.io/reasoner/api/v0/query';
     const postData = {
-      known_query_type_id: 'Q3',
+      query_type_id: 'Q3',
       terms: {
         chemical_substance: 'CHEMBL:CHEMBL521',
       },
