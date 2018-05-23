@@ -5,12 +5,12 @@ import { Grid, Row, Col, Button, FormGroup, ControlLabel, FormControl } from 're
 import AppConfig from './AppConfig';
 import Header from './components/Header';
 import Loading from './components/Loading';
-import CopFetchAndDisplayGroup from './components/comparison/CopFetchAndDisplayGroup';
+import ComparisonFetchAndDisplayGroup from './components/comparison/ComparisonFetchAndDisplayGroup';
 
 // const shortid = require('shortid');
 // const _ = require('lodash');
 
-class ComparisonCop extends React.Component {
+class Comparison extends React.Component {
   constructor(props) {
     super(props);
     // We only read the communications config on creation
@@ -107,7 +107,7 @@ class ComparisonCop extends React.Component {
   }
   renderResults() {
     return (
-      <CopFetchAndDisplayGroup
+      <ComparisonFetchAndDisplayGroup
         user={this.state.user}
         disease={this.state.disease}
         drug={this.state.drug}
@@ -141,4 +141,4 @@ class ComparisonCop extends React.Component {
   }
 }
 
-export default ComparisonCop;
+export default Comparison;

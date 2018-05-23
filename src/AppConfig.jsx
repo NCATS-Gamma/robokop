@@ -21,6 +21,7 @@ class AppConfig {
       answerset: (questionId, answersetId) => this.url(`a/${questionId}_${answersetId}`),
       answer: (questionId, answersetId, answerId) => this.url(`a/${questionId}_${answersetId}/${answerId}`),
       appAnswerset: this.url('app/answerset'),
+      appComparison: this.url('app/comparison'),
     };
 
     // Other URLs that are primarily used for API calls
@@ -275,7 +276,7 @@ class AppConfig {
   //   http.setRequestHeader("Accept", "application/json");
   //   http.send(JSON.stringify(request));
   // }
-  externalTemplateCopRequestGamma(disease, drug, successFun, failureFun) {
+  externalTemplateRequestGamma(disease, drug, successFun, failureFun) {
     failureFun(new Error('API is not yet finished!'));
     return;
 
@@ -283,12 +284,12 @@ class AppConfig {
     // const postData = {}
     // this.postRequest(url, postData, successFun, failureFun);
   }
-  externalTemplateCopRequestIndigo(disease, drug, successFun, failureFun) {
+  externalTemplateRequestIndigo(disease, drug, successFun, failureFun) {
     const url = 'https://indigo.ncats.io/reasoner/api/v0/query';
     const postData = { terms: { disease, drug }, type: 'cop' };
     this.postRequest(url, postData, successFun, failureFun);
   }
-  externalTemplateCopRequestXray(disease, drug, successFun, failureFun) {
+  externalTemplateRequestXray(disease, drug, successFun, failureFun) {
     const translateUrl = 'http://rtx.ncats.io/api/rtx/v1/translate';
     const queryUrl = 'http://rtx.ncats.io/api/rtx/v1/translate';
     const translateData = {

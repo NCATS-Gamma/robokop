@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Grid, Row, Col, Tabs, Tab } from 'react-bootstrap';
-import CopFetchAndDisplay from './CopFetchAndDisplay';
+import ComparisonFetchAndDisplay from './ComparisonFetchAndDisplay';
 
 class CopFetchAndDisplayGroup extends React.Component {
   constructor(props) {
@@ -24,10 +24,10 @@ class CopFetchAndDisplayGroup extends React.Component {
         <Row>
           <Col md={12}>
             <h1>
-              COP for {this.props.drug} treatment of {this.props.disease}
+              {this.props.title}
               <br />
               <small>
-                Reasonser COP Comparison
+              {this.props.subTitle}
               </small>
             </h1>
           </Col>
@@ -45,10 +45,9 @@ class CopFetchAndDisplayGroup extends React.Component {
                 eventKey={1}
                 title="Gamma"
               >
-                <CopFetchAndDisplay
+                <ComparisonFetchAndDisplay
                   user={this.props.user}
-                  disease={this.props.disease}
-                  drug={this.props.drug}
+                  terms={this.props.terms}
                   fetchFun={this.props.fetchFunGamma}
                 />
               </Tab>
@@ -56,10 +55,9 @@ class CopFetchAndDisplayGroup extends React.Component {
                 eventKey={2}
                 title="X-Ray"
               >
-                <CopFetchAndDisplay
+                <ComparisonFetchAndDisplay
                   user={this.props.user}
-                  disease={this.props.disease}
-                  drug={this.props.drug}
+                  terms={this.props.terms}
                   fetchFun={this.props.fetchFunXray}
                 />
               </Tab>
@@ -67,7 +65,7 @@ class CopFetchAndDisplayGroup extends React.Component {
                 eventKey={3}
                 title="Indigo"
               >
-                <CopFetchAndDisplay
+                <ComparisonFetchAndDisplay
                   user={this.props.user}
                   disease={this.props.disease}
                   drug={this.props.drug}
@@ -83,8 +81,8 @@ class CopFetchAndDisplayGroup extends React.Component {
 }
 
 CopFetchAndDisplayGroup.defaultProps = {
-  disease: '',
-  drug: '',
+  title
+
 }
 
 export default CopFetchAndDisplayGroup;

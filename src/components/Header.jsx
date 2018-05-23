@@ -68,6 +68,7 @@ class Header extends React.Component {
             {showApps &&
             <NavDropdown eventKey={3} title="Apps" id="basic-nav-dropdown">
               <MenuItem eventKey={3.1} href={this.appConfig.urls.appAnswerset}>Answer Set Explorer</MenuItem>
+              <MenuItem eventKey={3.2} href={this.appConfig.urls.appComparison}>Reasoner Comparison</MenuItem>
             </NavDropdown>
             }
             {isAuth &&
