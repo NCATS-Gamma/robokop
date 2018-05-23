@@ -288,7 +288,7 @@ class AppConfig {
   externalTemplateRequestIndigo(queryId, terms, successFun, failureFun) {
     const url = 'https://indigo.ncats.io/reasoner/api/v0/query';
     const postData = {
-      known_query_type_id: queryId,
+      query_type_id: queryId,
       terms,
     };
 
@@ -296,7 +296,9 @@ class AppConfig {
   }
   externalTemplateRequestXray(queryId, terms, successFun, failureFun) {
     const url = 'http://rtx.ncats.io/api/rtx/v1/query';
-    const termsFixed = { ...terms };
+    const termsFixed = { ...terms, 
+      rel_type: "directly_interacts_with",
+      target_label: "protein" };
     if ('chemical_substance' in termsFixed) {
       let chem = termsFixed.chemical_substance;
       [, chem] = chem.split(':');
@@ -304,7 +306,7 @@ class AppConfig {
     }
 
     const postData = {
-      query_type_id: queryId,
+      known_query_type_id: queryId,
       terms: termsFixed,
     };
     this.postRequest(url, postData, successFun, failureFun);
