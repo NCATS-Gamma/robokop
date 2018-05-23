@@ -21,7 +21,38 @@ class FeedbackAPI(Resource):
         'impact': 'Impact',
         'notes': 'Notes'})
     def post(self):
-        """Create new feedback"""
+        """Create new feedback
+        ---
+        parameters:
+          - in: xxx
+            name: xxx
+            description: xxx
+            schema:
+                $ref: '#/xxx'
+            required: xxx
+        responses:
+            200:
+                description: xxx
+                schema:
+                    type: xxx
+                    required:
+                      - xxx
+                    properties:
+                        xxx
+                            type: xxx
+                            description: xxx
+        """
+        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
+        # https://github.com/swagger-api/swagger-ui/issues/3641
+        """
+        requestBody:
+            description: xxx
+            required: xxx
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/xxx'
+        """
         f = Feedback(
             user_id=current_user.id,
             question_id=request.json['question_id'],
