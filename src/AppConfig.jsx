@@ -279,7 +279,7 @@ class AppConfig {
   externalTemplateRequestGamma(queryId, terms, successFun, failureFun) {
     const url = 'http://robokop.renci.org:6011/api/query';
     const postData = {
-      known_query_type_id: queryId,
+      query_type_id: queryId,
       terms,
     };
 
