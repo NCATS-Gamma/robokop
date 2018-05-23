@@ -25,7 +25,38 @@ logger = logging.getLogger(__name__)
 class QuestionConversionAPI(Resource):
     @api.response(201, 'Question converted')
     def post(self):
-        """Create new question"""
+        """Create new question
+        ---
+        parameters:
+          - in: xxx
+            name: xxx
+            description: xxx
+            schema:
+                $ref: '#/xxx'
+            required: xxx
+        responses:
+            200:
+                description: xxx
+                schema:
+                    type: xxx
+                    required:
+                      - xxx
+                    properties:
+                        xxx
+                            type: xxx
+                            description: xxx
+        """
+        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
+        # https://github.com/swagger-api/swagger-ui/issues/3641
+        """
+        requestBody:
+            description: xxx
+            required: xxx
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/xxx'
+        """
         user_id = 1
         name = request.json['name']
         natural_question = request.json['natural']
@@ -47,7 +78,38 @@ class QuestionsAPI(Resource):
         'notes': 'Notes',
         'query': 'Machine-readable question'})
     def post(self):
-        """Create new question"""
+        """Create new question
+        ---
+        parameters:
+          - in: xxx
+            name: xxx
+            description: xxx
+            schema:
+                $ref: '#/xxx'
+            required: xxx
+        responses:
+            200:
+                description: xxx
+                schema:
+                    type: xxx
+                    required:
+                      - xxx
+                    properties:
+                        xxx
+                            type: xxx
+                            description: xxx
+        """
+        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
+        # https://github.com/swagger-api/swagger-ui/issues/3641
+        """
+        requestBody:
+            description: xxx
+            required: xxx
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/xxx'
+        """
         auth = request.authorization
         if auth:
             user_email = auth.username
@@ -79,7 +141,38 @@ class QuestionsAPI(Resource):
 
     @api.response(200, 'Success')
     def get(self):
-        """Get list of questions"""
+        """Get list of questions
+        ---
+        parameters:
+          - in: xxx
+            name: xxx
+            description: xxx
+            schema:
+                $ref: '#/xxx'
+            required: xxx
+        responses:
+            200:
+                description: xxx
+                schema:
+                    type: xxx
+                    required:
+                      - xxx
+                    properties:
+                        xxx
+                            type: xxx
+                            description: xxx
+        """
+        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
+        # https://github.com/swagger-api/swagger-ui/issues/3641
+        """
+        requestBody:
+            description: xxx
+            required: xxx
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/xxx'
+        """
         user = getAuthData()
         question_list = list_questions()
         # user_question_list = list_questions_by_username(user['username'])

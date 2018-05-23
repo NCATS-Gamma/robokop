@@ -7,7 +7,7 @@ import AnswersetPres from '../answerset/AnswersetPres';
 const shortid = require('shortid');
 const _ = require('lodash');
 
-class CopFetchAndDisplay extends React.Component {
+class ComparisonFetchAndDisplay extends React.Component {
   constructor(props) {
     super(props);
 
@@ -188,4 +188,4 @@ class CopFetchAndDisplay extends React.Component {
   }
 }
 
-export default CopFetchAndDisplay;
+export default ComparisonFetchAndDisplay;

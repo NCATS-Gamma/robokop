@@ -19,7 +19,38 @@ class AnswersetAPI(Resource):
     @api.response(200, 'Success')
     @api.response(404, 'Invalid answerset key')
     def get(self, qa_id):
-        """Get answerset """
+        """Get answerset 
+        ---
+        parameters:
+          - in: xxx
+            name: xxx
+            description: xxx
+            schema:
+                $ref: '#/xxx'
+            required: xxx
+        responses:
+            200:
+                description: xxx
+                schema:
+                    type: xxx
+                    required:
+                      - xxx
+                    properties:
+                        xxx
+                            type: xxx
+                            description: xxx
+        """
+        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
+        # https://github.com/swagger-api/swagger-ui/issues/3641
+        """
+        requestBody:
+            description: xxx
+            required: xxx
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/xxx'
+        """
         try:
             question_id, answerset_id = qa_id.split('_')
             question = get_question_by_id(question_id)
@@ -54,7 +85,38 @@ class AnswerAPI(Resource):
     @api.response(200, 'Success')
     @api.response(404, 'Invalid answerset or answer key')
     def get(self, qa_id, answer_id):
-        """Get answer"""
+        """Get answer
+        ---
+        parameters:
+          - in: xxx
+            name: xxx
+            description: xxx
+            schema:
+                $ref: '#/xxx'
+            required: xxx
+        responses:
+            200:
+                description: xxx
+                schema:
+                    type: xxx
+                    required:
+                      - xxx
+                    properties:
+                        xxx
+                            type: xxx
+                            description: xxx
+        """
+        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
+        # https://github.com/swagger-api/swagger-ui/issues/3641
+        """
+        requestBody:
+            description: xxx
+            required: xxx
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/xxx'
+        """
 
         try:
             question_id, answerset_id = qa_id.split('_')
@@ -95,7 +157,38 @@ class GetFeedbackByAnswer(Resource):
         'qa_id': 'An answerset id, prefixed by the question hash, i.e. "<question_id>_<answerset_id>"',
         'answer_id': 'Answer id'})
     def get(self, qa_id, answer_id):
-        """Create new feedback"""
+        """Create new feedback
+        ---
+        parameters:
+          - in: xxx
+            name: xxx
+            description: xxx
+            schema:
+                $ref: '#/xxx'
+            required: xxx
+        responses:
+            200:
+                description: xxx
+                schema:
+                    type: xxx
+                    required:
+                      - xxx
+                    properties:
+                        xxx
+                            type: xxx
+                            description: xxx
+        """
+        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
+        # https://github.com/swagger-api/swagger-ui/issues/3641
+        """
+        requestBody:
+            description: xxx
+            required: xxx
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/xxx'
+        """
         try:
             question_id, answerset_id = qa_id.split('_')
             question = get_question_by_id(question_id)
@@ -114,7 +207,38 @@ class GetFeedbackByAnswerset(Resource):
     @api.doc(params={
         'qa_id': 'An answerset id, prefixed by the question hash, i.e. "<question_id>_<answerset_id>"'})
     def get(self, qa_id):
-        """Create new feedback"""
+        """Create new feedback
+        ---
+        parameters:
+          - in: xxx
+            name: xxx
+            description: xxx
+            schema:
+                $ref: '#/xxx'
+            required: xxx
+        responses:
+            200:
+                description: xxx
+                schema:
+                    type: xxx
+                    required:
+                      - xxx
+                    properties:
+                        xxx
+                            type: xxx
+                            description: xxx
+        """
+        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
+        # https://github.com/swagger-api/swagger-ui/issues/3641
+        """
+        requestBody:
+            description: xxx
+            required: xxx
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/xxx'
+        """
         try:
             question_id, answerset_id = qa_id.split('_')
             question = get_question_by_id(question_id)

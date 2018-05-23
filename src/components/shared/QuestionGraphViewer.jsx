@@ -59,9 +59,30 @@ class QuestionGraphViewer extends React.Component {
         highlight: { background: backgroundColor },
         hover: { background: backgroundColor },
       };
-      if (n.nodeSpecType === CardTypes.NODETYPE) {
-        n.label = entityNameDisplay(n.label);
+
+      if ('label' in n) {
+        if (('nodeSpecType' in n) && (n.nodeSpecType === CardTypes.NODETYPE)) {
+          n.label = entityNameDisplay(n.label);
+        }
+        // else just keep your label
+      } else if ('identifiers' in n) {
+        if (Array.isArray(n.identifiers)) {
+          if (n.identifiers.length > 0) {
+            n.label = n.identifiers[0];
+          } else {
+            n.label = '';
+          }
+        } else {
+          n.label = n.identifiers;
+        }
+      } else if ('type' in n) {
+        n.label = entityNameDisplay(n.type);
+      } else if ('id' in n) {
+        n.label = n.id;
+      } else {
+        n.label = '';
       }
+      
       return n;
     });
     return graph;
