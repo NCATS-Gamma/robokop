@@ -64,7 +64,7 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
         try:
             with app.app_context():
                 question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question.id}'
-                answerset_url = f'http://{os.environ["ROBOKOP_HOST"]}/a/{answerset.id}'
+                answerset_url = f'http://{os.environ["ROBOKOP_HOST"]}/a/{question_id}_{answerset.id}'
                 lines = [f'We have finished answering your question: <a href="{question_url}">"{question.natural_question}"</a>.']
                 lines.append(f'<a href="{answerset_url}">ANSWERS</a>')
                 html = '<br />\n'.join(lines)
