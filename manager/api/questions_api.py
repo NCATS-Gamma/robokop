@@ -88,7 +88,7 @@ class QuestionsAPI(Resource):
         tasks = get_tasks().values()
 
         # filter out the SUCCESS/FAILURE tasks
-        tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE')]
+        tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE') or t['state'] == 'REVOKED']
 
         # get question hashes
         question_hashes = []
@@ -105,7 +105,7 @@ class QuestionsAPI(Resource):
         # split into answer and update tasks
         task_types = ['answering' if t['name'] == 'tasks.answer_question' else
                     'refreshing KG' if t['name'] == 'tasks.update_kg' else
-                    'initializing' for t in tasks]
+                    'something?' for t in tasks]
 
         def augment_info(question):
             answerset_timestamps = [a.timestamp for a in question.answersets]
