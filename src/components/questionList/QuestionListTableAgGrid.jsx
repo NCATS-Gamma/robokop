@@ -4,6 +4,8 @@ import PropTypes from 'prop-types';
 import { Panel, FormControl } from 'react-bootstrap';
 import { AgGridReact, AgGridColumn } from 'ag-grid-react';
 
+import LoadingImg from '../../../assets/images/loading.gif';
+
 class QuestionListTableAgGrid extends React.Component {
   constructor(props) {
     super(props);
@@ -61,19 +63,16 @@ class QuestionListTableAgGrid extends React.Component {
   }
   cellRendererAnswers(params) {
     let out = '';
-    if (params.data !== '' && params.data !== undefined && params.data !== null && params.data.id) {
-      // out = <span onClick={() => this.props.callbackAnswersetSelect(params.data.id, params.data.latest_answerset_id)}> AS </span>
-      // console.log(params)
-      // out = document.createElement('span');
-      // out.innerHTML = `<a href=${this.props.answersetUrlFunction(params.data.id, params.data.latest_answerset_id)}>AS</a>`;
-      out = '->';
+    if (params.data !== '' && params.data !== undefined && params.data !== null && 'id' in params.data && params.data.id) {
+      out = `<a href=${this.props.answersetUrlFunction(params.data, { id: params.data.latest_answerset_id })}>&nbsp;&nbsp;➤</a>`;
     }
     return out;
   }
   cellRendererBusy(params) {
     let out = '';
     if (params.value) {
-      out = 'Busy';
+      // out = `<img src=../${LoadingImg} height="45" width="45" />`;
+      out = 'Updating...';
     }
     return out;
   }
@@ -136,12 +135,20 @@ class QuestionListTableAgGrid extends React.Component {
                     suppressMenu: true,
                   },
                   {
-                    headerName: 'Updated',
-                    field: 'latest_answerset_timestamp',
+                    headerName: 'Active',
+                    field: 'isBusy',
                     suppressMenu: true,
-                    cellRenderer: this.cellRendererAnswersetTimeStamp,
-                    width: 100,
-                    hide: true,
+                    cellRenderer: this.cellRendererBusy,
+                    width: 50,
+                    hide: false,
+                  },
+                  {
+                    headerName: 'Answers',
+                    field: 'latest_answerset_id',
+                    suppressMenu: true,
+                    cellRenderer: this.cellRendererAnswers,
+                    width: 50,
+                    hide: false,
                   },
                 ]}
                 rowData={this.props.questions}
