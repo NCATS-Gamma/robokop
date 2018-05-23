@@ -9,7 +9,7 @@ import string
 import logging
 from flask import jsonify, request
 from flask_security import auth_required, current_user
-from flask_restplus import Resource
+from flask_restful import Resource
 
 from manager.util import getAuthData, get_tasks
 from manager.question import list_questions, list_questions_by_username, Question
@@ -21,19 +21,18 @@ import manager.logging_config
 logger = logging.getLogger(__name__)
 
 # question conversion
-@api.route('/questions/convert')
 class QuestionConversionAPI(Resource):
-    @api.response(201, 'Question converted')
     def post(self):
-        """Create new question
+        """
+        Create new question
         ---
         parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
+          - in: body
+            name: question
+            description: simple question format
             schema:
-                $ref: '#/xxx'
-            required: xxx
+                $ref: '#/definitions/SimpleQuestion'
+            required: true
         responses:
             200:
                 description: xxx
@@ -66,6 +65,8 @@ class QuestionConversionAPI(Resource):
         q = Question(id=qid, user_id=user_id, name=name, natural_question=natural_question, notes=notes, nodes=nodes, edges=edges)
 
         return q.toJSON(), 201
+
+api.add_resource(QuestionConversionAPI, '/questions/convert')
 
 # New Question Submission
 @api.route('/questions/')
