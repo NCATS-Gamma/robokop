@@ -256,11 +256,17 @@ class AppConfig {
     return this.comms.get(addr).then((result) => {
       const options = result.data.map(d => ({ value: d.id, label: d.label }));
 
-      // Allow the inclusion of direct identifiers incase the search fails you.
+      // Allow the inclusion of direct identifiers incase the search doesn't have what you want.
       if (input.includes(':')) {
         options.push({ value: input, label: input });
       }
       return { options };
+    }, () => {
+      // Allow the inclusion of direct identifiers in case the search fails you
+      if (input.includes(':')) {
+        return Promise.resolve({ options: [{ value: input, label: input }] });
+      }
+      return Promise.resolve({ options: [] });
     });
   }
   // submitRequest(url, data) {
