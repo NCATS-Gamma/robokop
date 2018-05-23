@@ -56,6 +56,12 @@ class ComparisonFetchAndDisplay extends React.Component {
       if (!Array.isArray(answers) || (answers.length < 1)) {
         throw new Error('No answers were found.');
       }
+      // assign confidence -1 if missing
+      answers.forEach((a) => {
+        if (!a.confidence) {
+          a.confidence = -1;
+        }
+      });
       answers.forEach((a) => {
         const edges = a.result_graph.edge_list;
         const nodes = a.result_graph.node_list;
