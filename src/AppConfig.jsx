@@ -254,11 +254,13 @@ class AppConfig {
     const addr = `${this.apis.search}${encodeURIComponent(input)}/${encodeURIComponent(category)}`;
     // Because this method is called by react-select Async we must return a promise that will return the values
     return this.comms.get(addr).then((result) => {
-      return {
-        options: result.data.map((d) => {
-          return { value: d.id, label: d.label };
-        }),
-      };
+      const options = result.data.map(d => ({ value: d.id, label: d.label }));
+
+      // Allow the inclusion of direct identifiers incase the search fails you.
+      if (input.includes(':')) {
+        options.push({ value: input, label: input });
+      }
+      return { options };
     });
   }
   // submitRequest(url, data) {
