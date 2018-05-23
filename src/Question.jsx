@@ -412,6 +412,9 @@ class Question extends React.Component {
             if (isAnswerTask) {
               const ind = data.answerers.findIndex(a => a.uuid === newTask.answersetTask);
               if (ind < 0) {
+                // Check to see if it happens to be done already?
+                // this.appConfig.taskStatus(newTask.answersetTask, )
+                // done already?
                 console.log('Missing Answerer Task!!?!', newTask.answersetTask);
                 allOk = false;
                 this.dialogMessage({
