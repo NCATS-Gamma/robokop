@@ -32,8 +32,8 @@ class ComparisonFetchAndDisplay extends React.Component {
   componentDidMount() {
     // uses the result to set this.state
     this.props.fetchFun(
-      this.props.disease,
-      this.props.drug,
+      this.props.queryId,
+      this.props.terms,
       data => this.loadData(data),
       err => this.setState({ isErrorConnect: true, errorMessage: err, ready: true }),
     );
@@ -187,5 +187,12 @@ class ComparisonFetchAndDisplay extends React.Component {
     );
   }
 }
+
+ComparisonFetchAndDisplay.defaultProps = {
+  name: 'Reasoner',
+  terms: {},
+  queryId: '',
+};
+
 
 export default ComparisonFetchAndDisplay;

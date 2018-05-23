@@ -18,15 +18,14 @@ class Comparison extends React.Component {
 
     this.state = {
       userReady: false,
-      drug: 'ibuprofen',
-      disease: 'headache',
+      terms: { chemical_substance: 'CHEMBL:CHEMBL521' },
+      queryId: 'Q3',
       submitted: false,
-      user: {},
     };
 
     this.onSubmit = this.onSubmit.bind(this);
+    this.handleChangeTerms = this.handleChangeTerms.bind(this);
     this.handleChangeDrug = this.handleChangeDrug.bind(this);
-    this.handleChangeDisease = this.handleChangeDisease.bind(this);
   }
 
   componentDidMount() {
@@ -41,10 +40,10 @@ class Comparison extends React.Component {
     this.setState({ submitted: true });
   }
   handleChangeDrug(e) {
-    this.setState({ drug: e.target.value });
+    this.handleChangeTerms({ terms: { chemical_substance: e.target.value } });
   }
-  handleChangeDisease(e) {
-    this.setState({ disease: e.target.value });
+  handleChangeTerms(newTerms) {
+    this.setState(newTerms);
   }
   renderLoading() {
     return (
@@ -73,28 +72,13 @@ class Comparison extends React.Component {
               <ControlLabel>Enter a Drug</ControlLabel>
               <FormControl
                 type="text"
-                value={this.state.drug}
+                value={this.state.terms.chemical_substance}
                 placeholder="Drug"
                 onChange={this.handleChangeDrug}
               />
             </FormGroup>
           </Col>
         </Row>
-        {/* <Row>
-          <Col md={12}>
-            <FormGroup
-              controlId="formBasicText"
-            >
-              <ControlLabel>Enter a Disease</ControlLabel>
-              <FormControl
-                type="text"
-                value={this.state.disease}
-                placeholder="Disease"
-                onChange={this.handleChangeDisease}
-              />
-            </FormGroup>
-          </Col>
-        </Row> */}
         <Row>
           <Col md={12}>
             <Button onClick={this.onSubmit}>
@@ -109,8 +93,8 @@ class Comparison extends React.Component {
     return (
       <ComparisonFetchAndDisplayGroup
         user={this.state.user}
-        disease={this.state.disease}
-        drug={this.state.drug}
+        terms={this.state.terms}
+        queryId={this.state.queryId}
         fetchFunGamma={this.appConfig.externalTemplateRequestGamma}
         fetchFunXray={this.appConfig.externalTemplateRequestXray}
         fetchFunIndigo={this.appConfig.externalTemplateRequestIndigo}
