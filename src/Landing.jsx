@@ -26,7 +26,7 @@ class Landing extends React.Component {
         ready: true,
       }),
       (err) => {
-        console.log('Failed to retrieve user informaiton. This may indicate a connection issue.')
+        console.log('Failed to retrieve user information. This may indicate a connection issue.')
         console.log(err);
       },
     );
