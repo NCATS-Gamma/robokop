@@ -3,7 +3,7 @@ import React from 'react';
 import { Grid, Row, Col, Tabs, Tab } from 'react-bootstrap';
 import ComparisonFetchAndDisplay from './ComparisonFetchAndDisplay';
 
-class CopFetchAndDisplayGroup extends React.Component {
+class ComparisonFetchAndDisplayGroup extends React.Component {
   constructor(props) {
     super(props);
     // We only read the communications config on creation
@@ -27,7 +27,7 @@ class CopFetchAndDisplayGroup extends React.Component {
               {this.props.title}
               <br />
               <small>
-              {this.props.subTitle}
+                {this.props.subTitle}
               </small>
             </h1>
           </Col>
@@ -47,7 +47,9 @@ class CopFetchAndDisplayGroup extends React.Component {
               >
                 <ComparisonFetchAndDisplay
                   user={this.props.user}
+                  name="Gamma"
                   terms={this.props.terms}
+                  queryId={this.props.queryId}
                   fetchFun={this.props.fetchFunGamma}
                 />
               </Tab>
@@ -57,7 +59,9 @@ class CopFetchAndDisplayGroup extends React.Component {
               >
                 <ComparisonFetchAndDisplay
                   user={this.props.user}
+                  name="X-Ray"
                   terms={this.props.terms}
+                  queryId={this.props.queryId}
                   fetchFun={this.props.fetchFunXray}
                 />
               </Tab>
@@ -67,8 +71,9 @@ class CopFetchAndDisplayGroup extends React.Component {
               >
                 <ComparisonFetchAndDisplay
                   user={this.props.user}
-                  disease={this.props.disease}
-                  drug={this.props.drug}
+                  name="Indigo"
+                  terms={this.props.terms}
+                  queryId={this.props.queryId}
                   fetchFun={this.props.fetchFunIndigo}
                 />
               </Tab>
@@ -80,9 +85,11 @@ class CopFetchAndDisplayGroup extends React.Component {
   }
 }
 
-CopFetchAndDisplayGroup.defaultProps = {
-  title
+ComparisonFetchAndDisplayGroup.defaultProps = {
+  title: 'Reasoner Comparison Tool',
+  subTitle: 'A tool to visualize the results of different reasoners',
+  terms: {},
+  queryId: '',
+};
 
-}
-
-export default CopFetchAndDisplayGroup;
+export default ComparisonFetchAndDisplayGroup;

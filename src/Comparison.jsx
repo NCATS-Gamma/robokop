@@ -18,15 +18,14 @@ class Comparison extends React.Component {
 
     this.state = {
       userReady: false,
-      drug: 'flupentixol',
-      disease: 'schizophrenia',
+      terms: { chemical_substance: 'CHEMBL:CHEMBL521' },
+      queryId: 'Q3',
       submitted: false,
-      user: {},
     };
 
     this.onSubmit = this.onSubmit.bind(this);
+    this.handleChangeTerms = this.handleChangeTerms.bind(this);
     this.handleChangeDrug = this.handleChangeDrug.bind(this);
-    this.handleChangeDisease = this.handleChangeDisease.bind(this);
   }
 
   componentDidMount() {
@@ -41,10 +40,10 @@ class Comparison extends React.Component {
     this.setState({ submitted: true });
   }
   handleChangeDrug(e) {
-    this.setState({ drug: e.target.value });
+    this.handleChangeTerms({ terms: { chemical_substance: e.target.value } });
   }
-  handleChangeDisease(e) {
-    this.setState({ disease: e.target.value });
+  handleChangeTerms(newTerms) {
+    this.setState(newTerms);
   }
   renderLoading() {
     return (
@@ -60,7 +59,7 @@ class Comparison extends React.Component {
               Reasonser COP Comparison Tool
               <br />
               <small>
-                Enter a disease and drug pair to explore COP answers from various reasoners.
+                Enter a drug to explore associated genes.
               </small>
             </h1>
           </Col>
@@ -73,24 +72,9 @@ class Comparison extends React.Component {
               <ControlLabel>Enter a Drug</ControlLabel>
               <FormControl
                 type="text"
-                value={this.state.drug}
+                value={this.state.terms.chemical_substance}
                 placeholder="Drug"
                 onChange={this.handleChangeDrug}
-              />
-            </FormGroup>
-          </Col>
-        </Row>
-        <Row>
-          <Col md={12}>
-            <FormGroup
-              controlId="formBasicText"
-            >
-              <ControlLabel>Enter a Disease</ControlLabel>
-              <FormControl
-                type="text"
-                value={this.state.disease}
-                placeholder="Disease"
-                onChange={this.handleChangeDisease}
               />
             </FormGroup>
           </Col>
@@ -109,11 +93,11 @@ class Comparison extends React.Component {
     return (
       <ComparisonFetchAndDisplayGroup
         user={this.state.user}
-        disease={this.state.disease}
-        drug={this.state.drug}
-        fetchFunGamma={this.appConfig.externalTemplateCopRequestGamma}
-        fetchFunXray={this.appConfig.externalTemplateCopRequestXray}
-        fetchFunIndigo={this.appConfig.externalTemplateCopRequestIndigo}
+        terms={this.state.terms}
+        queryId={this.state.queryId}
+        fetchFunGamma={this.appConfig.externalTemplateRequestGamma}
+        fetchFunXray={this.appConfig.externalTemplateRequestXray}
+        fetchFunIndigo={this.appConfig.externalTemplateRequestIndigo}
       />
     );
   }
