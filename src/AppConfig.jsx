@@ -276,7 +276,7 @@ class AppConfig {
       console.log(drugId)
       const queryUrl = 'http://robokop.renci.org:6011/api/query';
       const queryData = {
-        known_query_type_id: 'Q3',
+        query_type_id: 'Q3',
         terms: {
           chemical_substance: drugId,
         },
