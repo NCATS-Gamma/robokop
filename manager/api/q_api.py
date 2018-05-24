@@ -233,8 +233,15 @@ class QuestionTasks(Resource):
                 type: object
                 properties:
                     answerers:
-                        schema:
-                            $ref: '#/definitions/Task'
+                        type: array
+                        items:
+                            schema:
+                                $ref: '#/definitions/Task'
+                    updaters:
+                        type: array
+                        items:
+                            schema:
+                                $ref: '#/definitions/Task'
             404:
                 description: "invalid question key"
                 type: string

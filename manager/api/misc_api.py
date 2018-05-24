@@ -16,81 +16,39 @@ import manager.api.q_api
 import manager.api.a_api
 import manager.api.feedback_api
 
-@api.route('/tasks')
 class Tasks(Resource):
-    @api.response(200, 'Success')
     def get(self):
-        """Get list of tasks (queued and completed)
+        """
+        Get list of tasks (queued and completed)
         ---
-        parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
-            schema:
-                $ref: '#/xxx'
-            required: xxx
         responses:
             200:
-                description: xxx
-                schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
+                description: tasks
+                type: array
+                items:
                     schema:
-                        $ref: '#/xxx'
+                        $ref: '#/definitions/Task'
         """
         tasks = get_tasks()
         return tasks
 
-@api.route('/t/<task_id>')
-@api.param('task_id', 'A task id')
+api.add_resource(Tasks, '/tasks')
+
 class TaskStatus(Resource):
-    @api.response(200, 'Success')
     def get(self, task_id):
         """Get status for task
         ---
         parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
-            schema:
-                $ref: '#/xxx'
-            required: xxx
+          - in: path
+            name: task_id
+            description: "task id"
+            type: string
+            required: true
         responses:
             200:
-                description: xxx
+                description: task
                 schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
+                    $ref: '#/definitions/Task
         """
         # task = celery.AsyncResult(task_id)
         # return task.state
@@ -99,41 +57,19 @@ class TaskStatus(Resource):
         response = requests.get(flower_url, auth=(os.environ['FLOWER_USER'], os.environ['FLOWER_PASSWORD']))
         return response.json()
 
-@api.route('/concepts')
+api.add_resource(TaskStatus, '/t/<task_id>')
+
 class Concepts(Resource):
-    @api.response(200, 'Success')
     def get(self):
-        """Get known biomedical concepts
+        """
+        Get known biomedical concepts
         ---
-        parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
-            schema:
-                $ref: '#/xxx'
-            required: xxx
         responses:
             200:
-                description: xxx
-                schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
+                description: concepts
+                type: array
+                    items:
+                        type:string
         """
         r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/concepts")
         concepts = r.json()
@@ -143,41 +79,29 @@ class Concepts(Resource):
         concepts.sort()
         return concepts
 
-@api.route('/search/<term>/<category>')
+api.add_resource(Concepts, '/concepts')
+
 class Search(Resource):
-    @api.response(200, 'Success')
     def get(self, term, category):
         """Look up biomedical search term using bionames service
         ---
         parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
-            schema:
-                $ref: '#/xxx'
-            required: xxx
+          - in: path
+            name: term
+            description: "biomedical term"
+            type: string
+            required: true
+          - in: path
+            name: category
+            description: "biomedical concept category"
+            type: string
+            required: true
         responses:
             200:
-                description: xxx
-                schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
+                description: "biomedical identifiers"
+                type: array
+                    items:
+                        type: string
         """
         url = f"https://bionames.renci.org/lookup/{term}/{category}/"
         r = requests.get(url)
@@ -198,19 +122,14 @@ class Search(Resource):
         results = list({r['id']:r for r in all_results}.values())
         return results
 
-@api.route('/user')
+api.add_resource(Search, '/search/<term>/<category>')
+
 class User(Resource):
-    @api.response(200, 'Success')
     def get(self):
-        """Get current user info
+        # perhaps don't document this because it's only used by the web GUI
+        """
+        Get current user info
         ---
-        parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
-            schema:
-                $ref: '#/xxx'
-            required: xxx
         responses:
             200:
                 description: xxx
@@ -223,16 +142,7 @@ class User(Resource):
                             type: xxx
                             description: xxx
         """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
-        """
         user = getAuthData()
         return user
+
+api.add_resource(User, '/user')
