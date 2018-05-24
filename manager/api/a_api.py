@@ -31,11 +31,11 @@ class AnswersetAPI(Resource):
                     answerset:
                         schema:
                             $ref: '#/definitions/Response'
-                    user
-                    question
-                    other_questions
-                    other_answersets
-                    feedback
+                    user:
+                    question:
+                    other_questions:
+                    other_answersets:
+                    feedback:
             404:
                 description: "invalid answerset id"
                 type: string
@@ -95,11 +95,11 @@ class AnswerAPI(Resource):
                     answerset:
                         schema:
                             $ref: '#/definitions/Response'
-                    user
-                    question
-                    other_questions
-                    other_answersets
-                    feedback
+                    user:
+                    question:
+                    other_questions:
+                    other_answersets:
+                    feedback:
             404:
                 description: "invalid answerset/answer id"
                 type: string
@@ -160,8 +160,7 @@ class GetFeedbackByAnswer(Resource):
                 description: "answer feedback"
                 type: array
                 items:
-                    schema:
-                        $ref: '#/definitions/Feedback'
+                    $ref: '#/definitions/Feedback'
             404:
                 description: "invalid answerset/answer id"
                 type: string
@@ -196,8 +195,7 @@ class GetFeedbackByAnswerset(Resource):
                 description: "answer feedback"
                 type: array
                 items:
-                    schema:
-                        $ref: '#/definitions/Feedback'
+                    $ref: '#/definitions/Feedback'
             404:
                 description: "invalid answerset/answer id"
                 type: string

@@ -129,7 +129,6 @@ class QuestionAPI(Resource):
 api.add_resource(QuestionAPI, '/q/<question_id>')
 
 # get feedback by question
-@api.route('/q/<question_id>/feedback')
 class GetFeedbackByQuestion(Resource):
     def get(self, question_id):
         """Create new feedback
@@ -172,7 +171,7 @@ class AnswerQuestion(Resource):
                 description: "answering in progress"
                 type: string
             404:
-                description: "invalid question key:
+                description: "invalid question key"
                 type: string
         """
         try:
@@ -235,13 +234,11 @@ class QuestionTasks(Resource):
                     answerers:
                         type: array
                         items:
-                            schema:
-                                $ref: '#/definitions/Task'
+                            $ref: '#/definitions/Task'
                     updaters:
                         type: array
                         items:
-                            schema:
-                                $ref: '#/definitions/Task'
+                            $ref: '#/definitions/Task'
             404:
                 description: "invalid question key"
                 type: string

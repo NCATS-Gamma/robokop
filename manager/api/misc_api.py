@@ -26,8 +26,7 @@ class Tasks(Resource):
                 description: tasks
                 type: array
                 items:
-                    schema:
-                        $ref: '#/definitions/Task'
+                    $ref: '#/definitions/Task'
         """
         tasks = get_tasks()
         return tasks
@@ -48,7 +47,7 @@ class TaskStatus(Resource):
             200:
                 description: task
                 schema:
-                    $ref: '#/definitions/Task
+                    $ref: '#/definitions/Task'
         """
         # task = celery.AsyncResult(task_id)
         # return task.state
@@ -68,8 +67,8 @@ class Concepts(Resource):
             200:
                 description: concepts
                 type: array
-                    items:
-                        type:string
+                items:
+                    type: string
         """
         r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/concepts")
         concepts = r.json()
@@ -100,8 +99,8 @@ class Search(Resource):
             200:
                 description: "biomedical identifiers"
                 type: array
-                    items:
-                        type: string
+                items:
+                    type: string
         """
         url = f"https://bionames.renci.org/lookup/{term}/{category}/"
         r = requests.get(url)
@@ -132,15 +131,8 @@ class User(Resource):
         ---
         responses:
             200:
-                description: xxx
-                schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
+                description: user
+                type: object
         """
         user = getAuthData()
         return user
