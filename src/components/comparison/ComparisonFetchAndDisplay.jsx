@@ -138,6 +138,7 @@ class ComparisonFetchAndDisplay extends React.Component {
     return (
       <AnswersetPres
         user={this.props.user}
+        style={{paddingTop: '10px'}}
         question={this.state.question}
         answerset={this.state.answerset}
         answers={this.state.answers}

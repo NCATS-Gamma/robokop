@@ -59,7 +59,7 @@ class AnswersetPres extends React.Component {
     const showOtherAnswersets = this.props.otherQuestions.length > 0;
 
     return (
-      <Grid>
+      <div style={this.props.style}>
         {!this.props.omitHeader &&
         <div>
           <QuestionHeader
@@ -136,7 +136,7 @@ class AnswersetPres extends React.Component {
             />
           </Tab>
         </Tabs>
-      </Grid>
+      </div>
     );
   }
   render() {
@@ -173,6 +173,8 @@ AnswersetPres.defaultProps = {
 
   enabledAnswerLink: false,
   getAnswerUrl: () => '',
+
+  style: {},
 };
 
 AnswersetPres.propTypes = {
@@ -212,6 +214,8 @@ AnswersetPres.propTypes = {
 
   enabledAnswerLink: PropTypes.bool,
   getAnswerUrl: PropTypes.func,
+
+  style: PropTypes.object,
 };
 
 export default AnswersetPres;
