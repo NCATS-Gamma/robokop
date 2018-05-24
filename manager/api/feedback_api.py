@@ -15,6 +15,7 @@ class FeedbackAPI(Resource):
     def post(self):
         """Create new feedback
         ---
+        tags: [feedback]
         parameters:
           - in: body
             name: feedback

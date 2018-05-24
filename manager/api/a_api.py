@@ -17,6 +17,7 @@ class AnswersetAPI(Resource):
     def get(self, qa_id):
         """Get answerset 
         ---
+        tags: [answer]
         parameters:
           - in: path
             name: qa_id
@@ -84,6 +85,7 @@ class AnswerAPI(Resource):
     def get(self, qa_id, answer_id):
         """Get answer
         ---
+        tags: [answer]
         parameters:
           - in: path
             name: qa_id
@@ -166,6 +168,7 @@ class GetFeedbackByAnswer(Resource):
         """
         Get feedback by answer
         ---
+        tags: [feedback]
         parameters:
           - in: path
             name: qa_id
@@ -206,6 +209,7 @@ class GetFeedbackByAnswerset(Resource):
         """
         Get feedback by answerset
         ---
+        tags: [feedback]
         parameters:
           - in: path
             name: qa_id

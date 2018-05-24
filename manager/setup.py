@@ -41,8 +41,25 @@ template = {
         "https"
     ]
 }
+
+swagger_config = {
+    "headers": [
+    ],
+    "specs": [
+        {
+            "endpoint": 'apispec_1',
+            "route": '/apispec_1.json',
+            "rule_filter": lambda rule: True,  # all in
+            "model_filter": lambda tag: True,  # all in
+        }
+    ],
+    "swagger_ui": True,
+    "specs_route": "/apidocs/"
+}
+
 app.config['SWAGGER'] = {
     'title': 'ROBOKOP Manager API',
     'uiversion': 3
 }
-swagger = Swagger(app, template=template)
+
+swagger = Swagger(app, template=template, config=swagger_config)

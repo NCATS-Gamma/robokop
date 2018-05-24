@@ -26,18 +26,19 @@ class QuestionConversionAPI(Resource):
         """
         Create new question
         ---
+        tags: [question]
         parameters:
           - in: body
             name: question
             description: simple question format
             schema:
-                $ref: '#/definitions/SimpleQuestion'
+                $ref: '#/definitions/Question'
             required: true
         responses:
             200:
                 description: converted question
                 schema:
-                    $ref: '#/definitions/ComplexQuestion'
+                    $ref: '#/definitions/Question'
         """
         user_id = 1
         name = request.json['name']
@@ -57,6 +58,7 @@ class QuestionsAPI(Resource):
     def post(self):
         """Create new question
         ---
+        tags: [question]
         parameters:
           - in: body
             name: name
@@ -111,13 +113,14 @@ class QuestionsAPI(Resource):
     def get(self):
         """Get list of questions
         ---
+        tags: [question]
         responses:
             200:
                 description: list of questions
                 schema:
                     type: "array"
                     items:
-                        $ref: '#/definitions/SimpleQuestion'
+                        $ref: '#/definitions/Question'
         """
         user = getAuthData()
         question_list = list_questions()
@@ -165,4 +168,4 @@ class QuestionsAPI(Resource):
         return {'user': user,\
                 'questions': [augment_info(q) for q in question_list]}, 200
 
-api.add_resource(QuestionsAPI, '/questions')
+api.add_resource(QuestionsAPI, '/questions/')

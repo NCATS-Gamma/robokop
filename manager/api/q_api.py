@@ -26,17 +26,19 @@ class QuestionAPI(Resource):
     def get(self, question_id):
         """Get question
         ---
+        tags: [question]
         parameters:
           - in: path
             name: question_id
             description: "question id"
             type: string
             required: true
+            example: A2T8TK8uxaEy
         responses:
             200:
                 description: question
                 schema:
-                    $ref: '#/definitions/SimpleQuestion'
+                    $ref: '#/definitions/Question'
             404:
                 description: "invalid question key"
         """
@@ -58,6 +60,7 @@ class QuestionAPI(Resource):
     def post(self, question_id):
         """Edit question metadata
         ---
+        tags: [question]
         parameters:
           - in: path
             name: question_id
@@ -101,6 +104,7 @@ class QuestionAPI(Resource):
     def delete(self, question_id):
         """Delete question
         ---
+        tags: [question]
         parameters:
           - in: path
             name: question_id
@@ -133,6 +137,7 @@ class GetFeedbackByQuestion(Resource):
     def get(self, question_id):
         """Create new feedback
         ---
+        tags: [feedback]
         parameters:
           - in: path
             name: question_id
@@ -160,6 +165,7 @@ class AnswerQuestion(Resource):
     def post(self, question_id):
         """Answer question
         ---
+        tags: [answer]
         parameters:
           - in: path
             name: question_id
@@ -190,6 +196,7 @@ class RefreshKG(Resource):
     def post(self, question_id):
         """Refresh KG for question
         ---
+        tags: [cache]
         parameters:
           - in: path
             name: question_id
@@ -220,6 +227,7 @@ class QuestionTasks(Resource):
     def get(self, question_id):
         """Get list of queued tasks for question
         ---
+        tags: [tasks]
         parameters:
           - in: path
             name: question_id
@@ -280,6 +288,7 @@ class QuestionSubgraph(Resource):
         """
         Get question subgraph
         ---
+        tags: [question]
         parameters:
           - in: path
             name: question_id
@@ -290,7 +299,7 @@ class QuestionSubgraph(Resource):
             200:
                 description: xxx
                 schema:
-                    $ref: '#/definitions/Graph'
+                    $ref: '#/definitions/Result_graph'
             404:
                 description: "invalid question key"
                 type: string

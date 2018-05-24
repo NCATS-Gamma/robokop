@@ -21,6 +21,7 @@ class Tasks(Resource):
         """
         Get list of tasks (queued and completed)
         ---
+        tags: [tasks]
         responses:
             200:
                 description: tasks
@@ -37,6 +38,7 @@ class TaskStatus(Resource):
     def get(self, task_id):
         """Get status for task
         ---
+        tags: [tasks]
         parameters:
           - in: path
             name: task_id
@@ -63,6 +65,7 @@ class Concepts(Resource):
         """
         Get known biomedical concepts
         ---
+        tags: [util]
         responses:
             200:
                 description: concepts
@@ -84,6 +87,7 @@ class Search(Resource):
     def get(self, term, category):
         """Look up biomedical search term using bionames service
         ---
+        tags: [util]
         parameters:
           - in: path
             name: term
@@ -129,6 +133,7 @@ class User(Resource):
         """
         Get current user info
         ---
+        tags: [util]
         responses:
             200:
                 description: user
