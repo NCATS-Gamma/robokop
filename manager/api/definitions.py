@@ -1,5 +1,25 @@
 from manager.setup import swagger
 
+@swagger.definition('Feedback')
+class Feedback():
+    """
+    Feedback
+    ---
+    type: object
+    properties:
+        question_id:
+            type: string
+        answer_id:
+            type: string
+        accuracy:
+            type: string
+        impact:
+            type: string
+        notes:
+            type: string
+    """
+    pass
+
 @swagger.definition('Task')
 class Task():
     """

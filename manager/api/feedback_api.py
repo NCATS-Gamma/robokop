@@ -10,48 +10,21 @@ from manager.feedback import Feedback
 from manager.setup import api
 
 # New Feedback Submission
-@api.route('/feedback/')
 class FeedbackAPI(Resource):
     @auth_required('session', 'basic')
-    @api.response(201, 'Question created')
-    @api.doc(params={
-        'question_id': 'Question id',
-        'answer_id': 'Answer id',
-        'accuracy': 'Accuracy',
-        'impact': 'Impact',
-        'notes': 'Notes'})
     def post(self):
         """Create new feedback
         ---
         parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
+          - in: body
+            name: feedback
+            description: "new feedback"
             schema:
-                $ref: '#/xxx'
-            required: xxx
+                $ref: '#/definitions/Feedback'
         responses:
-            200:
-                description: xxx
-                schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
+            201:
+                description: "confirmation"
+                type: string
         """
         f = Feedback(
             user_id=current_user.id,
@@ -62,3 +35,5 @@ class FeedbackAPI(Resource):
             notes=request.json['notes'])
 
         return "Feedback created", 201
+
+api.add_resource(FeedbackAPI, '/feedback/')
