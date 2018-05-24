@@ -35,26 +35,9 @@ class QuestionConversionAPI(Resource):
             required: true
         responses:
             200:
-                description: xxx
+                description: converted question
                 schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
+                    $ref: '#/definitions/ComplexQuestion'
         """
         user_id = 1
         name = request.json['name']
@@ -69,47 +52,32 @@ class QuestionConversionAPI(Resource):
 api.add_resource(QuestionConversionAPI, '/questions/convert')
 
 # New Question Submission
-@api.route('/questions/')
 class QuestionsAPI(Resource):
     @auth_required('session', 'basic')
-    @api.response(201, 'Question created')
-    @api.doc(params={
-        'name': 'Name of question',
-        'natural_question': 'Natural-language question',
-        'notes': 'Notes',
-        'query': 'Machine-readable question'})
     def post(self):
         """Create new question
         ---
         parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
-            schema:
-                $ref: '#/xxx'
-            required: xxx
+          - in: body
+            name: name
+            description: "name of question"
+            required: true
+          - in: body
+            name: natural_question
+            description: "natural-language question"
+            required: false
+          - in: body
+            name: notes
+            description: "notes"
+            required: false
+          - in: body
+            name: query
+            description: "machine-readable question"
+            required: true
         responses:
             200:
-                description: xxx
-                schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
+                description: "message"
+                type: string
         """
         auth = request.authorization
         if auth:
@@ -140,39 +108,16 @@ class QuestionsAPI(Resource):
 
         return qid, 201
 
-    @api.response(200, 'Success')
     def get(self):
         """Get list of questions
         ---
-        parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
-            schema:
-                $ref: '#/xxx'
-            required: xxx
         responses:
             200:
-                description: xxx
+                description: list of questions
                 schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
+                    type: "array"
+                    items:
+                        $ref: #/definitions/SimpleQuestion
         """
         user = getAuthData()
         question_list = list_questions()
@@ -219,3 +164,5 @@ class QuestionsAPI(Resource):
 
         return {'user': user,\
                 'questions': [augment_info(q) for q in question_list]}, 200
+
+api.add_resource(QuestionsAPI, '/questions')

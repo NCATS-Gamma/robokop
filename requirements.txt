@@ -5,7 +5,8 @@ flask
 flask-mail
 flask-security
 flask-sqlalchemy
-flask-restplus
+flask-restful
+flasgger
 flower
 gunicorn
 kombu

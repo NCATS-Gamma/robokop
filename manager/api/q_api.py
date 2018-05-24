@@ -21,43 +21,23 @@ from manager.util import getAuthData, get_tasks
 from manager.setup import db, api
 from manager.logging_config import logger
 
-@api.route('/q/<question_id>')
-@api.param('question_id', 'A question id')
 class QuestionAPI(Resource):
-    @api.response(200, 'Success')
-    @api.response(404, 'Invalid question key')
     def get(self, question_id):
         """Get question
         ---
         parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
-            schema:
-                $ref: '#/xxx'
-            required: xxx
+          - in: path
+            name: question_id
+            description: "question id"
+            type: string
+            required: true
         responses:
             200:
-                description: xxx
+                description: question
                 schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
+                    $ref: #/definitions/SimpleQuestion
+            404:
+                description: "invalid question key"
         """
 
         try:
@@ -74,40 +54,34 @@ class QuestionAPI(Resource):
                 'answerset_list': [a.toStandard(data=False) for a in answerset_list]}, 200
 
     @auth_required('session', 'basic')
-    @api.response(200, 'Question edited')
-    @api.response(404, 'Invalid question key')
     def post(self, question_id):
         """Edit question metadata
         ---
         parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
-            schema:
-                $ref: '#/xxx'
-            required: xxx
+          - in: path
+            name: question_id
+            description: "question id"
+            type: string
+            required: true
+          - in: body
+            name: name
+            description: "name of question"
+            required: true
+          - in: body
+            name: natural_question
+            description: "natural-language question"
+            required: true
+          - in: body
+            name: notes
+            description: "notes"
+            required: true
         responses:
             200:
-                description: xxx
-                schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
+                description: "question edited"
+            401:
+                description: "unauthorized"
+            404:
+                description: "invalid question key"
         """
         logger.info('Editing question %s', question_id)
         try:
@@ -123,41 +97,22 @@ class QuestionAPI(Resource):
         return "SUCCESS", 200
 
     @auth_required('session', 'basic')
-    @api.response(200, 'Question deleted')
-    @api.response(401, 'Unauthorized')
-    @api.response(404, 'Invalid question key')
     def delete(self, question_id):
         """Delete question
         ---
         parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
-            schema:
-                $ref: '#/xxx'
-            required: xxx
+          - in: path
+            name: question_id
+            description: "question id"
+            type: string
+            required: true
         responses:
             200:
-                description: xxx
-                schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
+                description: "question deleted"
+            401:
+                description: "unauthorized"
+            404:
+                description: "invalid question key"
         """
         logger.info('Deleting question %s', question_id)
         try:
@@ -170,44 +125,25 @@ class QuestionAPI(Resource):
         db.session.commit()
         return "SUCCESS", 200
 
+api.add_resource(QuestionAPI, '/q/<question_id>')
+
 # get feedback by question
 @api.route('/q/<question_id>/feedback')
 class GetFeedbackByQuestion(Resource):
-    @api.response(200, 'Success')
-    @api.doc(params={
-        'question_id': 'Question id'})
     def get(self, question_id):
         """Create new feedback
         ---
         parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
-            schema:
-                $ref: '#/xxx'
-            required: xxx
+          - in: path
+            name: question_id
+            description: "question id"
+            type: string
+            required: true
         responses:
             200:
-                description: xxx
-                schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
+                description: success
+            404:
+                description: "invalid question key"
         """
         try:
             question = get_question_by_id(question_id)
