@@ -60,6 +60,13 @@ class Answerset extends React.Component {
           };
 
           const answers = _.cloneDeep(object.result_list);
+          // assign confidence -1 if missing
+          answers.forEach((a) => {
+            if (!a.confidence) {
+              a.confidence = -1;
+            }
+          });
+
           answers.forEach((a) => {
             a.result_graph.edge_list.forEach((edge) => {
               if (!('id' in edge)) {
