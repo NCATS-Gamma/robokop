@@ -20,6 +20,7 @@ from manager.tasks import answer_question, update_kg
 from manager.util import getAuthData, get_tasks
 from manager.setup import db, api
 from manager.logging_config import logger
+import manager.api.definitions
 
 class QuestionAPI(Resource):
     def get(self, question_id):
@@ -153,44 +154,26 @@ class GetFeedbackByQuestion(Resource):
 
         return feedback.toJSON(), 200
 
-@api.route('/q/<question_id>/answer')
-@api.param('question_id', 'A question id')
+api.add_resource(GetFeedbackByQuestion, '/q/<question_id>/feedback')
+
 class AnswerQuestion(Resource):
     @auth_required('session', 'basic')
-    @api.response(202, 'Answering in progress')
-    @api.response(404, 'Invalid question key')
     def post(self, question_id):
         """Answer question
         ---
         parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
-            schema:
-                $ref: '#/xxx'
-            required: xxx
+          - in: path
+            name: question_id
+            description: "question id"
+            type: string
+            required: true
         responses:
-            200:
-                description: xxx
-                schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
+            202:
+                description: "answering in progress"
+                type: string
+            404:
+                description: "invalid question key:
+                type: string
         """
         try:
             question = get_question_by_id(question_id)
@@ -199,46 +182,28 @@ class AnswerQuestion(Resource):
         username = current_user.username
         # Answer a question
         task = answer_question.apply_async(args=[question.hash], kwargs={'question_id':question_id, 'user_email':current_user.email})
-        return {'task_id':task.id}, 200
+        return {'task_id':task.id}, 202
 
-@api.route('/q/<question_id>/refresh_kg')
-@api.param('question_id', 'A question id')
+api.add_resource(AnswerQuestion, '/q/<question_id>/answer')
+
 class RefreshKG(Resource):
     @auth_required('session', 'basic')
-    @api.response(202, 'Refreshing in progress')
-    @api.response(404, 'Invalid question key')
     def post(self, question_id):
         """Refresh KG for question
         ---
         parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
-            schema:
-                $ref: '#/xxx'
-            required: xxx
+          - in: path
+            name: question_id
+            description: "question id"
+            type: string
+            required: true
         responses:
-            200:
-                description: xxx
-                schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
+            202:
+                description: "refreshing in progress"
+                type: string
+            404:
+                description: "invalid question key"
+                type: string
         """
         try:
             question = get_question_by_id(question_id)
@@ -250,43 +215,29 @@ class RefreshKG(Resource):
         task = update_kg.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':current_user.email})
         return {'task_id':task.id}, 202
 
-@api.route('/q/<question_id>/tasks')
-@api.param('question_id', 'A question id')
+api.add_resource(RefreshKG, '/q/<question_id>/refresh_kg')
+
 class QuestionTasks(Resource):
-    @api.response(200, 'Success')
-    @api.response(404, 'Invalid question key')
     def get(self, question_id):
         """Get list of queued tasks for question
         ---
         parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
-            schema:
-                $ref: '#/xxx'
-            required: xxx
+          - in: path
+            name: question_id
+            description: "question id"
+            type: string
+            required: true
         responses:
             200:
-                description: xxx
-                schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
+                description: tasks
+                type: object
+                properties:
+                    answerers:
+                        schema:
+                            $ref: '#/definitions/Task'
+            404:
+                description: "invalid question key"
+                type: string
         """
 
         try:
@@ -318,43 +269,27 @@ class QuestionTasks(Resource):
         return {'answerers': answerers,
                 'updaters': updaters}, 200
 
-@api.route('/q/<question_id>/subgraph')
-@api.param('question_id', 'A question id')
+api.add_resource(QuestionTasks, '/q/<question_id>/tasks')
+
 class QuestionSubgraph(Resource):
-    @api.response(200, 'Success')
-    @api.response(404, 'Invalid question key')
     def get(self, question_id):
-        """Get question subgraph
+        """
+        Get question subgraph
         ---
         parameters:
-          - in: xxx
-            name: xxx
-            description: xxx
-            schema:
-                $ref: '#/xxx'
-            required: xxx
+          - in: path
+            name: question_id
+            description: "question id"
+            type: string
+            required: true
         responses:
             200:
                 description: xxx
                 schema:
-                    type: xxx
-                    required:
-                      - xxx
-                    properties:
-                        xxx
-                            type: xxx
-                            description: xxx
-        """
-        # replace `parameters` with this when OAS 3.0 is fully supported by Swagger UI
-        # https://github.com/swagger-api/swagger-ui/issues/3641
-        """
-        requestBody:
-            description: xxx
-            required: xxx
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/xxx'
+                    $ref: '#/definitions/Graph'
+            404:
+                description: "invalid question key"
+                type: string
         """
 
         try:
@@ -369,3 +304,5 @@ class QuestionSubgraph(Resource):
         except Exception as err:
             raise ValueError("Response is not JSON.")
         return output, 200
+
+api.add_resource(QuestionSubgraph, '/q/<question_id>/subgraph')
