@@ -21,17 +21,19 @@ api = Api(api_blueprint)
 app.register_blueprint(api_blueprint)
 
 template = {
-    "openapi": "2.0", #3.0.1",
+    "swagger": "2.0",
+    # "openapi": "3.0.1",
     "info": {
         "title": "ROBOKOP Manager",
         "description": "An API for management of biomedical questions and answers",
         "contact": {
-            "responsibleOrganization": "CoVar Applied Technologies",
-            "responsibleDeveloper": "patrick@covar.com",
+            "name": "CoVar Applied Technologies",
             "email": "patrick@covar.com",
             "url": "www.covar.com",
         },
-        "termsOfService": "<url>",
+        "termsOfService": {
+            "name": "mit"
+        },
         "version": "0.0.1"
     },
     "schemes": [
@@ -41,6 +43,6 @@ template = {
 }
 app.config['SWAGGER'] = {
     'title': 'ROBOKOP Manager API',
-    'uiversion': 2 #3
+    'uiversion': 3
 }
 swagger = Swagger(app, template=template)
