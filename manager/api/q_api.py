@@ -36,7 +36,7 @@ class QuestionAPI(Resource):
             200:
                 description: question
                 schema:
-                    $ref: #/definitions/SimpleQuestion
+                    $ref: '#/definitions/SimpleQuestion'
             404:
                 description: "invalid question key"
         """

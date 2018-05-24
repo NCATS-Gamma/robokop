@@ -32,10 +32,21 @@ class AnswersetAPI(Resource):
                         schema:
                             $ref: '#/definitions/Response'
                     user:
+                        type: object
                     question:
+                        type: object
                     other_questions:
+                        type: array
+                        items:
+                            type: object
                     other_answersets:
+                        type: array
+                        items:
+                            type: object
                     feedback:
+                        type: array
+                        items:
+                            type: object
             404:
                 description: "invalid answerset id"
                 type: string
@@ -96,10 +107,21 @@ class AnswerAPI(Resource):
                         schema:
                             $ref: '#/definitions/Response'
                     user:
+                        type: object
                     question:
+                        type: object
                     other_questions:
+                        type: array
+                        items:
+                            type: object
                     other_answersets:
+                        type: array
+                        items:
+                            type: object
                     feedback:
+                        type: array
+                        items:
+                            type: object
             404:
                 description: "invalid answerset/answer id"
                 type: string

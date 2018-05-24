@@ -41,25 +41,19 @@ class Task():
             example: 1527126644.7026913
         sent:
             type: number
-            example: null,
         started:
             type: number
             example: 1527127749.5369344
         rejected:
             type: number
-            example: null
         succeeded:
             type: number
-            example: null
         failed:
             type: number
-            example: null
         retried:
             type: number
-            example: null
         revoked:
             type: number
-            example: null
         args:
             type: string
             example: "['e5762fc349dd4abd0145c41ac4d42f4c']"
@@ -68,40 +62,31 @@ class Task():
             example: "{'question_id': '3mrYX07S7E8D', 'user_email': 'patrick@covar.com'}"
         eta:
             type: number
-            example: null
         expires:
             type: number
-            example: null
         retries:
             type: integer
             example: 0
         result:
             type: string
-            example: null
         exception:
             type: string
-            example: null
         timestamp:
             type: number
             example: 1527127749.5369344
         runtime:
             type: number
-            example: null
         traceback:
             type: string
-            example: null
         exchange:
             type: string
-            example: null
         routing_key:
             type: string
-            example: null
         clock:
             type: number
             example: 250648
         client:
             type: string
-            example: null
         root:
             type: string
             example: "000481a4-0a42-41a3-8d82-f957aa0242cd"
@@ -110,10 +95,8 @@ class Task():
             example: "000481a4-0a42-41a3-8d82-f957aa0242cd"
         parent: 
             type: string
-            example: null
         parent_id: 
             type: string
-            example: null
         children: 
             type: array
             example: []
@@ -156,11 +139,11 @@ class MachineQuestion():
         nodes:
             type: "array"
             items:
-                $ref: #/definitions/Node
+                $ref: '#/definitions/Node'
         edges:
             type: "array"
             items:
-                $ref: #/definitions/Edge
+                $ref: '#/definitions/Edge'
     """
     pass
     

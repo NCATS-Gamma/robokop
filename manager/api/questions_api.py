@@ -117,7 +117,7 @@ class QuestionsAPI(Resource):
                 schema:
                     type: "array"
                     items:
-                        $ref: #/definitions/SimpleQuestion
+                        $ref: '#/definitions/SimpleQuestion'
         """
         user = getAuthData()
         question_list = list_questions()
