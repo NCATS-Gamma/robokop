@@ -299,7 +299,7 @@ class QuestionSubgraph(Resource):
             200:
                 description: xxx
                 schema:
-                    $ref: '#/definitions/Result_graph'
+                    $ref: '#/definitions/Graph'
             404:
                 description: "invalid question key"
                 type: string

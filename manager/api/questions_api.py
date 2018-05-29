@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 class QuestionConversionAPI(Resource):
     def post(self):
         """
-        Create new question
+        Convert question to other format???
         ---
         tags: [question]
         parameters:

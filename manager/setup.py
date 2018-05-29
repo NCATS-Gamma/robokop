@@ -27,9 +27,9 @@ template = {
         "title": "ROBOKOP Manager",
         "description": "An API for management of biomedical questions and answers",
         "contact": {
-            "name": "CoVar Applied Technologies",
+            "name": "NCATS Gamma",
             "email": "patrick@covar.com",
-            "url": "www.covar.com",
+            "url": "https://github.com/NCATS-Gamma",
         },
         "termsOfService": {
             "name": "mit"

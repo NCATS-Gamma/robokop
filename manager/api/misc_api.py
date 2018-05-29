@@ -85,7 +85,8 @@ api.add_resource(Concepts, '/concepts')
 
 class Search(Resource):
     def get(self, term, category):
-        """Look up biomedical search term using bionames service
+        """
+        Look up biomedical search term using bionames service
         ---
         tags: [util]
         parameters:
@@ -94,11 +95,13 @@ class Search(Resource):
             description: "biomedical term"
             type: string
             required: true
+            example: ebola
           - in: path
             name: category
             description: "biomedical concept category"
             type: string
             required: true
+            example: disease
         responses:
             200:
                 description: "biomedical identifiers"
@@ -138,6 +141,22 @@ class User(Resource):
             200:
                 description: user
                 type: object
+                properties:
+                    is_authenticated:
+                        type: string
+                        example: true
+                    is_active:
+                        type: string
+                        example: true
+                    is_anonymous:
+                        type: string
+                        example: false
+                    is_admin:
+                        type: string
+                        example: false
+                    username:
+                        type: string
+                        example: patrick@covar.com
         """
         user = getAuthData()
         return user
