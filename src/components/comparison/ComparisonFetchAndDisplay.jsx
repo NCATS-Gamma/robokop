@@ -32,8 +32,8 @@ class ComparisonFetchAndDisplay extends React.Component {
   componentDidMount() {
     // uses the result to set this.state
     this.props.fetchFun(
-      this.props.disease,
-      this.props.drug,
+      this.props.queryId,
+      this.props.terms,
       data => this.loadData(data),
       err => this.setState({ isErrorConnect: true, errorMessage: err, ready: true }),
     );
@@ -56,6 +56,12 @@ class ComparisonFetchAndDisplay extends React.Component {
       if (!Array.isArray(answers) || (answers.length < 1)) {
         throw new Error('No answers were found.');
       }
+      // assign confidence -1 if missing
+      answers.forEach((a) => {
+        if (!a.confidence) {
+          a.confidence = -1;
+        }
+      });
       answers.forEach((a) => {
         const edges = a.result_graph.edge_list;
         const nodes = a.result_graph.node_list;
@@ -132,6 +138,7 @@ class ComparisonFetchAndDisplay extends React.Component {
     return (
       <AnswersetPres
         user={this.props.user}
+        style={{paddingTop: '10px'}}
         question={this.state.question}
         answerset={this.state.answerset}
         answers={this.state.answers}
@@ -187,5 +194,12 @@ class ComparisonFetchAndDisplay extends React.Component {
     );
   }
 }
+
+ComparisonFetchAndDisplay.defaultProps = {
+  name: 'Reasoner',
+  terms: {},
+  queryId: '',
+};
+
 
 export default ComparisonFetchAndDisplay;

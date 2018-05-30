@@ -63,10 +63,10 @@ class AppConfig {
     this.questionNewValidate = this.questionNewValidate.bind(this);
     this.questionNewTranslate = this.questionNewTranslate.bind(this);
     this.questionNewSearch = this.questionNewSearch.bind(this);
-    
-    this.externalTemplateCopRequestIndigo = this.externalTemplateCopRequestIndigo.bind(this);
-    this.externalTemplateCopRequestXray = this.externalTemplateCopRequestXray.bind(this);
-    this.externalTemplateCopRequestGamma = this.externalTemplateCopRequestGamma.bind(this);
+
+    this.externalTemplateRequestIndigo = this.externalTemplateRequestIndigo.bind(this);
+    this.externalTemplateRequestXray = this.externalTemplateRequestXray.bind(this);
+    this.externalTemplateRequestGamma = this.externalTemplateRequestGamma.bind(this);
 
     // Read config parameters for enabling controls
     this.enableNewAnswersets = ((config.ui !== null) && (config.ui.enableNewAnswersets !== null)) ? config.ui.enableNewAnswersets : true;
@@ -276,31 +276,40 @@ class AppConfig {
   //   http.setRequestHeader("Accept", "application/json");
   //   http.send(JSON.stringify(request));
   // }
-  externalTemplateRequestGamma(disease, drug, successFun, failureFun) {
-    failureFun(new Error('API is not yet finished!'));
-    return;
+  externalTemplateRequestGamma(queryId, terms, successFun, failureFun) {
+    const url = 'http://robokop.renci.org:6011/api/query';
+    const postData = {
+      query_type_id: queryId,
+      terms,
+    };
 
-    // const url = ''
-    // const postData = {}
-    // this.postRequest(url, postData, successFun, failureFun);
+    return this.postRequest(url, postData, successFun, failureFun);
   }
-  externalTemplateRequestIndigo(disease, drug, successFun, failureFun) {
+  externalTemplateRequestIndigo(queryId, terms, successFun, failureFun) {
     const url = 'https://indigo.ncats.io/reasoner/api/v0/query';
-    const postData = { terms: { disease, drug }, type: 'cop' };
+    const postData = {
+      query_type_id: queryId,
+      terms,
+    };
+
     this.postRequest(url, postData, successFun, failureFun);
   }
-  externalTemplateRequestXray(disease, drug, successFun, failureFun) {
-    const translateUrl = 'http://rtx.ncats.io/api/rtx/v1/translate';
-    const queryUrl = 'http://rtx.ncats.io/api/rtx/v1/translate';
-    const translateData = {
-      language: 'English',
-      text: `What is the clinical outcome pathway of ${drug} for treatment of ${disease}?`,
-    };
-    this.comms.post(translateUrl, translateData).then(queryData => this.comms.post(queryUrl, queryData)).then(data => successFun(data)).catch(err => failureFun(err));
-    // Post the question to translate
-    // Then post that result to query
+  externalTemplateRequestXray(queryId, terms, successFun, failureFun) {
+    const url = 'http://rtx.ncats.io/api/rtx/v1/query';
+    const termsFixed = { ...terms, 
+      rel_type: "directly_interacts_with",
+      target_label: "protein" };
+    if ('chemical_substance' in termsFixed) {
+      let chem = termsFixed.chemical_substance;
+      [, chem] = chem.split(':');
+      termsFixed.chemical_substance = chem;
+    }
 
-    // this.postRequest(url, postData, successFun, failureFun);
+    const postData = {
+      known_query_type_id: queryId,
+      terms: termsFixed,
+    };
+    this.postRequest(url, postData, successFun, failureFun);
   }
 
   getRequest(

@@ -9,8 +9,8 @@ source ./deploy/setenv.sh
 
 # set up postgres tables
 ./deploy/initialize_manager.py
-npm install
-npm run webpackDev
+# npm install
+# npm run webpackDev
 
 cd - > /dev/null
 exec "$@"

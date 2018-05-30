@@ -24,9 +24,9 @@ class AnswersetInteractiveSelector extends React.Component {
     return sgp.map((p, ind) => {
       const opts = p.map(e => ({
         value: e.id,
-        label: `${e.score.toFixed(2)}: ${e.description}`,
+        label: `${e.score.toFixed(2)}: ${e.name}`,
         score: e.score,
-        name: e.description,
+        name: e.name,
       }));
       const background = nodeTypeColorMap(p[0].type);
       const value = this.props.subgraph.result_graph.node_list[ind].id;

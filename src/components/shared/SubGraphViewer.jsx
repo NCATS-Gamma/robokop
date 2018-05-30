@@ -147,7 +147,7 @@ class SubGraphViewer extends React.Component {
         highlight: { background: backgroundColor },
         hover: { background: backgroundColor },
       };
-      n.label = n.description;
+      n.label = n.name;
 
       if (isVert) {
         n.x = 100; // Position nodes vertically
