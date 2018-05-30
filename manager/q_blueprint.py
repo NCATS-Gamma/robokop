@@ -24,13 +24,13 @@ q = Blueprint('question', __name__,
               template_folder='templates')
 
 # New Question Interface
-@q.route('/new', methods=['GET'])
+@q.route('/new/', methods=['GET'])
 def new():
     """Deliver new-question interface"""
     return render_template('questionNew.html', question_id='')
 
 # New Question Submission
-@q.route('/new', methods=['POST'])
+@q.route('/new/', methods=['POST'])
 @auth_required('session', 'basic')
 def new_from_post():
     """Trigger creation of a new question, or prepopulate question new page"""
@@ -41,7 +41,7 @@ def new_from_post():
     return render_template('questionNew.html', question_id=question_id)
 
 # Question
-@q.route('/<question_id>', methods=['GET'])
+@q.route('/<question_id>/', methods=['GET'])
 def question_page(question_id):
     """Deliver user info page"""
     return render_template('question.html', question_id=question_id)
@@ -49,14 +49,14 @@ def question_page(question_id):
 ################################################################################
 ##### New Question #############################################################
 ################################################################################
-@q.route('/new/search', methods=['POST'])
+@q.route('/new/search/', methods=['POST'])
 def question_new_search():
     """Validate/provide suggestions for a search term"""
 
-@q.route('/new/validate', methods=['POST'])
+@q.route('/new/validate/', methods=['POST'])
 def question_new_validate():
     """Validate a machine question to ensure it could possibly be executed"""
 
-@q.route('/new/translate', methods=['POST'])
+@q.route('/new/translate/', methods=['POST'])
 def question_new_translate():
     """Translate a natural language question into a machine question"""
