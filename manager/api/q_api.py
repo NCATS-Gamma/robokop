@@ -24,7 +24,8 @@ import manager.api.definitions
 
 class QuestionAPI(Resource):
     def get(self, question_id):
-        """Get question
+        """
+        Get question
         ---
         tags: [question]
         parameters:
@@ -58,7 +59,8 @@ class QuestionAPI(Resource):
 
     @auth_required('session', 'basic')
     def post(self, question_id):
-        """Edit question metadata
+        """
+        Edit question metadata
         ---
         tags: [question]
         parameters:
@@ -102,7 +104,8 @@ class QuestionAPI(Resource):
 
     @auth_required('session', 'basic')
     def delete(self, question_id):
-        """Delete question
+        """
+        Delete question
         ---
         tags: [question]
         parameters:
@@ -135,7 +138,8 @@ api.add_resource(QuestionAPI, '/q/<question_id>')
 # get feedback by question
 class GetFeedbackByQuestion(Resource):
     def get(self, question_id):
-        """Create new feedback
+        """
+        Create new feedback
         ---
         tags: [feedback]
         parameters:
@@ -163,7 +167,8 @@ api.add_resource(GetFeedbackByQuestion, '/q/<question_id>/feedback')
 class AnswerQuestion(Resource):
     @auth_required('session', 'basic')
     def post(self, question_id):
-        """Answer question
+        """
+        Answer question
         ---
         tags: [answer]
         parameters:
@@ -194,7 +199,8 @@ api.add_resource(AnswerQuestion, '/q/<question_id>/answer')
 class RefreshKG(Resource):
     @auth_required('session', 'basic')
     def post(self, question_id):
-        """Refresh KG for question
+        """
+        Refresh KG for question
         ---
         tags: [cache]
         parameters:
@@ -225,7 +231,8 @@ api.add_resource(RefreshKG, '/q/<question_id>/refresh_kg')
 
 class QuestionTasks(Resource):
     def get(self, question_id):
-        """Get list of queued tasks for question
+        """
+        Get list of queued tasks for question
         ---
         tags: [tasks]
         parameters:

@@ -56,7 +56,8 @@ api.add_resource(QuestionConversionAPI, '/questions/convert')
 class QuestionsAPI(Resource):
     @auth_required('session', 'basic')
     def post(self):
-        """Create new question
+        """
+        Create new question
         ---
         tags: [question]
         parameters:
@@ -111,7 +112,8 @@ class QuestionsAPI(Resource):
         return qid, 201
 
     def get(self):
-        """Get list of questions
+        """
+        Get list of questions
         ---
         tags: [question]
         responses:
