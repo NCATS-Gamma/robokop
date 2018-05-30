@@ -15,7 +15,8 @@ from manager.setup import app, api
 
 class AnswersetAPI(Resource):
     def get(self, qa_id):
-        """Get answerset 
+        """
+        Get answerset 
         ---
         tags: [answer]
         parameters:
@@ -83,7 +84,8 @@ api.add_resource(AnswersetAPI, '/a/<qa_id>')
 
 class AnswerAPI(Resource):
     def get(self, qa_id, answer_id):
-        """Get answer
+        """
+        Get answer
         ---
         tags: [answer]
         parameters:
