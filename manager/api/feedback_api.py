@@ -4,7 +4,7 @@ Blueprint for /api/feedback endpoints
 
 from flask import request
 from flask_security import auth_required, current_user
-from flask_restplus import Resource
+from flask_restful import Resource
 
 from manager.feedback import Feedback
 from manager.setup import api

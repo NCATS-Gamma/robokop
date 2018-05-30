@@ -11,7 +11,7 @@ import requests
 from flask import jsonify, request
 from flask_security import auth_required
 from flask_security.core import current_user
-from flask_restplus import Resource
+from flask_restful import Resource
 
 from manager.question import get_question_by_id
 from manager.answer import list_answersets_by_question_hash

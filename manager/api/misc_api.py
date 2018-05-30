@@ -6,7 +6,7 @@ import os
 import sys
 
 import requests
-from flask_restplus import Resource
+from flask_restful import Resource
 
 from manager.setup import app, api
 from manager.logging_config import logger
