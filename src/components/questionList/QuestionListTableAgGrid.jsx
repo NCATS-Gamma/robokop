@@ -63,7 +63,7 @@ class QuestionListTableAgGrid extends React.Component {
   }
   cellRendererAnswers(params) {
     let out = '';
-    if (params.data !== '' && params.data !== undefined && params.data !== null && 'id' in params.data && params.data.id) {
+    if (params.data !== '' && params.data !== undefined && params.data !== null && 'id' in params.data && params.data.id && 'latest_answerset_id' in params.data && params.data.latest_answerset_id) {
       out = `<a href=${this.props.answersetUrlFunction(params.data, { id: params.data.latest_answerset_id })}>&nbsp;&nbsp;➤</a>`;
     }
     return out;
