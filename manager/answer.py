@@ -235,8 +235,8 @@ def generate_summary(nodes, edges):
     latest_node_id = nodes[0]['id']
     node_ids = [n['id'] for n in nodes]
     edges = [e for e in edges if not e['predicate'] == 'literature_co-occurrence']
-    edge_starts = [e['start'] for e in edges]
-    edge_ends = [e['end'] for e in edges]
+    edge_starts = [e['source_id'] for e in edges]
+    edge_ends = [e['target_id'] for e in edges]
     edge_predicates = [e['predicate'] for e in edges]
     while True:
         if latest_node_id in edge_starts:
@@ -266,8 +266,8 @@ def standardize_edge(edge):
     output = {
         'confidence': edge['weight'],
         'provided_by': edge['edge_source'],
-        'source_id': edge['start'],
-        'target_id': edge['end'],
+        'source_id': edge['source_id'],
+        'target_id': edge['target_id'],
         'type': edge['predicate'],
         'publications': edge['publications']
     }

@@ -40,8 +40,8 @@ class QuestionGraphViewer extends React.Component {
     // Assume linear structure between the nodes
     const edges = this.props.graph.edges.map(e => ({
       id: shortid.generate(),
-      from: e.start,
-      to: e.end,
+      from: e.source_id,
+      to: e.target_id,
     }));
     const nodes = this.props.graph.nodes.map(n => ({ ...n })); // Deep copy.
 

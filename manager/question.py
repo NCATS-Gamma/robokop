@@ -107,9 +107,9 @@ class Question(db.Model):
         # convert to list of nodes (with conditions) and edges with lengths
         nodes = [dict(n, **{"id":i}) for i, n in enumerate(query)\
             if not n['nodeSpecType'] == 'Unspecified Nodes']
-        edges = [dict(start=i-1, end=i, length=[query[i-1]['meta']['numNodesMin']+1, query[i-1]['meta']['numNodesMax']+1])\
+        edges = [dict(source_id=i-1, target_id=i, length=[query[i-1]['meta']['numNodesMin']+1, query[i-1]['meta']['numNodesMax']+1])\
             if i > 0 and query[i-1]['nodeSpecType'] == 'Unspecified Nodes'\
-            else dict(start=i-1, end=i, length=[1])\
+            else dict(source_id=i-1, target_id=i, length=[1])\
             for i, n in enumerate(query)\
             if i > 0 and not n['nodeSpecType'] == 'Unspecified Nodes']
 

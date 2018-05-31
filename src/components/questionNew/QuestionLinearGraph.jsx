@@ -29,8 +29,8 @@ class QuestionLinearGraph extends React.Component {
     for (let iNode = 0; iNode < (nodes.length - 1); iNode += 1) {
       edges.push({
         id: shortid.generate(),
-        start: nodes[iNode].id,
-        end: nodes[iNode + 1].id,
+        source_id: nodes[iNode].id,
+        target_id: nodes[iNode + 1].id,
       });
     }
 
