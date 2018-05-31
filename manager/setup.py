@@ -8,6 +8,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from flasgger import Swagger
 
+from flask_graphql import GraphQLView
+from manager.api.schema import schema
+
 app = Flask(__name__, static_folder='../pack', template_folder='../templates')
 # Set default static folder to point to parent static folder where all
 # static assets can be stored and linked
@@ -63,3 +66,12 @@ app.config['SWAGGER'] = {
 }
 
 swagger = Swagger(app, template=template, config=swagger_config)
+
+app.add_url_rule(
+    '/graphql',
+    view_func=GraphQLView.as_view(
+        'graphql',
+        schema=schema,
+        graphiql=True # for having the GraphiQL interface
+    )
+)

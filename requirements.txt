@@ -6,6 +6,8 @@ flask-mail
 flask-security
 flask-sqlalchemy
 flask-restful
+flask-graphql
+graphene-sqlalchemy
 flasgger
 flower
 gunicorn
