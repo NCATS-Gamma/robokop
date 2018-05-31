@@ -11,7 +11,6 @@ flower
 gunicorn
 kombu
 neo4j-driver==1.5.3
-networkx==1.11
 numpy>=1.8.0
 psycopg2
 psycopg2-binary
