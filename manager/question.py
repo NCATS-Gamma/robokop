@@ -38,7 +38,6 @@ class Question(db.Model):
     name = Column(String)
     nodes = Column(JSON)
     edges = Column(JSON)
-    name = Column(String)
     hash = Column(String)
     
     user = relationship(
