@@ -16,6 +16,7 @@ from flask_restful import Resource
 from manager.question import get_question_by_id
 from manager.answer import list_answersets_by_question_hash
 from manager.feedback import list_feedback_by_question
+from manager.user import get_user_by_email
 from manager.tasks import answer_question, update_kg
 from manager.util import getAuthData, get_tasks
 from manager.setup import db, api
@@ -89,12 +90,18 @@ class QuestionAPI(Resource):
             404:
                 description: "invalid question key"
         """
+        auth = request.authorization
+        if auth:
+            user_email = auth.username
+            user = get_user_by_email(user_email)
+        else:
+            user = current_user
         logger.info('Editing question %s', question_id)
         try:
             question = get_question_by_id(question_id)
         except Exception as err:
             return "Invalid question key.", 404
-        if not (current_user == question.user or current_user.has_role('admin')):
+        if not (user == question.user or user.has_role('admin')):
             return "UNAUTHORIZED", 401 # not authorized
         question.name = request.json['name']
         question.notes = request.json['notes']
@@ -122,12 +129,18 @@ class QuestionAPI(Resource):
             404:
                 description: "invalid question key"
         """
+        auth = request.authorization
+        if auth:
+            user_email = auth.username
+            user = get_user_by_email(user_email)
+        else:
+            user = current_user
         logger.info('Deleting question %s', question_id)
         try:
             question = get_question_by_id(question_id)
         except Exception as err:
             return "Invalid question key.", 404
-        if not (current_user == question.user or current_user.has_role('admin')):
+        if not (user == question.user or user.has_role('admin')):
             return "UNAUTHORIZED", 401 # not authorized
         db.session.delete(question)
         db.session.commit()
@@ -185,13 +198,20 @@ class AnswerQuestion(Resource):
                 description: "invalid question key"
                 type: string
         """
+        auth = request.authorization
+        if auth:
+            user_email = auth.username
+            user = get_user_by_email(user_email)
+            user_id = user.id
+        else:
+            user_id = current_user.id
+            user_email = current_user.email
         try:
             question = get_question_by_id(question_id)
         except Exception as err:
             return "Invalid question key.", 404
-        username = current_user.username
         # Answer a question
-        task = answer_question.apply_async(args=[question.hash], kwargs={'question_id':question_id, 'user_email':current_user.email})
+        task = answer_question.apply_async(args=[question.hash], kwargs={'question_id':question_id, 'user_email':user_email})
         return {'task_id':task.id}, 202
 
 api.add_resource(AnswerQuestion, '/q/<question_id>/answer')
@@ -217,14 +237,21 @@ class RefreshKG(Resource):
                 description: "invalid question key"
                 type: string
         """
+        auth = request.authorization
+        if auth:
+            user_email = auth.username
+            user = get_user_by_email(user_email)
+            user_id = user.id
+        else:
+            user_id = current_user.id
+            user_email = current_user.email
         try:
             question = get_question_by_id(question_id)
         except Exception as err:
             return "Invalid question key.", 404
         question_hash = question.hash
-        username = current_user.username
         # Update the knowledge graph for a question
-        task = update_kg.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':current_user.email})
+        task = update_kg.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':user_email})
         return {'task_id':task.id}, 202
 
 api.add_resource(RefreshKG, '/q/<question_id>/refresh_kg')
