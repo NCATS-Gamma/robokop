@@ -162,7 +162,6 @@ class QuestionsAPI(Resource):
                     'tasks': tasks,
                     **q}
 
-        return {'user': user,\
-                'questions': [augment_info(q) for q in question_list]}, 200
+        return [augment_info(q) for q in question_list], 200
 
 api.add_resource(QuestionsAPI, '/questions/')

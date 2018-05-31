@@ -23,7 +23,7 @@ class QuestionList extends React.Component {
 
   componentDidMount() {
     this.appConfig.questionListData(data => this.setState({
-      questions: data.questions,
+      questions: data,
       dataReady: true,
     }));
     this.appConfig.user(data => this.setState({
