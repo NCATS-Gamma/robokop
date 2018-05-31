@@ -146,7 +146,7 @@ class QuestionAPI(Resource):
         db.session.commit()
         return "SUCCESS", 200
 
-api.add_resource(QuestionAPI, '/q/<question_id>')
+api.add_resource(QuestionAPI, '/q/<question_id>/')
 
 # get feedback by question
 class GetFeedbackByQuestion(Resource):
@@ -175,7 +175,7 @@ class GetFeedbackByQuestion(Resource):
 
         return feedback.toJSON(), 200
 
-api.add_resource(GetFeedbackByQuestion, '/q/<question_id>/feedback')
+api.add_resource(GetFeedbackByQuestion, '/q/<question_id>/feedback/')
 
 class AnswerQuestion(Resource):
     @auth_required('session', 'basic')
@@ -214,7 +214,7 @@ class AnswerQuestion(Resource):
         task = answer_question.apply_async(args=[question.hash], kwargs={'question_id':question_id, 'user_email':user_email})
         return {'task_id':task.id}, 202
 
-api.add_resource(AnswerQuestion, '/q/<question_id>/answer')
+api.add_resource(AnswerQuestion, '/q/<question_id>/answer/')
 
 class RefreshKG(Resource):
     @auth_required('session', 'basic')
@@ -254,7 +254,7 @@ class RefreshKG(Resource):
         task = update_kg.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':user_email})
         return {'task_id':task.id}, 202
 
-api.add_resource(RefreshKG, '/q/<question_id>/refresh_kg')
+api.add_resource(RefreshKG, '/q/<question_id>/refresh_kg/')
 
 class QuestionTasks(Resource):
     def get(self, question_id):
@@ -315,7 +315,7 @@ class QuestionTasks(Resource):
         return {'answerers': answerers,
                 'updaters': updaters}, 200
 
-api.add_resource(QuestionTasks, '/q/<question_id>/tasks')
+api.add_resource(QuestionTasks, '/q/<question_id>/tasks/')
 
 class QuestionSubgraph(Resource):
     def get(self, question_id):
@@ -352,4 +352,4 @@ class QuestionSubgraph(Resource):
             raise ValueError("Response is not JSON.")
         return output, 200
 
-api.add_resource(QuestionSubgraph, '/q/<question_id>/subgraph')
+api.add_resource(QuestionSubgraph, '/q/<question_id>/subgraph/')

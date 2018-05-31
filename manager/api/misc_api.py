@@ -32,7 +32,7 @@ class Tasks(Resource):
         tasks = get_tasks()
         return tasks
 
-api.add_resource(Tasks, '/tasks')
+api.add_resource(Tasks, '/tasks/')
 
 class TaskStatus(Resource):
     def get(self, task_id):
@@ -58,7 +58,7 @@ class TaskStatus(Resource):
         response = requests.get(flower_url, auth=(os.environ['FLOWER_USER'], os.environ['FLOWER_PASSWORD']))
         return response.json()
 
-api.add_resource(TaskStatus, '/t/<task_id>')
+api.add_resource(TaskStatus, '/t/<task_id>/')
 
 class Concepts(Resource):
     def get(self):
@@ -81,7 +81,7 @@ class Concepts(Resource):
         concepts.sort()
         return concepts
 
-api.add_resource(Concepts, '/concepts')
+api.add_resource(Concepts, '/concepts/')
 
 class Search(Resource):
     def get(self, term, category):
@@ -128,7 +128,7 @@ class Search(Resource):
         results = list({r['id']:r for r in all_results}.values())
         return results
 
-api.add_resource(Search, '/search/<term>/<category>')
+api.add_resource(Search, '/search/<term>/<category>/')
 
 class User(Resource):
     def get(self):
@@ -161,4 +161,4 @@ class User(Resource):
         user = getAuthData()
         return user
 
-api.add_resource(User, '/user')
+api.add_resource(User, '/user/')

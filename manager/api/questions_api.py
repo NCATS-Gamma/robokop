@@ -50,7 +50,7 @@ class QuestionConversionAPI(Resource):
 
         return q.toJSON(), 201
 
-api.add_resource(QuestionConversionAPI, '/questions/convert')
+api.add_resource(QuestionConversionAPI, '/questions/convert/')
 
 # New Question Submission
 class QuestionsAPI(Resource):

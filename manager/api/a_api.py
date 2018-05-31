@@ -80,7 +80,7 @@ class AnswersetAPI(Resource):
                 'other_answersets': [aset.toStandard(data=False) for aset in answersets],
                 'other_questions': [q.toJSON() for q in questions]}, 200
 
-api.add_resource(AnswersetAPI, '/a/<qa_id>')
+api.add_resource(AnswersetAPI, '/a/<qa_id>/')
 
 class AnswerAPI(Resource):
     def get(self, qa_id, answer_id):
@@ -162,7 +162,7 @@ class AnswerAPI(Resource):
                 'other_answersets': [aset.toJSON() for aset in answersets],
                 'other_questions': [q.toJSON() for q in questions]}, 200
 
-api.add_resource(AnswerAPI, '/a/<qa_id>/<int:answer_id>')
+api.add_resource(AnswerAPI, '/a/<qa_id>/<int:answer_id>/')
 
 # get feedback by question-answer
 class GetFeedbackByAnswer(Resource):
@@ -203,7 +203,7 @@ class GetFeedbackByAnswer(Resource):
 
         return [f.toJSON() for f in feedback], 200
 
-api.add_resource(GetFeedbackByAnswer, '/a/<qa_id>/<int:answer_id>/feedback')
+api.add_resource(GetFeedbackByAnswer, '/a/<qa_id>/<int:answer_id>/feedback/')
 
 # get feedback by question-answerset
 class GetFeedbackByAnswerset(Resource):
@@ -238,4 +238,4 @@ class GetFeedbackByAnswerset(Resource):
 
         return [f.toJSON() for f in feedback], 200
 
-api.add_resource(GetFeedbackByAnswerset, '/a/<qa_id>/feedback')
+api.add_resource(GetFeedbackByAnswerset, '/a/<qa_id>/feedback/')
