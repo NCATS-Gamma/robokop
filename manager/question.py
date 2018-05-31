@@ -102,6 +102,9 @@ class Question(db.Model):
         Convert struct from blackboards database to nodes and edges structs
         '''
 
+        if 'nodes' in dictionary and 'edges' in dictionary:
+            return dictionary['nodes'], dictionary['edges']
+
         query = dictionary
 
         # convert to list of nodes (with conditions) and edges with lengths
