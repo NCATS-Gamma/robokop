@@ -248,24 +248,39 @@ class Task():
 @swagger.definition('Question')
 class Question():
     """
-    Response
+    Question
     ---
-    type: "object"
+    id: Question
     properties:
         name:
             type: "string"
-            example: "Ebola--(gene)--(genetic_condition)"
             description: "human-readable question name"
         natural:
             type: "string"
-            example: "What genetic conditions might provide protection against Ebola?"
             description: "natural language English question"
         notes:
             type: "string"
-            example: "#ebola #q1"
             description: "notes about question"
         machine_question:
             $ref: "#/definitions/Graph"
+    example:
+        name: "Ebola--(gene)--(genetic_condition)"
+        natural: "What genetic conditions might provide protection against Ebola?"
+        notes: "#ebola #q1"
+        machine_question:
+            nodes:
+              - id: 0
+                type: disease
+                identifiers: ["MONDO:0005737"]
+              - id: 1
+                type: gene
+              - id: 2
+                type: genetic_condition
+            edges:
+              - source_id: 0
+                target_id: 1
+              - source_id: 1
+                target_id: 2
     """
     pass
     

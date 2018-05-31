@@ -62,24 +62,19 @@ class QuestionsAPI(Resource):
         tags: [question]
         parameters:
           - in: body
-            name: name
-            description: "name of question"
+            name: question
+            schema:
+                $ref: '#/definitions/Question'
             required: true
-          - in: body
-            name: natural_question
-            description: "natural-language question"
+          - name: RebuildCache
+            in: header
+            description: flag indicating whether to update the cached knowledge graph
             required: false
-          - in: body
-            name: notes
-            description: "notes"
-            required: false
-          - in: body
-            name: query
-            description: "machine-readable question"
-            required: true
+            default: true
+            type: string
         responses:
-            200:
-                description: "message"
+            201:
+                description: "question id"
                 type: string
         """
         auth = request.authorization
