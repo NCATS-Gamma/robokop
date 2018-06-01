@@ -13,7 +13,7 @@ from flask_mail import Message
 
 from manager.setup import app, mail
 from manager.answer import get_answerset_by_id, Answerset
-from manager.question import get_question_by_id, list_questions_by_hash
+from manager.question import get_question_by_id
 from manager.logging_config import logger
 
 # set up Celery
@@ -36,7 +36,7 @@ class NoAnswersException(Exception):
     pass
 
 @celery.task(bind=True, queue='manager_answer')
-def answer_question(self, question_hash, question_id=None, user_email=None):
+def answer_question(self, question_id, user_email=None):
     '''
     Generate answerset for a question
     '''
@@ -44,7 +44,6 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
     self.update_state(state='ANSWERING')
     logger.info("Answering your question...")
 
-    question_id = question_id if question_id else list_questions_by_hash(question_hash)[0].id
     question = get_question_by_id(question_id)
 
     r = requests.post(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/', json=question.toJSON())
@@ -58,7 +57,8 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
         answerset_json = r.json()
     except json.decoder.JSONDecodeError as err:
         raise ValueError(f"Response is not json: {r.text}")
-    answerset = Answerset(answerset_json, question_hash=question_hash)
+    answerset = Answerset(answerset_json)
+    answerset.questions.append(question)
 
     if user_email:
         try:
@@ -80,14 +80,13 @@ def answer_question(self, question_hash, question_id=None, user_email=None):
     return answerset.id
 
 @celery.task(bind=True, queue='manager_update')
-def update_kg(self, question_hash, question_id=None, user_email=None):
+def update_kg(self, question_id, user_email=None):
     '''
     Update the shared knowledge graph with respect to a question
     '''
 
     self.update_state(state='UPDATING KG')
 
-    question_id = question_id if question_id else list_questions_by_hash(question_hash)[0].id
     question = get_question_by_id(question_id)
 
     logger.info(f"Updating the knowledge graph for '{question.name}'...")

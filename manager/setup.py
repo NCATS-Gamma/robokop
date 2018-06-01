@@ -8,8 +8,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from flasgger import Swagger
 
-from flask_graphql import GraphQLView
-from manager.api.schema import schema
+from sqlalchemy import Column, Integer, ForeignKey, Table, String
+from sqlalchemy.ext.declarative import declarative_base
 
 app = Flask(__name__, static_folder='../pack', template_folder='../templates')
 # Set default static folder to point to parent static folder where all
@@ -67,11 +67,7 @@ app.config['SWAGGER'] = {
 
 swagger = Swagger(app, template=template, config=swagger_config)
 
-app.add_url_rule(
-    '/graphql',
-    view_func=GraphQLView.as_view(
-        'graphql',
-        schema=schema,
-        graphiql=True # for having the GraphiQL interface
-    )
+association_table = Table('association', db.metadata,
+    Column('question_id', String, ForeignKey('question.id')),
+    Column('answerset_id', Integer, ForeignKey('answerset.id'))
 )

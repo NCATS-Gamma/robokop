@@ -6,20 +6,19 @@ Question definition
 import os
 import sys
 import json
-import hashlib
 import warnings
 
 # 3rd-party modules
 from sqlalchemy.types import JSON
 from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.declarative import declarative_base
 
 # our modules
-from manager.answer import list_answersets_by_question_hash
 from manager.user import User
-from manager.setup import db
+from manager.setup import db, association_table
 from manager.logging_config import logger
-
 
 class Question(db.Model):
     '''
@@ -38,8 +37,11 @@ class Question(db.Model):
     name = Column(String)
     nodes = Column(JSON)
     edges = Column(JSON)
-    hash = Column(String)
-    
+
+    answersets = relationship(
+        "Answerset",
+        secondary=association_table,
+        back_populates="questions")
     user = relationship(
         User,
         backref=backref('questions',
@@ -62,7 +64,6 @@ class Question(db.Model):
         self.name = None
         self.nodes = [] # list of nodes
         self.edges = [] # list of edges
-        self.hash = None
 
         # apply json properties to existing attributes
         attributes = self.__dict__.keys()
@@ -90,8 +91,6 @@ class Question(db.Model):
                 else:
                     n['identifiers'] = []
 
-        self.hash = self.compute_hash()
-
         db.session.add(self)
         db.session.commit()
 
@@ -117,24 +116,6 @@ class Question(db.Model):
 
         return nodes, edges
 
-    @property
-    def answersets(self):
-        return list_answersets_by_question_hash(self.hash)
-
-    def compute_hash(self):
-        '''
-        Generate an MD5 hash of the machine readable question interpretation
-        i.e. the nodes and edges attributes
-        '''
-
-        json_spec = {
-            "nodes":self.nodes,
-            "edges":self.edges
-        }
-        m = hashlib.md5()
-        m.update(json.dumps(json_spec).encode('utf-8'))
-        return m.hexdigest()
-
     def __str__(self):
         return "<ROBOKOP Question id={}>".format(self.id)
 
@@ -145,9 +126,6 @@ class Question(db.Model):
 
 def list_questions():
     return db.session.query(Question).all()
-
-def list_questions_by_hash(hash):
-    return db.session.query(Question).filter(Question.hash == hash).all()
 
 def list_questions_by_username(username, invert=False):
     if invert:
