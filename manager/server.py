@@ -9,6 +9,7 @@ from flask import render_template
 from flask_security import Security, SQLAlchemySessionUserDatastore
 
 from manager.setup import app, db
+import manager.api.graphql
 from manager.logging_config import logger
 from manager.user import User, Role
 from manager.questions_blueprint import questions
@@ -17,10 +18,6 @@ from manager.a_blueprint import a
 from manager.util import get_tasks, getAuthData
 
 import manager.api.misc_api
-
-# Setup flask-security with user tables
-user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
-security = Security(app, user_datastore)
 
 # Initialization
 @app.before_first_request
