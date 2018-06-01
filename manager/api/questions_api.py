@@ -72,6 +72,12 @@ class QuestionsAPI(Resource):
             required: false
             default: true
             type: string
+          - name: AnswerNow
+            in: header
+            description: flag indicating whether to find answers for the question
+            required: false
+            default: true
+            type: string
         responses:
             201:
                 description: "question id"
