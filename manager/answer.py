@@ -218,6 +218,7 @@ class Answer(db.Model):
         text
         '''
         json = self.toJSON()
+        summary = generate_summary(json['nodes'], json['edges'])
         output = {
             'confidence': json['score']['rank_score'],
             'id': json['id'],
@@ -226,7 +227,7 @@ class Answer(db.Model):
                 'edge_list': [standardize_edge(e) for e in json['edges']]
             },
             'result_type': 'individual query answer',
-            'text': generate_summary(json['nodes'], json['edges'])
+            'text': summary
         }
         return output
 
@@ -235,10 +236,10 @@ def generate_summary(nodes, edges):
     summary = nodes[0]['name']
     latest_node_id = nodes[0]['id']
     node_ids = [n['id'] for n in nodes]
-    edges = [e for e in edges if not e['predicate'] == 'literature_co-occurrence']
+    edges = [e for e in edges if not e['type'] == 'literature_co-occurrence']
     edge_starts = [e['source_id'] for e in edges]
     edge_ends = [e['target_id'] for e in edges]
-    edge_predicates = [e['predicate'] for e in edges]
+    edge_predicates = [e['type'] for e in edges]
     while True:
         if latest_node_id in edge_starts:
             idx = edge_starts.index(latest_node_id)
@@ -269,7 +270,7 @@ def standardize_edge(edge):
         'provided_by': edge['edge_source'],
         'source_id': edge['source_id'],
         'target_id': edge['target_id'],
-        'type': edge['predicate'],
+        'type': edge['type'],
         'publications': edge['publications']
     }
     return output
@@ -287,7 +288,7 @@ def standardize_node(node):
         'description': node['name'],
         'id': node['id'],
         'name': node['name'],
-        'type': node['node_type']
+        'type': node['type']
     }
     return output
 
