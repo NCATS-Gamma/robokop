@@ -49,7 +49,6 @@ class QuestionAPI(Resource):
         except Exception as err:
             return "Invalid question key.", 404
 
-        user = getAuthData()
         answerset_list = question.answersets
 
         return {'question': question.toJSON(),
@@ -300,7 +299,7 @@ class QuestionTasks(Resource):
                 continue
             match = re.match(r"[\[(]'(.*)',?[)\]]", t['args'])
             if match:
-                if match.group(1) == 'TODO: FIX THIS':
+                if match.group(1) == question.id:
                     question_tasks.append(t)
 
         # split into answer and update tasks

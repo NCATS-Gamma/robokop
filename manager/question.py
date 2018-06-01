@@ -17,7 +17,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 # our modules
 from manager.user import User
-from manager.setup import db, association_table
+from manager.setup import db
 from manager.logging_config import logger
 
 class Question(db.Model):
@@ -38,10 +38,6 @@ class Question(db.Model):
     nodes = Column(JSON)
     edges = Column(JSON)
 
-    answersets = relationship(
-        "Answerset",
-        secondary=association_table,
-        back_populates="questions")
     user = relationship(
         User,
         backref=backref('questions',

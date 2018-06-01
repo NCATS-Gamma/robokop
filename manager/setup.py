@@ -66,8 +66,3 @@ app.config['SWAGGER'] = {
 }
 
 swagger = Swagger(app, template=template, config=swagger_config)
-
-association_table = Table('association', db.metadata,
-    Column('question_id', String, ForeignKey('question.id')),
-    Column('answerset_id', Integer, ForeignKey('answerset.id'))
-)

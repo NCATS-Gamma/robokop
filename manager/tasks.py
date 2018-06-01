@@ -11,7 +11,7 @@ from celery import Celery, signals
 from kombu import Queue
 from flask_mail import Message
 
-from manager.setup import app, mail
+from manager.setup import app, mail, db
 from manager.answer import get_answerset_by_id, Answerset
 from manager.question import get_question_by_id
 from manager.logging_config import logger
@@ -57,8 +57,10 @@ def answer_question(self, question_id, user_email=None):
         answerset_json = r.json()
     except json.decoder.JSONDecodeError as err:
         raise ValueError(f"Response is not json: {r.text}")
+
     answerset = Answerset(answerset_json)
-    answerset.questions.append(question)
+    question.answersets.append(answerset)
+    db.session.commit()
 
     if user_email:
         try:

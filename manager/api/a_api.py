@@ -64,21 +64,14 @@ class AnswersetAPI(Resource):
             return "Invalid answerset key.", 404
 
         user = getAuthData()
-        answers = list_answers_by_answerset(answerset)
-        questions = answerset.questions
-        idx = questions.index(question)
-        questions.pop(idx)
-        idx = answersets.index(answerset)
-        answersets.pop(idx)
 
         feedback = list_feedback_by_question_answerset(question, answerset)
 
-        return {'user': user,\
-                'question': question.toJSON(),\
+        return {'question': question.toJSON(),\
                 'answerset': answerset.toStandard(),\
                 'feedback': [f.toJSON() for f in feedback],\
-                'other_answersets': [aset.toStandard(data=False) for aset in answersets],
-                'other_questions': [q.toJSON() for q in questions]}, 200
+                'other_answersets': [],
+                'other_questions': []}, 200
 
 api.add_resource(AnswersetAPI, '/a/<qa_id>/')
 

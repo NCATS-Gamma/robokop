@@ -130,29 +130,29 @@ class QuestionsAPI(Resource):
         # user_question_list = list_questions_by_username(user['username'])
         # nonuser_question_list = list_questions_by_username(user['username'], invert=True)
 
-        # TODO: fix this
-        tasks = []
-        # tasks = get_tasks().values()
+        tasks = get_tasks().values()
 
-        # # filter out the SUCCESS/FAILURE tasks
-        # tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE') or t['state'] == 'REVOKED']
+        # filter out the SUCCESS/FAILURE tasks
+        tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE') or t['state'] == 'REVOKED']
 
-        # # get question hashes
-        # question_hashes = []
-        # for t in tasks:
-        #     if not t['args']:
-        #         question_hashes.append(None)
-        #         continue
-        #     match = re.match(r"[\[(]'(.*)',?[)\]]", t['args'])
-        #     if not match:
-        #         question_hashes.append(None)
-        #         continue
-        #     question_hashes.append(match.group(1))
+        # get question hashes
+        question_tasks = {q.id:[] for q in question_list}
+        logger.debug(tasks)
+        for t in tasks:
+            if not t['args']:
+                continue
+            match = re.match(r"[\[(]'(.*)',?[)\]]", t['args'])
+            if not match:
+                continue
+            question_id = match.group(1)
+            question_tasks[question_id].append(t)
+        logger.debug(question_tasks)
 
         # split into answer and update tasks
-        task_types = ['answering' if t['name'] == 'tasks.answer_question' else
-                    'refreshing KG' if t['name'] == 'tasks.update_kg' else
-                    'something?' for t in tasks]
+        for t in tasks:
+            t['type'] = 'answering' if t['name'] == 'tasks.answer_question' else \
+                'refreshing KG' if t['name'] == 'tasks.update_kg' else \
+                'something?'
 
         def augment_info(question):
             answerset_timestamps = [a.timestamp for a in question.answersets]
@@ -164,10 +164,9 @@ class QuestionsAPI(Resource):
             q.pop('user_id')
             q.pop('nodes')
             q.pop('edges')
-            tasks = [] #task_types[i] for i in [j for j, h in enumerate(question_hashes) if h == question.hash]]
             return {'latest_answerset_id': latest_answerset_id,
                     'latest_answerset_timestamp': latest_answerset_timestamp.isoformat() if latest_answerset_timestamp else None,
-                    'tasks': tasks,
+                    'tasks': [t['type'] for t in question_tasks[question.id]],
                     **q}
 
         return [augment_info(q) for q in question_list], 200

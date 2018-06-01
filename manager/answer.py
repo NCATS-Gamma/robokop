@@ -15,7 +15,8 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy import event
 from sqlalchemy import DDL
 
-from manager.setup import db, association_table
+from manager.setup import db
+from manager.question import Question
 
 logger = logging.getLogger(__name__)
 
@@ -27,14 +28,16 @@ class Answerset(db.Model):
 
     __tablename__ = 'answerset'
     id = Column(Integer, primary_key=True)
+    question_id = Column(String, ForeignKey('question.id'))
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
     filename = Column(String)
     creator = Column(String)
     
-    questions = relationship(
-        "Question",
-        secondary=association_table,
-        back_populates="answersets")
+    question = relationship(
+        Question,
+        backref=backref('answersets',
+                        uselist=True,
+                        cascade='delete,all'))
 
     def __init__(self, *args, **kwargs):
         self.answers = []
