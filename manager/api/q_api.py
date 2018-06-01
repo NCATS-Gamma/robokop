@@ -52,8 +52,7 @@ class QuestionAPI(Resource):
         user = getAuthData()
         answerset_list = question.answersets
 
-        return {'user': user,
-                'question': question.toJSON(),
+        return {'question': question.toJSON(),
                 'owner': question.user.email,
                 'answerset_list': [a.toStandard(data=False) for a in answerset_list]}, 200
 
