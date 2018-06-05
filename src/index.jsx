@@ -8,6 +8,7 @@ import 'ag-grid/dist/styles/ag-theme-material.css';
 import 'react-select/dist/react-select.css';
 
 import Landing from './Landing';
+import Start from './Start';
 import QuestionNew from './QuestionNew';
 import Question from './Question';
 import QuestionList from './QuestionList';
@@ -31,6 +32,14 @@ const robokop = {
   landing: () => {
     ReactDOM.render(
       <Landing
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  start: () => {
+    ReactDOM.render(
+      <Start
         config={config}
       />,
       document.getElementById('reactEntry'),

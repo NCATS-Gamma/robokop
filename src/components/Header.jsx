@@ -55,6 +55,9 @@ class Header extends React.Component {
         </Navbar.Header>
         <Navbar.Collapse>
           <Nav>
+            <NavItem eventKey={0} href={this.appConfig.urls.quickStart}>
+              Quick Start
+            </NavItem>
             <NavItem eventKey={1} href={this.appConfig.urls.questions}>
               Questions
             </NavItem>
@@ -72,8 +75,8 @@ class Header extends React.Component {
           <Nav pullRight>
             {showApps &&
             <NavDropdown eventKey={3} title="Apps" id="basic-nav-dropdown">
-              <MenuItem eventKey={3.1} href={this.appConfig.urls.appAnswerset}>Answer Set Explorer</MenuItem>
-              <MenuItem eventKey={3.2} href={this.appConfig.urls.appComparison}>Reasoner Comparison</MenuItem>
+              <MenuItem eventKey={3.1} href={this.appConfig.urls.appAnswerset}>Offline Answer Set Explorer - <small>Use the Robokop UI with answer set files.</small></MenuItem>
+              <MenuItem eventKey={3.2} href={this.appConfig.urls.appComparison}>Reasoner Comparison - <small>Compare the output of different NCATS reasoners.</small></MenuItem>
             </NavDropdown>
             }
             {isAuth &&

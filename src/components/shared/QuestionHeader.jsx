@@ -18,7 +18,6 @@ class QuestionHeader extends React.Component {
       editedNatural: false,
       editedNotes: false,
       name: '',
-      user: '',
       notes: '',
       natural: '',
     };

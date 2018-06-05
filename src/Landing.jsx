@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Grid, Jumbotron, ButtonToolbar, Button } from 'react-bootstrap';
+import { Grid, Row, Col, Jumbotron, Panel, ButtonToolbar, Button } from 'react-bootstrap';
 
 import AppConfig from './AppConfig';
 import Loading from './components/Loading';
@@ -60,27 +60,51 @@ class Landing extends React.Component {
               <b>R</b>easoning <b>O</b>ver <b>B</b>iomedical <b> O</b>bjects linked in <b>K</b>nowledge <b>O</b>riented <b>P</b>athways
             </p>
             <p>
-              Robokop is a biomedical reasoning system that interects with many biomedical knowledge sources to help
-              find answers to questions. Robokop is one of several prototype systems under active development with
+              Robokop is a biomedical reasoning system that interacts with many biomedical knowledge sources to
+              answer questions. Robokop is one of several prototype systems under active development with
               <a href="https://ncats.nih.gov/"> NIH NCATS</a>.
             </p>
-            <ButtonToolbar>
-              <Button bsSize="large" href={this.appConfig.urls.questions}>
-                Browse Questions
-              </Button>
-              {shownNewQuestion &&
-                <Button bsSize="large" href={this.appConfig.urls.questionDesign}>
-                  Ask a Question
-                </Button>
-              }
-            </ButtonToolbar>
-            <p />
-            {showLogIn &&
-              <p>
-                {'To start asking your own questions '}<a href={this.appConfig.urls.login}>Log In</a>.
-              </p>
-            }
           </Jumbotron>
+          <Row>
+            <Col md={6}>
+              <Panel>
+                <Panel.Heading>
+                  <Panel.Title componentClass="h3">Learn More</Panel.Title>
+                </Panel.Heading>
+                <Panel.Body>
+                  <ButtonToolbar>
+                    <Button bsSize="large" href={this.appConfig.urls.quickStart}>
+                      Quick Start Guide
+                    </Button>
+                  </ButtonToolbar>
+                </Panel.Body>
+              </Panel>
+            </Col>
+            <Col md={6}>
+              <Panel>
+                <Panel.Heading>
+                  <Panel.Title componentClass="h3">Dive Right In</Panel.Title>
+                </Panel.Heading>
+                <Panel.Body>
+                  <ButtonToolbar>
+                    <Button bsSize="large" href={this.appConfig.urls.questions}>
+                      Browse Questions
+                    </Button>
+                    {shownNewQuestion &&
+                      <Button bsSize="large" href={this.appConfig.urls.questionDesign}>
+                        Ask a Question
+                      </Button>
+                    }
+                    {showLogIn &&
+                      <Button bsSize="large" href={this.appConfig.urls.login}>
+                        Log In
+                      </Button>
+                  }
+                  </ButtonToolbar>
+                </Panel.Body>
+              </Panel>
+            </Col>
+          </Row>
         </Grid>
         <Footer config={this.props.config} />
       </div>

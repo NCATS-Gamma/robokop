@@ -48,7 +48,7 @@ class QuestionToolbar extends React.Component {
           disabled={!this.props.enableQuestionFork}
           onSelect={this.props.callbackFork}
         >
-          <GoRepoForked /> Fork Question
+          <GoRepoForked /> Ask a New Question Like this One
         </MenuItem>
         <MenuItem divider />
         <MenuItem

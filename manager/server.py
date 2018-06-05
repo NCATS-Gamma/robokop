@@ -39,23 +39,28 @@ def landing():
     """Initial contact. Give the initial page."""
     return render_template('landing.html')
 
-@app.route('/workflow')
+@app.route('/start/')
+def start():
+    """Getting started guide"""
+    return render_template('start.html')
+
+@app.route('/workflow/')
 def workflow():
-    """Initial contact. Give the initial page."""
+    """Workflow UI."""
     return render_template('workflow.html')
 
-@app.route('/app/answerset')
+@app.route('/app/answerset/')
 def app_answerset():
     """Answerset Browser with upload"""
     return render_template('app_answerset.html')
 
-@app.route('/app/comparison')
+@app.route('/app/comparison/')
 def app_comparison():
     """Template COP Comparison"""
     return render_template('app_comparison.html')
     
 # from celery.app.control import Inspect
-@app.route('/tasks')
+@app.route('/tasks/')
 def show_tasks():
     """Fetch queued/active task list"""
     tasks = get_tasks()
