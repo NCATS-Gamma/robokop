@@ -8,6 +8,7 @@ import NotificationSystem from 'react-notification-system';
 import AppConfig from './AppConfig';
 import Loading from './components/Loading';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import QuestionPres from './components/question/QuestionPres';
 
 class Question extends React.Component {
@@ -509,35 +510,38 @@ class Question extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        {this.state.isValid &&
-          <QuestionPres
-            user={this.state.user}
-            owner={this.state.owner}
-            callbackUpdateMeta={this.callbackUpdateMeta}
-            callbackRefresh={this.callbackRefresh}
-            callbackNewAnswerset={this.callbackNewAnswerset}
-            callbackFork={this.callbackFork}
-            callbackDelete={this.callbackDelete}
-            callbackFetchGraph={this.callbackFetchGraph}
-            callbackAnswersetOpen={this.callbackAnswerset}
-            question={this.state.question}
-            answersets={this.state.answersets}
-            subgraph={this.state.subgraph}
-            concepts={this.state.concepts}
-            refreshBusy={this.state.refreshBusy}
-            answerBusy={this.state.answerBusy}
-            initializerBusy={this.state.initializerBusy}
-            enableNewAnswersets={this.appConfig.enableNewAnswersets}
-            enableNewQuestions={this.appConfig.enableNewQuestions}
-            enableQuestionRefresh={this.appConfig.enableQuestionRefresh}
-            enableQuestionEdit={this.appConfig.enableQuestionEdit}
-            enableQuestionDelete={this.appConfig.enableQuestionDelete}
-            enableQuestionFork={this.appConfig.enableQuestionFork}
-          />
-        }
-        {!this.state.isValid &&
-          this.renderInvalid()
-        }
+        <Grid>
+          {this.state.isValid &&
+            <QuestionPres
+              user={this.state.user}
+              owner={this.state.owner}
+              callbackUpdateMeta={this.callbackUpdateMeta}
+              callbackRefresh={this.callbackRefresh}
+              callbackNewAnswerset={this.callbackNewAnswerset}
+              callbackFork={this.callbackFork}
+              callbackDelete={this.callbackDelete}
+              callbackFetchGraph={this.callbackFetchGraph}
+              callbackAnswersetOpen={this.callbackAnswerset}
+              question={this.state.question}
+              answersets={this.state.answersets}
+              subgraph={this.state.subgraph}
+              concepts={this.state.concepts}
+              refreshBusy={this.state.refreshBusy}
+              answerBusy={this.state.answerBusy}
+              initializerBusy={this.state.initializerBusy}
+              enableNewAnswersets={this.appConfig.enableNewAnswersets}
+              enableNewQuestions={this.appConfig.enableNewQuestions}
+              enableQuestionRefresh={this.appConfig.enableQuestionRefresh}
+              enableQuestionEdit={this.appConfig.enableQuestionEdit}
+              enableQuestionDelete={this.appConfig.enableQuestionDelete}
+              enableQuestionFork={this.appConfig.enableQuestionFork}
+            />
+          }
+          {!this.state.isValid &&
+            this.renderInvalid()
+          }
+        </Grid>
+        <Footer config={this.props.config} />
         <Dialog ref={(el) => { this.dialog = el; }} />
         <NotificationSystem
           ref={(ref) => { this.notificationSystem = ref; }}

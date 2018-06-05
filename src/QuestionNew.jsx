@@ -1,8 +1,10 @@
 import React from 'react';
+import { Grid } from 'react-bootstrap';
 import Dialog from 'react-bootstrap-dialog';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import Loading from './components/Loading';
 
 import QuestionNewPres from './components/questionNew/QuestionNewPres';
@@ -227,24 +229,27 @@ class QuestionNew extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        <QuestionNewPres
-          name={this.state.name}
-          natural={this.state.natural}
-          notes={this.state.notes}
-          machineQuestion={this.state.machineQuestion} // Used only for graph display
-          isFork={this.state.isFork}
-          initializationQuestion={this.state.initializationQuestion}
-          concepts={this.state.concepts}
-          handleChangeName={this.handleChangeName}
-          handleChangeNatural={this.handleChangeNatural}
-          handleChangeNotes={this.handleChangeNotes}
-          handleChangeMachineQuestion={this.handleChangeMachineQuestion}
-          callbackCreate={this.onCreate}
-          callbackSearch={this.onSearch}
-          callbackValidate={this.onValidate}
-          callbackTranslate={this.onTranslate}
-          callbackCancel={this.onCancel}
-        />
+        <Grid>
+          <QuestionNewPres
+            name={this.state.name}
+            natural={this.state.natural}
+            notes={this.state.notes}
+            machineQuestion={this.state.machineQuestion} // Used only for graph display
+            isFork={this.state.isFork}
+            initializationQuestion={this.state.initializationQuestion}
+            concepts={this.state.concepts}
+            handleChangeName={this.handleChangeName}
+            handleChangeNatural={this.handleChangeNatural}
+            handleChangeNotes={this.handleChangeNotes}
+            handleChangeMachineQuestion={this.handleChangeMachineQuestion}
+            callbackCreate={this.onCreate}
+            callbackSearch={this.onSearch}
+            callbackValidate={this.onValidate}
+            callbackTranslate={this.onTranslate}
+            callbackCancel={this.onCancel}
+          />
+        </Grid>
+        <Footer config={this.props.config} />
         <Dialog ref={(el) => { this.dialog = el; }} />
       </div>
     );

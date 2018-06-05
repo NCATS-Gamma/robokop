@@ -7,6 +7,7 @@ import FaCloudUpload from 'react-icons/lib/fa/cloud-upload';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import Loading from './components/Loading';
 import AnswersetPres from './components/answerset/AnswersetPres';
 
@@ -138,60 +139,56 @@ class Answerset extends React.Component {
   }
   renderBodyUpload() {
     return (
-      <Grid>
-        <Row>
-          <Col md={12}>
-            <h1>
-              Robokop Answer Set Explorer
-              <br />
-              <small>
-                {'Use the Robokop Answerset UI with answer files create from other sources.'}
-              </small>
-            </h1>
-            <Dropzone
-              onDrop={(acceptedFiles, rejectedFiles) => this.onDrop(acceptedFiles, rejectedFiles) }
-              multiple={false}
-              style={{
-                width: '100%',
-                height: '400px',
-                backgroundColor: this.appConfig.colors.bluegray,
-                textAlign: 'center',
-                display: 'table',
-                border: '1px solid transparent',
-                borderColor: '#e7e7e7',
-                borderRadius: '4px',
-              }}
-            >
-              <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
-                <h1 style={{ fontSize: '48px' }}>
-                  <FaCloudUpload />
-                </h1>
-                <h3>
-                  Drag and drop your answer set file, or click to browse.
-                </h3>
-              </div>
-            </Dropzone>
-          </Col>
-        </Row>
-      </Grid>
+      <Row>
+        <Col md={12}>
+          <h1>
+            Robokop Answer Set Explorer
+            <br />
+            <small>
+              {'Use the Robokop Answerset UI with answer files create from other sources.'}
+            </small>
+          </h1>
+          <Dropzone
+            onDrop={(acceptedFiles, rejectedFiles) => this.onDrop(acceptedFiles, rejectedFiles) }
+            multiple={false}
+            style={{
+              width: '100%',
+              height: '400px',
+              backgroundColor: this.appConfig.colors.bluegray,
+              textAlign: 'center',
+              display: 'table',
+              border: '1px solid transparent',
+              borderColor: '#e7e7e7',
+              borderRadius: '4px',
+            }}
+          >
+            <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
+              <h1 style={{ fontSize: '48px' }}>
+                <FaCloudUpload />
+              </h1>
+              <h3>
+                Drag and drop your answer set file, or click to browse.
+              </h3>
+            </div>
+          </Dropzone>
+        </Col>
+      </Row>
     );
   }
   renderBodyReading() {
     return (
-      <Grid>
-        <Row>
-          <Col md={12}>
-            <h1>
-              Loading Answers...
-              <br />
-              <small>
-                Please Wait.
-              </small>
-            </h1>
-            <Loading />
-          </Col>
-        </Row>
-      </Grid>
+      <Row>
+        <Col md={12}>
+          <h1>
+            Loading Answers...
+            <br />
+            <small>
+              Please Wait.
+            </small>
+          </h1>
+          <Loading />
+        </Col>
+      </Row>
     );
   }
 
@@ -214,9 +211,12 @@ class Answerset extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        {!isValid && !isReading && this.renderBodyUpload()}
-        {!isValid && isReading && this.renderBodyReading()}
-        {isValid && this.renderBodyValid()}
+        <Grid>
+          {!isValid && !isReading && this.renderBodyUpload()}
+          {!isValid && isReading && this.renderBodyReading()}
+          {isValid && this.renderBodyValid()}
+        </Grid>
+        <Footer config={this.props.config} />
       </div>
     );
   }

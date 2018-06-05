@@ -40,7 +40,13 @@ class Header extends React.Component {
     const showApps = true;
 
     return (
-      <Navbar style={this.appConfig.styles.header}>
+      <Navbar
+        style={{
+          backgroundColor: this.appConfig.colors.blue,
+          backgroundImage: `linear-gradient(315deg, ${this.appConfig.colors.blue} 0%, ${this.appConfig.colors.bluegray} 74%)`,
+        }}
+        staticTop
+      >
         <Navbar.Header>
           <Navbar.Brand>
             <a href="/">Robokop</a>

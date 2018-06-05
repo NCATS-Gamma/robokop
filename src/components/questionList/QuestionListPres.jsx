@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Row, Col, Alert, Button, Panel } from 'react-bootstrap';
+import { Row, Col, Button } from 'react-bootstrap';
 
 import QuestionListTableAgGrid from './QuestionListTableAgGrid';
 
@@ -52,7 +52,7 @@ class QuestionListPres extends React.Component {
     const tableHeight = this.getTableHeight();
     const nQuestions = this.state.questions.length;
     return (
-      <Grid>
+      <div>
         <Row>
           <Col md={12}>
             <h1>
@@ -91,7 +91,7 @@ class QuestionListPres extends React.Component {
             />
           </Col>
         </Row>
-      </Grid>
+      </div>
     );
   }
 }
