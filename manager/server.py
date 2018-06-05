@@ -39,6 +39,11 @@ def landing():
     """Initial contact. Give the initial page."""
     return render_template('landing.html')
 
+@app.route('/workflow')
+def workflow():
+    """Initial contact. Give the initial page."""
+    return render_template('workflow.html')
+
 @app.route('/app/answerset')
 def app_answerset():
     """Answerset Browser with upload"""
