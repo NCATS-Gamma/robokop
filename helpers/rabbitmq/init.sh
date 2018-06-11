@@ -6,8 +6,7 @@
 # Create users
 # rabbitmqctl add_user <username> <password>
 rabbitmqctl add_user admin "$ADMIN_PASSWORD" ; \
-rabbitmqctl add_user murphy "to-be-removed" ; \
-rabbitmqctl clear_password murphy ; \
+rabbitmqctl add_user "$BROKER_USER" "$BROKER_PASSWORD" ; \
 
 # Set user rights
 # rabbitmqctl set_user_tags <username> <tag>
@@ -20,6 +19,6 @@ rabbitmqctl add_vhost robokop ; \
 # Set vhost permissions
 # rabbitmqctl set_permissions -p <vhostname> <username> ".*" ".*" ".*"
 rabbitmqctl set_permissions -p robokop admin ".*" ".*" ".*" ; \
-rabbitmqctl set_permissions -p robokop murphy ".*" ".*" ".*" ; \
+rabbitmqctl set_permissions -p robokop "$BROKER_USER" ".*" ".*" ".*" ; \
 ) &    
 rabbitmq-server $@
