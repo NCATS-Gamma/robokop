@@ -2,6 +2,15 @@
   display: none;
 }
 
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 25px;
+}
+
 body :focus {
   outline: none;
 }
@@ -32,6 +41,21 @@ body :focus {
 
 * h6 {
   font-size: 10
+}
+
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 25px;
+  color: #555;
+  background-color: #f5f7fa;
+}
+.footer p {
+  font-size: 0.75em;
+  margin-top: 5px;
 }
 
 .ag-row:hover {

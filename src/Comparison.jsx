@@ -4,6 +4,7 @@ import { Grid, Row, Col, Button, FormGroup, ControlLabel, FormControl } from 're
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import Loading from './components/Loading';
 import ComparisonFetchAndDisplayGroup from './components/comparison/ComparisonFetchAndDisplayGroup';
 
@@ -52,7 +53,7 @@ class Comparison extends React.Component {
   }
   renderInput() {
     return (
-      <Grid>
+      <div>
         <Row>
           <Col md={12}>
             <h1>
@@ -86,7 +87,7 @@ class Comparison extends React.Component {
             </Button>
           </Col>
         </Row>
-      </Grid>
+      </div>
     );
   }
   renderResults() {
@@ -109,8 +110,11 @@ class Comparison extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        {!submitted && this.renderInput()}
-        {submitted && this.renderResults()}
+        <Grid>
+          {!submitted && this.renderInput()}
+          {submitted && this.renderResults()}
+        </Grid>
+        <Footer config={this.props.config} />
       </div>
     );
   }

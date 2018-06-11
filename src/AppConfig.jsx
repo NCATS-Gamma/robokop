@@ -81,16 +81,6 @@ class AppConfig {
       bluegray: '#f5f7fa',
       blue: '#b8c6db',
     };
-
-    this.styles = {
-      header: {
-        backgroundColor: this.colors.blue,
-        backgroundImage: `linear-gradient(315deg, ${this.colors.blue} 0%, ${this.colors.bluegray} 74%)`,
-      },
-      jumbotron: {
-        backgroundColor: this.colors.bluegray,
-      },
-    };
   }
 
   url(ext) {

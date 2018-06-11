@@ -4,6 +4,7 @@ import { Grid, Row, Col, Button } from 'react-bootstrap';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import Loading from './components/Loading';
 import AnswersetPres from './components/answerset/AnswersetPres';
 
@@ -139,7 +140,7 @@ class Answerset extends React.Component {
   }
   renderInvalid() {
     return (
-      <Grid>
+      <div>
         <Row>
           <Col md={12}>
             <h3>
@@ -157,45 +158,47 @@ class Answerset extends React.Component {
             </Button>
           </Col>
         </Row>
-      </Grid>
+      </div>
     );
   }
   renderLoaded() {
-    const isAuth = this.state.user.is_authenticated;
     return (
       <div>
         <Header
           config={this.props.config}
           user={this.state.user}
         />
-        {!this.state.isValid &&
-          this.renderInvalid()
-        }
-        {this.state.isValid &&
-          <AnswersetPres
-            user={this.state.user}
-            question={this.state.question}
-            answerset={this.state.answerset}
-            answerId={this.state.answerId}
-            answers={this.state.answers}
-            answerCount={this.state.answerCount}
-            answersetGraph={this.state.answersetGraph}
-            answersetFeedback={this.state.answersetFeedback}
-            otherQuestions={this.state.otherQuestions}
-            otherAnswersets={this.state.otherAnswersets}
-            enableUrlChange
-            enableQuestionSelect
-            enableFeedbackSubmit={false}
-            enableFeedbackView={false}
-            callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
-            callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
-            callbackAnswerSelected={this.handleAnswerSelect}
-            callbackNoAnswerSelected={this.handleNoAnswerSelect}
-            enabledAnswerLink
-            getAnswerUrl={answer => this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, answer.id)}
-            callbackFeedbackSubmit={this.callbackFeedbackSubmit}
-          />
-        }
+        <Grid>
+          {!this.state.isValid &&
+            this.renderInvalid()
+          }
+          {this.state.isValid &&
+            <AnswersetPres
+              user={this.state.user}
+              question={this.state.question}
+              answerset={this.state.answerset}
+              answerId={this.state.answerId}
+              answers={this.state.answers}
+              answerCount={this.state.answerCount}
+              answersetGraph={this.state.answersetGraph}
+              answersetFeedback={this.state.answersetFeedback}
+              otherQuestions={this.state.otherQuestions}
+              otherAnswersets={this.state.otherAnswersets}
+              enableUrlChange
+              enableQuestionSelect
+              enableFeedbackSubmit={false}
+              enableFeedbackView={false}
+              callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
+              callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
+              callbackAnswerSelected={this.handleAnswerSelect}
+              callbackNoAnswerSelected={this.handleNoAnswerSelect}
+              enabledAnswerLink
+              getAnswerUrl={answer => this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, answer.id)}
+              callbackFeedbackSubmit={this.callbackFeedbackSubmit}
+            />
+          }
+        </Grid>
+        <Footer config={this.props.config} />
       </div>
     );
   }

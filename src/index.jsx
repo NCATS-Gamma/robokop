@@ -12,6 +12,7 @@ import QuestionNew from './QuestionNew';
 import Question from './Question';
 import QuestionList from './QuestionList';
 import Answerset from './Answerset';
+import Workflow from './Workflow';
 import AnswersetApp from './AnswersetApp';
 import Comparison from './Comparison';
 
@@ -67,6 +68,14 @@ const robokop = {
         config={config}
         id={answersetId}
         answerId={answerId}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  workflow: () => {
+    ReactDOM.render(
+      <Workflow
+        config={config}
       />,
       document.getElementById('reactEntry'),
     );

@@ -1,8 +1,9 @@
 import React from 'react';
-
+import { Grid } from 'react-bootstrap';
 import AppConfig from './AppConfig';
 import Loading from './components/Loading';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import QuestionListPres from './components/questionList/QuestionListPres';
 
 class QuestionList extends React.Component {
@@ -46,15 +47,18 @@ class QuestionList extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        <QuestionListPres
-          loginUrl={this.appConfig.urls.login}
-          callbackQuestionNew={this.callbackQuestionNew}
-          answersetUrlFunction={(q, a) => this.appConfig.urls.answerset(q.id, a.id)}
-          callbackAnswersetSelect={(q, a) => this.appConfig.open(this.appConfig.urls.answerset(q.id, a.id))}
-          callbackQuestionSelect={q => this.appConfig.open(this.appConfig.urls.question(q.id))}
-          questions={this.state.questions}
-          user={this.state.user}
-        />
+        <Grid>
+          <QuestionListPres
+            loginUrl={this.appConfig.urls.login}
+            callbackQuestionNew={this.callbackQuestionNew}
+            answersetUrlFunction={(q, a) => this.appConfig.urls.answerset(q.id, a.id)}
+            callbackAnswersetSelect={(q, a) => this.appConfig.open(this.appConfig.urls.answerset(q.id, a.id))}
+            callbackQuestionSelect={q => this.appConfig.open(this.appConfig.urls.question(q.id))}
+            questions={this.state.questions}
+            user={this.state.user}
+          />
+        </Grid>
+        <Footer config={this.props.config} />
       </div>
     );
   }

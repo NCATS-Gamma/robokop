@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { Jumbotron, ButtonToolbar, Button } from 'react-bootstrap';
+import { Grid, Jumbotron, ButtonToolbar, Button } from 'react-bootstrap';
 
 import AppConfig from './AppConfig';
 import Loading from './components/Loading';
 import Header from './components/Header';
-
+import Footer from './components/Footer';
 
 class Landing extends React.Component {
   constructor(props) {
@@ -49,33 +49,40 @@ class Landing extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        <Jumbotron style={this.appConfig.styles.jumbotron}>
-          <h1>Robokop</h1>
-          <p>
-            <b>R</b>easoning <b>O</b>ver <b>B</b>iomedical <b> O</b>bjects linked in <b>K</b>nowledge <b>O</b>riented <b>P</b>athways
-          </p>
-          <p>
-            Robokop is a biomedical reasoning system that interects with many biomedical knowledge sources to help
-            find answers to questions. Robokop is one of several prototype systems under active development with
-            <a href="https://ncats.nih.gov/"> NIH NCATS</a>.
-          </p>
-          <ButtonToolbar>
-            <Button bsSize="large" href={this.appConfig.urls.questions}>
-              Browse Questions
-            </Button>
-            {shownNewQuestion &&
-              <Button bsSize="large" href={this.appConfig.urls.questionDesign}>
-                Ask a Question
-              </Button>
-            }
-          </ButtonToolbar>
-          <p />
-          {showLogIn &&
+        <Grid>
+          <Jumbotron
+            style={{
+              backgroundColor: this.appConfig.colors.bluegray,
+            }}
+          >
+            <h1>Robokop</h1>
             <p>
-              {'To start asking your own questions '}<a href={this.appConfig.urls.login}>Log In</a>.
+              <b>R</b>easoning <b>O</b>ver <b>B</b>iomedical <b> O</b>bjects linked in <b>K</b>nowledge <b>O</b>riented <b>P</b>athways
             </p>
-          }
-        </Jumbotron>
+            <p>
+              Robokop is a biomedical reasoning system that interects with many biomedical knowledge sources to help
+              find answers to questions. Robokop is one of several prototype systems under active development with
+              <a href="https://ncats.nih.gov/"> NIH NCATS</a>.
+            </p>
+            <ButtonToolbar>
+              <Button bsSize="large" href={this.appConfig.urls.questions}>
+                Browse Questions
+              </Button>
+              {shownNewQuestion &&
+                <Button bsSize="large" href={this.appConfig.urls.questionDesign}>
+                  Ask a Question
+                </Button>
+              }
+            </ButtonToolbar>
+            <p />
+            {showLogIn &&
+              <p>
+                {'To start asking your own questions '}<a href={this.appConfig.urls.login}>Log In</a>.
+              </p>
+            }
+          </Jumbotron>
+        </Grid>
+        <Footer config={this.props.config} />
       </div>
     );
   }
