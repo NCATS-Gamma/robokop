@@ -147,12 +147,12 @@ class Answer(db.Model):
     __tablename__ = 'answer'
     id = Column(Integer, primary_key=True)
     # TODO: think about how scoring data should be handled
-    # score = Column(Float)
-    score = Column(JSON)
+    score = Column(Float)
     natural_answer = Column(String)
     answerset_id = Column(Integer, ForeignKey('answerset.id'))
     nodes = Column(JSON)
     edges = Column(JSON)
+    misc = Column(JSON)
     # TODO: move node/edge details to AnswerSet
     # nodes = Column(Array(String))
     # edges = Column(Array(String))
@@ -162,6 +162,7 @@ class Answer(db.Model):
         Answerset,
         backref=backref('answers',
                         uselist=True,
+                        order_by='desc(Answer.score)',
                         cascade='delete,all'))
 
     def __init__(self, *args, **kwargs):
@@ -172,6 +173,7 @@ class Answer(db.Model):
         self.nodes = [] # list of str
         self.edges = [] # list of str
         self.score = None # float
+        self.misc = None # json
 
         # apply json properties to existing attributes
         attributes = self.__dict__.keys()
@@ -223,7 +225,7 @@ class Answer(db.Model):
         json = self.toJSON()
         summary = generate_summary(json['nodes'], json['edges'])
         output = {
-            'confidence': json['score']['rank_score'],
+            'confidence': json['score'],
             'id': json['id'],
             'result_graph': {
                 'node_list': [standardize_node(n) for n in json['nodes']],
