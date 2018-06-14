@@ -12,13 +12,16 @@ rabbitmqctl add_user "$BROKER_USER" "$BROKER_PASSWORD" ; \
 # rabbitmqctl set_user_tags <username> <tag>
 rabbitmqctl set_user_tags admin administrator ; \
 
+for vhost in "$@"
+do
 # Create vhosts
 # rabbitmqctl add_vhost <vhostname>
-rabbitmqctl add_vhost robokop ; \
+rabbitmqctl add_vhost $vhost ; \
 
 # Set vhost permissions
 # rabbitmqctl set_permissions -p <vhostname> <username> ".*" ".*" ".*"
-rabbitmqctl set_permissions -p robokop admin ".*" ".*" ".*" ; \
-rabbitmqctl set_permissions -p robokop "$BROKER_USER" ".*" ".*" ".*" ; \
+rabbitmqctl set_permissions -p $vhost admin ".*" ".*" ".*" ; \
+rabbitmqctl set_permissions -p $vhost "$BROKER_USER" ".*" ".*" ".*" ; \
+done
 ) &    
-rabbitmq-server $@
+rabbitmq-server
