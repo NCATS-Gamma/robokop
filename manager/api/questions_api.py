@@ -7,7 +7,7 @@ import re
 import random
 import string
 import logging
-from flask import jsonify, request
+from flask import jsonify, request, abort
 from flask_security import auth_required, current_user
 from flask_restful import Resource
 
@@ -61,6 +61,8 @@ class QuestionsAPI(Resource):
             user_email = current_user.email
         logger.debug(f"Creating new question for user {user_email}.")
         qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
+        if not request.json['name']:
+            return abort(400, "Question needs a name.")
         q = Question(request.json, id=qid, user_id=user_id)
 
         if not 'RebuildCache' in request.headers or request.headers['RebuildCache'] == 'true':
