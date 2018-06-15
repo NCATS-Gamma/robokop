@@ -20,38 +20,6 @@ import manager.logging_config
 
 logger = logging.getLogger(__name__)
 
-# question conversion
-class QuestionConversionAPI(Resource):
-    def post(self):
-        """
-        Convert question to other format???
-        ---
-        tags: [question]
-        parameters:
-          - in: body
-            name: question
-            description: simple question format
-            schema:
-                $ref: '#/definitions/Question'
-            required: true
-        responses:
-            200:
-                description: converted question
-                schema:
-                    $ref: '#/definitions/Question'
-        """
-        user_id = 1
-        name = request.json['name']
-        natural_question = request.json['natural']
-        notes = request.json['notes']
-        nodes, edges = Question.dictionary_to_graph(request.json['machine_question'])
-        qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
-        q = Question(id=qid, user_id=user_id, name=name, natural_question=natural_question, notes=notes, nodes=nodes, edges=edges)
-
-        return q.toJSON(), 201
-
-api.add_resource(QuestionConversionAPI, '/questions/convert/')
-
 # New Question Submission
 class QuestionsAPI(Resource):
     @auth_required('session', 'basic')
@@ -93,12 +61,7 @@ class QuestionsAPI(Resource):
             user_email = current_user.email
         logger.debug(f"Creating new question for user {user_email}.")
         qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
-        if 'machine_question' in request.json:
-            nodes, edges = Question.dictionary_to_graph(request.json['machine_question'])
-            natural_question = request.json['natural']
-            q = Question(request.json, natural_question=natural_question, id=qid, user_id=user_id, nodes=nodes, edges=edges)
-        else:
-            q = Question(request.json, id=qid, user_id=user_id)
+        q = Question(request.json, id=qid, user_id=user_id)
 
         if not 'RebuildCache' in request.headers or request.headers['RebuildCache'] == 'true':
             # To speed things along we start a answerset generation task for this question

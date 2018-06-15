@@ -90,28 +90,6 @@ class Question(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    @staticmethod
-    def dictionary_to_graph(dictionary):
-        '''
-        Convert struct from blackboards database to nodes and edges structs
-        '''
-
-        if 'nodes' in dictionary and 'edges' in dictionary:
-            return dictionary['nodes'], dictionary['edges']
-
-        query = dictionary
-
-        # convert to list of nodes (with conditions) and edges with lengths
-        nodes = [dict(n, **{"id":i}) for i, n in enumerate(query)\
-            if not n['nodeSpecType'] == 'Unspecified Nodes']
-        edges = [dict(source_id=i-1, target_id=i, length=[query[i-1]['meta']['numNodesMin']+1, query[i-1]['meta']['numNodesMax']+1])\
-            if i > 0 and query[i-1]['nodeSpecType'] == 'Unspecified Nodes'\
-            else dict(source_id=i-1, target_id=i, length=[1])\
-            for i, n in enumerate(query)\
-            if i > 0 and not n['nodeSpecType'] == 'Unspecified Nodes']
-
-        return nodes, edges
-
     def __str__(self):
         return "<ROBOKOP Question id={}>".format(self.id)
 
