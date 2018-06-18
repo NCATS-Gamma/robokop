@@ -239,8 +239,13 @@ class AppConfig {
   questionNewValidate(postData, successFunction, failureFunction) {
     console.log('Validate the machine question here');
   }
-  questionNewTranslate(postData, successFunction, failureFunction) {
-    console.log('Transle the question here');
+  questionNewTranslate(questionText, successFunction, failureFunction) {
+    this.postRequest(
+      'http://127.0.0.1:9475/api/parse/',
+      { body: `"${questionText}"` },
+      successFunction,
+      failureFunction,
+    );
   }
 
   questionNewSearch(input, category) {

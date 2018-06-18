@@ -50,12 +50,21 @@ body :focus {
   width: 100%;
   /* Set the fixed height of the footer here */
   height: 25px;
-  color: #555;
+  color: #5e5e5e;
   background-color: #f5f7fa;
 }
 .footer p {
   font-size: 0.75em;
   margin-top: 5px;
+}
+
+
+.nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
+  color: #5e5e5e;
+  background-color: #b8c6db;
+}
+.nav-pills > li > a {
+  border-radius: 0px;
 }
 
 .ag-row:hover {

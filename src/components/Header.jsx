@@ -59,11 +59,11 @@ class Header extends React.Component {
               Quick Start
             </NavItem>
             <NavItem eventKey={1} href={this.appConfig.urls.questions}>
-              Questions
+              Question Library
             </NavItem>
             {showNewQuestion &&
             <NavItem eventKey={2} href={this.appConfig.urls.questionDesign}>
-              New Question
+              Ask a Question
             </NavItem>
             }
             {hasStatus &&

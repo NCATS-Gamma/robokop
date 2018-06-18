@@ -38,6 +38,7 @@ class Workflow extends React.Component {
       this.setState({
         concepts: data,
         conceptsReady: true,
+        isValid: true,
       });
     });
     this.setState({ dataReady: true });
@@ -153,7 +154,8 @@ class Workflow extends React.Component {
         />
         {this.state.isValid &&
           <WorkflowPres
-            workflow={{}}
+            config={this.appConfig}
+            initWorkflow={[{}]}
           />
         }
         {!this.state.isValid &&
