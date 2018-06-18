@@ -8,6 +8,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from flasgger import Swagger
 
+from sqlalchemy import Column, Integer, ForeignKey, Table, String
+from sqlalchemy.ext.declarative import declarative_base
+
 app = Flask(__name__, static_folder='../pack', template_folder='../templates')
 # Set default static folder to point to parent static folder where all
 # static assets can be stored and linked

@@ -79,11 +79,47 @@ class QuestionNew extends React.Component {
   }
 
   onCreate() {
+    var query = this.state.machineQuestion;
+    var nodes = [];
+    for (var i=0; i<query.length; i++) {
+      var node = query[i];
+      if (node.nodeSpecType == 'Unspecified Nodes')
+        continue;
+      node.id = i;
+      if (node.nodeSpecType == 'Named Node') {
+        node.curie = node.meta.identifier;
+        node.name = node.label;
+      }
+      delete node.meta;
+      delete node.nodeSpecType;
+      delete node.label;
+      nodes.push(node);
+    }
+    var edges = [];
+    for (var i=1; i<query.length; i++) {
+      var node = query[i];
+      var edge = {
+        source_id: i-1,
+        target_id: i
+      }
+      if (node.nodeSpecType == 'UnspecifiedNodes')
+        continue;
+      if (i>0 && query[i-1].nodeSpecType == 'UnspecifiedNodes') {
+        edge.min_length = query[i-1].meta.numNodesMin+1
+        edge.max_length = query[i-1].meta.numNodesMax+1;
+      } else {
+        edge.min_length = 1;
+        edge.max_length = 1;
+      }
+
+      edges.push(edge);
+    }
     const newBoardInfo = {
       name: this.state.name,
-      natural: this.state.natural,
+      natural_question: this.state.natural,
       notes: this.state.notes,
-      machine_question: this.state.machineQuestion,
+      nodes: nodes,
+      edges: edges,
     };
 
     // Splash wait overlay
@@ -96,10 +132,10 @@ class QuestionNew extends React.Component {
     this.appConfig.questionCreate(
       newBoardInfo,
       data => this.appConfig.redirect(this.appConfig.urls.question(data)), // Success redirect to the new question page
-      () => {
+      (err) => {
         this.dialogMessage({
           title: 'Trouble Creating Question',
-          text: 'We ran in to problems creating this question. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+          text: 'We ran in to problems creating this question. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators. '+err.response.data.message,
           buttonText: 'OK',
           buttonAction: () => {},
         });

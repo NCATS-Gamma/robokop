@@ -16,6 +16,7 @@ from sqlalchemy import event
 from sqlalchemy import DDL
 
 from manager.setup import db
+from manager.question import Question
 
 logger = logging.getLogger(__name__)
 
@@ -25,16 +26,21 @@ class Answerset(db.Model):
     Contains a ranked list of walks through the Knowledge Graph.
     '''
 
-    __tablename__ = 'answer_set'
+    __tablename__ = 'answerset'
     id = Column(Integer, primary_key=True)
+    question_id = Column(String, ForeignKey('question.id'))
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
     filename = Column(String)
-    question_hash = Column(String)
     creator = Column(String)
+    
+    question = relationship(
+        Question,
+        backref=backref('answersets',
+                        uselist=True,
+                        cascade='delete,all'))
 
     def __init__(self, *args, **kwargs):
         self.answers = []
-        self.question_hash = None
         self.misc_info = None
         self.filename = None
         self.creator = 'ROBOKOP'
@@ -48,8 +54,6 @@ class Answerset(db.Model):
                 if key in attributes:
                     if key=='answers':
                         struct[key] = [Answer(a) for a in struct[key]]
-                    if key=='misc_info':
-                        setattr(self, 'question_hash', struct[key]['question_hash'])
 
                     setattr(self, key, struct[key])
                 else:
@@ -132,7 +136,7 @@ class Answerset(db.Model):
 event.listen(
     Answerset.__table__,
     "after_create",
-    DDL("ALTER SEQUENCE answer_set_id_seq RESTART WITH 1453;")
+    DDL("ALTER SEQUENCE answerset_id_seq RESTART WITH 1453;")
 )
 
 class Answer(db.Model):
@@ -143,31 +147,33 @@ class Answer(db.Model):
     __tablename__ = 'answer'
     id = Column(Integer, primary_key=True)
     # TODO: think about how scoring data should be handled
-    # score = Column(Float)
-    score = Column(JSON)
+    score = Column(Float)
     natural_answer = Column(String)
-    answer_set_id = Column(Integer, ForeignKey('answer_set.id'))
+    answerset_id = Column(Integer, ForeignKey('answerset.id'))
     nodes = Column(JSON)
     edges = Column(JSON)
+    misc = Column(JSON)
     # TODO: move node/edge details to AnswerSet
     # nodes = Column(Array(String))
     # edges = Column(Array(String))
 
     # Use cascade='delete,all' to propagate the deletion of an AnswerSet onto its Answers
-    answer_set = relationship(
+    answerset = relationship(
         Answerset,
         backref=backref('answers',
                         uselist=True,
+                        order_by='desc(Answer.score)',
                         cascade='delete,all'))
 
     def __init__(self, *args, **kwargs):
         # initialize all attributes
         self.id = None # int
-        self.answer_set = None # AnswerSet
+        self.answerset = None # AnswerSet
         self.natural_answer = None # str
         self.nodes = [] # list of str
         self.edges = [] # list of str
         self.score = None # float
+        self.misc = None # json
 
         # apply json properties to existing attributes
         attributes = self.__dict__.keys()
@@ -217,15 +223,16 @@ class Answer(db.Model):
         text
         '''
         json = self.toJSON()
+        summary = generate_summary(json['nodes'], json['edges'])
         output = {
-            'confidence': json['score']['rank_score'],
+            'confidence': json['score'],
             'id': json['id'],
             'result_graph': {
                 'node_list': [standardize_node(n) for n in json['nodes']],
                 'edge_list': [standardize_edge(e) for e in json['edges']]
             },
             'result_type': 'individual query answer',
-            'text': generate_summary(json['nodes'], json['edges'])
+            'text': summary
         }
         return output
 
@@ -234,10 +241,10 @@ def generate_summary(nodes, edges):
     summary = nodes[0]['name']
     latest_node_id = nodes[0]['id']
     node_ids = [n['id'] for n in nodes]
-    edges = [e for e in edges if not e['predicate'] == 'literature_co-occurrence']
+    edges = [e for e in edges if not e['type'] == 'literature_co-occurrence']
     edge_starts = [e['source_id'] for e in edges]
     edge_ends = [e['target_id'] for e in edges]
-    edge_predicates = [e['predicate'] for e in edges]
+    edge_predicates = [e['type'] for e in edges]
     while True:
         if latest_node_id in edge_starts:
             idx = edge_starts.index(latest_node_id)
@@ -268,7 +275,7 @@ def standardize_edge(edge):
         'provided_by': edge['edge_source'],
         'source_id': edge['source_id'],
         'target_id': edge['target_id'],
-        'type': edge['predicate'],
+        'type': edge['type'],
         'publications': edge['publications']
     }
     return output
@@ -286,7 +293,7 @@ def standardize_node(node):
         'description': node['name'],
         'id': node['id'],
         'name': node['name'],
-        'type': node['node_type']
+        'type': node['type']
     }
     return output
 
@@ -301,7 +308,7 @@ def get_answer_by_id(id):
 
 def list_answers_by_answerset(answerset):
     answers = db.session.query(Answer)\
-        .filter(Answer.answer_set == answerset)\
+        .filter(Answer.answerset == answerset)\
         .all()
     return answers
 
@@ -310,9 +317,3 @@ def get_answerset_by_id(id):
     if not answerset:
         raise KeyError("No such answerset.")
     return answerset
-
-def list_answersets_by_question_hash(hash):
-    asets = db.session.query(Answerset)\
-        .filter(Answerset.question_hash == hash)\
-        .all()
-    return asets

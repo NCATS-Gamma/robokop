@@ -7,8 +7,8 @@ import sys
 from datetime import datetime
 from flask import Blueprint, jsonify, render_template
 
-from manager.question import get_question_by_id, list_questions_by_hash
-from manager.answer import list_answersets_by_question_hash, get_answer_by_id, get_answerset_by_id, list_answers_by_answerset
+from manager.question import get_question_by_id
+from manager.answer import get_answer_by_id, get_answerset_by_id, list_answers_by_answerset
 from manager.util import getAuthData
 from manager.logging_config import logger
 

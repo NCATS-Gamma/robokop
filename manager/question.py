@@ -6,20 +6,19 @@ Question definition
 import os
 import sys
 import json
-import hashlib
 import warnings
 
 # 3rd-party modules
 from sqlalchemy.types import JSON
 from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.declarative import declarative_base
 
 # our modules
-from manager.answer import list_answersets_by_question_hash
 from manager.user import User
 from manager.setup import db
 from manager.logging_config import logger
-
 
 class Question(db.Model):
     '''
@@ -38,8 +37,7 @@ class Question(db.Model):
     name = Column(String)
     nodes = Column(JSON)
     edges = Column(JSON)
-    hash = Column(String)
-    
+
     user = relationship(
         User,
         backref=backref('questions',
@@ -62,7 +60,6 @@ class Question(db.Model):
         self.name = None
         self.nodes = [] # list of nodes
         self.edges = [] # list of edges
-        self.hash = None
 
         # apply json properties to existing attributes
         attributes = self.__dict__.keys()
@@ -90,50 +87,8 @@ class Question(db.Model):
                 else:
                     n['identifiers'] = []
 
-        self.hash = self.compute_hash()
-
         db.session.add(self)
         db.session.commit()
-
-    @staticmethod
-    def dictionary_to_graph(dictionary):
-        '''
-        Convert struct from blackboards database to nodes and edges structs
-        '''
-
-        if 'nodes' in dictionary and 'edges' in dictionary:
-            return dictionary['nodes'], dictionary['edges']
-
-        query = dictionary
-
-        # convert to list of nodes (with conditions) and edges with lengths
-        nodes = [dict(n, **{"id":i}) for i, n in enumerate(query)\
-            if not n['nodeSpecType'] == 'Unspecified Nodes']
-        edges = [dict(source_id=i-1, target_id=i, length=[query[i-1]['meta']['numNodesMin']+1, query[i-1]['meta']['numNodesMax']+1])\
-            if i > 0 and query[i-1]['nodeSpecType'] == 'Unspecified Nodes'\
-            else dict(source_id=i-1, target_id=i, length=[1])\
-            for i, n in enumerate(query)\
-            if i > 0 and not n['nodeSpecType'] == 'Unspecified Nodes']
-
-        return nodes, edges
-
-    @property
-    def answersets(self):
-        return list_answersets_by_question_hash(self.hash)
-
-    def compute_hash(self):
-        '''
-        Generate an MD5 hash of the machine readable question interpretation
-        i.e. the nodes and edges attributes
-        '''
-
-        json_spec = {
-            "nodes":self.nodes,
-            "edges":self.edges
-        }
-        m = hashlib.md5()
-        m.update(json.dumps(json_spec).encode('utf-8'))
-        return m.hexdigest()
 
     def __str__(self):
         return "<ROBOKOP Question id={}>".format(self.id)
@@ -145,9 +100,6 @@ class Question(db.Model):
 
 def list_questions():
     return db.session.query(Question).all()
-
-def list_questions_by_hash(hash):
-    return db.session.query(Question).filter(Question.hash == hash).all()
 
 def list_questions_by_username(username, invert=False):
     if invert:

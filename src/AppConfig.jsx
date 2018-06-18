@@ -28,16 +28,16 @@ class AppConfig {
 
     // Other URLs that are primarily used for API calls
     this.apis = {
-      user: this.url('api/user'),
-      concepts: this.url('api/concepts'),
+      user: this.url('api/user/'),
+      concepts: this.url('api/concepts/'),
       questions: this.url('api/questions/'),
-      question: questionId => this.url(`api/q/${questionId}`),
-      answerset: answersetId => this.url(`api/a/${answersetId}`),
-      answer: (answersetId, answerId) => this.url(`api/a/${answersetId}/${answerId}`),
-      questionTasks: questionId => this.url(`api/q/${questionId}/tasks`),
-      questionAnswer: questionId => this.url(`api/q/${questionId}/answer`),
-      questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg`),
-      taskStatus: taskId => this.url(`api/t/${taskId}`),
+      question: questionId => this.url(`api/q/${questionId}/`),
+      answerset: answersetId => this.url(`api/a/${answersetId}/`),
+      answer: (answersetId, answerId) => this.url(`api/a/${answersetId}/${answerId}/`),
+      questionTasks: questionId => this.url(`api/q/${questionId}/tasks/`),
+      questionAnswer: questionId => this.url(`api/q/${questionId}/answer/`),
+      questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg/`),
+      taskStatus: taskId => this.url(`api/t/${taskId}/`),
       feedback: this.url('api/feedback/'),
       search: this.url('api/search/'),
     };

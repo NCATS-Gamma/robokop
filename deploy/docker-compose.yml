@@ -11,6 +11,7 @@ services:
       - ROBOKOP_HOME=/home/murphy
       - NEO4J_HOST=neo4j
       - BROKER_HOST=broker
+      - RESULTS_HOST=results
       - POSTGRES_HOST=postgres
       - BUILDER_HOST=interfaces
       - RANKER_HOST=rank
@@ -22,9 +23,6 @@ services:
       - ../../logs:/home/murphy/logs
       - ../../shared:/home/murphy/shared
       - ..:/home/murphy/robokop
-    # stdin_open: true
-    # tty: true
-    # command: bash
 networks:
   default:
     external:

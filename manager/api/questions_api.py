@@ -7,7 +7,7 @@ import re
 import random
 import string
 import logging
-from flask import jsonify, request
+from flask import jsonify, request, abort
 from flask_security import auth_required, current_user
 from flask_restful import Resource
 
@@ -19,38 +19,6 @@ from manager.user import User, get_user_by_email
 import manager.logging_config
 
 logger = logging.getLogger(__name__)
-
-# question conversion
-class QuestionConversionAPI(Resource):
-    def post(self):
-        """
-        Convert question to other format???
-        ---
-        tags: [question]
-        parameters:
-          - in: body
-            name: question
-            description: simple question format
-            schema:
-                $ref: '#/definitions/Question'
-            required: true
-        responses:
-            200:
-                description: converted question
-                schema:
-                    $ref: '#/definitions/Question'
-        """
-        user_id = 1
-        name = request.json['name']
-        natural_question = request.json['natural']
-        notes = request.json['notes']
-        nodes, edges = Question.dictionary_to_graph(request.json['machine_question'])
-        qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
-        q = Question(id=qid, user_id=user_id, name=name, natural_question=natural_question, notes=notes, nodes=nodes, edges=edges)
-
-        return q.toJSON(), 201
-
-api.add_resource(QuestionConversionAPI, '/questions/convert/')
 
 # New Question Submission
 class QuestionsAPI(Resource):
@@ -72,6 +40,12 @@ class QuestionsAPI(Resource):
             required: false
             default: true
             type: string
+          - name: AnswerNow
+            in: header
+            description: flag indicating whether to find answers for the question
+            required: false
+            default: true
+            type: string
         responses:
             201:
                 description: "question id"
@@ -87,22 +61,19 @@ class QuestionsAPI(Resource):
             user_email = current_user.email
         logger.debug(f"Creating new question for user {user_email}.")
         qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
-        if 'machine_question' in request.json:
-            nodes, edges = Question.dictionary_to_graph(request.json['machine_question'])
-            natural_question = request.json['natural']
-            q = Question(request.json, natural_question=natural_question, id=qid, user_id=user_id, nodes=nodes, edges=edges)
-        else:
-            q = Question(request.json, id=qid, user_id=user_id)
+        if not request.json['name']:
+            return abort(400, "Question needs a name.")
+        q = Question(request.json, id=qid, user_id=user_id)
 
         if not 'RebuildCache' in request.headers or request.headers['RebuildCache'] == 'true':
             # To speed things along we start a answerset generation task for this question
             # This isn't the standard answerset generation task because we might also trigger a KG Update
-            ug_task = update_kg.signature(args=[q.hash], kwargs={'question_id':qid, 'user_email':user_email}, immutable=True)
-            as_task = answer_question.signature(args=[q.hash], kwargs={'question_id':qid, 'user_email':user_email}, immutable=True)
-            task = answer_question.apply_async(args=[q.hash], kwargs={'question_id':qid, 'user_email':user_email},
+            ug_task = update_kg.signature(args=[qid], kwargs={'user_email':user_email}, immutable=True)
+            as_task = answer_question.signature(args=[qid], kwargs={'user_email':user_email}, immutable=True)
+            task = answer_question.apply_async(args=[qid], kwargs={'user_email':user_email},
                 link_error=ug_task|as_task)
-        else:
-            task = answer_question.apply_async(args=[q.hash], kwargs={'question_id':qid, 'user_email':user_email})
+        elif not 'AnswerNow' in request.headers or request.headers['AnswerNow'] == 'true':
+            task = answer_question.apply_async(args=[qid], kwargs={'user_email':user_email})
 
         return qid, 201
 
@@ -130,21 +101,23 @@ class QuestionsAPI(Resource):
         tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE') or t['state'] == 'REVOKED']
 
         # get question hashes
-        question_hashes = []
+        question_tasks = {q.id:[] for q in question_list}
+        logger.debug(tasks)
         for t in tasks:
             if not t['args']:
-                question_hashes.append(None)
                 continue
             match = re.match(r"[\[(]'(.*)',?[)\]]", t['args'])
             if not match:
-                question_hashes.append(None)
                 continue
-            question_hashes.append(match.group(1))
+            question_id = match.group(1)
+            question_tasks[question_id].append(t)
+        logger.debug(question_tasks)
 
         # split into answer and update tasks
-        task_types = ['answering' if t['name'] == 'tasks.answer_question' else
-                    'refreshing KG' if t['name'] == 'tasks.update_kg' else
-                    'something?' for t in tasks]
+        for t in tasks:
+            t['type'] = 'answering' if t['name'] == 'tasks.answer_question' else \
+                'refreshing KG' if t['name'] == 'tasks.update_kg' else \
+                'something?'
 
         def augment_info(question):
             answerset_timestamps = [a.timestamp for a in question.answersets]
@@ -156,10 +129,9 @@ class QuestionsAPI(Resource):
             q.pop('user_id')
             q.pop('nodes')
             q.pop('edges')
-            tasks = [task_types[i] for i in [j for j, h in enumerate(question_hashes) if h == question.hash]]
             return {'latest_answerset_id': latest_answerset_id,
                     'latest_answerset_timestamp': latest_answerset_timestamp.isoformat() if latest_answerset_timestamp else None,
-                    'tasks': tasks,
+                    'tasks': [t['type'] for t in question_tasks[question.id]],
                     **q}
 
         return [augment_info(q) for q in question_list], 200

@@ -14,7 +14,6 @@ from flask_security.core import current_user
 from flask_restful import Resource
 
 from manager.question import get_question_by_id
-from manager.answer import list_answersets_by_question_hash
 from manager.feedback import list_feedback_by_question
 from manager.user import get_user_by_email
 from manager.tasks import answer_question, update_kg
@@ -50,11 +49,9 @@ class QuestionAPI(Resource):
         except Exception as err:
             return "Invalid question key.", 404
 
-        user = getAuthData()
-        answerset_list = list_answersets_by_question_hash(question.hash)
+        answerset_list = question.answersets
 
-        return {'user': user,
-                'question': question.toJSON(),
+        return {'question': question.toJSON(),
                 'owner': question.user.email,
                 'answerset_list': [a.toStandard(data=False) for a in answerset_list]}, 200
 
@@ -211,7 +208,7 @@ class AnswerQuestion(Resource):
         except Exception as err:
             return "Invalid question key.", 404
         # Answer a question
-        task = answer_question.apply_async(args=[question.hash], kwargs={'question_id':question_id, 'user_email':user_email})
+        task = answer_question.apply_async(args=[question_id], kwargs={'user_email':user_email})
         return {'task_id':task.id}, 202
 
 api.add_resource(AnswerQuestion, '/q/<question_id>/answer/')
@@ -249,9 +246,8 @@ class RefreshKG(Resource):
             question = get_question_by_id(question_id)
         except Exception as err:
             return "Invalid question key.", 404
-        question_hash = question.hash
         # Update the knowledge graph for a question
-        task = update_kg.apply_async(args=[question_hash], kwargs={'question_id':question_id, 'user_email':user_email})
+        task = update_kg.apply_async(args=[question_id], kwargs={'user_email':user_email})
         return {'task_id':task.id}, 202
 
 api.add_resource(RefreshKG, '/q/<question_id>/refresh_kg/')
@@ -291,8 +287,6 @@ class QuestionTasks(Resource):
         except Exception as err:
             return "Invalid question key.", 404
 
-        question_hash = question.hash
-
         tasks = list(get_tasks().values())
 
         # filter out the SUCCESS/FAILURE tasks
@@ -305,7 +299,7 @@ class QuestionTasks(Resource):
                 continue
             match = re.match(r"[\[(]'(.*)',?[)\]]", t['args'])
             if match:
-                if match.group(1) == question_hash:
+                if match.group(1) == question.id:
                     question_tasks.append(t)
 
         # split into answer and update tasks

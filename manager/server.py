@@ -9,6 +9,7 @@ from flask import render_template
 from flask_security import Security, SQLAlchemySessionUserDatastore
 
 from manager.setup import app, db
+import manager.api.graphql
 from manager.logging_config import logger
 from manager.user import User, Role
 from manager.questions_blueprint import questions
@@ -17,10 +18,6 @@ from manager.a_blueprint import a
 from manager.util import get_tasks, getAuthData
 
 import manager.api.misc_api
-
-# Setup flask-security with user tables
-user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
-security = Security(app, user_datastore)
 
 # Initialization
 @app.before_first_request
@@ -65,16 +62,15 @@ def show_tasks():
     """Fetch queued/active task list"""
     tasks = get_tasks()
     output = []
-    output.append('{:<40}{:<30}{:<40}{:<20}{:<20}'.format('task id', 'name', 'question hash', 'user', 'state'))
+    output.append('{:<40}{:<30}{:<20}{:<20}'.format('task id', 'name', 'user', 'state'))
     output.append('-'*150)
     for task_id in tasks:
         task = tasks[task_id]
         name = task['name'] if task['name'] else ''
-        question_hash = re.match(r"\['(.*)'\]", task['args']).group(1) if task['args'] else ''
         # question_id = re.search(r"'question_id': '(\w*)'", task['kwargs']).group(1) if task['kwargs'] and not task['kwargs'] == '{}' else ''
         user_email = re.search(r"'user_email': '([\w@.]*)'", task['kwargs']).group(1) if task['kwargs'] and not task['kwargs'] == '{}' else ''
         state = task['state'] if task['state'] else ''
-        output.append('{:<40}{:<30}{:<40}{:<20}{:<20}'.format(task_id, name, question_hash, user_email, state))
+        output.append('{:<40}{:<30}{:<20}{:<20}'.format(task_id, name, user_email, state))
 
     return "<pre>"+"\n".join(output)+"</pre>"
 
