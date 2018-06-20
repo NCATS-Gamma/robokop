@@ -24,12 +24,14 @@ class SubGraphViewer extends React.Component {
     this.graphOptions = {
       height: '500px',
       physics: {
+        minVelocity: 0.75,
         barnesHut: {
-          gravitationalConstant: -1000,
-          centralGravity: 0.3,
-          springLength: 500,
-          avoidOverlap: 0,
-          damping: 0.4,
+          gravitationalConstant: -2000,
+          centralGravity: 0.01,
+          springLength: 200,
+          springConstant: 0.05,
+          damping: 0.95,
+          avoidOverlap: 1,
         },
       },
       layout: {
@@ -244,6 +246,10 @@ class SubGraphViewer extends React.Component {
         };
       }
 
+      if (this.props.omitEdgeLabel) {
+        label = '';
+      }
+
       e.from = e.source_id;
       e.to = e.target_id;
       const defaultParams = {
@@ -252,10 +258,10 @@ class SubGraphViewer extends React.Component {
         value,
         font: {
           color: '#000',
-          align: 'middle',
+          align: 'top',
           strokeColor: '#fff',
         },
-        smooth: { enabled: true, type: 'dynamic' },
+        smooth: { forceDirection: 'none' },
         scaling: {
           min: 0.1,
           max: 10,
@@ -309,6 +315,7 @@ SubGraphViewer.defaultProps = {
   layoutStyle: 'auto',
   height: 500,
   showSupport: false,
+  omitEdgeLabel: false,
   callbackOnGraphClick: () => {},
 };
 
