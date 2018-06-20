@@ -60,51 +60,28 @@ class Landing extends React.Component {
               <b>R</b>easoning <b>O</b>ver <b>B</b>iomedical <b> O</b>bjects linked in <b>K</b>nowledge <b>O</b>riented <b>P</b>athways
             </p>
             <p>
-              Robokop is a biomedical reasoning system that interacts with many biomedical knowledge sources to
-              answer questions. Robokop is one of several prototype systems under active development with
-              <a href="https://ncats.nih.gov/"> NIH NCATS</a>.
+              {'Robokop is a biomedical reasoning system that interacts with many biomedical knowledge sources to answer questions. Robokop is one of several prototype systems under active development with '}
+              <a href="https://ncats.nih.gov/">NIH NCATS</a>.
             </p>
+            <p>
+              <a style={{ fontSize: 'small' }} href={this.appConfig.urls.about}>Learn More</a>
+            </p>
+            <ButtonToolbar style={{ paddingTop: '10px' }}>
+              <Button bsSize="large" href={this.appConfig.urls.questions}>
+                Browse Questions
+              </Button>
+              {shownNewQuestion &&
+                <Button bsSize="large" href={this.appConfig.urls.questionDesign}>
+                  Ask a Question
+                </Button>
+              }
+              {showLogIn &&
+                <Button bsSize="large" href={this.appConfig.urls.login}>
+                  Log In
+                </Button>
+            }
+            </ButtonToolbar>
           </Jumbotron>
-          <Row>
-            <Col md={6}>
-              <Panel>
-                <Panel.Heading>
-                  <Panel.Title componentClass="h3">Learn More</Panel.Title>
-                </Panel.Heading>
-                <Panel.Body>
-                  <ButtonToolbar>
-                    <Button bsSize="large" href={this.appConfig.urls.quickStart}>
-                      Quick Start Guide
-                    </Button>
-                  </ButtonToolbar>
-                </Panel.Body>
-              </Panel>
-            </Col>
-            <Col md={6}>
-              <Panel>
-                <Panel.Heading>
-                  <Panel.Title componentClass="h3">Dive Right In</Panel.Title>
-                </Panel.Heading>
-                <Panel.Body>
-                  <ButtonToolbar>
-                    <Button bsSize="large" href={this.appConfig.urls.questions}>
-                      Browse Questions
-                    </Button>
-                    {shownNewQuestion &&
-                      <Button bsSize="large" href={this.appConfig.urls.questionDesign}>
-                        Ask a Question
-                      </Button>
-                    }
-                    {showLogIn &&
-                      <Button bsSize="large" href={this.appConfig.urls.login}>
-                        Log In
-                      </Button>
-                  }
-                  </ButtonToolbar>
-                </Panel.Body>
-              </Panel>
-            </Col>
-          </Row>
         </Grid>
         <Footer config={this.props.config} />
       </div>

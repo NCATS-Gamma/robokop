@@ -42,8 +42,9 @@ class Header extends React.Component {
     return (
       <Navbar
         style={{
-          backgroundColor: this.appConfig.colors.blue,
-          backgroundImage: `linear-gradient(315deg, ${this.appConfig.colors.blue} 0%, ${this.appConfig.colors.bluegray} 74%)`,
+          backgroundColor: this.appConfig.colors.bluegray,
+          boxShadow: '0px 0px 5px 0px #b3b3b3',
+          // backgroundImage: `linear-gradient(315deg, ${this.appConfig.colors.blue} 0%, ${this.appConfig.colors.bluegray} 74%)`,
         }}
         staticTop
       >
@@ -55,8 +56,8 @@ class Header extends React.Component {
         </Navbar.Header>
         <Navbar.Collapse>
           <Nav>
-            <NavItem eventKey={0} href={this.appConfig.urls.quickStart}>
-              Quick Start
+            <NavItem eventKey={0} href={this.appConfig.urls.about}>
+              About
             </NavItem>
             <NavItem eventKey={1} href={this.appConfig.urls.questions}>
               Question Library

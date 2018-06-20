@@ -20,7 +20,7 @@ class AppConfig {
       question: questionId => this.url(`q/${questionId}`),
       answerset: (questionId, answersetId) => this.url(`a/${questionId}_${answersetId}`),
       answer: (questionId, answersetId, answerId) => this.url(`a/${questionId}_${answersetId}/${answerId}`),
-      quickStart: this.url('start/'),
+      about: this.url('about/'),
       workflow: this.url('workflow/'),
       appAnswerset: this.url('app/answerset'),
       appComparison: this.url('app/comparison'),
