@@ -223,6 +223,9 @@ class Answer(db.Model):
         text
         '''
         json = self.toJSON()
+        for n in json['nodes']:
+            if 'name' not in n:
+                n['name'] = 'No name'
         summary = generate_summary(json['nodes'], json['edges'])
         output = {
             'confidence': json['score'],
@@ -238,6 +241,8 @@ class Answer(db.Model):
 
 def generate_summary(nodes, edges):
     # assume that the first node is at one end
+    logger.debug(nodes)
+    logger.debug(edges)
     summary = nodes[0]['name']
     latest_node_id = nodes[0]['id']
     node_ids = [n['id'] for n in nodes]

@@ -36,10 +36,10 @@ def landing():
     """Initial contact. Give the initial page."""
     return render_template('landing.html')
 
-@app.route('/start/')
+@app.route('/about/')
 def start():
     """Getting started guide"""
-    return render_template('start.html')
+    return render_template('about.html')
 
 @app.route('/workflow/')
 def workflow():
