@@ -223,6 +223,9 @@ class Answer(db.Model):
         text
         '''
         json = self.toJSON()
+        for n in json['nodes']:
+            if 'name' not in n:
+                n['name'] = "<unknown>"
         summary = generate_summary(json['nodes'], json['edges'])
         output = {
             'confidence': json['score'],
