@@ -413,33 +413,75 @@ class Question extends React.Component {
             if (isAnswerTask) {
               const ind = data.answerers.findIndex(a => a.uuid === newTask.answersetTask);
               if (ind < 0) {
+                // Task is not in the list of active tasks
+
                 // Check to see if it happens to be done already?
-                // this.appConfig.taskStatus(newTask.answersetTask, )
-                // done already?
-                console.log('Missing Answerer Task!!?!', newTask.answersetTask);
-                allOk = false;
-                this.dialogMessage({
-                  title: 'Trouble Queuing Answer Set Generation',
-                  text: 'We have lost track of your tasks. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
-                  buttonText: 'OK',
-                  buttonAction: () => {},
-                });
+                this.appConfig.taskStatus(
+                  newTask.answersetTask,
+                  (taskStatusData) => {
+                    // 'STARTED' // Assume lost, how are you doing this but not in the active list for this question
+                    // 'PENDING' // Assume lost, how are you doing this but not in the active list for this question
+                    // 'UPDATE KG' // Assume lost, how are you doing this but not in the active list for this question
+                    // Anything else // Assume lost, how are you doing this but not in the active list for this question
+                    // 'SUCCESS' // Already done, great, fire notification
+                    // 'FAILURE' // Already failued, fire notificaiton
+                    const success = taskStatusData.state === 'SUCCESS';
+                    const failure = taskStatusData.state === 'FAILURE';
+                    if (success || failure) {
+                      this.notifyAnswers(newTask.answersetTask);
+                      return;
+                    }
+                    allOk = false;
+
+                    console.log('Missing Question Task!!?!', newTask.answersetTask);
+
+                    this.dialogMessage({
+                      title: 'Trouble Queuing Knowledge Graph Update',
+                      text: 'We have lost track of your task. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+                      buttonText: 'OK',
+                      buttonAction: () => {},
+                    });
+                  },
+                );
               }
+              // Task is appropriately in the list of active tasks, start polling as normal
             }
             if (isRefreshTask) {
               const ind = data.updaters.findIndex(a => a.uuid === newTask.questionTask);
               if (ind < 0) {
-                console.log('Missing Quesetion Task!!?!', newTask.questionTask);
-                allOk = false;
-                this.dialogMessage({
-                  title: 'Trouble Queuing Knowledge Graph Update',
-                  text: 'We have lost track of your tasks. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
-                  buttonText: 'OK',
-                  buttonAction: () => {},
-                });
+                // Task is not in the list of active tasks
+
+                // Check to see if it happens to be done already?
+                this.appConfig.taskStatus(
+                  newTask.questionTask,
+                  (taskStatusData) => {
+                    // 'STARTED' // Assume lost, how are you doing this but not in the active list for this question
+                    // 'PENDING' // Assume lost, how are you doing this but not in the active list for this question
+                    // 'UPDATE KG' // Assume lost, how are you doing this but not in the active list for this question
+                    // Anything else // Assume lost, how are you doing this but not in the active list for this question
+                    // 'SUCCESS' // Already done, great, fire notification
+                    // 'FAILURE' // Already failued, fire notificaiton
+                    const success = taskStatusData.state === 'SUCCESS';
+                    const failure = taskStatusData.state === 'FAILURE';
+                    if (success || failure) {
+                      this.notifyRefresh(newTask.questionTask);
+                      return;
+                    }
+                    console.log('Missing Question Task!!?!', newTask.questionTask);
+                    allOk = false;
+                    this.dialogMessage({
+                      title: 'Trouble Queuing Knowledge Graph Update',
+                      text: 'We have lost track of your task. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+                      buttonText: 'OK',
+                      buttonAction: () => {},
+                    });
+                  },
+                );
               }
             }
-            // FIX ME this assumes a single new task at a time!
+
+            // This assumes a single new task at a time!
+            // This may need to be fixed at some point.
             if (allOk) {
               this.setState(
                 {

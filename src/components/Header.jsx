@@ -56,9 +56,6 @@ class Header extends React.Component {
         </Navbar.Header>
         <Navbar.Collapse>
           <Nav>
-            <NavItem eventKey={0} href={this.appConfig.urls.about}>
-              About
-            </NavItem>
             <NavItem eventKey={1} href={this.appConfig.urls.questions}>
               Question Library
             </NavItem>
@@ -74,6 +71,9 @@ class Header extends React.Component {
             }
           </Nav>
           <Nav pullRight>
+            <NavItem eventKey={0} href={this.appConfig.urls.about}>
+              About
+            </NavItem>
             {showApps &&
             <NavDropdown eventKey={3} title="Apps" id="basic-nav-dropdown">
               <MenuItem eventKey={3.1} href={this.appConfig.urls.appAnswerset}>Offline Answer Set Explorer - <small>Use the Robokop UI with answer set files.</small></MenuItem>

@@ -65,15 +65,17 @@ class QuestionGraphViewer extends React.Component {
           n.label = entityNameDisplay(n.label);
         }
         // else just keep your label
-      } else if ('identifiers' in n) {
-        if (Array.isArray(n.identifiers)) {
-          if (n.identifiers.length > 0) {
-            n.label = n.identifiers[0];
+      } else if ('name' in n) {
+        n.label = n.name;
+      } else if ('curie' in n) {
+        if (Array.isArray(n.curie)) {
+          if (n.curie.length > 0) {
+            n.label = n.curie[0];
           } else {
             n.label = '';
           }
         } else {
-          n.label = n.identifiers;
+          n.label = n.curie;
         }
       } else if ('type' in n) {
         n.label = entityNameDisplay(n.type);
