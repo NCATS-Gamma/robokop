@@ -36,7 +36,7 @@ const concepts = [
   'molecular_function',
   'pathway',
   'phenotypic_feature',
-  'biological_process_or_molecular_activity',
+  'biological_process_or_activity',
   'disease_or_phenotypic_feature',
 ];
 
