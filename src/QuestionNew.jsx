@@ -118,8 +118,10 @@ class QuestionNew extends React.Component {
       name: this.state.name,
       natural_question: this.state.natural,
       notes: this.state.notes,
-      nodes: nodes,
-      edges: edges,
+      machine_question: {
+        nodes: nodes,
+        edges:edges,
+      }
     };
 
     // Splash wait overlay

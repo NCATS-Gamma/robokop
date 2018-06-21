@@ -35,8 +35,7 @@ class Question(db.Model):
     natural_question = Column(String)
     notes = Column(String)
     name = Column(String)
-    nodes = Column(JSON)
-    edges = Column(JSON)
+    machine_question = Column(JSON)
 
     user = relationship(
         User,
@@ -57,9 +56,7 @@ class Question(db.Model):
         self.notes = None
         self.name = None
         self.natural_question = None
-        self.name = None
-        self.nodes = [] # list of nodes
-        self.edges = [] # list of edges
+        self.machine_question = None
 
         # apply json properties to existing attributes
         attributes = self.__dict__.keys()

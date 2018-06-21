@@ -29,8 +29,8 @@ class QuestionPres extends React.Component {
 
   render() {
     const questionGraph = {
-      edges: this.props.question.edges,
-      nodes: this.props.question.nodes,
+      edges: this.props.question.machine_question.edges,
+      nodes: this.props.question.machine_question.nodes,
     };
 
     const userOwnsThisQuestion = this.props.owner === this.props.user.username; // Fix Me

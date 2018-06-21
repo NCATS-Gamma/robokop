@@ -60,6 +60,7 @@ class QuestionsAPI(Resource):
             user_id = current_user.id
             user_email = current_user.email
         logger.debug(f"Creating new question for user {user_email}.")
+        logger.debug(request.json)
         qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
         if not request.json['name']:
             return abort(400, "Question needs a name.")
@@ -102,7 +103,6 @@ class QuestionsAPI(Resource):
 
         # get question hashes
         question_tasks = {q.id:[] for q in question_list}
-        logger.debug(tasks)
         for t in tasks:
             if not t['args']:
                 continue
@@ -111,7 +111,6 @@ class QuestionsAPI(Resource):
                 continue
             question_id = match.group(1)
             question_tasks[question_id].append(t)
-        logger.debug(question_tasks)
 
         # split into answer and update tasks
         for t in tasks:
@@ -127,8 +126,7 @@ class QuestionsAPI(Resource):
             q = question.toJSON()
             q['user_email'] = question.user.email
             q.pop('user_id')
-            q.pop('nodes')
-            q.pop('edges')
+            q.pop('machine_question')
             return {'latest_answerset_id': latest_answerset_id,
                     'latest_answerset_timestamp': latest_answerset_timestamp.isoformat() if latest_answerset_timestamp else None,
                     'tasks': [t['type'] for t in question_tasks[question.id]],
