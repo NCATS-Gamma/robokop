@@ -11,10 +11,10 @@ class AnswerExplorerInfo extends React.Component {
     super(props);
 
     this.state = {
-      selectedEdge: null,
-      selectedNode: null,
+      selectedEdgeId: null,
+      selectedNodeId: null,
       edge: null,
-      subgraph: { node_list: [], edge_list: [] },
+      subgraph: { nodes: [], edges: [] },
       disbleGraphClick: false,
     };
 
@@ -31,23 +31,23 @@ class AnswerExplorerInfo extends React.Component {
     }
 
     if (event.edges.length !== 0) { // Clicked on an Edge
-      this.setState({ selectedEdge: event.edges[0], selectedNode: null });
+      this.setState({ selectedEdgeId: event.edges[0], selectedNodeId: null });
     } else if (event.nodes.length !== 0) { // Clicked on an Edge
-      this.setState({ selectedEdge: null, selectedNode: event.nodes[0] });
+      this.setState({ selectedEdgeId: null, selectedNodeId: event.nodes[0] });
     } else { // Reset things since something else was clicked
-      this.setState({ selectedEdge: null, selectedNode: null });
+      this.setState({ selectedEdgeId: null, selectedNodeId: null });
     }
   }
   getPublicationsFrag() {
-    const somethingSelected = this.state.selectedEdge || this.state.selectedNode;
+    const somethingSelected = this.state.selectedEdgeId || this.state.selectedNodeId;
     let publicationListFrag = <div>Publication list... </div>;
     let publicationsTitle = 'Publications';
 
-    if (somethingSelected && this.state.selectedEdge) {
+    if (somethingSelected && this.state.selectedEdgeId) {
       // Edge is selected
-      const edge = this.state.subgraph.edge_list.find(e => e.id === this.state.selectedEdge);
-      const sourceNode = this.state.subgraph.node_list.find(n => n.id === edge.source_id);
-      const targetNode = this.state.subgraph.node_list.find(n => n.id === edge.target_id);
+      const edge = this.state.subgraph.edges.find(e => e.id === this.state.selectedEdgeId);
+      const sourceNode = this.state.subgraph.nodes.find(n => n.id === edge.source_id);
+      const targetNode = this.state.subgraph.nodes.find(n => n.id === edge.target_id);
       let publications = [];
       if ('publications' in edge && Array.isArray(edge.publications)) {
         publications = edge.publications;
@@ -56,7 +56,7 @@ class AnswerExplorerInfo extends React.Component {
       publicationListFrag = <PubmedList publications={publications} />;
     } else if (somethingSelected && this.state.selectedNode) {
       // Node is selected
-      const node = this.state.subgraph.node_list.find(n => n.id === this.state.selectedNode);
+      const node = this.state.subgraph.nodes.find(n => n.id === this.state.selectedNodeId);
       let publications = [];
       if ('publications' in node && Array.isArray(node.publications)) {
         publications = node.publications;
@@ -139,11 +139,11 @@ class AnswerExplorerInfo extends React.Component {
       return (<div />);
     }
     let origin = 'Unknown';
-    if ('origin_list' in edge) {
-      if (Array.isArray(edge.origin_list) && edge.origin_list.length > 0) {
-        origin = edge.origin_list.map(source => <span key={shortid.generate()}>{source} &nbsp; </span>);
+    if ('provided_by' in edge) {
+      if (Array.isArray(edge.provided_by) && edge.provided_by.length > 0) {
+        origin = edge.provided_by.map(source => <span key={shortid.generate()}>{source} &nbsp; </span>);
       } else {
-        origin = edge.origin_list;
+        origin = edge.provided_by;
       }
     }
     return (
@@ -163,34 +163,17 @@ class AnswerExplorerInfo extends React.Component {
   }
 
   syncPropsAndState(newProps) {
-    const { answer, selectedEdge } = newProps;
-    const edge = answer.result_graph.edge_list.find(e => e.id === selectedEdge);
-    const node_list = answer.result_graph.node_list.filter(n => ((n.id === edge.source_id) || (n.id === edge.target_id)));
-    const node_list_ids = node_list.map(n => n.id);
-    const edge_list_full = answer.result_graph.edge_list.filter(e => (node_list_ids.includes(e.source_id) && node_list_ids.includes(e.target_id)));
+    const { graph, selectedEdge } = newProps;
 
-    // Note duplicate code from SubGraphViewer...
-    // Combine support and regular edges together if between the same nodes
-    const edgesRegular = edge_list_full.filter(e => e.type !== 'literature_co-occurrence');
-    const edgesSupport = edge_list_full.filter(e => e.type === 'literature_co-occurrence');
-    edgesSupport.forEach((e) => { e.duplicateEdge = false; });
-    edgesRegular.forEach((e) => {
-      const sameNodesSupportEdge = edgesSupport.find(s => (((e.source_id === s.source_id) && (e.target_id === s.target_id)) || ((e.source_id === s.target_id) && (e.target_id === s.source_id))) );
-      if (sameNodesSupportEdge) {
-        // We have a repeated edge
-        e.publications = sameNodesSupportEdge.publications;
-        sameNodesSupportEdge.duplicateEdge = true;
-      } else if (!('publications' in e)) {
-        e.publications = [];
-      }
-    });
-    const edge_list = [].concat(edgesSupport.filter(s => !s.duplicateEdge), edgesRegular);
+    const nodes = graph.nodes.filter(n => ((n.id === selectedEdge.source_id) || (n.id === selectedEdge.target_id)));
+    const nodeIds = nodes.map(n => n.id);
+    const edges = graph.edges.filter(e => (nodeIds.includes(e.source_id) && nodeIds.includes(e.target_id)));
 
-    const subgraph = { node_list, edge_list };
-    this.setState({ subgraph, edge });
+    const subgraph = { nodes, edges };
+    this.setState({ subgraph, edge: selectedEdge });
 
-    if (edge_list.length === 1) {
-      this.setState({ selectedEdge: edge_list[0].id, selectedNode: null, disbleGraphClick: true });
+    if (edges.length === 1) {
+      this.setState({ selectedEdgeId: selectedEdge.id, selectedNodeId: null, disbleGraphClick: true });
     }
   }
 
@@ -212,13 +195,13 @@ class AnswerExplorerInfo extends React.Component {
           </Row>
           <Row>
             <Col md={4}>
-              {this.getNodeInfoFrag(this.state.subgraph.node_list[0])}
+              {this.getNodeInfoFrag(this.state.subgraph.nodes[0])}
             </Col>
             <Col md={4}>
               {this.getEdgeInfoFrag(this.state.edge)}
             </Col>
             <Col md={4}>
-              {this.getNodeInfoFrag(this.state.subgraph.node_list[1])}
+              {this.getNodeInfoFrag(this.state.subgraph.nodes[1])}
             </Col>
           </Row>
           <Row>

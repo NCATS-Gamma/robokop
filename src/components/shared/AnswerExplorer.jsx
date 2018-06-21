@@ -22,6 +22,7 @@ class AnswerExplorer extends React.Component {
 
     this.state = {
       selectedEdge: null,
+      selectedGraph: null,
       modalShow: false,
       modalType: '', // 'feedback', 'info'
     };
@@ -33,9 +34,9 @@ class AnswerExplorer extends React.Component {
   }
   onGraphClick(event) {
     if (event.edges.length !== 0) { // Clicked on an Edge
-      this.setState({ selectedEdge: event.edges[0], modalShow: true, modalType: 'info' });
+      this.setState({ selectedEdge: event.edgeObjects[0], selectedGraph: event.graph, modalShow: true, modalType: 'info' });
     } else { // Reset things since something else was clicked
-      this.setState({ selectedEdge: null, modalShow: false, modalType: null });
+      this.setState({ selectedEdge: null, selectedGraph: null, modalShow: false, modalType: null });
     }
   }
   feedbackModalOpen() {
@@ -117,7 +118,7 @@ class AnswerExplorer extends React.Component {
               }
               {modalIsInfo &&
               <AnswerExplorerInfo
-                answer={this.props.answer}
+                graph={this.state.selectedGraph}
                 selectedEdge={this.state.selectedEdge}
               />
               }

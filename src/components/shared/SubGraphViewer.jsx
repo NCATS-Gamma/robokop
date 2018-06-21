@@ -4,15 +4,10 @@ import getNodeTypeColorMap from '../util/colorUtils';
 const Graph = require('react-graph-vis').default;
 const shortid = require('shortid');
 const _ = require('lodash');
-const seedrandom = require('seedrandom');
 
 class SubGraphViewer extends React.Component {
   constructor(props) {
     super(props);
-
-    this.addTagsToGraph = this.addTagsToGraph.bind(this);
-    this.setNetworkCallbacks = this.setNetworkCallbacks.bind(this);
-    this.clickCallback = event => this.props.callbackOnGraphClick(event);
 
     this.styles = {
       supportEdgeColors: {
@@ -26,12 +21,12 @@ class SubGraphViewer extends React.Component {
       physics: {
         minVelocity: 0.75,
         barnesHut: {
-          gravitationalConstant: -2000,
-          centralGravity: 0.01,
+          gravitationalConstant: -1000,
+          centralGravity: 0.3,
           springLength: 200,
           springConstant: 0.05,
           damping: 0.95,
-          avoidOverlap: 1,
+          avoidOverlap: 0,
         },
       },
       layout: {
@@ -69,15 +64,46 @@ class SubGraphViewer extends React.Component {
         tooltipDelay: 50,
       },
     };
+
+    this.state = {
+      displayGraph: null,
+      displayGraphOptions: this.graphOptions,
+    };
+
+    this.syncStateAndProps = this.syncStateAndProps.bind(this);
+    this.addTagsToGraph = this.addTagsToGraph.bind(this);
+    this.setNetworkCallbacks = this.setNetworkCallbacks.bind(this);
+    this.clickCallback = this.clickCallback.bind(this);
   }
 
   componentDidMount() {
-    this.setNetworkCallbacks();
+    this.syncStateAndProps(this.props);
   }
+  componentWillReceiveProps(nextProps) {
+    this.syncStateAndProps(nextProps);
+  }
+
+  syncStateAndProps(newProps) {
+    let graph = newProps.subgraph;
+
+    const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'node_list'));
+    if (isValid) {
+      graph = this.addTagsToGraph(graph);
+    }
+    const graphOptions = this.getGraphOptions();
+
+    // Last minute modification of graph options based on size of graph
+    if ('nodes' in graph && graph.nodes.length < 31 && 'barnesHut' in graphOptions.physics) {
+      graphOptions.physics.barnesHut.avoidOverlap = 1;
+    }
+
+    this.setState({ displayGraph: graph, displayGraphOptions: graphOptions })
+  }
+
 
   shouldComponentUpdate(nextProps) {
     // Only redraw/remount component if subgraph components change
-    if (_.isEqual(this.props.subgraph, nextProps.subgraph)) {
+    if (_.isEqual(this.props.subgraph, nextProps.subgraph) && this.network) {
       return false;
     }
     return true;
@@ -85,6 +111,13 @@ class SubGraphViewer extends React.Component {
 
   componentDidUpdate() {
     this.setNetworkCallbacks();
+  }
+
+  clickCallback(event) {
+    // Add edge objects not just ids
+    event.edgeObjects = event.edges.map(eId => this.state.displayGraph.edges.find(displayEdge => displayEdge.id === eId));
+    event.graph = this.state.displayGraph;
+    this.props.callbackOnGraphClick(event);
   }
 
   // Bind network fit callbacks to resize graph and cancel fit callbacks on start of zoom/pan
@@ -124,17 +157,14 @@ class SubGraphViewer extends React.Component {
     return { ...graphOptions, ...modifiedOptions };
   }
 
-
   // Method to add requisite tags to graph definition JSON before passing to vis.js
   addTagsToGraph(graph) {
     // Adds vis.js specific tags primarily to style graph as desired
     const g = _.cloneDeep(graph);
-    
+
     // nodes -> node_list
-    // g.edges = _.cloneDeep(g.edge_list);
     g.edges = g.edge_list;
     delete g.edge_list;
-    // g.nodes = _.cloneDeep(g.node_list);
     g.nodes = g.node_list;
     delete g.node_list;
 
@@ -175,6 +205,7 @@ class SubGraphViewer extends React.Component {
       } else if (!('publications' in e)) {
         e.publications = []; // How did this happen?
       }
+      e.moreThanOneEdge = false; // If we don't remove a support edge it is because it is the only left.
     });
     edgesRegular.forEach((e) => {
       // Find support edges between the same two nodes and merge publication lists
@@ -201,6 +232,21 @@ class SubGraphViewer extends React.Component {
       }
       e.publications = edgePublications;
     });
+
+    edgesRegular.forEach((e) => {
+      // Find edges that go between the same two nodes and mark them accordingly
+
+      // Find a corresponding support edge
+      const sameNodesEdge = edgesRegular.filter(e2 => (((e.source_id === e2.source_id) && (e.target_id === e2.target_id)) || ((e.source_id === e2.target_id) && (e.target_id === e2.source_id))));
+      sameNodesEdge.splice(sameNodesEdge.findIndex(e2 => e2.id === e.id), 1);
+      if (sameNodesEdge.length > 0) {
+        // We have a repeated edge
+        e.moreThanOneEdge = true;
+      } else {
+        e.moreThanOneEdge = false;
+      }
+    });
+
 
     // Remove the duplicated support edges
     g.edges = [].concat(edgesSupport.filter(s => !s.duplicateEdge), edgesRegular);
@@ -249,6 +295,10 @@ class SubGraphViewer extends React.Component {
       if (this.props.omitEdgeLabel) {
         label = '';
       }
+      let smooth = { forceDirection: 'none' };
+      if (e.moreThanOneEdge) {
+        smooth = { enabled: true, type: 'dynamic' };
+      }
 
       e.from = e.source_id;
       e.to = e.target_id;
@@ -261,7 +311,7 @@ class SubGraphViewer extends React.Component {
           align: 'top',
           strokeColor: '#fff',
         },
-        smooth: { forceDirection: 'none' },
+        smooth,
         scaling: {
           min: 0.1,
           max: 10,
@@ -281,29 +331,21 @@ class SubGraphViewer extends React.Component {
   }
 
   render() {
-    let graph = this.props.subgraph;
-
-    const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'node_list'));
-    if (isValid) {
-      graph = this.addTagsToGraph(graph);
-    }
-    const graphOptions = this.getGraphOptions();
-
+    const graph = this.state.displayGraph;
+    const isValid = !(graph == null);
     return (
       <div>
-        { isValid &&
-        <div>
+        {isValid &&
           <div style={{ fontFamily: 'Monospace' }}>
             <Graph
               key={shortid.generate()} // Forces component remount
               graph={graph}
               style={{ width: '100%' }}
-              options={graphOptions}
+              options={this.state.displayGraphOptions}
               events={{ click: this.clickCallback }}
               getNetwork={(network) => { this.network = network; }} // Store network reference in the component
             />
           </div>
-        </div>
         }
       </div>
     );

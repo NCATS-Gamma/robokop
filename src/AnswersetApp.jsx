@@ -71,7 +71,7 @@ class Answerset extends React.Component {
           answers.forEach((a) => {
             a.result_graph.edge_list.forEach((edge) => {
               if (!('id' in edge)) {
-                edge.id = shortid.generate();
+                edge.id = `${edge.source_id}-(${edge.type})->${edge.target_id}`;
               }
             });
           });
@@ -102,7 +102,7 @@ class Answerset extends React.Component {
               }
             });
             g.edge_list.forEach((edge) => {
-              const edgeId = `${edge.source_id} ${edge.target_id}`;
+              const edgeId = edge.id;
               if (!edgesIdSet.has(edgeId)) {
                 edgesIdSet.add(edgeId);
                 edges.push(edge);
