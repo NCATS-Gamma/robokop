@@ -75,7 +75,6 @@ class Concepts(Resource):
         """
         r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/concepts")
         concepts = r.json()
-        # bad_concepts =['NAME.DISEASE', 'NAME.PHENOTYPE', 'NAME.DRUG', "disease_or_phenotypic_feature", "biological_process_or_molecular_activity"]
         bad_concepts =['NAME.DISEASE', 'NAME.PHENOTYPE', 'NAME.DRUG']
         concepts = [c for c in concepts if not c in bad_concepts]
         concepts.sort()
