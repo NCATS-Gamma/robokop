@@ -150,12 +150,20 @@ class Question extends React.Component {
   }
   notifyRefresh(taskId) {
     this.appConfig.taskStatus(taskId, (data) => {
-      const success = data.state !== 'FAILURE';
-      if (success) {
+      if (data.state == 'SUCCESS') {
         this.notificationSystem.addNotification({
           title: 'Knowledge Graph Update Complete',
-          message: 'We finished updating the knolwedge graph for this question. Go check it out!',
+          message: 'We finished updating the knowledge graph for this question. Go check it out!',
           level: 'success',
+          dismissible: 'click',
+          position: 'tr',
+        });
+      } else if (data.state == 'REVOKED') {
+        console.log(taskId, data);
+        this.notificationSystem.addNotification({
+          title: 'Knowledge Graph Update Terminated',
+          message: `The knowledge graph update process was terminated by admin. If this is a surprise to you, please contact... someone.`,
+          level: 'error',
           dismissible: 'click',
           position: 'tr',
         });

@@ -100,6 +100,8 @@ def update_kg(self, question_id, user_email=None):
         r = requests.get(polling_url)
         if r.json()['state'] == 'FAILURE':
             raise RuntimeError('Builder failed.')
+        if r.json()['state'] == 'REVOKED':
+            raise RuntimeError('Task terminated by admin.')
         if r.json()['state'] == 'SUCCESS':
             break
         time.sleep(1)
