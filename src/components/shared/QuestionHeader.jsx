@@ -7,6 +7,7 @@ import FaDownload from 'react-icons/lib/fa/download';
 
 import QuestionToolbar from './QuestionToolbar';
 
+const _ = require('lodash');
 const shortid = require('shortid');
 
 class QuestionHeader extends React.Component {
@@ -30,6 +31,37 @@ class QuestionHeader extends React.Component {
 
   componentDidMount() {
     this.syncPropsAndState(this.props);
+  }
+  shouldComponentUpdate(newProps, newState) {
+    const propsAllMatch = (newProps.editedName === this.props.editedName) &&
+      (newProps.editedNatural === this.props.editedNatural) &&
+      (newProps.editedNotes === this.props.editedNotes) &&
+      (('name' in newProps.question) && ('name' in this.props.question) && (newProps.question.name === this.props.question.name)) &&
+      (('natural_question' in newProps.question) && ('natural_question' in this.props.question) && (newProps.question.natural_question === this.props.question.natural_question)) &&
+      (('notes' in newProps.question) && ('notes' in this.props.question) && (newProps.question.notes === this.props.question.notes)) &&
+      (newProps.showToolbar === this.props.showToolbar) &&
+      (newProps.refreshBusy === this.props.refreshBusy) &&
+      (newProps.answerBusy === this.props.answerBusy) &&
+      (newProps.enableNewAnswersets === this.props.enableNewAnswersets) &&
+      (newProps.enableQuestionRefresh === this.props.enableQuestionRefresh) &&
+      (newProps.enableQuestionEdit === this.props.enableQuestionEdit) &&
+      (newProps.enableQuestionDelete === this.props.enableQuestionDelete) &&
+      (newProps.enableQuestionFork === this.props.enableQuestionFork) &&
+      (newProps.enableQuestionSelect === this.props.enableQuestionSelect) &&
+      (newProps.showOtherQuestions === this.props.showOtherQuestions) &&
+      _.isEqual(newProps.otherQuestions, this.props.otherQuestions) &&
+      (newProps.showOtherAnswersets === this.props.showOtherAnswersets) &&
+      _.isEqual(newProps.otherAnswersets, this.props.otherAnswersets) &&
+      (newProps.showDownload === this.props.showDownload);
+
+    const stateAllMatch = (newState.editedName === this.state.editedName) &&
+      (newState.editedNatural === this.state.editedNatural) &&
+      (newState.editedNotes === this.state.editedNotes) &&
+      (newState.name === this.state.name) &&
+      (newState.notes === this.state.notes) &&
+      (newState.natural === this.state.natural);
+
+    return !(propsAllMatch && stateAllMatch);
   }
 
   onEditName(e) {
