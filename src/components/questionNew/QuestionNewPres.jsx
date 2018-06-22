@@ -33,7 +33,7 @@ class QuestionNewPres extends React.Component {
     if (('initializationQuestion' in props) && !_.isEmpty(props.initializationQuestion)) {
       // Use the ref to the editor component to actualy set this query.
 
-      const newQuery = props.initializationQuestion.nodes.map((n) => {
+      const newQuery = props.initializationQuestion.machine_question.nodes.map((n) => {
         let nameId = '';
         if ('identifiers' in n && Array.isArray(n.identifiers) && n.identifiers.length > 0) {
           nameId = n.identifiers[0];

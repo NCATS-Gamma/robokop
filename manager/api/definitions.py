@@ -255,7 +255,7 @@ class Question():
         name:
             type: "string"
             description: "human-readable question name"
-        natural:
+        natural_question:
             type: "string"
             description: "natural language English question"
         notes:
@@ -265,13 +265,13 @@ class Question():
             $ref: "#/definitions/Graph"
     example:
         name: "Ebola--(gene)--(genetic_condition)"
-        natural: "What genetic conditions might provide protection against Ebola?"
+        natural_question: "What genetic conditions might provide protection against Ebola?"
         notes: "#ebola #q1"
         machine_question:
             nodes:
               - id: 0
                 type: disease
-                identifiers: ["MONDO:0005737"]
+                curie: "MONDO:0005737"
               - id: 1
                 type: gene
               - id: 2
@@ -292,7 +292,6 @@ class Node():
     id: Node
     required:
         - id
-        - name
     properties:
         id:
             type: string
@@ -300,11 +299,8 @@ class Node():
             type: string
         type:
             type: string
-        identifiers:
-            type: array
-            items:
-                type: string
-            default: []
+        curie:
+            type: string
     """
     pass
 

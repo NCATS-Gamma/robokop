@@ -17,10 +17,11 @@ from manager.question import get_question_by_id
 from manager.logging_config import logger
 
 # set up Celery
-app.config['broker_url'] = os.environ["CELERY_BROKER_URL"]
-app.config['result_backend'] = os.environ["CELERY_RESULT_BACKEND"]
-celery = Celery(app.name, broker=app.config['broker_url'])
-celery.conf.update(app.config)
+celery = Celery(app.name)
+celery.conf.update(
+    broker_url=os.environ["CELERY_BROKER_URL"],
+    result_backend=os.environ["CELERY_RESULT_BACKEND"],
+)
 celery.conf.task_queues = (
     Queue('manager_answer', routing_key='manager_answer'),
     Queue('manager_update', routing_key='manager_update'),
@@ -100,6 +101,8 @@ def update_kg(self, question_id, user_email=None):
         r = requests.get(polling_url)
         if r.json()['state'] == 'FAILURE':
             raise RuntimeError('Builder failed.')
+        if r.json()['state'] == 'REVOKED':
+            raise RuntimeError('Task terminated by admin.')
         if r.json()['state'] == 'SUCCESS':
             break
         time.sleep(1)

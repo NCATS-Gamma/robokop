@@ -60,6 +60,7 @@ class QuestionsAPI(Resource):
             user_id = current_user.id
             user_email = current_user.email
         logger.debug(f"Creating new question for user {user_email}.")
+        logger.debug(request.json)
         qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
         if not request.json['name']:
             return abort(400, "Question needs a name.")
@@ -98,11 +99,10 @@ class QuestionsAPI(Resource):
         tasks = get_tasks().values()
 
         # filter out the SUCCESS/FAILURE tasks
-        tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE') or t['state'] == 'REVOKED']
+        tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE' or t['state'] == 'REVOKED')]
 
         # get question hashes
         question_tasks = {q.id:[] for q in question_list}
-        logger.debug(tasks)
         for t in tasks:
             if not t['args']:
                 continue
@@ -111,24 +111,26 @@ class QuestionsAPI(Resource):
                 continue
             question_id = match.group(1)
             question_tasks[question_id].append(t)
-        logger.debug(question_tasks)
 
         # split into answer and update tasks
         for t in tasks:
-            t['type'] = 'answering' if t['name'] == 'tasks.answer_question' else \
-                'refreshing KG' if t['name'] == 'tasks.update_kg' else \
+            t['type'] = 'answering' if t['name'] == 'manager.tasks.answer_question' else \
+                'refreshing KG' if t['name'] == 'manager.tasks.update_kg' else \
                 'something?'
 
         def augment_info(question):
             answerset_timestamps = [a.timestamp for a in question.answersets]
-            latest_idx = answerset_timestamps.index(max(answerset_timestamps)) if answerset_timestamps else None
-            latest_answerset_id = question.answersets[latest_idx].id if latest_idx else None
-            latest_answerset_timestamp = question.answersets[latest_idx].timestamp if latest_idx else None
+            if answerset_timestamps:
+                latest_idx = answerset_timestamps.index(max(answerset_timestamps))
+                latest_answerset_id = question.answersets[latest_idx].id
+                latest_answerset_timestamp = question.answersets[latest_idx].timestamp
+            else:
+                latest_answerset_id = None
+                latest_answerset_timestamp = None
             q = question.toJSON()
             q['user_email'] = question.user.email
             q.pop('user_id')
-            q.pop('nodes')
-            q.pop('edges')
+            q.pop('machine_question')
             return {'latest_answerset_id': latest_answerset_id,
                     'latest_answerset_timestamp': latest_answerset_timestamp.isoformat() if latest_answerset_timestamp else None,
                     'tasks': [t['type'] for t in question_tasks[question.id]],
