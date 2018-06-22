@@ -31,6 +31,7 @@ class SubGraphViewer extends React.Component {
       },
       layout: {
         randomSeed: 0,
+        improvedLayout: true,
       },
       edges: {
         color: {
@@ -90,12 +91,7 @@ class SubGraphViewer extends React.Component {
     if (isValid) {
       graph = this.addTagsToGraph(graph);
     }
-    const graphOptions = this.getGraphOptions();
-
-    // Last minute modification of graph options based on size of graph
-    if ('nodes' in graph && graph.nodes.length < 31 && 'barnesHut' in graphOptions.physics) {
-      graphOptions.physics.barnesHut.avoidOverlap = 1;
-    }
+    const graphOptions = this.getGraphOptions(graph);
 
     this.setState({ displayGraph: graph, displayGraphOptions: graphOptions })
   }
@@ -132,8 +128,9 @@ class SubGraphViewer extends React.Component {
     }
   }
 
-  getGraphOptions() {
+  getGraphOptions(graph) {
     const { graphOptions } = this;
+    const nNodes = 'nodes' in graph ? graph.nodes.length : 0;
 
     graphOptions.height = `${this.props.height}px`;
     let modifiedOptions = {};
@@ -145,13 +142,37 @@ class SubGraphViewer extends React.Component {
       };
     }
 
-    if ((this.props.layoutStyle === 'vertical') || (this.props.layoutStyle === 'horizontal')) {
+    // Check for graph duplicate edges
+    // In the event of duplicate edges directed layout doesn't work, we must stick with physics and auto
+    const duplicateEdges = graph.edges.reduce((val, e) => (val || e.moreThanOneEdge), false);
+    if (!duplicateEdges && ((this.props.layoutStyle === 'vertical') || (this.props.layoutStyle === 'horizontal') || nNodes < 3)) {
+      let direction = 'LR';
+      if (this.props.layoutStyle === 'vertical') {
+        direction = 'UD';
+      }
+
       modifiedOptions = {
         layout: {
-          randomSeed: this.props.layoutRandomSeed,
+          randomSeed: undefined,
+          hierarchical: {
+            enabled: true,
+            levelSeparation: 500,
+            nodeSpacing: 200,
+            treeSpacing: 200,
+            blockShifting: true,
+            edgeMinimization: true,
+            parentCentralization: true,
+            direction,
+            sortMethod: 'directed',
+          },
         },
         physics: false,
       };
+    }
+
+    // Last minute modification of graph options based on size of graph
+    if (nNodes < 31 && 'barnesHut' in graphOptions.physics) {
+      graphOptions.physics.barnesHut.avoidOverlap = 1;
     }
 
     return { ...graphOptions, ...modifiedOptions };
@@ -170,8 +191,8 @@ class SubGraphViewer extends React.Component {
 
     const nodeTypeColorMap = getNodeTypeColorMap(); // We could put standardized concepts here
 
-    const isVert = this.props.layoutStyle === 'vertical';
-    const isHorz = this.props.layoutStyle === 'horizontal';
+    const nNodes = g.nodes.length;
+
     g.nodes.forEach((n, i) => {
       const backgroundColor = nodeTypeColorMap(n.type);
       n.color = {
@@ -180,15 +201,6 @@ class SubGraphViewer extends React.Component {
         hover: { background: backgroundColor },
       };
       n.label = n.name;
-
-      if (isVert) {
-        n.x = 100; // Position nodes vertically
-        n.y = i * 100;
-      }
-      if (isHorz) {
-        n.y = 100; // Position nodes horizontally
-        n.x = i * 500;
-      }
     });
 
     // Combine support and regular edges together if between the same nodes
