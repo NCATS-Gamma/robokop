@@ -188,7 +188,47 @@ class AnswersetInteractive extends React.Component {
 
         const nNodes = groupAnswers[0].result_graph.node_list.length;
 
+        // Figure out if each of the answers in this group satisfies possible structure criteria
+        // For now we only allow simple paths
+        // This means that each edge is only used as a source or target up to twice
+        // And (to cover cases with only two nodes), the set of (up to 2) edges used by node have different end points
+        // All this should ignore literature-coaccurance edges
+        const answerValidity = groupAnswers.map((a) => {
+          // For each answer
+
+          // Look at each node
+          const nodeValidity = a.result_graph.node_list.map((n) => {
+            let nTimesSource = 0;
+            let nTimesTarget = 0;
+            const attachedNodeIds = [];
+            // Look at all the edges and find the number of times it is the source or the target
+            // Also find other node_ids attached to it by those edges
+            a.result_graph.edge_list.forEach((e) => {
+              if (e.type !== 'literature_co-occurrence') {
+                nTimesSource += (n.id === e.source_id);
+                nTimesTarget += (n.id === e.target_id);
+
+                if (n.id === e.source_id) {
+                  attachedNodeIds.push(e.target_id);
+                }
+                if (n.id === e.target_id) {
+                  attachedNodeIds.push(e.source_id);
+                }
+              }
+            });
+
+            const nEdges = (nTimesSource + nTimesTarget);
+            const nUniqueAttachedNodes = new Set(attachedNodeIds).size;
+            return (nEdges < 3) && (nEdges === nUniqueAttachedNodes);
+          });
+
+          return nodeValidity.every(i => i);
+        });
+
+        const isValid = answerValidity.every(i => i);
+
         groups.push({
+          isValid,
           nNodes,
           connectivity: connectivityArray[iGroup],
           connectivityHash: connectivityHashArray[iGroup],
@@ -301,13 +341,50 @@ class AnswersetInteractive extends React.Component {
   renderValid() {
     const group = this.state.groups[this.state.groupSelection];
     const answer = group.answers[this.state.selectedSubGraphIndex];
-
-    const selectOptions = this.state.groups.map((g, i) => {
-      return { value: i, label: `${i + 1} - ${g.answers.length} answers each with ${g.nNodes} nodes.` };
-    });
-    const oneGroup = selectOptions.length === 1;
-
     const answerFeedback = this.props.answersetFeedback.filter(f => f.answerId === answer.id);
+
+    return (
+      <div>
+        <Col md={3} style={{ paddingRight: '5px' }}>
+          <AnswersetInteractiveSelector
+            subgraph={answer}
+            nodeSelection={this.state.nodeSelection}
+            subgraphPossibilities={this.state.selectedSubGraphPossibilities}
+            onSelectionCallback={this.onSelectionCallback}
+          />
+        </Col>
+        <Col md={9} style={{ paddingLeft: '5px' }}>
+          <AnswerExplorer
+            user={this.props.user}
+            answer={answer}
+            answerIndex={this.state.selectedSubGraphIndex}
+            answerFeedback={answerFeedback}
+
+            callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
+            enableFeedbackView={this.props.enableFeedbackView}
+            enableFeedbackSubmit={this.props.enableFeedbackSubmit}
+            enabledAnswerLink={this.props.enabledAnswerLink}
+            getAnswerUrl={this.props.getAnswerUrl}
+          />
+        </Col>
+      </div>
+    );
+  }
+  renderInvalid() {
+    return (
+      <Col md={12}>
+        <p>
+          Due to the complexity of the answer graphs, the interactive browser is unavailable.
+        </p>
+      </Col>
+    );
+  }
+  renderGroup() {
+    const group = this.state.groups[this.state.groupSelection];
+    const { isValid } = group;
+
+    const selectOptions = this.state.groups.map((g, i) => ({ value: i, label: `${i + 1} - ${g.answers.length} answers each with ${g.nNodes} nodes.` }));
+    const oneGroup = selectOptions.length === 1;
 
     return (
       <Row>
@@ -340,29 +417,8 @@ class AnswersetInteractive extends React.Component {
             </Row>
           }
           <Row style={{ marginTop: '10px' }}>
-            <Col md={3} style={{ paddingRight: '5px' }}>
-              <AnswersetInteractiveSelector
-                subgraph={answer}
-                nodeSelection={this.state.nodeSelection}
-                subgraphPossibilities={this.state.selectedSubGraphPossibilities}
-                onSelectionCallback={this.onSelectionCallback}
-              />
-            </Col>
-            <Col md={9} style={{ paddingLeft: '5px' }}>
-              <AnswerExplorer
-                user={this.props.user}
-                answer={answer}
-                answerIndex={this.state.selectedSubGraphIndex}
-                answerFeedback={answerFeedback}
-
-                
-                callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
-                enableFeedbackView={this.props.enableFeedbackView}
-                enableFeedbackSubmit={this.props.enableFeedbackSubmit}
-                enabledAnswerLink={this.props.enabledAnswerLink}
-                getAnswerUrl={this.props.getAnswerUrl}
-              />
-            </Col>
+            {isValid && this.renderValid()}
+            {!isValid && this.renderInvalid()}
           </Row>
         </Col>
       </Row>
@@ -375,7 +431,7 @@ class AnswersetInteractive extends React.Component {
     return (
       <div>
         {isError && this.renderError()}
-        {!isError && hasAnswers && this.renderValid()}
+        {!isError && hasAnswers && this.renderGroup()}
         {!isError && !hasAnswers && this.renderNoAnswers()}
       </div>
     );
