@@ -38,9 +38,16 @@ class PubmedList extends React.Component {
         style={{ ...style, ...this.styles.row }}
         key={key}
       >
-        <PubmedEntry
-          pmid={this.props.publications[index]}
-        />
+        {isScrolling &&
+          <div style={{ color: '#ccc' }}>
+            Loading...
+          </div>
+        }
+        {!isScrolling &&
+          <PubmedEntry
+            pmid={this.props.publications[index]}
+          />
+        }
       </div>
     );
   }
