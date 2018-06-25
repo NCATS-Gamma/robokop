@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Panel, FormControl } from 'react-bootstrap';
-import { AgGridReact, AgGridColumn } from 'ag-grid-react';
+import { AgGridReact } from 'ag-grid-react';
 
 import LoadingImg from '../../../assets/images/loading.gif';
 import NetworkImg from '../../../assets/images/network.png';
@@ -38,26 +38,11 @@ class QuestionListTableAgGrid extends React.Component {
     this.gridApi.setSortModel(sort);
   }
   onClick(event) {
-    console.log(event)
-
     if (event.column.colId === 'latest_answerset_id') {
       this.props.callbackAnswersetSelect(event.node.data, { id: event.node.data.latest_answerset_id });
     } else {
       this.props.callbackQuestionSelect(event.node.data);
     }
-
-    // const selectedRow = this.gridApi.getSelectedRows();
-    // const selectedNode = this.gridApi.getSelectedNodes();
-
-    // if (Array.isArray(selectedRow) && selectedRow.length > 0) {
-    //   const question = selectedRow[0];
-      
-    //   console.log(selectedNode)
-
-    //   // this.props.callbackQuestionSelect(question);
-    // }
-
-    // this.gridApi.deselectAll();
   }
   onFilterTextChange(event) {
     this.setState({ quickFilterText: event.target.value });
