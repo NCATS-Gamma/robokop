@@ -84,7 +84,7 @@ class NLP(Resource):
             400:
                 description: "Something went wrong"
         """
-        response = requests.post(f"http://{os.environ['NLP_HOST']}:{os.environ['NLP_PORT']}/api/parse/", json=request.json)
+        response = requests.post(f"http://{os.environ['NLP_HOST']}:{os.environ['NLP_PORT']}/api/parse/", data=request.get_data())
         return Response(response.content, response.status_code)
 
 api.add_resource(NLP, '/nlp/')
