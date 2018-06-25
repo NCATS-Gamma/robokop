@@ -6,6 +6,7 @@ import os
 import sys
 
 import requests
+from flask import request, Response
 from flask_restful import Resource
 
 from manager.setup import app, api
@@ -59,6 +60,34 @@ class TaskStatus(Resource):
         return response.json()
 
 api.add_resource(TaskStatus, '/t/<task_id>/')
+
+class NLP(Resource):
+    def post(self):
+        """
+        Parse Question
+        ---
+        tags: [parse]
+        summary: "Convert a natural-language question into machine-readable form."
+        parameters:
+          - in: "body"
+            name: "question"
+            description: "Natural-language question"
+            required: true
+            schema:
+                type: string
+                example: "What genes affect Ebola?"
+        responses:
+            200:
+                description: "Here's your graph"
+                schema:
+                    $ref: "#/definitions/Graph"
+            400:
+                description: "Something went wrong"
+        """
+        response = requests.post(f"http://{os.environ['NLP_HOST']}:{os.environ['NLP_PORT']}/api/parse/", json=request.json)
+        return Response(response.content, response.status_code)
+
+api.add_resource(NLP, '/nlp/')
 
 class Concepts(Resource):
     def get(self):

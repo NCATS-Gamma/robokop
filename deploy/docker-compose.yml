@@ -1,5 +1,13 @@
 version: "3"
 services:
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_DB
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+
   manager:
     # image: patrickkwang/robokop
     build:
@@ -15,6 +23,8 @@ services:
       - POSTGRES_HOST=postgres
       - BUILDER_HOST=interfaces
       - RANKER_HOST=rank
+      - NLP_HOST=nlp
+      - NLP_PORT=9475
     ports:
       - "${MANAGER_PORT}:${MANAGER_PORT}"
       - "${FLOWER_PORT}:${FLOWER_PORT}"

@@ -28,16 +28,9 @@ services:
     command: "/init.sh manager builder"
     hostname: robokop
 
-  cache:
-    image: redis
+  nlp:
+    image: patrickkwang/robokop-nlp
+    # build:
+    #   context: .
     ports:
-      - "${CACHE_PORT}:${CACHE_PORT}"
-    command: --port ${CACHE_PORT}
-
-  postgres:
-    image: postgres
-    environment:
-      - POSTGRES_USER
-      - POSTGRES_DB
-    ports:
-      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+      - "9475:9475"
