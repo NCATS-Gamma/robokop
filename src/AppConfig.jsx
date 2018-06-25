@@ -37,6 +37,7 @@ class AppConfig {
       questionTasks: questionId => this.url(`api/q/${questionId}/tasks/`),
       questionAnswer: questionId => this.url(`api/q/${questionId}/answer/`),
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg/`),
+      parse: this.url('api/nlp/'),
       taskStatus: taskId => this.url(`api/t/${taskId}/`),
       feedback: this.url('api/feedback/'),
       search: this.url('api/search/'),
@@ -241,7 +242,7 @@ class AppConfig {
   }
   questionNewTranslate(questionText, successFunction, failureFunction) {
     this.postRequest(
-      'http://127.0.0.1:9475/api/parse/',
+      this.apis.parse,
       { body: `"${questionText}"` },
       successFunction,
       failureFunction,
