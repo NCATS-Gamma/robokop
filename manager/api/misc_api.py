@@ -17,6 +17,8 @@ import manager.api.q_api
 import manager.api.a_api
 import manager.api.feedback_api
 
+from manager.tasks import celery
+
 class Tasks(Resource):
     def get(self):
         """
@@ -58,6 +60,25 @@ class TaskStatus(Resource):
         flower_url = f'http://{os.environ["FLOWER_HOST"]}:{os.environ["FLOWER_PORT"]}/api/task/result/{task_id}'
         response = requests.get(flower_url, auth=(os.environ['FLOWER_USER'], os.environ['FLOWER_PASSWORD']))
         return response.json()
+
+    def delete(self, task_id):
+        """Revoke task
+        ---
+        tags: [tasks]
+        parameters:
+          - in: path
+            name: task_id
+            description: "task id"
+            type: string
+            required: true
+        responses:
+            204:
+                description: task revoked
+        """
+        
+        celery.control.revoke(task_id, terminate=True)
+
+        return '', 204
 
 api.add_resource(TaskStatus, '/t/<task_id>/')
 

@@ -4,7 +4,9 @@
 
 import os
 import re
+import json
 
+import redis
 from flask import render_template
 from flask_security import Security, SQLAlchemySessionUserDatastore
 
@@ -60,19 +62,33 @@ def app_comparison():
 @app.route('/tasks/')
 def show_tasks():
     """Fetch queued/active task list"""
-    tasks = get_tasks()
-    output = []
-    output.append('{:<40}{:<30}{:<20}{:<20}'.format('task id', 'name', 'user', 'state'))
-    output.append('-'*150)
-    for task_id in tasks:
-        task = tasks[task_id]
-        name = task['name'] if task['name'] else ''
-        # question_id = re.search(r"'question_id': '(\w*)'", task['kwargs']).group(1) if task['kwargs'] and not task['kwargs'] == '{}' else ''
-        user_email = re.search(r"'user_email': '([\w@.]*)'", task['kwargs']).group(1) if task['kwargs'] and not task['kwargs'] == '{}' else ''
-        state = task['state'] if task['state'] else ''
-        output.append('{:<40}{:<30}{:<20}{:<20}'.format(task_id, name, user_email, state))
+    r = redis.Redis(
+        host=os.environ['RESULTS_HOST'],
+        port=os.environ['RESULTS_PORT'],
+        db=os.environ['MANAGER_RESULTS_DB'])
 
-    return "<pre>"+"\n".join(output)+"</pre>"
+    output = []
+    output.append("""
+    <style>
+    table, th, td {
+        border: 1px solid black
+    }
+    </style>
+    """)
+    output.append(f"<tr><th>task id</th><th>name</th><th>user</th><th>state</th><th /></tr>")
+    for name in r.scan_iter('*'):
+        name = name.decode() # convert bytes to str
+        task = json.loads(r.get(name))
+        # name = task['name'] or '' if 'name' in task else ''
+        task_id = task['task_id']
+        # question_id = re.search(r"'question_id': '(\w*)'", task['kwargs']).group(1) if task['kwargs'] and not task['kwargs'] == '{}' else ''
+        # user_email = re.search(r"'user_email': '([\w@.]*)'", task['kwargs']).group(1) if task['kwargs'] and not task['kwargs'] == '{}' else ''
+        user_email = ''
+        state = task['status'] or ''
+
+        output.append(f"<tr><td>{task_id}</td><td>{name}</td><td>{user_email}</td><td>{state}</td><td><a>revoke</a></td></tr>")
+
+    return "<table>\n"+"\n".join(output)+"\n</table>"
 
 ################################################################################
 ##### Run Webserver ############################################################
