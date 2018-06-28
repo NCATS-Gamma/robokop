@@ -7,6 +7,8 @@ import 'ag-grid/dist/styles/ag-grid.css';
 import 'ag-grid/dist/styles/ag-theme-material.css';
 import 'react-select/dist/react-select.css';
 
+import 'babel-polyfill'; // For IE Promises
+
 import Landing from './Landing';
 import About from './About';
 import QuestionNew from './QuestionNew';
