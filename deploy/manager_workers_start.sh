@@ -15,7 +15,7 @@ echo "Worker started."
 
 function cleanup {
     echo "Stopping worker..."
-    celery multi stop manager_answerer@robokop manager_updater@robokop manager_initializer@robokop
+    celery multi stop manager_answerer@robokop manager_updater@robokop
     echo "Worker stopped."
 }
 trap cleanup EXIT
