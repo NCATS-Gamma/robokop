@@ -88,6 +88,15 @@ body :focus {
   background-color: #fff !important;
 }
 
+/* .ag-theme-material .ag-cell {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+*/
+.no-padding {
+  padding: 0px !important;
+}
+
 .close-button {
   margin-right: 10px;
   margin-top: 10px;

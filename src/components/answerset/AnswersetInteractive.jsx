@@ -151,7 +151,6 @@ class AnswersetInteractive extends React.Component {
           connectivityHashArray.push(connectivityChar);
           connectivityArray.push(connectivity);
           nodeTypeCountsArray.push(nodeTypeCount);
-          // console.log('New', connectivityChar);
           return connectivityHashArray.length - 1; // The newest one
         }
         return groupIndex;
@@ -250,7 +249,7 @@ class AnswersetInteractive extends React.Component {
   }
 
   initializeNodeSelection(index, answerWithinIndex = null) {
-    // if answerWithinINdex is supplied we will intialize with that answer selected
+    // if answerWithinIndex is supplied we will intialize with that answer selected
     if (this.state.groups.length < 1) {
       return;
     }
@@ -261,20 +260,22 @@ class AnswersetInteractive extends React.Component {
     }
 
     let nodeSelection = [];
-    let resetUrl = true;
-    if (answerWithinIndex) {
+    
+    if (Number.isSafeInteger(answerWithinIndex)) {
       nodeSelection = group.answers[answerWithinIndex].result_graph.node_list.map(n => n.id);
-      resetUrl = false;
     } else {
       nodeSelection = group.answers[0].result_graph.node_list.map(() => null);
     }
 
-    this.handleNodeSelectionChange(index, nodeSelection, resetUrl);
+    this.handleNodeSelectionChange(index, nodeSelection);
   }
 
   handleNodeSelectionChange(groupIndex, nodeSelection) {
     // find all paths such that nodes match selection template
     const group = this.state.groups[groupIndex];
+    if (!group.isValid) {
+      return;
+    }
     const isKept = group.answers.map(s => s.result_graph.node_list.reduce((keep, n, ind) => keep && ((nodeSelection[ind] == null) || (nodeSelection[ind] === n.id)), true));
 
     // convert isKept into ranked lists of nodes

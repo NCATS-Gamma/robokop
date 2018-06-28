@@ -5,6 +5,7 @@ services:
     environment:
       - POSTGRES_USER
       - POSTGRES_DB
+      - POSTGRES_PASSWORD
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
 
@@ -27,8 +28,8 @@ services:
       - NLP_PORT=9475
     ports:
       - "${MANAGER_PORT}:${MANAGER_PORT}"
-      - "${FLOWER_PORT}:${FLOWER_PORT}"
-      - "${SUPERVISOR_PORT}:${SUPERVISOR_PORT}"
+      - "${MANAGER_FLOWER_PORT}:${MANAGER_FLOWER_PORT}"
+      - "${MANAGER_SUPERVISOR_PORT}:${MANAGER_SUPERVISOR_PORT}"
     volumes:
       - ../../logs:/home/murphy/logs
       - ../../shared:/home/murphy/shared

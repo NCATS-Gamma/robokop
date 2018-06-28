@@ -13,7 +13,6 @@ class AnswerExplorerInfo extends React.Component {
     this.state = {
       selectedEdgeId: null,
       selectedNodeId: null,
-      edge: null,
       subgraph: { nodes: [], edges: [] },
       disbleGraphClick: false,
     };
@@ -92,7 +91,7 @@ class AnswerExplorerInfo extends React.Component {
       return (<div />);
     }
 
-    const urls = this.getNodeUrl(n.name);
+    const urls = this.getNodeUrl(n.id);
     return (
       <Panel>
         <Panel.Heading>
@@ -102,7 +101,10 @@ class AnswerExplorerInfo extends React.Component {
         </Panel.Heading>
         <Panel.Body style={{ minHeight: '100px' }}>
           <h5>
-            {n.type} - {n.name}
+            {n.type}
+          </h5>
+          <h5>
+            {n.id}
           </h5>
           {
             urls.map(link => <span key={shortid.generate()}><a href={link.url} target="_blank">{link.label}</a> &nbsp; </span>)
@@ -141,9 +143,9 @@ class AnswerExplorerInfo extends React.Component {
     let origin = 'Unknown';
     if ('provided_by' in edge) {
       if (Array.isArray(edge.provided_by) && edge.provided_by.length > 0) {
-        origin = edge.provided_by.map(source => <span key={shortid.generate()}>{source} &nbsp; </span>);
+        origin = edge.provided_by.map(source => <span key={shortid.generate()}>{source.substr(0, source.indexOf('.'))} &nbsp; </span>);
       } else {
-        origin = edge.provided_by;
+        origin = edge.provided_by.substr(0, edge.provided_by.indexOf('.'));
       }
     }
     return (
@@ -155,7 +157,10 @@ class AnswerExplorerInfo extends React.Component {
         </Panel.Heading>
         <Panel.Body style={{ minHeight: '100px' }}>
           <h5>
-            Established using {origin}
+            Established using:
+            <p>
+              {origin}
+            </p>
           </h5>
         </Panel.Body>
       </Panel>
@@ -170,14 +175,15 @@ class AnswerExplorerInfo extends React.Component {
     const edges = graph.edges.filter(e => (nodeIds.includes(e.source_id) && nodeIds.includes(e.target_id)));
 
     const subgraph = { nodes, edges };
-    this.setState({ subgraph, edge: selectedEdge });
+    this.setState({ subgraph, edge: selectedEdge, selectedEdgeId: selectedEdge.id, selectedNodeId: null });
 
     if (edges.length === 1) {
-      this.setState({ selectedEdgeId: selectedEdge.id, selectedNodeId: null, disbleGraphClick: true });
+      this.setState({ disbleGraphClick: true });
     }
   }
 
   render() {
+    const clickedEdge = this.state.subgraph.edges.find(e => e.id === this.state.selectedEdgeId);
     return (
       <Row>
         <Col md={12}>
@@ -198,7 +204,7 @@ class AnswerExplorerInfo extends React.Component {
               {this.getNodeInfoFrag(this.state.subgraph.nodes[0])}
             </Col>
             <Col md={4}>
-              {this.getEdgeInfoFrag(this.state.edge)}
+              {this.getEdgeInfoFrag(clickedEdge)}
             </Col>
             <Col md={4}>
               {this.getNodeInfoFrag(this.state.subgraph.nodes[1])}

@@ -51,7 +51,6 @@ class QuestionList extends React.Component {
           <QuestionListPres
             loginUrl={this.appConfig.urls.login}
             callbackQuestionNew={this.callbackQuestionNew}
-            answersetUrlFunction={(q, a) => this.appConfig.urls.answerset(q.id, a.id)}
             callbackAnswersetSelect={(q, a) => this.appConfig.open(this.appConfig.urls.answerset(q.id, a.id))}
             callbackQuestionSelect={q => this.appConfig.open(this.appConfig.urls.question(q.id))}
             questions={this.state.questions}

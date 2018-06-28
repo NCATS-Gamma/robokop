@@ -101,7 +101,8 @@ class AnswersetSelector extends React.Component {
               bsStyle="primary"
               bsSize="large"
               style={{ minWidth: '150px' }}
-              onClick={() => this.props.callbackAnswersetOpen(answerset.id)}
+              // onClick={() => this.props.callbackAnswersetOpen(answerset.id)}
+              href={this.props.answersetUrl(answerset)}
             >
               Explore <GoArrowRight /> <GoCircuitBoard />
             </Button>
