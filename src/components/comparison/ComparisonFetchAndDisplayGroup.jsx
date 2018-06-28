@@ -47,6 +47,7 @@ class ComparisonFetchAndDisplayGroup extends React.Component {
               >
                 <ComparisonFetchAndDisplay
                   user={this.props.user}
+                  concepts={this.props.concepts}
                   name="Gamma"
                   terms={this.props.terms}
                   queryId={this.props.queryId}
@@ -59,6 +60,7 @@ class ComparisonFetchAndDisplayGroup extends React.Component {
               >
                 <ComparisonFetchAndDisplay
                   user={this.props.user}
+                  concepts={this.props.concepts}
                   name="X-Ray"
                   terms={this.props.terms}
                   queryId={this.props.queryId}
@@ -71,6 +73,7 @@ class ComparisonFetchAndDisplayGroup extends React.Component {
               >
                 <ComparisonFetchAndDisplay
                   user={this.props.user}
+                  concepts={this.props.concepts}
                   name="Indigo"
                   terms={this.props.terms}
                   queryId={this.props.queryId}

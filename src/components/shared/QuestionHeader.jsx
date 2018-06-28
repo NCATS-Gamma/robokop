@@ -176,7 +176,7 @@ class QuestionHeader extends React.Component {
         <MenuItem
           eventKey={`${i + 2}`}
           key={shortid.generate()}
-          onClick={() => this.props.callbackAnswersetSelect(a)}
+          href={this.props.urlAnswerset(a)}
         >
           {d.toLocaleString()} - {a.creator}
         </MenuItem>
@@ -204,7 +204,7 @@ class QuestionHeader extends React.Component {
       <MenuItem
         eventKey={`${i + 2}`}
         key={shortid.generate()}
-        onClick={() => this.props.callbackQuestionSelect(q)}
+        href={this.props.urlQuestion(q)}
       >
         {q.name}
       </MenuItem>
@@ -228,7 +228,7 @@ class QuestionHeader extends React.Component {
             <div style={{ position: 'relative' }}>
               <h1 style={{ paddingRight: '50px' }}>
                 {this.props.enableQuestionSelect &&
-                  <span onClick={() => this.props.callbackQuestionSelect(this.props.question)} style={{ cursor: 'pointer' }}>{name}</span>
+                  <a style={{ color: 'inherit' }} href={this.props.urlQuestion(this.props.question)}>{name}</a>
                 }
                 {!this.props.enableQuestionSelect &&
                   name
@@ -336,10 +336,12 @@ QuestionHeader.defaultProps = {
   showOtherQuestions: false,
   otherQuestions: [],
   callbackQuestionSelect: () => {},
+  urlQuestion: () => {},
 
   showOtherAnswersets: false,
   otherAnswersets: [],
   callbackAnswersetSelect: () => {},
+  urlAnswerset: () => {},
 
   showDownload: false,
   callbackDownload: () => {},

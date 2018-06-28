@@ -69,10 +69,12 @@ class AnswersetPres extends React.Component {
             otherQuestions={this.props.otherQuestions}
             enableQuestionSelect={this.props.enableQuestionSelect}
             callbackQuestionSelect={this.props.callbackQuestionSelect}
+            urlQuestion={this.props.urlQuestion}
 
             showOtherAnswersets={showOtherAnswersets}
             otherAnswersets={this.props.otherAnswersets}
             callbackAnswersetSelect={this.props.callbackAnswersetSelect}
+            urlAnswerset={this.props.urlAnswerset}
 
             showDownload
             callbackDownload={this.onDownload}
@@ -96,9 +98,11 @@ class AnswersetPres extends React.Component {
               answers={this.props.answers}
               answersetFeedback={this.props.answersetFeedback}
               answerId={this.props.answerId} // Monitored for select by parameter or page load
+              concepts={this.props.concepts}
 
               enableUrlChange={this.props.enableUrlChange}
               enableFeedbackSubmit={this.props.enableFeedbackSubmit}
+              enableFeedbackView={this.props.enableFeedbackView}
 
               callbackAnswerSelected={this.props.callbackAnswerSelected}
               callbackNoAnswerSelected={this.props.callbackNoAnswerSelected}
@@ -116,8 +120,10 @@ class AnswersetPres extends React.Component {
               answers={this.props.answers}
               answersetFeedback={this.props.answersetFeedback}
               answerId={this.props.answerId} // Monitored for select by parameter or page load
+              concepts={this.props.concepts}
 
               enableFeedbackSubmit={this.props.enableFeedbackSubmit}
+              enableFeedbackView={this.props.enableFeedbackView}
 
               callbackAnswerSelected={this.props.callbackAnswerSelected}
               callbackNoAnswerSelected={this.props.callbackNoAnswerSelected}
@@ -132,6 +138,7 @@ class AnswersetPres extends React.Component {
           >
             <AnswersetGraph
               answersetGraph={this.props.answersetGraph}
+              concepts={this.props.concepts}
             />
           </Tab>
         </Tabs>
@@ -163,6 +170,8 @@ AnswersetPres.defaultProps = {
   callbackAnswersetSelect: () => {},
   callbackQuestionSelect: () => {},
   callbackFeedbackSubmit: () => {},
+  urlQuestion: () => {},
+  urlAnswerset: () => {},
 
   otherQuestions: [],
   otherAnswersets: [],
@@ -189,6 +198,8 @@ AnswersetPres.propTypes = {
   callbackAnswersetSelect: PropTypes.func,
   callbackQuestionSelect: PropTypes.func,
   callbackFeedbackSubmit: PropTypes.func,
+  urlQuestion: PropTypes.func,
+  urlAnswerset: PropTypes.func,
 
   otherQuestions: PropTypes.arrayOf(PropTypes.object),
   otherAnswersets: PropTypes.arrayOf(PropTypes.object),

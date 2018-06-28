@@ -293,7 +293,7 @@ class AppConfig {
     this.postRequest(url, postData, successFun, failureFun);
   }
   externalTemplateRequestXray(queryId, terms, successFun, failureFun) {
-    const url = 'http://rtx.ncats.io/api/rtx/v1/query';
+    const url = 'https://rtx.ncats.io/api/rtx/v1/query';
     const termsFixed = { ...terms, 
       rel_type: "directly_interacts_with",
       target_label: "protein" };

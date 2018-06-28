@@ -211,12 +211,10 @@ class SubGraphViewer extends React.Component {
     delete g.edge_list;
     g.nodes = g.node_list;
     delete g.node_list;
+  
+    const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts); // We could put standardized concepts here
 
-    const nodeTypeColorMap = getNodeTypeColorMap(); // We could put standardized concepts here
-
-    const nNodes = g.nodes.length;
-
-    g.nodes.forEach((n, i) => {
+    g.nodes.forEach((n) => {
       const backgroundColor = nodeTypeColorMap(n.type);
       n.color = {
         background: backgroundColor,

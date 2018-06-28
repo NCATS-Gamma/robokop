@@ -24,6 +24,7 @@ class AnswersetGraph extends React.Component {
               {this.state.renderGraph &&
                 <SubGraphViewer
                   subgraph={this.props.answersetGraph}
+                  concepts={this.props.concepts}
                   callbackOnGraphClick={() => {}}
                 />
               }

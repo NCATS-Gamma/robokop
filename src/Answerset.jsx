@@ -29,6 +29,7 @@ class Answerset extends React.Component {
       answersetGraph: {},
       answersetFeedback: [],
       answerId: [],
+      concepts: [],
     };
 
     this.callbackFeedbackSubmit = this.callbackFeedbackSubmit.bind(this);
@@ -183,6 +184,7 @@ class Answerset extends React.Component {
               answerCount={this.state.answerCount}
               answersetGraph={this.state.answersetGraph}
               answersetFeedback={this.state.answersetFeedback}
+              concepts={this.state.concepts}
               otherQuestions={this.state.otherQuestions}
               otherAnswersets={this.state.otherAnswersets}
               enableUrlChange
@@ -192,6 +194,8 @@ class Answerset extends React.Component {
               callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
               callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
               callbackAnswerSelected={this.handleAnswerSelect}
+              urlQuestion={q => this.appConfig.urls.question(q.id)}
+              urlAnswerset={a => this.appConfig.urls.answerset(this.state.question.id, a.id)}
               callbackNoAnswerSelected={this.handleNoAnswerSelect}
               enabledAnswerLink
               getAnswerUrl={answer => this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, answer.id)}

@@ -196,6 +196,7 @@ class AnswerExplorerInfo extends React.Component {
                 layoutRandomSeed={1}
                 showSupport
                 callbackOnGraphClick={this.onGraphClick}
+                concepts={this.props.concepts}
               />
             </Col>
           </Row>
