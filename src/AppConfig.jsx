@@ -37,7 +37,7 @@ class AppConfig {
       questionTasks: questionId => this.url(`api/q/${questionId}/tasks/`),
       questionAnswer: questionId => this.url(`api/q/${questionId}/answer/`),
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg/`),
-      parse: this.url('api/nlp/'),
+      parse: this.url('api/parse/'),
       taskStatus: taskId => this.url(`api/t/${taskId}/`),
       feedback: this.url('api/feedback/'),
       search: this.url('api/search/'),

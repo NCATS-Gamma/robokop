@@ -21,7 +21,6 @@ class AnswersetPres extends React.Component {
     this.renderAnswers = this.renderAnswers.bind(this);
   }
   onDownload() {
-    console.log('Not finished yet.');
     const data = this.props.answerset;
 
     // Transform the data into a json blob and give it a url
