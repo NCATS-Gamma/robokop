@@ -1,7 +1,7 @@
 const path = require('path');
 
 const config = {
-  entry: ['./src/index.jsx'],
+  entry: ['babel-polyfill', './src/index.jsx'],
   module: {
     rules: [
       {
