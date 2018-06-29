@@ -63,7 +63,7 @@ class DictLikeMixin():
     def preprocess(self, key, value):
         return value
 
-    def toJSON(self):
+    def to_json(self):
         keys = [str(column).split('.')[-1] for column in self.__table__.columns]
         struct = {key:getattr(self, key) for key in keys}
         return struct

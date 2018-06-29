@@ -51,7 +51,7 @@ class QuestionAPI(Resource):
 
         answerset_list = question.answersets
 
-        return {'question': question.toJSON(),
+        return {'question': question.to_json(),
                 'owner': question.user.email,
                 'answerset_list': [a.toStandard(data=False) for a in answerset_list]}, 200
 
@@ -170,7 +170,7 @@ class GetFeedbackByQuestion(Resource):
         except Exception as err:
             return "Invalid question id", 404
 
-        return feedback.toJSON(), 200
+        return feedback.to_json(), 200
 
 api.add_resource(GetFeedbackByQuestion, '/q/<question_id>/feedback/')
 
@@ -338,8 +338,8 @@ class QuestionSubgraph(Resource):
         except Exception as err:
             return "Invalid question key.", 404
 
-        logger.debug(question.toJSON())
-        r = requests.post(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/subgraph", json=question.toJSON())
+        logger.debug(question.to_json())
+        r = requests.post(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/subgraph", json=question.to_json())
         try:
             output = r.json()
         except Exception as err:
