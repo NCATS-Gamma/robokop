@@ -247,7 +247,6 @@ class AnswerExplorerInfo extends React.Component {
       const replacer = (key, value) => { return value === null ? '' : value; };
 
       const csv = data.map(row => fields.map(f => JSON.stringify(row[f], replacer)).join(','));
-      console.log(csv)
       csv.unshift(fields.join(','));
       const csvText = csv.join('\n');
 
