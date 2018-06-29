@@ -29,8 +29,8 @@ class QuestionPres extends React.Component {
 
   render() {
     const questionGraph = {
-      edges: this.props.question.machine_question.edges,
-      nodes: this.props.question.machine_question.nodes,
+      edges: (('machine_question' in this.props.question) && this.props.question.machine_question && ('edges' in this.props.question.machine_question)) ? this.props.question.machine_question.edges : [],
+      nodes: (('machine_question' in this.props.question) && this.props.question.machine_question && ('nodes' in this.props.question.machine_question)) ? this.props.question.machine_question.nodes : [],
     };
 
     const userOwnsThisQuestion = this.props.owner === this.props.user.username; // Fix Me
@@ -174,7 +174,7 @@ class QuestionPres extends React.Component {
                   initializerBusy={this.props.initializerBusy}
                   answersets={this.props.answersets}
                   callbackAnswersetNew={this.props.callbackNewAnswerset}
-                  callbackAnswersetOpen={this.props.callbackAnswersetOpen}
+                  answersetUrl={this.props.answersetUrl}
                 />
               </Panel.Body>
             </Panel>

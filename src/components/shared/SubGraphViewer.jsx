@@ -118,11 +118,34 @@ class SubGraphViewer extends React.Component {
 
   // Bind network fit callbacks to resize graph and cancel fit callbacks on start of zoom/pan
   setNetworkCallbacks() {
+    const stopLayout = () => {
+      this.network.stopSimulation();
+      this.network.physics.physicsEnabled = false;
+    };
+    const afterDraw = () => {
+      this.network.fit();
+      setTimeout(() => { stopLayout(); }, 1000);
+    };
+    const startLayout = () => {
+      this.network.on('afterDrawing', afterDraw);
+      this.network.physics.physicsEnabled = true;
+      this.network.startSimulation();
+    };
+    const toggleLayout = () => {
+      if (this.network.physics.physicsEnabled) {
+        stopLayout();
+      } else {
+        startLayout();
+      }
+    };
+
     try {
-      this.network.on('afterDrawing', () => this.network.fit());
-      this.network.on('doubleClick', () => this.network.fit());
+      this.network.on('afterDrawing', afterDraw);
+      this.network.on('doubleClick', () => { this.network.off('afterDrawing'); this.network.fit(); toggleLayout(); });
       this.network.on('zoom', () => this.network.off('afterDrawing'));
       this.network.on('dragStart', () => this.network.off('afterDrawing'));
+      this.network.on('dragEnd', () => { setTimeout(stopLayout, 5); });
+      // this.network.on('stabilizationIterationsDone', () => { setTimeout(() => this.network.stopSimulation(), 5); });
     } catch (err) {
       console.log(err);
     }
@@ -205,6 +228,7 @@ class SubGraphViewer extends React.Component {
 
     // Combine support and regular edges together if between the same nodes
     const edgesRegular = g.edges.filter(e => e.type !== 'literature_co-occurrence');
+
     const edgesSupport = g.edges.filter(e => e.type === 'literature_co-occurrence');
     edgesSupport.forEach((e) => {
       // Make sure support edges actually have publications
@@ -259,22 +283,20 @@ class SubGraphViewer extends React.Component {
       }
     });
 
-
     // Remove the duplicated support edges
     g.edges = [].concat(edgesSupport.filter(s => !s.duplicateEdge), edgesRegular);
 
     // Remove any straggler duplicate edges (Fix me)
-    const fromTo = [];
-    const deleteMe = g.edges.map((e) => {
-      const thisFromTo = `${e.source_id}_${e.target_id}`;
-      if (fromTo.includes(thisFromTo)) {
-        return true;
-      }
-      fromTo.push(thisFromTo);
-      return false;
-    });
-
-    g.edges = g.edges.filter((e, i) => !deleteMe[i]);
+    // const fromTo = [];
+    // const deleteMe = g.edges.map((e) => {
+    //   const thisFromTo = `${e.source_id}_${e.target_id}`;
+    //   if (fromTo.includes(thisFromTo)) {
+    //     return true;
+    //   }
+    //   fromTo.push(thisFromTo);
+    //   return false;
+    // });
+    // g.edges = g.edges.filter((e, i) => !deleteMe[i]);
 
     // Add parameters to edges like curvature and labels and such
     g.edges = g.edges.map((e) => {

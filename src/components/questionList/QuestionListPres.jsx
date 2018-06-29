@@ -84,7 +84,6 @@ class QuestionListPres extends React.Component {
             <QuestionListTableAgGrid
               questions={this.state.questions}
               showSearch
-              answersetUrlFunction={this.props.answersetUrlFunction}
               callbackAnswersetSelect={this.props.callbackAnswersetSelect}
               callbackQuestionSelect={this.props.callbackQuestionSelect}
               height={tableHeight}

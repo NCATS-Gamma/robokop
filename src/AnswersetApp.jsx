@@ -71,7 +71,7 @@ class Answerset extends React.Component {
           answers.forEach((a) => {
             a.result_graph.edge_list.forEach((edge) => {
               if (!('id' in edge)) {
-                edge.id = `${edge.source_id}-(${edge.type})->${edge.target_id}`;
+                edge.id = `${edge.provided_by}(${edge.source_id}-(${edge.type})->${edge.target_id})`;
               }
             });
           });

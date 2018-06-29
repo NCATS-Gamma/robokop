@@ -2,9 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Panel, FormControl } from 'react-bootstrap';
-import { AgGridReact, AgGridColumn } from 'ag-grid-react';
+import { AgGridReact } from 'ag-grid-react';
 
 import LoadingImg from '../../../assets/images/loading.gif';
+import NetworkImg from '../../../assets/images/network.png';
 
 class QuestionListTableAgGrid extends React.Component {
   constructor(props) {
@@ -36,12 +37,11 @@ class QuestionListTableAgGrid extends React.Component {
     ];
     this.gridApi.setSortModel(sort);
   }
-  onClick() {
-    const selectedRow = this.gridApi.getSelectedRows();
-
-    if (Array.isArray(selectedRow) && selectedRow.length > 0) {
-      const question = selectedRow[0];
-      this.props.callbackQuestionSelect(question);
+  onClick(event) {
+    if (event.column.colId === 'latest_answerset_id') {
+      this.props.callbackAnswersetSelect(event.node.data, { id: event.node.data.latest_answerset_id });
+    } else {
+      this.props.callbackQuestionSelect(event.node.data);
     }
   }
   onFilterTextChange(event) {
@@ -64,15 +64,37 @@ class QuestionListTableAgGrid extends React.Component {
   cellRendererAnswers(params) {
     let out = '';
     if (params.data !== '' && params.data !== undefined && params.data !== null && 'id' in params.data && params.data.id && 'latest_answerset_id' in params.data && params.data.latest_answerset_id) {
-      out = `<a href=${this.props.answersetUrlFunction(params.data, { id: params.data.latest_answerset_id })}>&nbsp;&nbsp;➤</a>`;
+      out = `<div style="
+        display: table;
+        width: 100%;
+        position: absolute;
+        height: 100%;">
+          <div style="
+            display: table-cell;
+            vertical-align: middle;
+          ">
+            <img src=../${NetworkImg} height="25" width="25" />
+          </div>
+        </div>`;
     }
     return out;
   }
   cellRendererBusy(params) {
     let out = '';
     if (params.value) {
-      // out = `<img src=../${LoadingImg} height="45" width="45" />`;
-      out = 'Updating...';
+      out = `<div style="
+        display: table;
+        width: 100%;
+        position: absolute;
+        height: 100%;">
+          <div style="
+            display: table-cell;
+            vertical-align: middle;
+          ">
+            <img src=../${LoadingImg} height="25" width="25" />
+          </div>
+        </div>`;
+      // out = 'Updating...';
     }
     return out;
   }
@@ -106,7 +128,7 @@ class QuestionListTableAgGrid extends React.Component {
               />
             }
           </Panel.Heading>
-          <Panel.Body>
+          <Panel.Body style={{ padding: '0px' }}>
             <div className="ag-theme-material" style={{ width: '100%', height: this.props.height }}>
               <AgGridReact
                 columnDefs={[
@@ -116,39 +138,48 @@ class QuestionListTableAgGrid extends React.Component {
                     suppressMenu: true,
                     cellRenderer: this.cellRendererOwned,
                     width: 5,
+                    hide: true,
                     tooltip: value => (value ? 'This is your question' : ''),
+                    suppressResize: true,
                   },
                   {
                     headerName: 'Name',
                     field: 'name',
                     suppressMenu: true,
+                    hide: true,
                     tooltip: value => (value),
                   },
                   {
                     headerName: 'Question',
                     field: 'natural_question',
                     suppressMenu: true,
+                    width: 400,
                   },
                   {
                     headerName: 'Notes',
                     field: 'notes',
                     suppressMenu: true,
+                    width: 200,
                   },
                   {
-                    headerName: 'Active',
+                    headerName: '',
                     field: 'isBusy',
                     suppressMenu: true,
                     cellRenderer: this.cellRendererBusy,
-                    width: 50,
+                    width: 20,
+                    minWidth: 20,
                     hide: false,
+                    cellClass: 'no-padding',
                   },
                   {
-                    headerName: 'Answers',
+                    headerName: '',
                     field: 'latest_answerset_id',
                     suppressMenu: true,
                     cellRenderer: this.cellRendererAnswers,
-                    width: 50,
+                    width: 20,
+                    minWidth: 20,
                     hide: false,
+                    cellClass: 'no-padding',
                   },
                 ]}
                 rowData={this.props.questions}
@@ -161,7 +192,7 @@ class QuestionListTableAgGrid extends React.Component {
                 suppressCellSelection
                 defaultColDef={{ width: 100, headerComponentParams: { template: '' } }}
                 rowSelection="single"
-                onSelectionChanged={this.onClick}
+                onCellClicked={this.onClick}
                 onGridReady={this.onGridReady}
               />
               <div className="fadeout" />
@@ -175,7 +206,6 @@ class QuestionListTableAgGrid extends React.Component {
 
 QuestionListTableAgGrid.defaultProps = {
   height: '100px',
-  answersetUrlFunction: (q,a) => '',
 };
 
 QuestionListTableAgGrid.propTypes = {
@@ -183,6 +213,7 @@ QuestionListTableAgGrid.propTypes = {
   questions: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })).isRequired,
   showSearch: PropTypes.bool.isRequired,
   callbackQuestionSelect: PropTypes.func.isRequired,
+  callbackAnswersetSelect: PropTypes.func.isRequired,
 };
 
 export default QuestionListTableAgGrid;

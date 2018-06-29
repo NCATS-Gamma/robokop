@@ -34,6 +34,7 @@
     "ag-grid-react": "^14.2.0",
     "axios": "^0.18.0",
     "axios-retry": "^3.0.2",
+    "babel-polyfill": "^6.26.0",
     "bootstrap": "^3.3.7",
     "immutability-helper": "^2.4.0",
     "jquery": "^3.2.1",
