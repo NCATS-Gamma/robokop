@@ -47,7 +47,7 @@ def answer_question(self, question_id, user_email=None):
 
     question = get_question_by_id(question_id)
 
-    r = requests.post(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/', json=question.toJSON())
+    r = requests.post(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/', json=question.to_json())
     # wait here for response
     if r.status_code == 204:
         # found 0 answers
@@ -94,7 +94,7 @@ def update_kg(self, question_id, user_email=None):
 
     logger.info(f"Updating the knowledge graph for '{question.name}'...")
     
-    r = requests.post(f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question.toJSON())
+    r = requests.post(f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question.to_json())
     polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{r.json()['task id']}"
         
     for _ in range(60*60*24): # wait up to 1 day

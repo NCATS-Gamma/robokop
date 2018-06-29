@@ -67,9 +67,9 @@ class AnswersetAPI(Resource):
 
         feedback = list_feedback_by_question_answerset(question, answerset)
 
-        return {'question': question.toJSON(),\
+        return {'question': question.to_json(),\
                 'answerset': answerset.toStandard(),\
-                'feedback': [f.toJSON() for f in feedback],\
+                'feedback': [f.to_json() for f in feedback],\
                 'other_answersets': [],
                 'other_questions': []}, 200
 
@@ -148,12 +148,12 @@ class AnswerAPI(Resource):
         user = getAuthData()
 
         return {'user': user,\
-                'answerset': answerset.toJSON(),\
-                'answer': answer.toJSON(),\
-                'feedback': [f.toJSON() for f in feedback],\
-                'question': question.toJSON(),\
-                'other_answersets': [aset.toJSON() for aset in answersets],
-                'other_questions': [q.toJSON() for q in questions]}, 200
+                'answerset': answerset.to_json(),\
+                'answer': answer.to_json(),\
+                'feedback': [f.to_json() for f in feedback],\
+                'question': question.to_json(),\
+                'other_answersets': [aset.to_json() for aset in answersets],
+                'other_questions': [q.to_json() for q in questions]}, 200
 
 api.add_resource(AnswerAPI, '/a/<qa_id>/<int:answer_id>/')
 
@@ -194,7 +194,7 @@ class GetFeedbackByAnswer(Resource):
         except Exception as err:
             return "Invalid answerset/answer key", 404
 
-        return [f.toJSON() for f in feedback], 200
+        return [f.to_json() for f in feedback], 200
 
 api.add_resource(GetFeedbackByAnswer, '/a/<qa_id>/<int:answer_id>/feedback/')
 
@@ -229,6 +229,6 @@ class GetFeedbackByAnswerset(Resource):
         except Exception as err:
             return "Invalid answerset key", 404
 
-        return [f.toJSON() for f in feedback], 200
+        return [f.to_json() for f in feedback], 200
 
 api.add_resource(GetFeedbackByAnswerset, '/a/<qa_id>/feedback/')

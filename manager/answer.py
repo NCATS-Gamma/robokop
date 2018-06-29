@@ -72,7 +72,7 @@ class Answerset(db.Model):
     def __str__(self):
         return "<ROBOKOP Answer Set id={}>".format(self.id)
 
-    def toJSON(self):
+    def to_json(self):
         keys = [str(column).split('.')[-1] for column in self.__table__.columns]
         struct = {key:getattr(self, key) for key in keys}
         if 'timestamp' in struct:
@@ -89,7 +89,7 @@ class Answerset(db.Model):
         response_code
         result_list
         '''
-        json = self.toJSON()
+        json = self.to_json()
         natural_question = json['misc_info']['natural_question'] if 'mics_info' in json else None
         output = {
             'context': 'context',
@@ -195,7 +195,7 @@ class Answer(db.Model):
     def __str__(self):
         return "<ROBOKOP Answer id={}>".format(self.id)
 
-    def toJSON(self):
+    def to_json(self):
         keys = [str(column).split('.')[-1] for column in self.__table__.columns]
         struct = {key:getattr(self, key) for key in keys}
         return struct
@@ -222,7 +222,7 @@ class Answer(db.Model):
         result_type
         text
         '''
-        json = self.toJSON()
+        json = self.to_json()
         for n in json['nodes']:
             if 'name' not in n:
                 n['name'] = "<unknown>"
