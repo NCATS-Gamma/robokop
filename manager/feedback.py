@@ -47,8 +47,9 @@ class Feedback(db.Model, DictLikeMixin):
         '''
 
         # initialize all properties
-        self.user = None
-        self.answer = None
+        self.user_id = None
+        self.answer_id = None
+        self.question_id = None
         self.impact = None
         self.accuracy = None
         self.notes = None
@@ -61,6 +62,13 @@ class Feedback(db.Model, DictLikeMixin):
     def __str__(self):
         return "<ROBOKOP Feedback id={}>".format(self.id)
 
+    def to_json(self):
+        keys = [str(column).split('.')[-1] for column in self.__table__.columns]
+        struct = {key:getattr(self, key) for key in keys}
+        if 'timestamp' in struct:
+            struct['timestamp'] = struct['timestamp'].isoformat()
+        return struct
+
 def get_feedback_by_id(id):
     return db.session.query(Feedback).filter(Feedback.id == id).first()
 
@@ -68,7 +76,7 @@ def list_feedback_by_question(question):
     return db.session.query(Feedback).filter(Feedback.question == question).all()
 
 def list_feedback_by_question_answerset(question, answerset):
-    return db.session.query(Feedback).filter(Feedback.question == question).filter(Feedback.answer in answerset.answers).all()
+    return db.session.query(Feedback).filter(Feedback.question == question).filter(Feedback.answer_id.in_([a.id for a in answerset.answers])).all()
 
 def list_feedback_by_question_answer(question, answer):
     return db.session.query(Feedback).filter(Feedback.question == question).filter(Feedback.answer == answer).all()

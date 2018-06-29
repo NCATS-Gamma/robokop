@@ -190,9 +190,9 @@ class GetFeedbackByAnswer(Resource):
             question = get_question_by_id(question_id)
             answerset = get_answerset_by_id(answerset_id)
             answer = get_answer_by_id(answer_id)
-            feedback = list_feedback_by_question_answer(question, answer)
         except Exception as err:
             return "Invalid answerset/answer key", 404
+        feedback = list_feedback_by_question_answer(question, answer)
 
         return [f.to_json() for f in feedback], 200
 
@@ -225,9 +225,9 @@ class GetFeedbackByAnswerset(Resource):
             question_id, answerset_id = qa_id.split('_')
             question = get_question_by_id(question_id)
             answerset = get_answerset_by_id(answerset_id)
-            feedback = list_feedback_by_question_answerset(question, answerset)
         except Exception as err:
             return "Invalid answerset key", 404
+        feedback = list_feedback_by_question_answerset(question, answerset)
 
         return [f.to_json() for f in feedback], 200
 
