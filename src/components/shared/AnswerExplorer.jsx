@@ -114,7 +114,7 @@ class AnswerExplorer extends React.Component {
                 answerFeedback={this.props.answerFeedback}
                 enableSubmit={this.props.enableFeedbackSubmit}
                 callbackUpdate={this.feedbackUpdate}
-                callbackClose={this.feedbackModalClose}
+                callbackClose={this.modalClose}
               />
               }
               {modalIsInfo &&

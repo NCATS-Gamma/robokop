@@ -113,12 +113,26 @@ class Answerset extends React.Component {
   }
 
   callbackFeedbackSubmit(newPartialFeedback) {
-    const newFeedback = { ...newPartialFeedback, ...{ question_id: this.state.question.id } };
+    const newFeedback = { ...newPartialFeedback, ...{ question_id: this.state.question.id, answerset_id: this.state.answerset.id } };
+    // Set this.props.answerFeedback
     console.log(newFeedback);
 
-    this.appConfig.answerFeedback(
+    this.appConfig.answerFeedbackNew(
       newFeedback,
-      () => {}, // All good
+      () => {
+        this.appConfig.answerFeedback(
+          this.state.question.id,
+          this.state.answerset.id,
+          (data) => {
+            this.setState({ answersetFeedback: data });
+          },
+          (err) => {
+            window.alert('Sorry. There was a problem submitting and then fetching the feedback data to the server.');
+            console.log('Problem with get request:');
+            console.log(err);
+          },
+        );
+      },
       (err) => {
         window.alert('Sorry. There was a problem submitting the feedback data to the server.');
         console.log('Problem with post request:');
@@ -189,8 +203,8 @@ class Answerset extends React.Component {
               otherAnswersets={this.state.otherAnswersets}
               enableUrlChange
               enableQuestionSelect
-              enableFeedbackSubmit={false}
-              enableFeedbackView={false}
+              enableFeedbackSubmit
+              enableFeedbackView
               callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
               callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
               callbackAnswerSelected={this.handleAnswerSelect}

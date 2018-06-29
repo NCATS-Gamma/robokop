@@ -39,7 +39,8 @@ class AppConfig {
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg/`),
       parse: this.url('api/parse/'),
       taskStatus: taskId => this.url(`api/t/${taskId}/`),
-      feedback: this.url('api/feedback/'),
+      feedbackNew: this.url('api/feedback/'),
+      feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
       search: this.url('api/search/'),
     };
 
@@ -212,10 +213,17 @@ class AppConfig {
     );
   }
 
-  answerFeedback(data, successFun, failureFun) {
+  answerFeedbackNew(data, successFun, failureFun) {
     this.postRequest(
-      this.apis.feedback,
+      this.apis.feedbackNew,
       data,
+      successFun,
+      failureFun,
+    );
+  }
+  answerFeedback(questionId, answersetId, successFun, failureFun) {
+    this.getRequest(
+      this.apis.feedback(questionId, answersetId),
       successFun,
       failureFun,
     );

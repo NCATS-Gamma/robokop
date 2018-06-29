@@ -141,7 +141,7 @@ class AnswersetList extends React.Component {
     const rowCount = this.props.answers.length;
 
     const answer = this.props.answers[this.state.selectedSubGraphIndex];
-    const answerFeedback = this.props.answersetFeedback.filter(f => f.answerId === answer.id);
+    const answerFeedback = this.props.answersetFeedback.filter(f => f.answer_id === answer.id);
 
     return (
       <Row>

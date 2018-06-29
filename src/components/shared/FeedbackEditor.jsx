@@ -34,6 +34,10 @@ class FeedbackEditor extends React.Component {
   componentDidMount() {
     this.syncPropsAndState(this.props);
   }
+  componentWillReceiveProps(newProps) {
+    this.syncPropsAndState(newProps);
+  }
+
 
   onEditAccuracy(nextValue) {
     this.setState({ editedAccuracy: true, accuracy: nextValue, displayAccuracy: nextValue });
@@ -78,16 +82,30 @@ class FeedbackEditor extends React.Component {
   }
 
   syncPropsAndState(newProps) {
+    const defaultFeedback = {
+      accuracy: 0,
+      impact: 0,
+      notes: '',
+    };
+
+    let inFeedback = newProps.feedback;
+    if (!inFeedback) {
+      inFeedback = {};
+    }
+    const feedback = { ...defaultFeedback, ...inFeedback };
+
+    console.log('sync', newProps, feedback, inFeedback)
+
     this.setState({
       editedAccuracy: false,
       editedImpact: false,
       editedNotes: false,
-      answerId: newProps.feedback.answerId,
-      accuracy: newProps.feedback.accuracy,
-      displayAccuracy: newProps.feedback.accuracy,
-      impact: newProps.feedback.impact,
-      displayImpact: newProps.feedback.impact,
-      notes: newProps.feedback.notes,
+      answerId: newProps.answer.id,
+      accuracy: feedback.accuracy,
+      displayAccuracy: feedback.accuracy,
+      impact: feedback.impact,
+      displayImpact: feedback.impact,
+      notes: feedback.notes,
     });
   }
 

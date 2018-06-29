@@ -67,6 +67,8 @@ class Feedback(db.Model, DictLikeMixin):
         struct = {key:getattr(self, key) for key in keys}
         if 'timestamp' in struct:
             struct['timestamp'] = struct['timestamp'].isoformat()
+        struct['user_email'] = self.user_email
+        struct.pop('user_id')
         return struct
 
 def get_feedback_by_id(id):
