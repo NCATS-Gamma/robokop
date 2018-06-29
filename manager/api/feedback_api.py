@@ -8,6 +8,7 @@ from flask_restful import Resource
 
 from manager.feedback import Feedback
 from manager.setup import api
+from manager.user import get_user_by_email
 
 # New Feedback Submission
 class FeedbackAPI(Resource):
@@ -27,8 +28,16 @@ class FeedbackAPI(Resource):
                 description: "confirmation"
                 type: string
         """
+
+        auth = request.authorization
+        if auth:
+            user_email = auth.username
+            user = get_user_by_email(user_email)
+            user_id = user.id
+        else:
+            user_id = current_user.id
         f = Feedback(
-            user_id=current_user.id,
+            user_id=user_id,
             question_id=request.json['question_id'],
             answer_id=request.json['answer_id'],
             accuracy=request.json['accuracy'],
