@@ -152,11 +152,11 @@ class Feedback():
         question_id:
             type: string
         answer_id:
-            type: string
+            type: integer
         accuracy:
-            type: string
+            type: integer
         impact:
-            type: string
+            type: integer
         notes:
             type: string
     """
