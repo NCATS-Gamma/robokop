@@ -6,6 +6,7 @@ import datetime
 
 from sqlalchemy import Column, DateTime, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.ext.associationproxy import association_proxy
 
 from manager.question import Question
 from manager.answer import Answer
@@ -33,6 +34,7 @@ class Feedback(db.Model, DictLikeMixin):
         backref=backref('feedback',
                         uselist=True,
                         cascade='delete,all'))
+    user_email = association_proxy('user', 'email')
     question = relationship(
         Question)
     answer = relationship(
