@@ -61,7 +61,7 @@ class AnswerExplorer extends React.Component {
       feedbackRight = 25;
     }
     const hasFeedback = (this.props.answerFeedback) && (Array.isArray(this.props.answerFeedback)) && this.props.answerFeedback.length > 0;
-    const showFeedbackButton = this.props.enableFeedbackView || hasFeedback;
+    const showFeedbackButton = (this.props.enableFeedbackView && hasFeedback) || this.props.enableFeedbackSubmit;
     return (
       <Panel>
         <Panel.Heading>

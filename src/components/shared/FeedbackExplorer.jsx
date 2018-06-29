@@ -29,11 +29,10 @@ class FeedbackExplorer extends React.Component {
     const userFeedback = this.props.answerFeedback.find(f => f.user_email === this.props.user.username);
 
     return (
+
+      // Rendering of other user feedback is currently disabled
       <div>
-        <h2>
-          Answer Feedback
-        </h2>
-        {otherFeedback.length>0 && this.renderOtherFeedback(otherFeedback, canSubmit)}
+        {false && otherFeedback.length>0 && this.renderOtherFeedback(otherFeedback, canSubmit)}
         {otherFeedback.length<1 && !canSubmit && this.renderBlank()}
         {canSubmit && this.renderEditor(userFeedback)}
       </div>
