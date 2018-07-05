@@ -127,7 +127,7 @@ class QuestionsAPI(Resource):
             else:
                 latest_answerset_id = None
                 latest_answerset_timestamp = None
-            q = question.toJSON()
+            q = question.to_json()
             q['user_email'] = question.user.email
             q.pop('user_id')
             q.pop('machine_question')

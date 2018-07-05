@@ -352,6 +352,7 @@ class AnswersetInteractive extends React.Component {
             nodeSelection={this.state.nodeSelection}
             subgraphPossibilities={this.state.selectedSubGraphPossibilities}
             onSelectionCallback={this.onSelectionCallback}
+            concepts={this.props.concepts}
           />
         </Col>
         <Col md={9} style={{ paddingLeft: '5px' }}>
@@ -360,6 +361,7 @@ class AnswersetInteractive extends React.Component {
             answer={answer}
             answerIndex={this.state.selectedSubGraphIndex}
             answerFeedback={answerFeedback}
+            concepts={this.props.concepts}
 
             callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
             enableFeedbackView={this.props.enableFeedbackView}

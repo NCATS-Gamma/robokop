@@ -94,6 +94,7 @@ class AnswerExplorer extends React.Component {
             layoutRandomSeed={this.props.answerIndex}
             callbackOnGraphClick={this.onGraphClick}
             showSupport
+            concepts={this.props.concepts}
           />
           <Modal
             show={this.state.modalShow}
@@ -120,6 +121,7 @@ class AnswerExplorer extends React.Component {
               <AnswerExplorerInfo
                 graph={this.state.selectedGraph}
                 selectedEdge={this.state.selectedEdge}
+                concepts={this.props.concepts}
               />
               }
             </Modal.Body>

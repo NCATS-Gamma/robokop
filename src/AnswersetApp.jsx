@@ -22,6 +22,7 @@ class Answerset extends React.Component {
 
     this.state = {
       userReady: false,
+      conceptsReady: false,
       isValid: false,
       isReading: false,
       user: {},
@@ -29,6 +30,7 @@ class Answerset extends React.Component {
       answerset: {},
       answers: [],
       answersetGraph: {},
+      concepts: [],
     };
   }
 
@@ -39,6 +41,12 @@ class Answerset extends React.Component {
       user: this.appConfig.ensureUser(data),
       userReady: true,
     }));
+    this.appConfig.concepts((data) => {
+      this.setState({
+        concepts: data,
+        conceptsReady: true,
+      });
+    });
   }
 
   onDrop(acceptedFiles, rejectedFiles) {
@@ -200,6 +208,7 @@ class Answerset extends React.Component {
         answerset={this.state.answerset}
         answers={this.state.answers}
         answersetGraph={this.state.answersetGraph}
+        concepts={this.state.concepts}
       />
     );
   }
@@ -221,7 +230,7 @@ class Answerset extends React.Component {
     );
   }
   render() {
-    const ready = this.state.userReady;
+    const ready = this.state.userReady && this.state.conceptsReady;
     return (
       <div>
         {!ready && this.renderLoading()}

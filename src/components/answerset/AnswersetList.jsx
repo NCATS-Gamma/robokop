@@ -175,6 +175,7 @@ class AnswersetList extends React.Component {
             answer={answer}
             answerIndex={this.state.selectedSubGraphIndex}
             answerFeedback={answerFeedback}
+            concepts={this.props.concepts}
 
             callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
             enableFeedbackView={this.props.enableFeedbackView}

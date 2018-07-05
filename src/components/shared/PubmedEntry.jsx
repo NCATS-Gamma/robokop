@@ -74,7 +74,7 @@ class PubmedEntry extends React.Component {
             url: `https://www.ncbi.nlm.nih.gov/pubmed/${pmidNum}/`,
             doid: paperInfo.elocationid,
           };
-          this.setState({ info, ready: true, isFailure: false, });
+          this.setState({ info, ready: true, isFailure: false });
         } else {
           const info = Object.assign({}, this.defaultFailureInfo);
           this.setState({ info, isFailure: true });
@@ -82,8 +82,8 @@ class PubmedEntry extends React.Component {
       },
       (err) => {
         console.log('Error fetching from pubmed', err);
-        this.setState({ info: Object.assign({}, this.defaultFailureInfo), isFailure: true })
-      }
+        this.setState({ info: Object.assign({}, this.defaultFailureInfo), isFailure: true });
+      },
     );
   }
 

@@ -1,6 +1,8 @@
 import React from 'react';
 
 import { Row, Col, Panel } from 'react-bootstrap';
+import FaDownload from 'react-icons/lib/fa/download';
+
 import SubGraphViewer from './SubGraphViewer';
 import PubmedList from './PubmedList';
 
@@ -42,12 +44,12 @@ class AnswerExplorerInfo extends React.Component {
     let publicationListFrag = <div>Publication list... </div>;
     let publicationsTitle = 'Publications';
 
+    let publications = [];
     if (somethingSelected && this.state.selectedEdgeId) {
       // Edge is selected
       const edge = this.state.subgraph.edges.find(e => e.id === this.state.selectedEdgeId);
       const sourceNode = this.state.subgraph.nodes.find(n => n.id === edge.source_id);
       const targetNode = this.state.subgraph.nodes.find(n => n.id === edge.target_id);
-      let publications = [];
       if ('publications' in edge && Array.isArray(edge.publications)) {
         publications = edge.publications;
       }
@@ -56,13 +58,15 @@ class AnswerExplorerInfo extends React.Component {
     } else if (somethingSelected && this.state.selectedNode) {
       // Node is selected
       const node = this.state.subgraph.nodes.find(n => n.id === this.state.selectedNodeId);
-      let publications = [];
       if ('publications' in node && Array.isArray(node.publications)) {
         publications = node.publications;
       }
       publicationsTitle = `${publications.length} Publications for ${node.description}`;
       publicationListFrag = <PubmedList publications={publications} />;
     }
+
+    const downloadCallback = () => this.downloadPublicationsInfo(publications);
+    const showDownload = publications.length >= 1;
 
     return (
       <div>
@@ -71,6 +75,17 @@ class AnswerExplorerInfo extends React.Component {
           <Panel.Heading>
             <Panel.Title componentClass="h3">
               {publicationsTitle}
+              <div className="pull-right">
+                <div style={{ position: 'relative' }}>
+                  {showDownload &&
+                    <div style={{ position: 'absolute', top: -3, right: -8 }}>
+                      <span style={{ fontSize: '22px' }} title="Download Publications">
+                        <FaDownload onClick={downloadCallback} style={{ cursor: 'pointer' }} />
+                      </span>
+                    </div>
+                  }
+                </div>
+              </div>
             </Panel.Title>
           </Panel.Heading>
           <Panel.Body style={{ padding: 0 }}>
@@ -175,12 +190,78 @@ class AnswerExplorerInfo extends React.Component {
     const edges = graph.edges.filter(e => (nodeIds.includes(e.source_id) && nodeIds.includes(e.target_id)));
 
     const subgraph = { nodes, edges };
-    this.setState({ subgraph, edge: selectedEdge, selectedEdgeId: selectedEdge.id, selectedNodeId: null });
+    this.setState({ subgraph, selectedEdgeId: selectedEdge.id, selectedNodeId: null });
 
     if (edges.length === 1) {
       this.setState({ disbleGraphClick: true });
     }
   }
+
+  downloadPublicationsInfo(publications) {
+    const defaultInfo = {
+      id: '',
+      title: 'Unable to fetch publication information',
+      authors: [],
+      journal: '',
+      source: '',
+      pubdate: '',
+      url: '',
+      doid: '',
+    };
+    const getInfo = (result, pmid, pmidNum) => {
+      const paperInfo = result[pmidNum];
+      const fetchedInfo = {
+        id: pmid,
+        title: paperInfo.title,
+        authors: paperInfo.authors,
+        journal: paperInfo.fulljournalname,
+        source: paperInfo.source,
+        pubdate: paperInfo.pubdate,
+        url: `https://www.ncbi.nlm.nih.gov/pubmed/${pmidNum}/`,
+        doid: paperInfo.elocationid,
+      };
+      return { ...defaultInfo, ...fetchedInfo };
+    };
+
+    const getPubmedInformation = (pmid) => {
+      const pmidNum = pmid.substr(pmid.indexOf(':') + 1);
+      const postUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi';
+      const postData = {
+        db: 'pubmed',
+        id: pmidNum.toString(),
+        version: '2.0',
+        retmode: 'json',
+      };
+
+      return Promise.resolve($.post(postUrl, postData))
+        .then(info => getInfo(info.result, pmid, pmidNum)).catch((err) => {console.log(err); return defaultInfo;});
+    };
+
+    Promise.all(publications.map(p => getPubmedInformation(p))).then((data) => {
+      // Transform the data into a json blob and give it a url
+      // const json = JSON.stringify(data);
+      // const blob = new Blob([json], { type: 'application/json' });
+      // const url = URL.createObjectURL(blob);
+
+      const fields = ['url', 'title', 'journal', 'pubdate'];
+      const replacer = (key, value) => { return value === null ? '' : value; };
+
+      const csv = data.map(row => fields.map(f => JSON.stringify(row[f], replacer)).join(','));
+      csv.unshift(fields.join(','));
+      const csvText = csv.join('\n');
+
+      const blob = new Blob([csvText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+
+      // Create a link with that URL and click it.
+      const a = document.createElement('a');
+      a.download = 'publications.json';
+      a.href = url;
+      a.click();
+      a.remove();
+    });
+  }
+
 
   render() {
     const clickedEdge = this.state.subgraph.edges.find(e => e.id === this.state.selectedEdgeId);
@@ -196,6 +277,7 @@ class AnswerExplorerInfo extends React.Component {
                 layoutRandomSeed={1}
                 showSupport
                 callbackOnGraphClick={this.onGraphClick}
+                concepts={this.props.concepts}
               />
             </Col>
           </Row>

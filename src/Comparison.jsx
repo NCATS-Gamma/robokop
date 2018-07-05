@@ -19,6 +19,8 @@ class Comparison extends React.Component {
 
     this.state = {
       userReady: false,
+      conceptsReady: false, 
+      concepts: [],
       terms: { chemical_substance: 'CHEMBL:CHEMBL521' },
       queryId: 'Q3',
       submitted: false,
@@ -35,6 +37,12 @@ class Comparison extends React.Component {
       user: this.appConfig.ensureUser(data),
       userReady: true,
     }));
+    this.appConfig.concepts((data) => {
+      this.setState({
+        concepts: data,
+        conceptsReady: true,
+      });
+    });
   }
 
   onSubmit() {
@@ -94,6 +102,7 @@ class Comparison extends React.Component {
     return (
       <ComparisonFetchAndDisplayGroup
         user={this.state.user}
+        concepts={this.state.concepts}
         terms={this.state.terms}
         queryId={this.state.queryId}
         fetchFunGamma={this.appConfig.externalTemplateRequestGamma}
@@ -119,7 +128,7 @@ class Comparison extends React.Component {
     );
   }
   render() {
-    const ready = this.state.userReady;
+    const ready = this.state.userReady && this.state.conceptsReady;
     return (
       <div>
         {!ready && this.renderLoading()}
