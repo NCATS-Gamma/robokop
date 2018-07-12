@@ -77,11 +77,7 @@ class QuestionDesign extends React.Component {
   }
   saveEdit() {
     const newQuestionText = this.state.editedQuestionData.question;
-    
-    console.log(this.state.questionValue);
-    console.log(this.questionExamples);
     const optionIndex = this.questionExamples.findIndex(opt => opt.value === this.state.questionValue.value);
-    console.log(optionIndex)
     this.questionExamples[optionIndex].label = newQuestionText;
     this.setState({
       questionText: newQuestionText,
