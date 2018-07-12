@@ -73,10 +73,12 @@ class Answerset(db.Model):
         return "<ROBOKOP Answer Set id={}>".format(self.id)
 
     def to_json(self):
-        keys = [str(column).split('.')[-1] for column in self.__table__.columns]
+        keys = self.__mapper__._props.keys()+[k for k in self.__dict__.keys() if not k.startswith('_')]
         struct = {key:getattr(self, key) for key in keys}
         if 'timestamp' in struct:
             struct['timestamp'] = struct['timestamp'].isoformat()
+        if 'answers' in struct:
+            struct['answers'] = [a.to_json() for a in struct['answers']]
         return struct
     
     def toStandard(self, data=True):
@@ -89,12 +91,16 @@ class Answerset(db.Model):
         response_code
         result_list
         '''
-        json = self.to_json()
-        natural_question = json['misc_info']['natural_question'] if 'mics_info' in json else None
+        keys = self.__mapper__._props.keys()+[k for k in self.__dict__.keys() if not k.startswith('_')]
+        struct = {key:getattr(self, key) for key in keys}
+        if 'timestamp' in struct:
+            struct['timestamp'] = struct['timestamp'].isoformat()
+
+        natural_question = struct['misc_info']['natural_question'] if 'mics_info' in struct else None
         output = {
             'context': 'context',
-            'datetime': json['timestamp'],
-            'id': json['id'],
+            'datetime': struct['timestamp'],
+            'id': struct['id'],
             'message': f"{len(self.answers)} potential answers found.",
             'original_question_text': natural_question,\
             'response_code': 'OK' if self.answers else 'EMPTY',
