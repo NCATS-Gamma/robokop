@@ -21,6 +21,7 @@ class KnowledgeGraphViewer extends React.Component {
 
     this.graphOptions = {
       height: '500px',
+      autoResize: true,
       physics: {
         enabled: true,
         forceAtlas2Based: {

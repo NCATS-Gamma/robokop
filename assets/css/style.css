@@ -144,6 +144,14 @@ div.vis-tooltip-inner {
   height: 20px;
 } 
 
+#QuestionInput {
+  font-size: 22;
+}
+
+#QuestionInput .Select-input > input {
+  padding: 4px 0 12px;
+}
+
 /* Default Bootstrap Panel color */
 .panel-default > .panel-heading {
   color: #333;

@@ -72,7 +72,7 @@ class AnswerExplorer extends React.Component {
                 {showFeedbackButton &&
                   <div style={{ position: 'absolute', top: -2, right: feedbackRight }}>
                     <span style={{ fontSize: '22px' }} title="Feedback">
-                      <FaCommentO style={{ cursor: 'pointer' }} onClick={() => this.feedbackModalOpen()} />
+                      <FaCommentO style={{ cursor: 'pointer' }} onClick={this.feedbackModalOpen} />
                     </span>
                   </div>
                 }

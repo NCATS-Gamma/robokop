@@ -17,6 +17,7 @@ class SubGraphViewer extends React.Component {
       },
     };
     this.graphOptions = {
+      autoResize: true,
       height: '500px',
       physics: {
         minVelocity: 0.75,

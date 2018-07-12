@@ -64,6 +64,7 @@ class WorkflowPres extends React.Component {
         <Panel.Body collapsible style={{ paddingTop: 0, paddingBottom: 0 }}>
           <WorkflowStep
             config={this.props.config}
+            concepts={this.props.concepts}
             index={i}
             data={w}
           />
@@ -95,7 +96,7 @@ class WorkflowPres extends React.Component {
           </Col>
         </Row>
         <Row>
-          <Col md={2} mdOffset={5}>
+          <Col md={2} mdOffset={5} style={{ paddingBottom: '50px' }}>
             <Button bsStyle="default" bsSize="sm" onClick={this.addStep}>
               <FaPlus />
             </Button>

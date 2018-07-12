@@ -84,7 +84,6 @@ class QuestionGraphViewer extends React.Component {
       } else {
         n.label = '';
       }
-      
       return n;
     });
     return graph;
@@ -96,6 +95,7 @@ class QuestionGraphViewer extends React.Component {
 
     const options = {
       height: '250px',
+      autoResize: true,
       physics: false,
       layout: {
         hierarchical: {
@@ -138,8 +138,6 @@ class QuestionGraphViewer extends React.Component {
         selectConnectedEdges: false,
       },
     };
-    // console.log('Graphs is:', graph);
-    // border: '1px solid #d1d1d1', boxShadow: '0px 0px 5px #c3c3c3'
     return (
       <Graph
         graph={graph}

@@ -155,6 +155,7 @@ class Workflow extends React.Component {
         {this.state.isValid &&
           <WorkflowPres
             config={this.appConfig}
+            concepts={this.state.concepts}
             initWorkflow={[{}]}
           />
         }

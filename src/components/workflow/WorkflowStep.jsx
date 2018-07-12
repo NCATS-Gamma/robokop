@@ -49,11 +49,13 @@ class WorkflowStep extends React.Component {
               <NavItem eventKey="export" disabled={!this.state.enableExport}>Export</NavItem>
             </Nav>
           </Col>
-          <Col sm={10} style={{ borderLeft: 'solid 1px #b8c6db', minHeight: '500px' }}>
+          <Col sm={10} style={{ borderLeft: 'solid 1px #b8c6db', minHeight: '500px', paddingLeft: 0, paddingRight: 0 }}>
             <Tab.Content animation>
               <Tab.Pane eventKey="question">
                 <WorkflowStepQuestion
+                  height={500}
                   config={this.props.config}
+                  concepts={this.props.concepts}
                   callbackEnableNextTab={value => this.callbackMarkAnswers(value)}
                   callbackToNextTab={() => this.handleTabSelect('answers')}
                 />
@@ -61,6 +63,7 @@ class WorkflowStep extends React.Component {
               <Tab.Pane eventKey="answers">
                 <WorkflowStepAnswers
                   config={this.props.config}
+                  concepts={this.props.concepts}
                   callbackEnableNextTab={value => this.callbackMarkExport(value)}
                   callbackToNextTab={() => this.handleTabSelect('export')}
                 />
@@ -68,6 +71,7 @@ class WorkflowStep extends React.Component {
               <Tab.Pane eventKey="export">
                 <WorkflowStepExport
                   config={this.props.config}
+                  concepts={this.props.concepts}
                   callbackDone={() => console.log('New Answers have been exported')}
                 />
               </Tab.Pane>
