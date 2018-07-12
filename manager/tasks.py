@@ -48,18 +48,23 @@ def answer_question(self, question_id, user_email=None):
     question = get_question_by_id(question_id)
 
     r = requests.post(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/', json=question.to_json())
-    # wait here for response
-    if r.status_code == 204:
-        # found 0 answers
-        raise NoAnswersException("Question answering complete, found 0 answers.")
-    self.update_state(state='ANSWERS FOUND')
-    logger.info("Answers found.")
-    try:
-        answerset_json = r.json()
-    except json.decoder.JSONDecodeError as err:
-        raise ValueError(f"Response is not json: {r.text}")
+    polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{r.json()['task_id']}"
+    
+    for _ in range(60*60*24): # wait up to 1 day
+        r = requests.get(polling_url)
+        if r.json()['status'] == 'FAILURE':
+            raise RuntimeError('Question answering failed.')
+        if r.json()['status'] == 'REVOKED':
+            raise RuntimeError('Task terminated by admin.')
+        if r.json()['status'] == 'SUCCESS':
+            break
+        time.sleep(1)
+    else:
+        raise RuntimeError("Question answering has not completed after 1 day. It will continue working, but will not be monitored from here.")
 
-    answerset = Answerset(answerset_json)
+    answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{r.json()['task_id']}")
+
+    answerset = Answerset(answerset_json.json())
     question.answersets.append(answerset)
     db.session.commit()
 
