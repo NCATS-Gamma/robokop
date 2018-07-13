@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { Row, Col, Button, Alert, Navbar, Nav, NavItem } from 'react-bootstrap';
+import { Row, Col, Button, Alert } from 'react-bootstrap';
 import Select from 'react-select';
-// import FaCog from 'react-icons/lib/fa/cog';
+
 import FaWrench from 'react-icons/lib/fa/wrench';
 import FaMailReply from 'react-icons/lib/fa/mail-reply';
 import FaCheck from 'react-icons/lib/fa/check';
