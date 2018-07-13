@@ -25,7 +25,7 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-    command: "/init.sh manager builder"
+    command: "/init.sh manager builder ranker"
     hostname: robokop
 
   nlp:
