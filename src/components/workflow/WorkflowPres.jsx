@@ -4,8 +4,9 @@ import { Grid, Row, Col, Button, PanelGroup, Panel } from 'react-bootstrap';
 import FaPlus from 'react-icons/fa/plus';
 import WorkflowStep from './WorkflowStep';
 
+
 const shortid = require('shortid');
-const _ = require('lodash');
+const cloneDeep = require('lodash/cloneDeep');
 
 class WorkflowPres extends React.Component {
   constructor(props) {
@@ -42,7 +43,7 @@ class WorkflowPres extends React.Component {
   }
 
   addStep() {
-    const newWorkflow = _.cloneDeep(this.state.workflow);
+    const newWorkflow = cloneDeep(this.state.workflow);
     const newWorkflowItem = this.defaultWorkflow;
     newWorkflow.push(newWorkflowItem);
     this.steps.push(this.generateStep(newWorkflowItem, newWorkflow.length - 1));

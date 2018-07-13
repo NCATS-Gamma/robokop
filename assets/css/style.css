@@ -152,6 +152,10 @@ div.vis-tooltip-inner {
   padding: 4px 0 12px;
 }
 
+.pretty-json-container svg {
+  vertical-align: inherit !important;
+}
+
 /* Default Bootstrap Panel color */
 .panel-default > .panel-heading {
   color: #333;

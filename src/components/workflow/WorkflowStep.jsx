@@ -17,6 +17,7 @@ class WorkflowStep extends React.Component {
       enableQuestion: true,
       enableAnswers: false,
       enableExport: false,
+      question: null,
     };
 
     this.handleTabSelect = this.handleTabSelect.bind(this);
@@ -32,6 +33,9 @@ class WorkflowStep extends React.Component {
   }
   callbackMarkExport(value = true) {
     this.setState({ enableExport: value });
+  }
+  toAnswers(question) {
+    this.setState({ question }, this.handleTabSelect('export'));
   }
 
   render() {
@@ -57,13 +61,14 @@ class WorkflowStep extends React.Component {
                   config={this.props.config}
                   concepts={this.props.concepts}
                   callbackEnableNextTab={value => this.callbackMarkAnswers(value)}
-                  callbackToNextTab={() => this.handleTabSelect('answers')}
+                  callbackToNextTab={(newQuestion) => this.toAnswers(newQuestion)}
                 />
               </Tab.Pane>
               <Tab.Pane eventKey="answers">
                 <WorkflowStepAnswers
                   config={this.props.config}
                   concepts={this.props.concepts}
+                  question={this.state.question}
                   callbackEnableNextTab={value => this.callbackMarkExport(value)}
                   callbackToNextTab={() => this.handleTabSelect('export')}
                 />

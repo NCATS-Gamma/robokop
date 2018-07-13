@@ -117,7 +117,7 @@ class MachineQuestionEditor extends React.Component {
     return (
       <div style={containerStyle}>
         <SplitterLayout>
-          <div style={{ fontSize: 12, paddingTop: '10px', lineHeight: 1 }}>
+          <div style={{ paddingTop: '10px' }}>
             <ReactJson
               name={false}
               theme="rjv-default"

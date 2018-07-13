@@ -4,8 +4,7 @@ import QuestionDesign from '../shared/QuestionDesign';
 
 class WorkflowStepQuestion extends React.Component {
   next(newQuestion) {
-    console.log('Getting answers for:', newQuestion);
-    // this.callbackToNextTab(newQuestion);
+    this.callbackToNextTab(newQuestion);
   }
 
   render() {

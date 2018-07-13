@@ -32,6 +32,7 @@ class QuestionDesign extends React.Component {
     this.saveEdit = this.saveEdit.bind(this);
     this.editorUpdate = this.editorUpdate.bind(this);
     this.onNewQuestionTextOption = this.onNewQuestionTextOption.bind(this);
+    this.next = this.next.bind(this);
 
     this.getAnswers = this.getAnswers.bind(this);
     this.getMachineQuestion = this.getMachineQuestion.bind(this);
