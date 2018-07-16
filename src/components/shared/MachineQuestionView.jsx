@@ -134,24 +134,47 @@ class MachineQuestionView extends React.Component {
       height = `${height}px`;
     }
 
+    // default layout (LR)
+    let physics = false;
+    let layout = {
+      randomSeed: 0,
+      hierarchical: {
+        enabled: true,
+        levelSeparation: 200,
+        nodeSpacing: 200,
+        treeSpacing: 200,
+        blockShifting: true,
+        edgeMinimization: true,
+        parentCentralization: true,
+        direction: 'LR',
+        sortMethod: 'directed',
+      },
+    };
+
+    // Switch to a simple quick spring layout without overlap
+    if (graph.nodes.length > 10) {
+      physics = {
+        minVelocity: 0.75,
+        barnesHut: {
+          gravitationalConstant: -1000,
+          centralGravity: 0.3,
+          springLength: 200,
+          springConstant: 0.05,
+          damping: 0.95,
+          avoidOverlap: 1,
+        },
+      };
+      layout = {
+        randomSeed: 0,
+        improvedLayout: true,
+      };
+    }
+
     return ({
       height,
       autoResize: true,
-      layout: {
-        randomSeed: 0,
-        hierarchical: {
-          enabled: true,
-          levelSeparation: 500,
-          nodeSpacing: 200,
-          treeSpacing: 200,
-          blockShifting: true,
-          edgeMinimization: true,
-          parentCentralization: true,
-          direction: 'LR',
-          sortMethod: 'directed',
-        },
-      },
-      physics: false,
+      layout,
+      physics,
       edges: {
         color: {
           color: '#000',
