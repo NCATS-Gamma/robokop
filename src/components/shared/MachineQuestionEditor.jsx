@@ -181,7 +181,7 @@ class MachineQuestionEditor extends React.Component {
             <div style={{ position: 'absolute', top: 5, left: 40 }}>
               <span style={{ fontSize: '18px' }} title="Load">
                 <Dropzone
-                  onDrop={(acceptedFiles, rejectedFiles) => this.onDrop(acceptedFiles, rejectedFiles) }
+                  onDrop={(acceptedFiles, rejectedFiles) => this.onDrop(acceptedFiles, rejectedFiles)}
                   multiple={false}
                   style={{
                     border: 'none',
@@ -198,7 +198,7 @@ class MachineQuestionEditor extends React.Component {
             </div>
             <div style={{ position: 'absolute', top: 5, right: 15 }}>
               <span style={{ fontSize: '18px', color: isValid ? '#000' : '#ddd' }} title="Save Changes">
-                <FaCheck style={{ cursor: (!thinking && isValid) ? 'pointer' : 'default' }} onClick={(!thinking && isValid) ? this.onSave : () => {} } />
+                <FaCheck style={{ cursor: (!thinking && isValid) ? 'pointer' : 'default' }} onClick={(!thinking && isValid) ? this.onSave : () => {}} />
               </span>
             </div>
           </div>

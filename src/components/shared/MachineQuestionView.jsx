@@ -152,7 +152,7 @@ class MachineQuestionView extends React.Component {
     };
 
     // Switch to a simple quick spring layout without overlap
-    if (graph.nodes.length > 10) {
+    if ((graph.nodes.length > 10) || (graph.edges.length >= graph.nodes.length)) {
       physics = {
         minVelocity: 0.75,
         barnesHut: {
