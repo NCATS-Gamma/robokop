@@ -1,7 +1,10 @@
 import React from 'react';
 import ReactJson from 'react-json-view';
 
-import { Row, Col, ButtonToolbar, Button } from 'react-bootstrap';
+import { Row, Col } from 'react-bootstrap';
+import FaMailReply from 'react-icons/lib/fa/mail-reply';
+import FaCheck from 'react-icons/lib/fa/check';
+
 import SplitterLayout from 'react-splitter-layout';
 import MachineQuestionView from './MachineQuestionView';
 
@@ -20,6 +23,9 @@ class MachineQuestionEditor extends React.Component {
     this.onAdd = this.onAdd.bind(this);
     this.onDelete = this.onDelete.bind(this);
     this.updateQuestion = this.updateQuestion.bind(this);
+    this.onSave = this.onSave.bind(this);
+    this.onCancel = this.onCancel.bind(this);
+   
   }
 
   componentDidMount() {
@@ -106,52 +112,87 @@ class MachineQuestionEditor extends React.Component {
     this.props.onUpdate({ data, isValid });
     this.setState({ data, isValid, errorMessage });
   }
+  onCancel() {
+    this.props.callbackCancel(); // Nothing special just call the callback
+  }
+  onSave() {
+    // Call the callback with local state
+    this.props.callbackSave({ data: this.state.data, isValid: this.state.isValid });
+  }
 
   render() {
+    const topBarHeight = 30;
     const { isValid, errorMessage } = this.state;
     const fullHeight = this.props.height;
-    let containerStyle = {};
+    let innerHeight = fullHeight;
+    let containerStyle = { position: 'relative' };
     if (!(fullHeight === '100%')) {
-      containerStyle = { minHeight: fullHeight, maxHeight: fullHeight, overflowY: 'scroll' };
+      if (!(typeof innerHeight === 'string' || innerHeight instanceof String)) {
+        // innerHeight is not string subtract topBarHeight for the bar height
+        innerHeight -= topBarHeight;
+      }
+      containerStyle = { ...containerStyle, height: innerHeight, overflowY: 'hidden' };
     }
+
     return (
-      <div style={containerStyle}>
-        <SplitterLayout>
-          <div style={{ paddingTop: '10px' }}>
-            <ReactJson
-              name={false}
-              theme="rjv-default"
-              collapseStringsAfterLength={15}
-              indentWidth={2}
-              iconStyle="triangle"
-              src={this.state.data}
-              onEdit={this.onEdit}
-              onAdd={this.onAdd}
-              onDelete={this.onDelete}
-            />
+      <div style={{ height: fullHeight }}>
+        <div className="staticTop" style={{ marginLeft: -15, marginRight: -15, height: topBarHeight, boxShadow: '0px 0px 5px 0px #b3b3b3' }}>
+          <div style={{ position: 'relative' }}>
+            <div style={{ position: 'absolute', top: 5, left: 15 }}>
+              <span style={{ fontSize: '18px' }} title="Revert">
+                <FaMailReply style={{ cursor: 'pointer' }} onClick={this.onCancel} />
+              </span>
+            </div>
+            <div style={{ position: 'absolute', marginLeft: 'auto', left: '50%' }}>
+              <div style={{ position: 'relative', top: 5, left: '-50%', color: '#777' }}>
+                Graph Template Editor
+              </div>
+            </div>
+            <div style={{ position: 'absolute', top: 5, right: 15 }}>
+              <span style={{ fontSize: '18px', color: isValid ? '#000' : '#ddd' }} title="Save Changes">
+                <FaCheck style={{ cursor: isValid ? 'pointer' : 'default' }} onClick={isValid ? this.onSave : () => {} } />
+              </span>
+            </div>
           </div>
-          <div>
-            {isValid &&
-              <MachineQuestionView
-                height={fullHeight}
-                concepts={this.props.concepts}
-                question={this.state.data.machineQuestion}
+        </div>
+        <div style={containerStyle}>
+          <SplitterLayout>
+            <div style={{ paddingTop: '10px' }}>
+              <ReactJson
+                name={false}
+                theme="rjv-default"
+                collapseStringsAfterLength={15}
+                indentWidth={2}
+                iconStyle="triangle"
+                src={this.state.data}
+                onEdit={this.onEdit}
+                onAdd={this.onAdd}
+                onDelete={this.onDelete}
               />
-            }
-            {!isValid &&
-              <Row>
-                <Col md={12} style={{ padding: '15px' }}>
-                  <h4>
-                    This graph template is not valid.
-                  </h4>
-                  <p>
-                    {errorMessage}
-                  </p>
-                </Col>
-              </Row>
-            }
-          </div>
-        </SplitterLayout>
+            </div>
+            <div>
+              {isValid &&
+                <MachineQuestionView
+                  height={innerHeight}
+                  concepts={this.props.concepts}
+                  question={this.state.data.machineQuestion}
+                />
+              }
+              {!isValid &&
+                <Row>
+                  <Col md={12} style={{ padding: '15px' }}>
+                    <h4>
+                      This graph template is not valid.
+                    </h4>
+                    <p>
+                      {errorMessage}
+                    </p>
+                  </Col>
+                </Row>
+              }
+            </div>
+          </SplitterLayout>
+        </div>
       </div>
     );
   }
@@ -163,6 +204,8 @@ MachineQuestionEditor.defaultProps = {
     nodes: [],
     edges: [],
   },
+  callbackSave: () => {},
+  callbackCancel: () => {},
   onUpdate: ({newMachineQuestion, isValid}) => {},
 };
 

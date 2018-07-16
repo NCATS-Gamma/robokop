@@ -4,8 +4,6 @@ import { Row, Col, Button, Alert } from 'react-bootstrap';
 import Select from 'react-select';
 
 import FaWrench from 'react-icons/lib/fa/wrench';
-import FaMailReply from 'react-icons/lib/fa/mail-reply';
-import FaCheck from 'react-icons/lib/fa/check';
 
 import Loading from '../Loading';
 import MachineQuestionView from './MachineQuestionView';
@@ -22,15 +20,12 @@ class QuestionDesign extends React.Component {
       questionText: {},
       questionValue: null,
       machineQuestion: { nodes: [], edges: [] },
-      editedQuestionData: { question: '', machineQuestion: { nodes: [], edges: [] } },
-      editedMachineQuestionIsValid: false,
     };
 
     this.handleChangeQuestion = this.handleChangeQuestion.bind(this);
     this.toMain = this.toMain.bind(this);
     this.toEdit = this.toEdit.bind(this);
     this.saveEdit = this.saveEdit.bind(this);
-    this.editorUpdate = this.editorUpdate.bind(this);
     this.onNewQuestionTextOption = this.onNewQuestionTextOption.bind(this);
     this.next = this.next.bind(this);
 
@@ -40,10 +35,14 @@ class QuestionDesign extends React.Component {
 
     this.questionExamples = [
       { value: 'CD', label: 'What genes affect ebola?' },
-      { value: 'GC', label: 'What genes are targeted by metformin?' },
+      { value: 'COP', label: 'What is the COP for imatinib and asthma?' },
+      { value: 'CPD', label: 'What genetic conditions protect against ebola?' },
     ];
   }
 
+  onNewQuestionTextOption(newOption) {
+    this.questionExamples.push(newOption);
+  }
   getMachineQuestion() {
     this.setState({ thinking: true }, () => this.fetchMachineQuestion(this.state.questionText));
   }
@@ -59,32 +58,29 @@ class QuestionDesign extends React.Component {
     );
   }
 
-  onNewQuestionTextOption(newOption) {
-    this.questionExamples.push(newOption)
-  }
-
   toMain() {
     this.setState({ show: 'main' });
   }
   toEdit() {
-    this.setState({
-      editedQuestionData: {
-        question: this.state.question,
-        machineQuestion: this.state.machineQuestion,
-      },
-      editedMachineQuestionIsValid: true,
-      show: 'edit',
-    });
+    this.setState({ show: 'edit' });
   }
-  saveEdit() {
-    const newQuestionText = this.state.editedQuestionData.question;
-    const optionIndex = this.questionExamples.findIndex(opt => opt.value === this.state.questionValue.value);
-    this.questionExamples[optionIndex].label = newQuestionText;
-    this.setState({
-      questionText: newQuestionText,
-      machineQuestion: this.state.editedQuestionData.machineQuestion,
-      show: 'main',
-    });
+  saveEdit({ data, isValid }) {
+    if (isValid) {
+      const newQuestionText = data.question;
+      // Find the Select option index corresponding to this selection (over write the label appropriately)
+      const optionIndex = this.questionExamples.findIndex(opt => opt.value === this.state.questionValue.value);
+      this.questionExamples[optionIndex].label = newQuestionText;
+
+      // Set the data that came back from the editor
+      this.setState({
+        questionText: newQuestionText,
+        machineQuestion: data.machineQuestion,
+        show: 'main',
+      });
+      return;
+    }
+    // Somehow an inValid question came back -- Abort
+    this.setState({ show: 'main' });
   }
   handleChangeQuestion(newValue) {
     // Callback method for react select
@@ -101,12 +97,7 @@ class QuestionDesign extends React.Component {
       machineQuestion: { nodes: [], edges: [] },
     });
   }
-  editorUpdate({ data, isValid }) {
-    // Each time an edit is made in the editor this gets called
-    // Since this object is in charge of the cancel and save buttons we keep track of the edited state
-    // We can also disable the save button if it's not valid.
-    this.setState({ editedQuestionData: data, editedMachineQuestionIsValid: isValid });
-  }
+
   next() {
     this.props.nextCallback({ question: this.state.questionText, machineQuestion: this.state.machineQuestion });
   }
@@ -119,7 +110,6 @@ class QuestionDesign extends React.Component {
     const { thinking } = this.state;
 
     const fullHeight = this.props.height;
-    let editorHeight = fullHeight;
     let containerStyle = { paddingLeft: '15px', paddingRight: '15px' };
     if (!(fullHeight === '100%')) {
       containerStyle = {
@@ -129,14 +119,7 @@ class QuestionDesign extends React.Component {
         overflowY: 'scroll',
         overflowX: 'hidden',
       };
-
-      if (!(typeof editorHeight === 'string' || editorHeight instanceof String)) {
-        // editorHeight is not string subtract 30 for the bar height
-        editorHeight -= 30;
-      }
     }
-    const { editedMachineQuestionIsValid } = this.state;
-
     return (
       <div style={containerStyle}>
         {showMain &&
@@ -221,38 +204,19 @@ class QuestionDesign extends React.Component {
           </div>
         }
         {showEdit &&
-          <div>
-            <div className="staticTop" style={{ marginLeft: -15, marginRight: -15, minHeight: 30, boxShadow: '0px 0px 5px 0px #b3b3b3' }}>
-              <div style={{ position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 5, left: 15 }}>
-                  <span style={{ fontSize: '18px' }} title="Revert">
-                    <FaMailReply style={{ cursor: 'pointer' }} onClick={this.toMain} />
-                  </span>
-                </div>
-                <div style={{ position: 'absolute', marginLeft: 'auto', left: '50%' }}>
-                  <div style={{ position: 'relative', top: 5, left: '-50%', color: '#777' }}>
-                    Graph Template Editor
-                  </div>
-                </div>
-                <div style={{ position: 'absolute', top: 5, right: 15 }}>
-                  <span style={{ fontSize: '18px', color: editedMachineQuestionIsValid ? '#000' : '#ddd' }} title="Accept Changes">
-                    <FaCheck style={{ cursor: editedMachineQuestionIsValid ? 'pointer' : 'default' }} onClick={editedMachineQuestionIsValid ? this.saveEdit : () => {} } />
-                  </span>
-                </div>
-              </div>
-            </div>
-            <Row>
-              <Col md={12}>
-                <MachineQuestionEditor
-                  height={editorHeight}
-                  concepts={this.props.concepts}
-                  question={this.state.questionText}
-                  machineQuestion={this.state.machineQuestion}
-                  onUpdate={this.editorUpdate}
-                />
-              </Col>
-            </Row>
-          </div>
+          <Row>
+            <Col md={12}>
+              <MachineQuestionEditor
+                height={fullHeight}
+                concepts={this.props.concepts}
+                question={this.state.questionText}
+                machineQuestion={this.state.machineQuestion}
+                // onUpdate={this.editorUpdate}
+                callbackSave={this.saveEdit}
+                callbackCancel={this.toMain}
+              />
+            </Col>
+          </Row>
         }
       </div>
     );
