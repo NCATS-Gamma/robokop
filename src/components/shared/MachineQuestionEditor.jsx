@@ -4,9 +4,12 @@ import ReactJson from 'react-json-view';
 import { Row, Col } from 'react-bootstrap';
 import FaMailReply from 'react-icons/lib/fa/mail-reply';
 import FaCheck from 'react-icons/lib/fa/check';
+import Dropzone from 'react-dropzone';
+import FaCloudUpload from 'react-icons/lib/fa/cloud-upload';
 
 import SplitterLayout from 'react-splitter-layout';
 import MachineQuestionView from './MachineQuestionView';
+import Loading from '../Loading';
 
 class MachineQuestionEditor extends React.Component {
   constructor(props) {
@@ -15,6 +18,7 @@ class MachineQuestionEditor extends React.Component {
     this.state = {
       data: { question: '', machineQuestion: { nodes: [], edges: [] } },
       isValid: true,
+      thinking: false,
       errorMessage: '',
     };
 
@@ -25,7 +29,7 @@ class MachineQuestionEditor extends React.Component {
     this.updateQuestion = this.updateQuestion.bind(this);
     this.onSave = this.onSave.bind(this);
     this.onCancel = this.onCancel.bind(this);
-   
+    this.onDrop = this.onDrop.bind(this);
   }
 
   componentDidMount() {
@@ -120,9 +124,40 @@ class MachineQuestionEditor extends React.Component {
     this.props.callbackSave({ data: this.state.data, isValid: this.state.isValid });
   }
 
+  onDrop(acceptedFiles, rejectedFiles) {
+    acceptedFiles.forEach((file) => {
+      const fr = new window.FileReader();
+      fr.onloadstart = () => this.setState({ thinking: true });
+      fr.onloadend = () => this.setState({ thinking: false });
+      fr.onload = (e) => {
+        const fileContents = e.target.result;
+        try {
+          const object = JSON.parse(fileContents);
+          const { data } = this.state;
+          if ('question' in object) {
+            data.question = object.question;
+          }
+          if ('machineQuestion' in object) {
+            data.machineQuestion = object.machineQuestion;
+          }
+
+          this.setState({ data });
+        } catch (err) {
+          console.log(err);
+          window.alert('Failed to read this graph template. Are you sure this is valid?');
+        }
+      };
+      fr.onerror = () => {
+        window.alert('Sorry but there was a problem uploading the file. The file may be invalid JSON.');
+      }
+      fr.readAsText(file);
+    });
+  }
+
+
   render() {
     const topBarHeight = 30;
-    const { isValid, errorMessage } = this.state;
+    const { isValid, errorMessage, thinking } = this.state;
     const fullHeight = this.props.height;
     let innerHeight = fullHeight;
     let containerStyle = { position: 'relative' };
@@ -140,7 +175,20 @@ class MachineQuestionEditor extends React.Component {
           <div style={{ position: 'relative' }}>
             <div style={{ position: 'absolute', top: 5, left: 15 }}>
               <span style={{ fontSize: '18px' }} title="Revert">
-                <FaMailReply style={{ cursor: 'pointer' }} onClick={this.onCancel} />
+                <FaMailReply style={{ cursor: !thinking ? 'pointer' : 'default' }} onClick={!thinking ? this.onCancel : () => {}} />
+              </span>
+            </div>
+            <div style={{ position: 'absolute', top: 5, left: 40 }}>
+              <span style={{ fontSize: '18px' }} title="Load">
+                <Dropzone
+                  onDrop={(acceptedFiles, rejectedFiles) => this.onDrop(acceptedFiles, rejectedFiles) }
+                  multiple={false}
+                  style={{
+                    border: 'none',
+                  }}
+                >
+                  <FaCloudUpload style={{ cursor: !thinking ? 'pointer' : 'default' }} />
+                </Dropzone>
               </span>
             </div>
             <div style={{ position: 'absolute', marginLeft: 'auto', left: '50%' }}>
@@ -150,48 +198,53 @@ class MachineQuestionEditor extends React.Component {
             </div>
             <div style={{ position: 'absolute', top: 5, right: 15 }}>
               <span style={{ fontSize: '18px', color: isValid ? '#000' : '#ddd' }} title="Save Changes">
-                <FaCheck style={{ cursor: isValid ? 'pointer' : 'default' }} onClick={isValid ? this.onSave : () => {} } />
+                <FaCheck style={{ cursor: (!thinking && isValid) ? 'pointer' : 'default' }} onClick={(!thinking && isValid) ? this.onSave : () => {} } />
               </span>
             </div>
           </div>
         </div>
         <div style={containerStyle}>
-          <SplitterLayout>
-            <div style={{ paddingTop: '10px' }}>
-              <ReactJson
-                name={false}
-                theme="rjv-default"
-                collapseStringsAfterLength={15}
-                indentWidth={2}
-                iconStyle="triangle"
-                src={this.state.data}
-                onEdit={this.onEdit}
-                onAdd={this.onAdd}
-                onDelete={this.onDelete}
-              />
-            </div>
-            <div>
-              {isValid &&
-                <MachineQuestionView
-                  height={innerHeight}
-                  concepts={this.props.concepts}
-                  question={this.state.data.machineQuestion}
+          {!thinking &&
+            <SplitterLayout>
+              <div style={{ paddingTop: '10px' }}>
+                <ReactJson
+                  name={false}
+                  theme="rjv-default"
+                  collapseStringsAfterLength={15}
+                  indentWidth={2}
+                  iconStyle="triangle"
+                  src={this.state.data}
+                  onEdit={this.onEdit}
+                  onAdd={this.onAdd}
+                  onDelete={this.onDelete}
                 />
-              }
-              {!isValid &&
-                <Row>
-                  <Col md={12} style={{ padding: '15px' }}>
-                    <h4>
-                      This graph template is not valid.
-                    </h4>
-                    <p>
-                      {errorMessage}
-                    </p>
-                  </Col>
-                </Row>
-              }
-            </div>
-          </SplitterLayout>
+              </div>
+              <div>
+                {isValid &&
+                  <MachineQuestionView
+                    height={innerHeight}
+                    concepts={this.props.concepts}
+                    question={this.state.data.machineQuestion}
+                  />
+                }
+                {!isValid &&
+                  <Row>
+                    <Col md={12} style={{ padding: '15px' }}>
+                      <h4>
+                        This graph template is not valid.
+                      </h4>
+                      <p>
+                        {errorMessage}
+                      </p>
+                    </Col>
+                  </Row>
+                }
+              </div>
+            </SplitterLayout>
+          }
+          {thinking &&
+            <Loading />
+          }
         </div>
       </div>
     );

@@ -29,7 +29,6 @@ class QuestionDesign extends React.Component {
     this.onNewQuestionTextOption = this.onNewQuestionTextOption.bind(this);
     this.next = this.next.bind(this);
 
-    this.getAnswers = this.getAnswers.bind(this);
     this.getMachineQuestion = this.getMachineQuestion.bind(this);
     this.fetchMachineQuestion = this.fetchMachineQuestion.bind(this);
 
@@ -45,10 +44,6 @@ class QuestionDesign extends React.Component {
   }
   getMachineQuestion() {
     this.setState({ thinking: true }, () => this.fetchMachineQuestion(this.state.questionText));
-  }
-  getAnswers() {
-    // Do stuff that is important... then, possibly
-    this.props.callbackEnableNextTab();
   }
   fetchMachineQuestion(questionText) {
     this.props.nlpParse(
