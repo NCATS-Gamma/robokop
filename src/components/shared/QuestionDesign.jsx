@@ -1,11 +1,11 @@
 import React from 'react';
 
 import { Row, Col, Button, Alert } from 'react-bootstrap';
-import Select from 'react-select';
 
 import FaWrench from 'react-icons/lib/fa/wrench';
 
 import Loading from '../Loading';
+import InputOptions from './InputOptions';
 import MachineQuestionView from './MachineQuestionView';
 import MachineQuestionEditor from './MachineQuestionEditor';
 
@@ -17,31 +17,50 @@ class QuestionDesign extends React.Component {
       show: 'main', // main, edit
       status: 'none', // none, good, failure
       thinking: false,
+      initialQuestionText: null,
       questionText: {},
-      questionValue: null,
       machineQuestion: { nodes: [], edges: [] },
     };
 
+    this.onInitialize = this.onInitialize.bind(this);
+
+    this.handleSelectQuestion = this.handleSelectQuestion.bind(this);
     this.handleChangeQuestion = this.handleChangeQuestion.bind(this);
+
     this.toMain = this.toMain.bind(this);
     this.toEdit = this.toEdit.bind(this);
     this.saveEdit = this.saveEdit.bind(this);
-    this.onNewQuestionTextOption = this.onNewQuestionTextOption.bind(this);
     this.next = this.next.bind(this);
 
     this.getMachineQuestion = this.getMachineQuestion.bind(this);
     this.fetchMachineQuestion = this.fetchMachineQuestion.bind(this);
 
     this.questionExamples = [
-      { value: 'CD', label: 'What genes affect ebola?' },
-      { value: 'COP', label: 'What is the COP for imatinib and asthma?' },
-      { value: 'CPD', label: 'What genetic conditions protect against ebola?' },
+      'What genes affect ebola?',
+      'What is the COP for imatinib and asthma?',
+      'What genetic conditions protect against ebola?',
     ];
   }
 
-  onNewQuestionTextOption(newOption) {
-    this.questionExamples.push(newOption);
+  componentDidMount() {
+    this.onInitialize(this.props);
   }
+
+  onInitialize(props) {
+    // On initialization we might have an question data from a fork
+    // Or it could be null
+
+    // At this point we need to set the query to match the previous question
+    if (props.initializationData && (typeof props.initializationData === 'object') && ('question' in props.initializationData) && ('machineQuestion' in props.initializationData)) {
+      if (props.initializationData.question && props.initializationData.machineQuestion) {
+        // We have the data to prepopulate the question designer
+        window.alert('Forking is not yet supported again!');
+        console.log(props.initializationData);
+        this.setState({ initialQuestionText: props.initializationData.question });
+      }
+    }
+  }
+
   getMachineQuestion() {
     this.setState({ thinking: true }, () => this.fetchMachineQuestion(this.state.questionText));
   }
@@ -62,13 +81,10 @@ class QuestionDesign extends React.Component {
   saveEdit({ data, isValid }) {
     if (isValid) {
       const newQuestionText = data.question;
-      // Find the Select option index corresponding to this selection (over write the label appropriately)
-      const optionIndex = this.questionExamples.findIndex(opt => opt.value === this.state.questionValue.value);
-      this.questionExamples[optionIndex].label = newQuestionText;
-
       // Set the data that came back from the editor
       this.setState({
         questionText: newQuestionText,
+        initialQuestionText: newQuestionText, // Also set this so when we remount the combobox
         machineQuestion: data.machineQuestion,
         show: 'main',
       });
@@ -78,16 +94,21 @@ class QuestionDesign extends React.Component {
     this.setState({ show: 'main' });
   }
   handleChangeQuestion(newValue) {
-    // Callback method for react select
-    if (newValue && 'label' in newValue) {
+    // We also change the initialQuestionText for the case when we remount for somereason.
+    this.setState({ questionText: newValue, machineQuestion: { nodes: [], edges: [] }, initialQuestionText: newValue });
+  }
+  handleSelectQuestion(newValue) {
+    // When you hit enter or click on an option in the comboox
+    // Check if what we typed matches one of the options
+    if (newValue) {
       // We got a valid natural language quesiton we need to attempt to parse it into a machine question
-      this.setState({ status: 'none', questionValue: newValue, questionText: newValue.label }, this.getMachineQuestion);
+      this.setState({ status: 'none', questionText: newValue, initialQuestionText: newValue }, this.getMachineQuestion);
       return;
     }
     // A clear or bunk value, abort
     this.setState({
-      questionValue: null,
       questionText: '',
+      initialQuestionText: '',
       status: 'none',
       machineQuestion: { nodes: [], edges: [] },
     });
@@ -105,6 +126,7 @@ class QuestionDesign extends React.Component {
     const { thinking } = this.state;
 
     const fullHeight = this.props.height;
+    let viewHeight = 300;
     let containerStyle = { paddingLeft: '15px', paddingRight: '15px' };
     if (!(fullHeight === '100%')) {
       containerStyle = {
@@ -115,6 +137,16 @@ class QuestionDesign extends React.Component {
         overflowX: 'hidden',
       };
     }
+    if (!(typeof fullHeight === 'string' || fullHeight instanceof String)) {
+      // innerHeight is not string subtract topBarHeight for the bar height
+      viewHeight = Math.max(viewHeight, fullHeight - 300);
+    }
+
+    let inputOptions = this.questionExamples;
+    if (typeof this.state.questionText === 'string' || this.state.questionText instanceof String) {
+      inputOptions = [this.state.questionText].concat(this.questionExamples);
+    }
+
     return (
       <div style={containerStyle}>
         {showMain &&
@@ -122,17 +154,14 @@ class QuestionDesign extends React.Component {
             <Row style={{ paddingTop: '20px' }}>
               <Col md={12}>
                 <div id="QuestionInput">
-                  <Select.Creatable
-                    name="Question"
+                  <InputOptions
+                    defaultValue={this.state.initialQuestionText}
+                    options={inputOptions}
                     placeholder="Enter a Biomedical Question"
-                    value={this.state.questionValue}
-                    options={this.questionExamples}
                     onChange={this.handleChangeQuestion}
-                    onNewOptionClick={this.onNewQuestionTextOption}
-                    clearable
-                    autoFocus
-                    disabled={thinking}
-                    promptTextCreator={() => ''}
+                    onSelect={this.handleSelectQuestion}
+                    busy={thinking}
+                    disable={thinking}
                   />
                 </div>
               </Col>
@@ -181,7 +210,7 @@ class QuestionDesign extends React.Component {
                 <Row>
                   <Col md={12}>
                     <MachineQuestionView
-                      height={300}
+                      height={viewHeight}
                       question={this.state.machineQuestion}
                       concepts={this.props.concepts}
                     />
@@ -219,10 +248,10 @@ class QuestionDesign extends React.Component {
 }
 
 QuestionDesign.defaultProps = {
+  initializationData: null,
   height: '100%',
   nextText: 'Get Answers',
   nextCallback: () => {},
-  inputData: {},
   variables: {},
 };
 // nlpParse - is required

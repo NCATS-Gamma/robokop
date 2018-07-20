@@ -3,6 +3,12 @@ import React from 'react';
 import QuestionDesign from '../shared/QuestionDesign';
 
 class WorkflowStepQuestion extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.next = this.next.bind(this);
+  }
+
   next(newQuestion) {
     this.callbackToNextTab(newQuestion);
   }

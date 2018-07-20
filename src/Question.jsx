@@ -148,7 +148,7 @@ class Question extends React.Component {
   }
   notifyRefresh(taskId) {
     this.appConfig.taskStatus(taskId, (data) => {
-      if (data.state == 'SUCCESS') {
+      if (data.state === 'SUCCESS') {
         this.notificationSystem.addNotification({
           title: 'Knowledge Graph Update Complete',
           message: 'We finished updating the knowledge graph for this question. Go check it out!',
@@ -156,7 +156,7 @@ class Question extends React.Component {
           dismissible: 'click',
           position: 'tr',
         });
-      } else if (data.state == 'REVOKED') {
+      } else if (data.state === 'REVOKED') {
         console.log(taskId, data);
         this.notificationSystem.addNotification({
           title: 'Knowledge Graph Update Terminated',
