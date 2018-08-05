@@ -171,3 +171,9 @@ def get_question_by_id(id):
     if not question:
         raise KeyError("No such question.")
     return question
+
+def get_task_by_id(id):
+    task = db.session.query(Task).filter(Task.id == id).first()
+    if not task:
+        raise KeyError("No such task.")
+    return task

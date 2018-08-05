@@ -19,7 +19,7 @@ import manager.api.q_api
 import manager.api.a_api
 import manager.api.feedback_api
 from manager.tasks import celery
-from manager.question import list_tasks
+from manager.question import list_tasks, get_task_by_id
 
 class Tasks(Resource):
     def get(self):
@@ -56,13 +56,8 @@ class TaskStatus(Resource):
                 schema:
                     $ref: '#/definitions/Task'
         """
-        r = redis.Redis(
-            host=os.environ['RESULTS_HOST'],
-            port=os.environ['RESULTS_PORT'],
-            db=os.environ['MANAGER_RESULTS_DB'])
-        value = r.get(f'celery-task-meta-{task_id}')
-        task = json.loads(value) if value is not None else None
-        return task
+        
+        return get_task_by_id(task_id).to_json()
 
     def delete(self, task_id):
         """Revoke task
