@@ -2,6 +2,7 @@
 import os
 import logging
 import re
+import json
 
 import pika
 
@@ -39,14 +40,16 @@ def get_messages():
     for method_frame, properties, body in channel.consume('manager_log', inactivity_timeout=0.0001):
         if body is None:
             break
-        body = body.decode()
+        body = json.loads(body.decode())
         headers = properties.headers
 
         qid = re.match(r"[\[(]'(.*)',?[)\]]", headers['argsrepr']).group(1)
 
+        initiator = body[1]['user_email']
+
         # create task
         # it will be stored in the postgres database
-        Task(id=headers['id'], question_id=qid, type=headers['task'])
+        Task(id=headers['id'], question_id=qid, type=headers['task'], initiator=initiator)
         logger.debug(f'Got task {headers["id"]}')
 
         # print(f" [x] Received {body}")

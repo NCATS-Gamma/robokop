@@ -93,6 +93,7 @@ class Task(db.Model):
     __tablename__ = 'task'
     id = Column(String, primary_key=True)
     type = Column(String)
+    initiator = Column(String)
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
     question_id = Column(String, ForeignKey('question.id'))
 
@@ -107,11 +108,11 @@ class Task(db.Model):
         # initialize all properties
         self.id = None
         self.type = None
+        self.initiator = None
         self.question_id = None
 
         # apply json properties to existing attributes
         attributes = self.__dict__.keys()
-        logger.debug(attributes)
         if args:
             struct = args[0]
             for key in struct:
