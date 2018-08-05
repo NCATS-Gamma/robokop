@@ -30,7 +30,6 @@ class Question extends React.Component {
       prevRunningTasks: [],
       refreshBusy: false,
       answerBusy: false,
-      initializerBusy: false,
       isValid: false,
     };
 
@@ -98,42 +97,26 @@ class Question extends React.Component {
 
     const refreshBusy = tasks.updaters.length > 0;
     const answerBusy = tasks.answerers.length > 0;
-    const initializerBusy = false;
 
     const refreshFinished = !refreshBusy && this.state.refreshBusy;
     const answerFinished = !answerBusy && this.state.answerBusy;
-    const initializerFinished = false;
 
     this.setState({
       refreshBusy,
       answerBusy,
-      initializerBusy,
     });
 
     // If someing is going on, we will ask again soon
-    if (refreshBusy || answerBusy || initializerBusy) {
+    if (refreshBusy || answerBusy) {
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
-    if (initializerFinished) {
-      this.appConfig.questionData(
-        this.props.id,
-        data => this.setState({
-          answersets: data.answerset_list,
-        }),
-      );
-      if (('initializers' in prevTasks) && Array.isArray(prevTasks.initializers) && (prevTasks.initializers.length > 0) && ('uuid' in prevTasks.initializers[0])) {
-        this.notifyInitializer(prevTasks.initializers[0].uuid);
-      }
-      setTimeout(this.pullTasks, this.taskPollingWaitTime);
-      return;
-    }
-    if (refreshFinished && !initializerBusy) {
+    if (refreshFinished) {
       if (('updaters' in prevTasks) && Array.isArray(prevTasks.updaters) && (prevTasks.updaters.length > 0) && ('uuid' in prevTasks.updaters[0])) {
         this.notifyRefresh(prevTasks.updaters[0].uuid);
       }
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
-    if (answerFinished && !initializerBusy) {
+    if (answerFinished) {
       this.appConfig.questionData(
         this.props.id,
         data => this.setState({
@@ -574,7 +557,6 @@ class Question extends React.Component {
               concepts={this.state.concepts}
               refreshBusy={this.state.refreshBusy}
               answerBusy={this.state.answerBusy}
-              initializerBusy={this.state.initializerBusy}
               enableNewAnswersets={this.appConfig.enableNewAnswersets}
               enableNewQuestions={this.appConfig.enableNewQuestions}
               enableQuestionRefresh={this.appConfig.enableQuestionRefresh}
