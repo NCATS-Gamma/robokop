@@ -15,7 +15,7 @@ from flask_security.core import current_user
 
 from manager.question import Question, get_question_by_id
 from manager.tasks import answer_question, update_kg
-from manager.util import getAuthData, get_tasks
+from manager.util import getAuthData
 from manager.setup import db
 from manager.logging_config import logger
 

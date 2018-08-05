@@ -11,10 +11,10 @@ from flask import jsonify, request, abort
 from flask_security import auth_required, current_user
 from flask_restful import Resource
 
-from manager.util import getAuthData, get_tasks
-from manager.question import list_questions, list_questions_by_username, Question
+from manager.util import getAuthData
+from manager.question import list_questions, list_questions_by_username, Question, Task
 from manager.tasks import update_kg, answer_question
-from manager.setup import api
+from manager.setup import api, db
 from manager.user import User, get_user_by_email
 import manager.logging_config
 
@@ -64,7 +64,7 @@ class QuestionsAPI(Resource):
         qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
         if not request.json['name']:
             return abort(400, "Question needs a name.")
-        q = Question(request.json, id=qid, user_id=user_id)
+        question = Question(request.json, id=qid, user_id=user_id)
 
         if not 'RebuildCache' in request.headers or request.headers['RebuildCache'] == 'true':
             # To speed things along we start a answerset generation task for this question
@@ -96,28 +96,6 @@ class QuestionsAPI(Resource):
         # user_question_list = list_questions_by_username(user['username'])
         # nonuser_question_list = list_questions_by_username(user['username'], invert=True)
 
-        tasks = get_tasks().values()
-
-        # filter out the SUCCESS/FAILURE tasks
-        tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE' or t['state'] == 'REVOKED')]
-
-        # get question hashes
-        question_tasks = {q.id:[] for q in question_list}
-        for t in tasks:
-            if not t['args']:
-                continue
-            match = re.match(r"[\[(]'(.*)',?[)\]]", t['args'])
-            if not match:
-                continue
-            question_id = match.group(1)
-            question_tasks[question_id].append(t)
-
-        # split into answer and update tasks
-        for t in tasks:
-            t['type'] = 'answering' if t['name'] == 'manager.tasks.answer_question' else \
-                'refreshing KG' if t['name'] == 'manager.tasks.update_kg' else \
-                'something?'
-
         def augment_info(question):
             answerset_timestamps = [a.timestamp for a in question.answersets]
             if answerset_timestamps:
@@ -133,7 +111,6 @@ class QuestionsAPI(Resource):
             q.pop('machine_question')
             return {'latest_answerset_id': latest_answerset_id,
                     'latest_answerset_timestamp': latest_answerset_timestamp.isoformat() if latest_answerset_timestamp else None,
-                    'tasks': [t['type'] for t in question_tasks[question.id]],
                     **q}
 
         return [augment_info(q) for q in question_list], 200

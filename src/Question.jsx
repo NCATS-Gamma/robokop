@@ -84,6 +84,15 @@ class Question extends React.Component {
       this.props.id,
       (data) => {
         const prevRunningTasks = this.state.runningTasks;
+        /*
+          data is of the form
+          [
+            {type: "manager.tasks.answer_question", timestamp: "2018-08-05T01:04:32.782701", status: "FAILURE"},
+            {type: "manager.tasks.update_kg", timestamp: "2018-08-05T01:06:59.364998", status: "SUCCESS"},
+            {type: "manager.tasks.answer_question", timestamp: "2018-08-05T01:06:59.372607", status: "SUCCESS"}
+          ]
+        */
+        data = data.filter(x => x.status != "FAILURE" && x.status != "SUCCESS")
         this.setState({ runningTasks: data, prevRunningTasks }, this.updateTaskStatus);
       },
       err => console.log('Issues fetching active tasks', err),
@@ -93,10 +102,12 @@ class Question extends React.Component {
     const tasks = this.state.runningTasks;
     const prevTasks = this.state.prevRunningTasks;
 
+    var answer_tasks = tasks.filter(x => x.type.endsWith("answer_question"))
+    var update_tasks = tasks.filter(x => x.type.endsWith("update_kg"))
     // console.log('Checking for finished tasks', prevTasks, tasks);
 
-    const refreshBusy = tasks.updaters.length > 0;
-    const answerBusy = tasks.answerers.length > 0;
+    const refreshBusy = update_tasks.length > 0;
+    const answerBusy = answer_tasks.length > 0;
 
     const refreshFinished = !refreshBusy && this.state.refreshBusy;
     const answerFinished = !answerBusy && this.state.answerBusy;
@@ -111,8 +122,9 @@ class Question extends React.Component {
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
     if (refreshFinished) {
-      if (('updaters' in prevTasks) && Array.isArray(prevTasks.updaters) && (prevTasks.updaters.length > 0) && ('uuid' in prevTasks.updaters[0])) {
-        this.notifyRefresh(prevTasks.updaters[0].uuid);
+      var update_tasks = prevTasks.filter(x => x.type.endsWith("update_kg"))
+      if (update_tasks.length > 0) {
+        this.notifyRefresh(update_tasks[0].uuid);
       }
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
@@ -123,8 +135,9 @@ class Question extends React.Component {
           answersets: data.answerset_list,
         }),
       );
-      if (('answerers' in prevTasks) && Array.isArray(prevTasks.answerers) && (prevTasks.answerers.length > 0) && ('uuid' in prevTasks.answerers[0])) {
-        this.notifyAnswers(prevTasks.answerers[0].uuid);
+      var answer_tasks = prevTasks.filter(x => x.type.endsWith("answer_question"))
+      if (answer_tasks.length > 0) {
+        this.notifyAnswers(answer_tasks[0].uuid);
       }
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
@@ -395,10 +408,12 @@ class Question extends React.Component {
         this.appConfig.questionTasks(
           this.props.id,
           (data) => {
+            data = data.filter(x => x.status != "FAILURE" && x.status != "SUCCESS")
             console.log('Checking if our new task actually started', data);
             let allOk = true;
             if (isAnswerTask) {
-              const ind = data.answerers.findIndex(a => a.uuid === newTask.answersetTask);
+              var answer_tasks = data.filter(x => x.type.endsWith("answer_question"))
+              const ind = answer_tasks.findIndex(a => a.uuid === newTask.answersetTask);
               if (ind < 0) {
                 // Task is not in the list of active tasks
 
@@ -434,7 +449,8 @@ class Question extends React.Component {
               // Task is appropriately in the list of active tasks, start polling as normal
             }
             if (isRefreshTask) {
-              const ind = data.updaters.findIndex(a => a.uuid === newTask.questionTask);
+              var update_tasks = data.filter(x => x.type.endsWith("update_kg"))
+              const ind = update_tasks.findIndex(a => a.uuid === newTask.questionTask);
               if (ind < 0) {
                 // Task is not in the list of active tasks
 
