@@ -14,13 +14,17 @@ from flask_security.core import current_user
 from flask_restful import Resource
 
 from manager.question import get_question_by_id
+from manager.task import Task
 from manager.feedback import list_feedback_by_question
 from manager.user import get_user_by_email
 from manager.tasks import answer_question, update_kg
-from manager.util import getAuthData, get_tasks
+from manager.util import getAuthData
 from manager.setup import db, api
-from manager.logging_config import logger
+import manager.logging_config
 import manager.api.definitions
+from manager.celery_monitor import get_messages
+
+logger = logging.getLogger(__name__)
 
 class QuestionAPI(Resource):
     def get(self, question_id):
@@ -287,27 +291,19 @@ class QuestionTasks(Resource):
         except Exception as err:
             return "Invalid question key.", 404
 
-        tasks = list(get_tasks().values())
+        get_messages()
 
-        # filter out the SUCCESS/FAILURE tasks
-        tasks = [t for t in tasks if not (t['state'] == 'SUCCESS' or t['state'] == 'FAILURE' or t['state'] == 'REVOKED')]
+        tasks = question.tasks
+        logger.info(tasks[0].status)
+        statuses = [
+            {
+                'uuid': t.id,
+                'type': t.type,
+                'timestamp': t.timestamp.isoformat(),
+                'status': t.status
+            } for t in tasks]
 
-        # filter out tasks for other questions
-        question_tasks = []
-        for t in tasks:
-            if not t['args']:
-                continue
-            match = re.match(r"[\[(]'(.*)',?[)\]]", t['args'])
-            if match:
-                if match.group(1) == question.id:
-                    question_tasks.append(t)
-
-        # split into answer and update tasks
-        answerers = [t for t in question_tasks if t['name'] == 'manager.tasks.answer_question']
-        updaters = [t for t in question_tasks if t['name'] == 'manager.tasks.update_kg']
-
-        return {'answerers': answerers,
-                'updaters': updaters}, 200
+        return statuses
 
 api.add_resource(QuestionTasks, '/q/<question_id>/tasks/')
 

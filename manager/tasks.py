@@ -8,7 +8,7 @@ import time
 import json
 import requests
 from celery import Celery, signals
-from kombu import Queue
+from kombu import Queue, Exchange
 from flask_mail import Message
 
 from manager.setup import app, mail, db
@@ -22,10 +22,10 @@ celery.conf.update(
     broker_url=os.environ["CELERY_BROKER_URL"],
     result_backend=os.environ["CELERY_RESULT_BACKEND"],
 )
+task_exchange = Exchange('manager', type='topic')
 celery.conf.task_queues = (
-    Queue('manager_answer', routing_key='manager_answer'),
-    Queue('manager_update', routing_key='manager_update'),
-    Queue('manager_initialize', routing_key='manager_initialize'),
+    Queue('manager_answer', exchange=task_exchange, routing_key='manager.answer'),
+    Queue('manager_update', exchange=task_exchange, routing_key='manager.update'),
 )
 # Tell celery not to mess with logging at all
 @signals.setup_logging.connect
@@ -36,7 +36,7 @@ celery.log.setup()
 class NoAnswersException(Exception):
     pass
 
-@celery.task(bind=True, queue='manager_answer')
+@celery.task(bind=True, exchange='manager', routing_key='manager.answer')
 def answer_question(self, question_id, user_email=None):
     '''
     Generate answerset for a question
@@ -63,7 +63,7 @@ def answer_question(self, question_id, user_email=None):
         raise RuntimeError("Question answering has not completed after 1 day. It will continue working, but will not be monitored from here.")
 
     answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{r.json()['task_id']}")
-
+    
     answerset = Answerset(answerset_json.json())
     question.answersets.append(answerset)
     db.session.commit()
@@ -87,7 +87,7 @@ def answer_question(self, question_id, user_email=None):
     logger.info("Done answering.")
     return answerset.id
 
-@celery.task(bind=True, queue='manager_update')
+@celery.task(bind=True, exchange='manager', routing_key='manager.update')
 def update_kg(self, question_id, user_email=None):
     '''
     Update the shared knowledge graph with respect to a question
@@ -101,7 +101,7 @@ def update_kg(self, question_id, user_email=None):
     
     r = requests.post(f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question.to_json())
     polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{r.json()['task id']}"
-        
+    
     for _ in range(60*60*24): # wait up to 1 day
         r = requests.get(polling_url)
         if r.json()['state'] == 'FAILURE':
