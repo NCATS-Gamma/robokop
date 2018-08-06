@@ -12,7 +12,8 @@ from flask_security import auth_required, current_user
 from flask_restful import Resource
 
 from manager.util import getAuthData
-from manager.question import list_questions, list_questions_by_username, Question, Task
+from manager.question import list_questions, list_questions_by_username, Question
+from manager.task import Task
 from manager.tasks import update_kg, answer_question
 from manager.setup import api, db
 from manager.user import User, get_user_by_email

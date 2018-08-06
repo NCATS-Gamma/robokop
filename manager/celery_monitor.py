@@ -6,7 +6,7 @@ import json
 
 import pika
 
-from manager.question import Task
+from manager.task import Task
 import manager.logging_config
 
 logger = logging.getLogger(__name__)

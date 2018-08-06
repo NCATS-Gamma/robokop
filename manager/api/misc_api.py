@@ -19,7 +19,7 @@ import manager.api.q_api
 import manager.api.a_api
 import manager.api.feedback_api
 from manager.tasks import celery
-from manager.question import list_tasks, get_task_by_id
+from manager.task import list_tasks, get_task_by_id
 
 class Tasks(Resource):
     def get(self):

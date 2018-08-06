@@ -13,7 +13,8 @@ from flask_security import auth_required
 from flask_security.core import current_user
 from flask_restful import Resource
 
-from manager.question import get_question_by_id, Task
+from manager.question import get_question_by_id
+from manager.task import Task
 from manager.feedback import list_feedback_by_question
 from manager.user import get_user_by_email
 from manager.tasks import answer_question, update_kg

@@ -89,70 +89,8 @@ class Question(db.Model):
         struct['tasks'] = [t.to_json() for t in struct['tasks']]
         return struct
 
-class Task(db.Model):
-    __tablename__ = 'task'
-    id = Column(String, primary_key=True)
-    type = Column(String)
-    initiator = Column(String)
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
-    question_id = Column(String, ForeignKey('question.id'))
-
-    question = relationship(
-        Question,
-        backref=backref('tasks',
-                        uselist=True,
-                        cascade='delete,all'))
-
-    def __init__(self, *args, **kwargs):
-
-        # initialize all properties
-        self.id = None
-        self.type = None
-        self.initiator = None
-        self.question_id = None
-
-        # apply json properties to existing attributes
-        attributes = self.__dict__.keys()
-        if args:
-            struct = args[0]
-            for key in struct:
-                if key in attributes:
-                    setattr(self, key, struct[key])
-                else:
-                    warnings.warn("JSON field {} ignored.".format(key))
-
-        # override any json properties with the named ones
-        for key in kwargs:
-            if key in attributes:
-                setattr(self, key, kwargs[key])
-            else:
-                warnings.warn("Keyword argument {} ignored.".format(key))
-
-        db.session.add(self)
-        db.session.commit()
-
-    @property
-    def status(self):
-        """Task status."""
-        r = redis.Redis(
-            host=os.environ['RESULTS_HOST'],
-            port=os.environ['RESULTS_PORT'],
-            db=os.environ['MANAGER_RESULTS_DB'])
-        value = r.get(f'celery-task-meta-{self.id}')
-        task = json.loads(value) if value is not None else None
-        return task['status']
-
-    def to_json(self):
-        keys = [str(column).split('.')[-1] for column in self.__table__.columns] + ['status']
-        struct = {key:getattr(self, key) for key in keys}
-        struct['timestamp'] = struct['timestamp'].isoformat()
-        return struct
-
 def list_questions():
     return db.session.query(Question).all()
-
-def list_tasks():
-    return db.session.query(Task).all()
 
 def list_questions_by_username(username, invert=False):
     if invert:
@@ -171,9 +109,3 @@ def get_question_by_id(id):
     if not question:
         raise KeyError("No such question.")
     return question
-
-def get_task_by_id(id):
-    task = db.session.query(Task).filter(Task.id == id).first()
-    if not task:
-        raise KeyError("No such task.")
-    return task

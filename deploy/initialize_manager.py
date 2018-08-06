@@ -8,7 +8,8 @@ from manager.user import User, Role
 from manager.celery_monitor import get_messages
 
 # Include these so that all the associated postgres tables get created.
-from manager.question import Question, Task
+from manager.question import Question
+from manager.task import Task
 from manager.answer import Answer, Answerset
 from manager.feedback import Feedback
 
