@@ -63,7 +63,7 @@ class About extends React.Component {
                 Create an Account
               </h3>
               <p>
-                {'You can browse questions asked by other users so without an account, but if you want to ask questions of your own, you will need register an account with your email.'}
+                {'You can browse questions asked by other users without an account, but if you want to ask questions of your own, you will need register an account with your email.'}
               </p>
               <hr />
               <h3>
