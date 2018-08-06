@@ -11,8 +11,7 @@ import manager.logging_config
 
 logger = logging.getLogger(__name__)
 
-def get_messages():
-    """Get rabbitmq messages relevant to task initiation."""
+def initialize():
     connection = pika.BlockingConnection(pika.ConnectionParameters(
         host=os.environ['BROKER_HOST'],
         virtual_host='manager',
@@ -21,6 +20,16 @@ def get_messages():
 
     channel.queue_declare(queue='manager_log')
     channel.queue_bind(queue='manager_log', exchange='manager', routing_key='manager.*')
+
+initialize()
+
+def get_messages():
+    """Get rabbitmq messages relevant to task initiation."""
+    connection = pika.BlockingConnection(pika.ConnectionParameters(
+        host=os.environ['BROKER_HOST'],
+        virtual_host='manager',
+        credentials=pika.credentials.PlainCredentials(os.environ['BROKER_USER'], os.environ['BROKER_PASSWORD'])))
+    channel = connection.channel()
 
     # def callback(ch, method_frame, properties, body):
     #     body = body.decode()
