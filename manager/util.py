@@ -5,14 +5,13 @@ ROBOKOP utilities
 import os
 import warnings
 import logging
+
 import json
 import requests
 from flask_security.core import current_user
+from celery.task.control import inspect
 
-def get_tasks():
-    flower_url = f'http://{os.environ["FLOWER_HOST"]}:{os.environ["FLOWER_PORT"]}/api/tasks'
-    response = requests.get(flower_url, auth=(os.environ['FLOWER_USER'], os.environ['FLOWER_PASSWORD']))
-    return response.json()
+from manager.logging_config import logger
 
 def getAuthData():
     """ Return relevant information from flask-login current_user"""

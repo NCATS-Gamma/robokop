@@ -7,10 +7,12 @@ import os
 import sys
 import json
 import warnings
+import datetime
 
 # 3rd-party modules
+import redis
 from sqlalchemy.types import JSON
-from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy import Column, DateTime, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declarative_base
@@ -82,8 +84,9 @@ class Question(db.Model):
         return "<ROBOKOP Question id={}>".format(self.id)
 
     def to_json(self):
-        keys = [str(column).split('.')[-1] for column in self.__table__.columns]
+        keys = [str(column).split('.')[-1] for column in self.__table__.columns] + ['tasks']
         struct = {key:getattr(self, key) for key in keys}
+        struct['tasks'] = [t.to_json() for t in struct['tasks']]
         return struct
 
 def list_questions():

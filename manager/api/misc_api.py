@@ -4,20 +4,22 @@
 
 import os
 import sys
+import json
 
+import redis
 import requests
 from flask import request, Response
 from flask_restful import Resource
 
 from manager.setup import app, api
 from manager.logging_config import logger
-from manager.util import get_tasks, getAuthData
+from manager.util import getAuthData
 import manager.api.questions_api
 import manager.api.q_api
 import manager.api.a_api
 import manager.api.feedback_api
-
 from manager.tasks import celery
+from manager.task import list_tasks, get_task_by_id
 
 class Tasks(Resource):
     def get(self):
@@ -32,8 +34,8 @@ class Tasks(Resource):
                 items:
                     $ref: '#/definitions/Task'
         """
-        tasks = get_tasks()
-        return tasks
+        tasks = list_tasks()
+        return [t.to_json() for t in tasks]
 
 api.add_resource(Tasks, '/tasks/')
 
@@ -54,12 +56,8 @@ class TaskStatus(Resource):
                 schema:
                     $ref: '#/definitions/Task'
         """
-        # task = celery.AsyncResult(task_id)
-        # return task.state
-
-        flower_url = f'http://{os.environ["FLOWER_HOST"]}:{os.environ["FLOWER_PORT"]}/api/task/result/{task_id}'
-        response = requests.get(flower_url, auth=(os.environ['FLOWER_USER'], os.environ['FLOWER_PASSWORD']))
-        return response.json()
+        
+        return get_task_by_id(task_id).to_json()
 
     def delete(self, task_id):
         """Revoke task
