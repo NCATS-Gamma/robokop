@@ -1,8 +1,6 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 
-const shortid = require('shortid');
-
 class AppConfig {
   constructor(config) {
     this.config = config;
@@ -38,7 +36,8 @@ class AppConfig {
       questionAnswer: questionId => this.url(`api/q/${questionId}/answer/`),
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg/`),
       parse: this.url('api/nlp/'),
-      taskStatus: taskId => this.url(`api/t/${taskId}/`),
+      tasks: this.url('api/tasks'),
+      task: taskId => this.url(`api/t/${taskId}/`),
       feedbackNew: this.url('api/feedback/'),
       feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
       search: this.url('api/search/'),
@@ -54,6 +53,7 @@ class AppConfig {
     this.questionSubgraph = this.questionSubgraph.bind(this);
     this.answersetData = this.answersetData.bind(this);
     this.answerData = this.answerData.bind(this);
+    this.tasksData = this.tasksData.bind(this);
 
     // Question and Answer Manipulation
     this.questionCreate = this.questionCreate.bind(this);
@@ -63,6 +63,7 @@ class AppConfig {
     this.questionFork = this.questionFork.bind(this);
     this.questionTasks = this.questionTasks.bind(this);
     this.taskStatus = this.taskStatus.bind(this);
+    this.taskStop = this.taskStop.bind(this);
 
     this.questionNewValidate = this.questionNewValidate.bind(this);
     this.questionNewTranslate = this.questionNewTranslate.bind(this);
@@ -208,8 +209,21 @@ class AppConfig {
 
   taskStatus(taskId, successFun) {
     this.getRequest(
-      this.apis.taskStatus(taskId),
+      this.apis.task(taskId),
       successFun,
+    );
+  }
+  tasksData(successFun) {
+    this.getRequest(
+      this.apis.tasks(),
+      successFun,
+    );
+  }
+  taskStop(taskId, successFun, failureFun) {
+    this.deleteRequest(
+      this.apis.task(taskId),
+      successFun,
+      failureFun,
     );
   }
 
