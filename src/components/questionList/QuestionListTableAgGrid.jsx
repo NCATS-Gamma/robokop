@@ -143,13 +143,6 @@ class QuestionListTableAgGrid extends React.Component {
                     suppressResize: true,
                   },
                   {
-                    headerName: 'Name',
-                    field: 'name',
-                    suppressMenu: true,
-                    hide: true,
-                    tooltip: value => (value),
-                  },
-                  {
                     headerName: 'Question',
                     field: 'natural_question',
                     suppressMenu: true,
@@ -210,7 +203,7 @@ QuestionListTableAgGrid.defaultProps = {
 
 QuestionListTableAgGrid.propTypes = {
   height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  questions: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })).isRequired,
+  questions: PropTypes.arrayOf(PropTypes.shape({ natural_question: PropTypes.string })).isRequired,
   showSearch: PropTypes.bool.isRequired,
   callbackQuestionSelect: PropTypes.func.isRequired,
   callbackAnswersetSelect: PropTypes.func.isRequired,

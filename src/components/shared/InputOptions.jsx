@@ -1,9 +1,6 @@
 import React from 'react';
 
-// import { FormControl, InputGroup, DropdownButton, MenuItem } from 'react-bootstrap';
 import Combobox from 'react-widgets/lib/Combobox';
-
-// const shortid = require('shortid');
 
 class InputOptions extends React.Component {
   constructor(props) {

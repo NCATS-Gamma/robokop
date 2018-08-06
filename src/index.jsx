@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom';
 import 'bootstrap/dist/css/bootstrap.css'; // path search within node_modules
 import 'ag-grid/dist/styles/ag-grid.css';
 import 'ag-grid/dist/styles/ag-theme-material.css';
-// import 'react-select/dist/react-select.css';
+import 'react-select/dist/react-select.css';
 import 'react-widgets/dist/css/react-widgets.css';
 
 import 'babel-polyfill'; // For IE Promises

@@ -4,7 +4,7 @@ import { Grid, Row, Col, Popover, OverlayTrigger, Panel } from 'react-bootstrap'
 import GoQuestion from 'react-icons/go/question';
 
 import QuestionHeader from '../shared/QuestionHeader';
-import QuestionGraphViewer from '../shared/QuestionGraphViewer';
+import MachineQuestionView from '../shared/MachineQuestionView';
 import AnswersetSelector from './AnswersetSelector';
 import KnowledgeGraphFetchAndView from './KnowledgeGraphFetchAndView';
 
@@ -148,9 +148,10 @@ class QuestionPres extends React.Component {
                 </Panel.Title>
               </Panel.Heading>
               <Panel.Body style={{ padding: 0 }}>
-                <QuestionGraphViewer
-                  graph={questionGraph}
+                <MachineQuestionView
+                  height={250}
                   concepts={this.props.concepts}
+                  question={questionGraph}
                 />
               </Panel.Body>
             </Panel>

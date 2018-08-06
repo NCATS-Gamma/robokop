@@ -115,7 +115,7 @@ class QuestionDesign extends React.Component {
   }
 
   next() {
-    this.props.nextCallback({ question: this.state.questionText, machineQuestion: this.state.machineQuestion });
+    this.props.nextCallback({ questionText: this.state.questionText, machineQuestion: this.state.machineQuestion });
   }
   render() {
     const showMain = this.state.show === 'main';

@@ -97,7 +97,7 @@ def update_kg(self, question_id, user_email=None):
 
     question = get_question_by_id(question_id)
 
-    logger.info(f"Updating the knowledge graph for '{question.name}'...")
+    logger.info(f"Updating the knowledge graph for '{question.natural_question}'...")
     
     r = requests.post(f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question.to_json())
     polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{r.json()['task id']}"
@@ -129,5 +129,5 @@ def update_kg(self, question_id, user_email=None):
     except Exception as err:
         logger.warning(f"Failed to send 'completed KG update' email: {err}")
 
-    logger.info(f"Done updating for '{question.name}'.")
+    logger.info(f"Done updating for '{question.natural_question}'.")
     return "You updated the KG!"
