@@ -18,6 +18,7 @@ from manager.questions_blueprint import questions
 from manager.q_blueprint import q
 from manager.a_blueprint import a
 from manager.util import getAuthData
+import deploy.initialize_manager
 
 import manager.api.misc_api
 
