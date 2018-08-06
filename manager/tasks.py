@@ -97,7 +97,7 @@ def update_kg(self, question_id, user_email=None):
 
     question = get_question_by_id(question_id)
 
-    logger.info(f"Updating the knowledge graph for '{question.natural_question}'...")
+    logger.info(f"Updating the knowledge graph for '{question_id}'...")
     
     r = requests.post(f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question.to_json())
     polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{r.json()['task id']}"
