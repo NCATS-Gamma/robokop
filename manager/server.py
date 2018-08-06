@@ -43,6 +43,11 @@ def start():
     """Getting started guide"""
     return render_template('about.html')
 
+@app.route('/activity/')
+def activity():
+    """List of tasks."""
+    return render_template('activity.html')
+
 @app.route('/workflow/')
 def workflow():
     """Workflow UI."""
