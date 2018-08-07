@@ -296,7 +296,7 @@ class QuestionTasks(Resource):
         tasks = question.tasks
         statuses = [
             {
-                'id': t.id,
+                'uuid': t.id,
                 'type': t.type,
                 'timestamp': t.timestamp.isoformat(),
                 'initiator': t.initiator,
