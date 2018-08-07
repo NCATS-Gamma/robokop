@@ -33,7 +33,7 @@ class ActivityTableAgGrid extends React.Component {
     this.gridApi.sizeColumnsToFit();
 
     const sort = [
-      { colId: 'isUserOwned', sort: 'desc' },
+      { colId: 'timeString', sort: 'desc' },
     ];
     this.gridApi.setSortModel(sort);
   }
