@@ -36,9 +36,9 @@ class QuestionDesign extends React.Component {
     this.fetchMachineQuestion = this.fetchMachineQuestion.bind(this);
 
     this.questionExamples = [
-      'What genes affect ebola?',
+      'What genes affect ebola hemorrhagic fever?',
       'What is the COP for imatinib and asthma?',
-      'What genetic conditions protect against ebola?',
+      'What genetic conditions protect against ebola hemorrhagic fever?',
     ];
   }
 
@@ -54,9 +54,12 @@ class QuestionDesign extends React.Component {
     if (props.initializationData && (typeof props.initializationData === 'object') && ('question' in props.initializationData) && ('machineQuestion' in props.initializationData)) {
       if (props.initializationData.question && props.initializationData.machineQuestion) {
         // We have the data to prepopulate the question designer
-        window.alert('Forking is not yet supported again!');
-        console.log(props.initializationData);
-        this.setState({ initialQuestionText: props.initializationData.question });
+        this.setState({
+          initialQuestionText: props.initializationData.question,
+          questionText: props.initializationData.question,
+          machineQuestion: props.initializationData.machineQuestion,
+          status: 'good',
+        });
       }
     }
   }
@@ -115,7 +118,7 @@ class QuestionDesign extends React.Component {
   }
 
   next() {
-    this.props.nextCallback({ question: this.state.questionText, machineQuestion: this.state.machineQuestion });
+    this.props.nextCallback({ questionText: this.state.questionText, machineQuestion: this.state.machineQuestion });
   }
   render() {
     const showMain = this.state.show === 'main';

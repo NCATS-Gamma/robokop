@@ -65,7 +65,6 @@ class QuestionNew extends React.Component {
 
   onCreate({ questionText, machineQuestion }) {
     const newBoardInfo = {
-      name: shortid.generate(),
       natural_question: questionText,
       notes: '',
       machine_question: machineQuestion,

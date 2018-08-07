@@ -63,8 +63,8 @@ class QuestionsAPI(Resource):
         logger.debug(f"Creating new question for user {user_email}.")
         logger.debug(request.json)
         qid = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=12))
-        if not request.json['name']:
-            return abort(400, "Question needs a name.")
+        # if not request.json['name']:
+        #     return abort(400, "Question needs a name.")
         question = Question(request.json, id=qid, user_id=user_id)
 
         if not 'RebuildCache' in request.headers or request.headers['RebuildCache'] == 'true':

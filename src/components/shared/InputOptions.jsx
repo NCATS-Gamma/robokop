@@ -1,9 +1,6 @@
 import React from 'react';
 
-// import { FormControl, InputGroup, DropdownButton, MenuItem } from 'react-bootstrap';
 import Combobox from 'react-widgets/lib/Combobox';
-
-// const shortid = require('shortid');
 
 class InputOptions extends React.Component {
   constructor(props) {
@@ -25,7 +22,7 @@ class InputOptions extends React.Component {
         <Combobox
           autoFocus
           data={this.props.options}
-          defaultValue={this.props.defaultValue}
+          value={this.props.defaultValue}
           placeholder={this.props.placeholder}
           onSelect={this.handleSelect}
           onChange={this.handleChange}
@@ -39,7 +36,7 @@ class InputOptions extends React.Component {
 InputOptions.defaultProp = {
   placeHolder: 'Enter Text',
   options: [],
-  value: null,
+  defaultValue: null,
   onChange: (value) => {},
   onSelect: (value, metaData) => {},
   disable: false,

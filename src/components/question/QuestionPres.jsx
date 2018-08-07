@@ -4,7 +4,7 @@ import { Grid, Row, Col, Popover, OverlayTrigger, Panel } from 'react-bootstrap'
 import GoQuestion from 'react-icons/go/question';
 
 import QuestionHeader from '../shared/QuestionHeader';
-import QuestionGraphViewer from '../shared/QuestionGraphViewer';
+import MachineQuestionView from '../shared/MachineQuestionView';
 import AnswersetSelector from './AnswersetSelector';
 import KnowledgeGraphFetchAndView from './KnowledgeGraphFetchAndView';
 
@@ -41,6 +41,7 @@ class QuestionPres extends React.Component {
     const enableNewAnswersets = (userIsLoggedIn && this.props.enableNewAnswersets) || this.props.user.is_admin;
     const enableQuestionRefresh = (userIsLoggedIn && this.props.enableQuestionRefresh) || this.props.user.is_admin;
     const enableQuestionFork = (userIsLoggedIn && this.props.enableQuestionFork) || this.props.user.is_admin;
+    const enableTaskStatus = ((userIsLoggedIn && this.props.enableTaskStatus) || this.props.user.is_admin) && (this.props.refreshBusy || this.props.answerBusy);
 
     const machineQuestionHelp = (
       <Popover id="machineQuestionTooltip" key={shortid.generate()} title="Machine Question" style={{ minWidth: '500px' }}>
@@ -128,6 +129,7 @@ class QuestionPres extends React.Component {
           callbackRefresh={this.props.callbackRefresh}
           callbackUpdate={this.props.callbackUpdateMeta}
           callbackFork={this.props.callbackFork}
+          callbackTaskStatus={this.props.callbackTaskStatus}
           callbackDelete={this.props.callbackDelete}
 
           enableNewAnswersets={enableNewAnswersets}
@@ -135,6 +137,8 @@ class QuestionPres extends React.Component {
           enableQuestionEdit={enableEditing}
           enableQuestionDelete={enableDelete}
           enableQuestionFork={enableQuestionFork}
+          enableQuestionTask={enableQuestionFork}
+          enableTaskStatus={enableTaskStatus}
         />
         <Row style={this.styles.rowTopPad}>
           <Col md={4}>
@@ -148,9 +152,10 @@ class QuestionPres extends React.Component {
                 </Panel.Title>
               </Panel.Heading>
               <Panel.Body style={{ padding: 0 }}>
-                <QuestionGraphViewer
-                  graph={questionGraph}
+                <MachineQuestionView
+                  height={250}
                   concepts={this.props.concepts}
+                  question={questionGraph}
                 />
               </Panel.Body>
             </Panel>

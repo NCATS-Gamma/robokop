@@ -9,6 +9,7 @@
     "enableQuestionEdit": true,
     "enableQuestionDelete": true,
     "enableQuestionFork": true,
+    "enableTaskStatus": true,
     "enableAnswerFeedback": true
   }
 }

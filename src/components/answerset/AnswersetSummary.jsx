@@ -5,7 +5,14 @@ import { PageHeader, Grid, Row, Col } from 'react-bootstrap';
 
 const shortid = require('shortid');
 
-const dateToString = d => d.toLocaleString();
+const timeStampToString = (ts) => {
+  let ts2 = ts;
+  if (!ts.endsWith('Z')) {
+    ts2 = `${ts}Z`;
+  }
+  const d = new Date(ts2);
+  return d.toLocaleString();
+};
 
 class AnswersetSummary extends React.Component {
   constructor(props) {
@@ -19,7 +26,7 @@ class AnswersetSummary extends React.Component {
     if (this.props.otherAnswersets.length > 0) {
       const otherLinks = this.props.otherAnswersets.map(a => (
         <li key={shortid.generate()}>
-          <a href={this.props.answersetUrlFunc(a)}> {dateToString(new Date(a.timestamp))} </a>
+          <a href={this.props.answersetUrlFunc(a)}> {timeStampToString(a.timestamp))} </a>
         </li>
       ));
       return (
@@ -57,7 +64,7 @@ class AnswersetSummary extends React.Component {
 
   render() {
     const quest = this.props.questions[0];
-    const answerDate = new Date(this.props.answerset.timestamp);
+    const answerTimestamp = this.props.answerset.timestamp;
     return (
       <div>
         <Grid>
@@ -72,7 +79,7 @@ class AnswersetSummary extends React.Component {
             </Col>
           </Row>
           <Row>
-            {`Answer found ${dateToString(answerDate)}`}
+            {`Answer found ${timeStampToString(answerTimestamp)}`}
           </Row>
         </Grid>
       </div>

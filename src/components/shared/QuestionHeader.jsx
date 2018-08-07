@@ -7,6 +7,15 @@ import FaDownload from 'react-icons/lib/fa/download';
 
 import QuestionToolbar from './QuestionToolbar';
 
+const timestampToTimeString = (ts) => {
+  let ts2 = ts;
+  if (!ts.endsWith('Z')) {
+    ts2 = `${ts2}Z`;
+  }
+  const d = new Date(ts2);
+  return d.toLocaleString();
+};
+
 const _ = require('lodash');
 const shortid = require('shortid');
 
@@ -15,15 +24,12 @@ class QuestionHeader extends React.Component {
     super(props);
 
     this.state = {
-      editedName: false,
       editedNatural: false,
       editedNotes: false,
-      name: '',
       notes: '',
       natural: '',
     };
 
-    this.onEditName = this.onEditName.bind(this);
     this.onEditNatural = this.onEditNatural.bind(this);
     this.onEditNotes = this.onEditNotes.bind(this);
     this.onSave = this.onSave.bind(this);
@@ -33,10 +39,8 @@ class QuestionHeader extends React.Component {
     this.syncPropsAndState(this.props);
   }
   shouldComponentUpdate(newProps, newState) {
-    const propsAllMatch = (newProps.editedName === this.props.editedName) &&
-      (newProps.editedNatural === this.props.editedNatural) &&
+    const propsAllMatch = (newProps.editedNatural === this.props.editedNatural) &&
       (newProps.editedNotes === this.props.editedNotes) &&
-      (('name' in newProps.question) && ('name' in this.props.question) && (newProps.question.name === this.props.question.name)) &&
       (('natural_question' in newProps.question) && ('natural_question' in this.props.question) && (newProps.question.natural_question === this.props.question.natural_question)) &&
       (('notes' in newProps.question) && ('notes' in this.props.question) && (newProps.question.notes === this.props.question.notes)) &&
       (newProps.showToolbar === this.props.showToolbar) &&
@@ -47,6 +51,7 @@ class QuestionHeader extends React.Component {
       (newProps.enableQuestionEdit === this.props.enableQuestionEdit) &&
       (newProps.enableQuestionDelete === this.props.enableQuestionDelete) &&
       (newProps.enableQuestionFork === this.props.enableQuestionFork) &&
+      (newProps.enableTaskStatus === this.props.enableTaskStatus) &&
       (newProps.enableQuestionSelect === this.props.enableQuestionSelect) &&
       (newProps.showOtherQuestions === this.props.showOtherQuestions) &&
       _.isEqual(newProps.otherQuestions, this.props.otherQuestions) &&
@@ -54,18 +59,12 @@ class QuestionHeader extends React.Component {
       _.isEqual(newProps.otherAnswersets, this.props.otherAnswersets) &&
       (newProps.showDownload === this.props.showDownload);
 
-    const stateAllMatch = (newState.editedName === this.state.editedName) &&
-      (newState.editedNatural === this.state.editedNatural) &&
+    const stateAllMatch = (newState.editedNatural === this.state.editedNatural) &&
       (newState.editedNotes === this.state.editedNotes) &&
-      (newState.name === this.state.name) &&
       (newState.notes === this.state.notes) &&
       (newState.natural === this.state.natural);
 
     return !(propsAllMatch && stateAllMatch);
-  }
-
-  onEditName(e) {
-    this.setState({ editedName: true, name: e.target.value });
   }
 
   onEditNatural(e) {
@@ -78,22 +77,19 @@ class QuestionHeader extends React.Component {
     const newMeta = {
       question_id: this.props.question.id,
       natural_question: this.state.natural,
-      name: this.state.name,
       notes: this.state.notes,
     };
 
     this.props.callbackUpdate(
       newMeta,
-      () => this.setState({ editedName: false, editedNatural: false, editedNotes: false }),
+      () => this.setState({ editedNatural: false, editedNotes: false }),
     );
   }
 
   syncPropsAndState(newProps) {
     this.setState({
-      editedName: false,
       editedNatural: false,
       editedNotes: false,
-      name: newProps.question.name,
       natural: newProps.question.natural_question,
       notes: newProps.question.notes,
     });
@@ -101,32 +97,9 @@ class QuestionHeader extends React.Component {
 
   render() {
     const {
-      name,
       notes,
       natural,
     } = this.state;
-
-    const popoverEditName = (
-      <Popover id="popover-edit-name" title="Edit Question Name" style={{ minWidth: '500px' }}>
-        <FormGroup role="form">
-          <p>
-          This will change the public name of this question and will impact how this question shows up in search results.
-          </p>
-          <FormControl
-            type="text"
-            value={name}
-            placeholder="Question Name"
-            onChange={this.onEditName}
-          />
-        </FormGroup>
-      </Popover>
-    );
-
-    const editNameNode = (
-      <OverlayTrigger trigger="click" placement="bottom" rootClose overlay={popoverEditName} container={this}>
-        <GoPencil />
-      </OverlayTrigger>
-    );
 
     const popoverEditNatural = (
       <Popover id="popover-edit-natural" title="Edit Question" style={{ minWidth: '500px' }}>
@@ -150,7 +123,7 @@ class QuestionHeader extends React.Component {
       </OverlayTrigger>
     );
 
-    const edited = this.state.editedName || this.state.editedNatural || this.state.editedNotes;
+    const edited = this.state.editedNatural || this.state.editedNotes;
     const active = this.props.refreshBusy || this.props.answerBusy;
 
     const notesStyle = {
@@ -171,20 +144,20 @@ class QuestionHeader extends React.Component {
     }
 
     const otherAnswersetMenuItemList = this.props.otherAnswersets.map((a, i) => {
-      const d = new Date(a.timestamp);
+      const timeString = timestampToTimeString(a.datetime);
       return (
         <MenuItem
           eventKey={`${i + 2}`}
           key={shortid.generate()}
           href={this.props.urlAnswerset(a)}
         >
-          {d.toLocaleString()} - {a.creator}
+          {timeString} - {a.creator}
         </MenuItem>
       );
     });
-    let answersetDate = new Date();
+    let answersetTime = new Date().toLocaleString();
     if (('answerset' in this.props) && ('timestamp' in this.props.answerset)) {
-      answersetDate = new Date(this.props.answerset.timestamp);
+      answersetTime = timestampToTimeString(this.props.answerset.timestamp);
     }
     let creator = 'Reasoner';
     if (('answerset' in this.props) && ('creator' in this.props.answerset)) {
@@ -196,7 +169,7 @@ class QuestionHeader extends React.Component {
         key={shortid.generate()}
         active
       >
-        {`${answersetDate.toLocaleString()} - ${creator}`}
+        {`${answersetTime} - ${creator}`}
       </MenuItem>,
     ].concat(otherAnswersetMenuItemList);
 
@@ -206,12 +179,12 @@ class QuestionHeader extends React.Component {
         key={shortid.generate()}
         href={this.props.urlQuestion(q)}
       >
-        {q.name}
+        {q.natural_question}
       </MenuItem>
     ));
     const questionMenuItemList = [
       <MenuItem eventKey="1" key={shortid.generate()} active>
-        {this.state.name}
+        {this.state.natural}
       </MenuItem>,
     ].concat(otherQuestionsMenuItemList);
 
@@ -228,16 +201,16 @@ class QuestionHeader extends React.Component {
             <div style={{ position: 'relative' }}>
               <h1 style={{ paddingRight: '50px' }}>
                 {this.props.enableQuestionSelect &&
-                  <a style={{ color: 'inherit' }} href={this.props.urlQuestion(this.props.question)}>{name}</a>
+                  <a style={{ color: 'inherit' }} href={this.props.urlQuestion(this.props.question)}>{natural}</a>
                 }
                 {!this.props.enableQuestionSelect &&
-                  name
+                  natural
                 }
                 {this.props.enableQuestionEdit &&
                   <div style={{ display: 'inline', fontSize: '12px' }}>
                     &nbsp;
                     &nbsp;
-                    {editNameNode}
+                    {editNaturalNode}
                   </div>
                 }
                 <div className="pull-right" style={{ position: 'absolute', right: 0, bottom: 0 }}>
@@ -265,12 +238,14 @@ class QuestionHeader extends React.Component {
                       callbackNewAnswerset={this.props.callbackNewAnswerset}
                       callbackRefresh={this.props.callbackRefresh}
                       callbackFork={this.props.callbackFork}
+                      callbackTaskStatus={this.props.callbackTaskStatus}
                       callbackDelete={this.props.callbackDelete}
 
                       enableNewAnswersets={this.props.enableNewAnswersets && !active}
                       enableQuestionRefresh={this.props.enableQuestionRefresh && !active}
                       enableQuestionDelete={this.props.enableQuestionDelete && !active}
                       enableQuestionFork={this.props.enableQuestionFork}
+                      enableTaskStatus={this.props.enableTaskStatus && active}
                     />
                   }
                   {this.props.showDownload &&
@@ -281,18 +256,6 @@ class QuestionHeader extends React.Component {
                 </div>
               </h1>
             </div>
-            <h1 style={{ paddingTop: 0, marginTop: '5px' }}>
-              <small>
-                {natural}
-                {this.props.enableQuestionEdit &&
-                  <div style={{ display: 'inline', fontSize: '12px' }}>
-                    &nbsp;
-                    &nbsp;
-                    {editNaturalNode}
-                  </div>
-                }
-              </small>
-            </h1>
           </Col>
         </Row>
         <Row>

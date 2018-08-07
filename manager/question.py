@@ -36,7 +36,6 @@ class Question(db.Model):
     user_id = Column(Integer, ForeignKey('user.id'))
     natural_question = Column(String)
     notes = Column(String)
-    name = Column(String)
     machine_question = Column(JSON)
 
     user = relationship(
@@ -56,7 +55,6 @@ class Question(db.Model):
         self.user_id = None
         self.id = None
         self.notes = None
-        self.name = None
         self.natural_question = None
         self.machine_question = None
 
