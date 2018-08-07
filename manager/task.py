@@ -69,12 +69,31 @@ class Task(db.Model):
             port=os.environ['RESULTS_PORT'],
             db=os.environ['MANAGER_RESULTS_DB'])
         value = r.get(f'celery-task-meta-{self.id}')
-        task = json.loads(value) if value is not None else None
+        if value is None:
+            return None
+        task = json.loads(value)
+        print(task)
         return task['status']
+
+    @property
+    def result(self):
+        """Task result."""
+        r = redis.Redis(
+            host=os.environ['RESULTS_HOST'],
+            port=os.environ['RESULTS_PORT'],
+            db=os.environ['MANAGER_RESULTS_DB'])
+        value = r.get(f'celery-task-meta-{self.id}')
+        if value is None:
+            return None
+        task = json.loads(value)
+        result = task['result']
+        if isinstance(result, dict) and 'exc_type' in result:
+            result['traceback'] = task['traceback']
+        return result
 
     def to_json(self):
         """Export task as JSON-ifiable dict."""
-        keys = [str(column).split('.')[-1] for column in self.__table__.columns] + ['status']
+        keys = [str(column).split('.')[-1] for column in self.__table__.columns] + ['status', 'result']
         struct = {key: getattr(self, key) for key in keys}
         struct['timestamp'] = struct['timestamp'].isoformat()
         return struct
