@@ -113,6 +113,14 @@ class KnowledgeGraphViewer extends React.Component {
       return n;
     });
 
+    g.edges = g.edges.map((e) => {
+      e.from = e.source_id;
+      e.to = e.target_id;
+      delete e.source_id;
+      delete e.target_id;
+      return e;
+    });
+
     // Prune out support edges
     g.edges = g.edges.filter(e => e.type !== 'literature_co-occurrence'); // Keep only result edges for this graph display
     return g;
