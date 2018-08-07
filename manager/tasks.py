@@ -52,6 +52,7 @@ def answer_question(self, question_id, user_email=None):
     polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{r.json()['task_id']}"
     
     for _ in range(60*60*24): # wait up to 1 day
+        time.sleep(1)
         r = requests.get(polling_url)
         if r.json()['status'] == 'FAILURE':
             raise RuntimeError('Question answering failed.')
@@ -59,7 +60,6 @@ def answer_question(self, question_id, user_email=None):
             raise RuntimeError('Task terminated by admin.')
         if r.json()['status'] == 'SUCCESS':
             break
-        time.sleep(1)
     else:
         raise RuntimeError("Question answering has not completed after 1 day. It will continue working, but will not be monitored from here.")
 
