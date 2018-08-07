@@ -5,9 +5,10 @@ import { Panel, FormControl } from 'react-bootstrap';
 import { AgGridReact } from 'ag-grid-react';
 
 import LoadingImg from '../../../assets/images/loading.gif';
-import NetworkImg from '../../../assets/images/network.png';
+import FailureImg from '../../../assets/images/failure.png';
+import SuccessImg from '../../../assets/images/success.png';
 
-class QuestionListTableAgGrid extends React.Component {
+class ActivityTableAgGrid extends React.Component {
   constructor(props) {
     super(props);
 
@@ -20,8 +21,7 @@ class QuestionListTableAgGrid extends React.Component {
     this.onFilterTextChange = this.onFilterTextChange.bind(this);
     this.getRowClass = this.getRowClass.bind(this);
 
-    this.cellRendererAnswers = this.cellRendererAnswers.bind(this);
-    this.cellRendererBusy = this.cellRendererBusy.bind(this);
+    this.cellRendererStatus = this.cellRendererStatus.bind(this);
   }
 
   onGridReady(params) {
@@ -32,16 +32,11 @@ class QuestionListTableAgGrid extends React.Component {
 
     const sort = [
       { colId: 'isUserOwned', sort: 'desc' },
-      { colId: 'latest_answerset_timestamp', sort: 'desc' },
     ];
     this.gridApi.setSortModel(sort);
   }
   onClick(event) {
-    if (event.column.colId === 'latest_answerset_id') {
-      this.props.callbackAnswersetSelect(event.node.data, { id: event.node.data.latest_answerset_id });
-    } else {
-      this.props.callbackQuestionSelect(event.node.data);
-    }
+    this.props.onClick(event.node.data);
   }
   onFilterTextChange(event) {
     this.setState({ quickFilterText: event.target.value });
@@ -52,27 +47,13 @@ class QuestionListTableAgGrid extends React.Component {
     }
     return 'question-row-is-unowned';
   }
-  cellRendererAnswers(params) {
-    let out = '';
-    if (params.data !== '' && params.data !== undefined && params.data !== null && 'id' in params.data && params.data.id && 'latest_answerset_id' in params.data && params.data.latest_answerset_id) {
-      out = `<div style="
-        display: table;
-        width: 100%;
-        position: absolute;
-        height: 100%;">
-          <div style="
-            display: table-cell;
-            vertical-align: middle;
-          ">
-            <img src=../${NetworkImg} height="25" width="25" />
-          </div>
-        </div>`;
-    }
-    return out;
-  }
-  cellRendererBusy(params) {
-    let out = '';
-    if (params.value) {
+  cellRendererStatus(params) {
+    let out = params.value;
+    const isBusy = (params.value !== 'FAILURE' && params.value !== 'SUCCESS');
+    const isFailure = params.value === 'FAILURE';
+    const isSuccess = params.value === 'SUCCESS';
+
+    if (isBusy) {
       out = `<div style="
         display: table;
         width: 100%;
@@ -86,6 +67,34 @@ class QuestionListTableAgGrid extends React.Component {
           </div>
         </div>`;
       // out = 'Updating...';
+    }
+    if (isFailure) {
+      out = `<div style="
+        display: table;
+        width: 100%;
+        position: absolute;
+        height: 100%;">
+          <div style="
+            display: table-cell;
+            vertical-align: middle;
+          ">
+            <img src=../${FailureImg} height="25" width="25" />
+          </div>
+        </div>`;
+    }
+    if (isSuccess) {
+      out = `<div style="
+        display: table;
+        width: 100%;
+        position: absolute;
+        height: 100%;">
+          <div style="
+            display: table-cell;
+            vertical-align: middle;
+          ">
+            <img src=../${SuccessImg} height="25" width="25" />
+          </div>
+        </div>`;
     }
     return out;
   }
@@ -130,43 +139,45 @@ class QuestionListTableAgGrid extends React.Component {
                     cellRenderer: this.cellRendererOwned,
                     width: 5,
                     hide: true,
-                    tooltip: value => (value ? 'This is your question' : ''),
+                    tooltip: value => (value ? 'This is your task' : ''),
                     suppressResize: true,
                   },
                   {
-                    headerName: 'Question',
-                    field: 'natural_question',
+                    headerName: 'ID',
+                    field: 'id',
                     suppressMenu: true,
-                    width: 400,
+                    width: 175,
                   },
                   {
-                    headerName: 'Notes',
-                    field: 'notes',
+                    headerName: 'Question ID',
+                    field: 'question_id',
                     suppressMenu: true,
-                    width: 200,
+                    width: 100,
                   },
                   {
-                    headerName: '',
-                    field: 'isBusy',
+                    headerName: 'Type',
+                    field: 'typeName',
                     suppressMenu: true,
-                    cellRenderer: this.cellRendererBusy,
-                    width: 20,
-                    minWidth: 20,
-                    hide: false,
-                    cellClass: 'no-padding',
+                    width: 50,
                   },
                   {
-                    headerName: '',
-                    field: 'latest_answerset_id',
+                    headerName: 'Started',
+                    field: 'timeString',
                     suppressMenu: true,
-                    cellRenderer: this.cellRendererAnswers,
+                    width: 150,
+                  },
+                  {
+                    headerName: 'State',
+                    field: 'status',
+                    suppressMenu: true,
+                    cellRenderer: this.cellRendererStatus,
                     width: 20,
                     minWidth: 20,
                     hide: false,
                     cellClass: 'no-padding',
                   },
                 ]}
-                rowData={this.props.questions}
+                rowData={this.props.tasks}
                 getRowClass={this.getRowClass}
                 enableFiltering
                 enableSorting
@@ -188,16 +199,14 @@ class QuestionListTableAgGrid extends React.Component {
   }
 }
 
-QuestionListTableAgGrid.defaultProps = {
+ActivityTableAgGrid.defaultProps = {
   height: '100px',
 };
 
-QuestionListTableAgGrid.propTypes = {
+ActivityTableAgGrid.propTypes = {
   height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  questions: PropTypes.arrayOf(PropTypes.shape({ natural_question: PropTypes.string })).isRequired,
+  tasks: PropTypes.arrayOf(PropTypes.shape({ id: PropTypes.string })).isRequired,
   showSearch: PropTypes.bool.isRequired,
-  callbackQuestionSelect: PropTypes.func.isRequired,
-  callbackAnswersetSelect: PropTypes.func.isRequired,
 };
 
-export default QuestionListTableAgGrid;
+export default ActivityTableAgGrid;

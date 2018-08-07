@@ -73,7 +73,11 @@ class AnswersetSelector extends React.Component {
     // }
     const answerset = answersetFilter[0];
 
-    const d = new Date(answerset.datetime);
+    let ts = answerset.datetime;
+    if (!ts.endsWith('Z')) {
+      ts = `${ts}Z`;
+    }
+    const d = new Date(ts);
     const timeString = d.toLocaleString();
 
     let { message } = answerset;

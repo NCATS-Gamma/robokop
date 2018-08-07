@@ -408,12 +408,13 @@ class Question extends React.Component {
         this.appConfig.questionTasks(
           this.props.id,
           (data) => {
-            data = data.filter(x => x.status != "FAILURE" && x.status != "SUCCESS")
+            // Remove failed and completed tasks here. We will check for these below.
+            data = data.filter(x => x.status !== 'FAILURE' && x.status !== 'SUCCESS');
             console.log('Checking if our new task actually started', data);
             let allOk = true;
             if (isAnswerTask) {
-              var answer_tasks = data.filter(x => x.type.endsWith("answer_question"))
-              const ind = answer_tasks.findIndex(a => a.uuid === newTask.answersetTask);
+              const answerTasks = data.filter(x => x.type.endsWith('answer_question'));
+              const ind = answerTasks.findIndex(a => a.uuid === newTask.answersetTask);
               if (ind < 0) {
                 // Task is not in the list of active tasks
 
@@ -427,8 +428,8 @@ class Question extends React.Component {
                     // Anything else // Assume lost, how are you doing this but not in the active list for this question
                     // 'SUCCESS' // Already done, great, fire notification
                     // 'FAILURE' // Already failued, fire notificaiton
-                    const success = taskStatusData.state === 'SUCCESS';
-                    const failure = taskStatusData.state === 'FAILURE';
+                    const success = taskStatusData.status === 'SUCCESS';
+                    const failure = taskStatusData.status === 'FAILURE';
                     if (success || failure) {
                       this.notifyAnswers(newTask.answersetTask);
                       return;
@@ -449,8 +450,8 @@ class Question extends React.Component {
               // Task is appropriately in the list of active tasks, start polling as normal
             }
             if (isRefreshTask) {
-              var update_tasks = data.filter(x => x.type.endsWith("update_kg"))
-              const ind = update_tasks.findIndex(a => a.uuid === newTask.questionTask);
+              const updateTasks = data.filter(x => x.type.endsWith('update_kg'));
+              const ind = updateTasks.findIndex(a => a.uuid === newTask.questionTask);
               if (ind < 0) {
                 // Task is not in the list of active tasks
 
@@ -464,8 +465,8 @@ class Question extends React.Component {
                     // Anything else // Assume lost, how are you doing this but not in the active list for this question
                     // 'SUCCESS' // Already done, great, fire notification
                     // 'FAILURE' // Already failued, fire notificaiton
-                    const success = taskStatusData.state === 'SUCCESS';
-                    const failure = taskStatusData.state === 'FAILURE';
+                    const success = taskStatusData.status === 'SUCCESS';
+                    const failure = taskStatusData.status === 'FAILURE';
                     if (success || failure) {
                       this.notifyRefresh(newTask.questionTask);
                       return;

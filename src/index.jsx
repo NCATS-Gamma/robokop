@@ -19,6 +19,7 @@ import Answerset from './Answerset';
 import Workflow from './Workflow';
 import AnswersetApp from './AnswersetApp';
 import Comparison from './Comparison';
+import Activity from './Activity';
 
 // Our actual CSS and other images etc.
 import '../assets/css/style.css';
@@ -61,6 +62,14 @@ const robokop = {
       <QuestionNew
         config={config}
         initializationId={id}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  activity: () => {
+    ReactDOM.render(
+      <Activity
+        config={config}
       />,
       document.getElementById('reactEntry'),
     );

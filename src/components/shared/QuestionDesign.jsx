@@ -54,9 +54,12 @@ class QuestionDesign extends React.Component {
     if (props.initializationData && (typeof props.initializationData === 'object') && ('question' in props.initializationData) && ('machineQuestion' in props.initializationData)) {
       if (props.initializationData.question && props.initializationData.machineQuestion) {
         // We have the data to prepopulate the question designer
-        window.alert('Forking is not yet supported again!');
-        console.log(props.initializationData);
-        this.setState({ initialQuestionText: props.initializationData.question });
+        this.setState({
+          initialQuestionText: props.initializationData.question,
+          questionText: props.initializationData.question,
+          machineQuestion: props.initializationData.machineQuestion,
+          status: 'good',
+        });
       }
     }
   }

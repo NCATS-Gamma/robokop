@@ -14,7 +14,7 @@ class AppConfig {
       login: this.url('login'),
       logout: this.url('logout'),
       questions: this.url('questions'),
-      questionDesign: this.url('q/new'),
+      questionDesign: this.url('q/new/'),
       question: questionId => this.url(`q/${questionId}`),
       answerset: (questionId, answersetId) => this.url(`a/${questionId}_${answersetId}`),
       answer: (questionId, answersetId, answerId) => this.url(`a/${questionId}_${answersetId}/${answerId}`),
@@ -215,7 +215,7 @@ class AppConfig {
   }
   tasksData(successFun) {
     this.getRequest(
-      this.apis.tasks(),
+      this.apis.tasks,
       successFun,
     );
   }

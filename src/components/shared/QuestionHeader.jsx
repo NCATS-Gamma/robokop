@@ -7,6 +7,15 @@ import FaDownload from 'react-icons/lib/fa/download';
 
 import QuestionToolbar from './QuestionToolbar';
 
+const timestampToTimeString = (ts) => {
+  let ts2 = ts;
+  if (!ts.endsWith('Z')) {
+    ts2 = `${ts2}Z`;
+  }
+  const d = new Date(ts2);
+  return d.toLocaleString();
+};
+
 const _ = require('lodash');
 const shortid = require('shortid');
 
@@ -134,20 +143,20 @@ class QuestionHeader extends React.Component {
     }
 
     const otherAnswersetMenuItemList = this.props.otherAnswersets.map((a, i) => {
-      const d = new Date(a.timestamp);
+      const timeString = timestampToTimeString(a.datetime);
       return (
         <MenuItem
           eventKey={`${i + 2}`}
           key={shortid.generate()}
           href={this.props.urlAnswerset(a)}
         >
-          {d.toLocaleString()} - {a.creator}
+          {timeString} - {a.creator}
         </MenuItem>
       );
     });
-    let answersetDate = new Date();
+    let answersetTime = new Date().toLocaleString();
     if (('answerset' in this.props) && ('timestamp' in this.props.answerset)) {
-      answersetDate = new Date(this.props.answerset.timestamp);
+      answersetTime = timestampToTimeString(this.props.answerset.timestamp);
     }
     let creator = 'Reasoner';
     if (('answerset' in this.props) && ('creator' in this.props.answerset)) {
@@ -159,7 +168,7 @@ class QuestionHeader extends React.Component {
         key={shortid.generate()}
         active
       >
-        {`${answersetDate.toLocaleString()} - ${creator}`}
+        {`${answersetTime} - ${creator}`}
       </MenuItem>,
     ].concat(otherAnswersetMenuItemList);
 
