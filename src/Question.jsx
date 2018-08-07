@@ -144,7 +144,7 @@ class Question extends React.Component {
   }
   notifyRefresh(taskId) {
     this.appConfig.taskStatus(taskId, (data) => {
-      if (data.state == 'SUCCESS') {
+      if (data.status == 'SUCCESS') {
         this.notificationSystem.addNotification({
           title: 'Knowledge Graph Update Complete',
           message: 'We finished updating the knowledge graph for this question. Go check it out!',
@@ -152,7 +152,7 @@ class Question extends React.Component {
           dismissible: 'click',
           position: 'tr',
         });
-      } else if (data.state == 'REVOKED') {
+      } else if (data.status == 'REVOKED') {
         console.log(taskId, data);
         this.notificationSystem.addNotification({
           title: 'Knowledge Graph Update Terminated',
@@ -163,9 +163,15 @@ class Question extends React.Component {
         });
       } else {
         console.log(taskId, data);
+        const traceback = data.result.traceback;
         this.notificationSystem.addNotification({
           title: 'Error Updating Knowledge Graph',
-          message: `We encountered an error while trying to update the knowledge graph for this question. If this error persists please contact a system administrator.\r\n\r\nError Report:\r\n${data.result}`,
+          message: `
+            We encountered an error while trying to update the knowledge graph for this question.
+            If this error persists please contact a system administrator.
+            Error Report:
+            ${traceback}
+          `,
           level: 'error',
           dismissible: 'click',
           position: 'tr',
@@ -175,7 +181,7 @@ class Question extends React.Component {
   }
   notifyAnswers(taskId) {
     this.appConfig.taskStatus(taskId, (data) => {
-      const success = data.state !== 'FAILURE';
+      const success = data.status !== 'FAILURE';
       if (success) {
         this.notificationSystem.addNotification({
           title: 'New Answers are Available',
@@ -186,32 +192,15 @@ class Question extends React.Component {
         });
       } else {
         console.log(taskId, data);
+        const traceback = data.result.traceback;
         this.notificationSystem.addNotification({
           title: 'Error Finding New Answers',
-          message: `We encountered an error while trying to find new answers for this question. If this error persists please contact a system administrator.\r\n\r\nError Report:\r\n${data.result}`,
-          level: 'error',
-          dismissible: 'click',
-          position: 'tr',
-        });
-      }
-    });
-  }
-  notifyInitializer(taskId) {
-    this.appConfig.taskStatus(taskId, (data) => {
-      const success = data.state !== 'FAILURE';
-      if (success) {
-        this.notificationSystem.addNotification({
-          title: 'Initial Answers are Available',
-          message: 'We finished finding initial answers for this question. Go check them out!',
-          level: 'success',
-          dismissible: 'click',
-          position: 'tr',
-        });
-      } else {
-        console.log(taskId, data);
-        this.notificationSystem.addNotification({
-          title: 'Error Finding Initial Answers',
-          message: `We encountered an error while trying to find answers for this question. Robokop may not be capable of answering the question as phrased.\r\n\r\nError Report:\r\n${data.result}`,
+          message: `
+            We encountered an error while trying to find new answers for this question.
+            If this error persists please contact a system administrator.
+            Error Report:
+            ${traceback}
+          `,
           level: 'error',
           dismissible: 'click',
           position: 'tr',
