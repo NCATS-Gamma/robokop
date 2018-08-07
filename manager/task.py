@@ -8,6 +8,7 @@ import redis
 
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, DateTime, String, ForeignKey
+from sqlalchemy.types import JSON
 
 from manager.setup import db
 from manager.question import Question
@@ -26,6 +27,7 @@ class Task(db.Model):
     initiator = Column(String)
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
     question_id = Column(String, ForeignKey('question.id'))
+    _result = Column(JSON)
 
     question = relationship(
         Question,
@@ -64,20 +66,14 @@ class Task(db.Model):
     @property
     def status(self):
         """Task status."""
-        r = redis.Redis(
-            host=os.environ['RESULTS_HOST'],
-            port=os.environ['RESULTS_PORT'],
-            db=os.environ['MANAGER_RESULTS_DB'])
-        value = r.get(f'celery-task-meta-{self.id}')
-        if value is None:
-            return None
-        task = json.loads(value)
-        print(task)
-        return task['status']
+        return self.result['status']
 
     @property
     def result(self):
         """Task result."""
+        if self._result is not None:
+            return self._result
+
         r = redis.Redis(
             host=os.environ['RESULTS_HOST'],
             port=os.environ['RESULTS_PORT'],
@@ -85,10 +81,12 @@ class Task(db.Model):
         value = r.get(f'celery-task-meta-{self.id}')
         if value is None:
             return None
-        task = json.loads(value)
-        result = task['result']
-        if isinstance(result, dict) and 'exc_type' in result:
-            result['traceback'] = task['traceback']
+        result = json.loads(value)
+        # only store result permanently if task is complete
+        # this let's us know when a task is lost rather than busy
+        if result['status'] in ['SUCCESS', 'FAILURE', 'REVOKED']:
+            self._result = result
+            db.session.commit()
         return result
 
     def to_json(self):
