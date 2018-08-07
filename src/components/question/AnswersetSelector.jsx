@@ -120,7 +120,6 @@ class AnswersetSelector extends React.Component {
   }
 
   renderOverlay() {
-    const disableNewButton = !this.props.answerBusy || !this.props.refreshBusy || !this.props.initializerBusy;
     return (
       <div>
         {this.props.initializerBusy &&
@@ -186,14 +185,20 @@ class AnswersetSelector extends React.Component {
     const { showNewButton } = this.props;
     const moreThanOne = this.props.answersets.length > 1;
     const options = this.props.answersets.map((a) => {
-      const d = new Date(a.datetime);
+      let ts = a.datetime;
+      if (!ts.endsWith('Z')) {
+        ts = `${ts}Z`;
+      }
+      const d = new Date(ts);
+      const timeString = d.toLocaleString();
+
       let { creator } = a;
       if (creator === undefined || creator == null) {
         creator = '';
       } else {
         creator = ` - ${creator}`;
       }
-      return { value: a.id, label: `${d.toLocaleString()} ${creator}` };
+      return { value: a.id, label: `${timeString} ${creator}` };
     });
     const disableNewButton = this.props.answerBusy || this.props.refreshBusy || this.props.initializerBusy;
     return (
