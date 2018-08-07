@@ -7,6 +7,8 @@ import { AgGridReact } from 'ag-grid-react';
 import LoadingImg from '../../../assets/images/loading.gif';
 import FailureImg from '../../../assets/images/failure.png';
 import SuccessImg from '../../../assets/images/success.png';
+import RevokedImg from '../../../assets/images/revoked.png';
+
 
 class ActivityTableAgGrid extends React.Component {
   constructor(props) {
@@ -49,9 +51,10 @@ class ActivityTableAgGrid extends React.Component {
   }
   cellRendererStatus(params) {
     let out = params.value;
-    const isBusy = (params.value !== 'FAILURE' && params.value !== 'SUCCESS');
+    const isBusy = (params.value !== 'FAILURE' && params.value !== 'SUCCESS' && params.value !== 'REVOKED');
     const isFailure = params.value === 'FAILURE';
     const isSuccess = params.value === 'SUCCESS';
+    const isRevoked = params.value === 'REVOKED';
 
     if (isBusy) {
       out = `<div style="
@@ -93,6 +96,20 @@ class ActivityTableAgGrid extends React.Component {
             vertical-align: middle;
           ">
             <img src=../${SuccessImg} height="25" width="25" />
+          </div>
+        </div>`;
+    }
+    if (isRevoked) {
+      out = `<div style="
+        display: table;
+        width: 100%;
+        position: absolute;
+        height: 100%;">
+          <div style="
+            display: table-cell;
+            vertical-align: middle;
+          ">
+            <img src=../${RevokedImg} height="25" width="25" />
           </div>
         </div>`;
     }

@@ -6,6 +6,7 @@ import GoGear from 'react-icons/lib/go/gear';
 import GoSync from 'react-icons/lib/go/sync';
 import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
 import GoRepoForked from 'react-icons/lib/go/repo-forked';
+import GoMilestone from 'react-icons/lib/go/milestone';
 import GoTrashcan from 'react-icons/lib/go/trashcan';
 
 const shortid = require('shortid');
@@ -50,9 +51,18 @@ class QuestionToolbar extends React.Component {
         >
           <GoRepoForked /> Ask a New Question Like this One
         </MenuItem>
+        {this.props.enableTaskStatus &&
+          <MenuItem
+            eventKey="4"
+            disabled={!this.props.enableTaskStatus}
+            onSelect={this.props.callbackTaskStatus}
+          >
+            <GoMilestone /> Status of the Running Task
+          </MenuItem>
+        }
         <MenuItem divider />
         <MenuItem
-          eventKey="4"
+          eventKey="5"
           disabled={!this.props.enableQuestionDelete}
           onSelect={this.props.callbackDelete}
         >
@@ -69,10 +79,12 @@ QuestionToolbar.defaultProps = {
   enableNewAnswersets: false,
   enableQuestionFork: false,
   enableQuestionDelete: false,
+  enableTaskStatus: false,
   callbackFork: () => {},
   callbackUpdate: () => {},
   callbackNewAnswerset: () => {},
   callbackDelete: () => {},
+  callbackTaskStatus: () => {},
 };
 
 

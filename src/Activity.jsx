@@ -25,6 +25,7 @@ class Activity extends React.Component {
     };
 
     this.callbackTaskStop = this.callbackTaskStop.bind(this);
+    this.refreshTasks = this.refreshTasks.bind(this);
 
     this.dialogWait = this.dialogWait.bind(this);
     this.dialogMessage = this.dialogMessage.bind(this);
@@ -32,19 +33,21 @@ class Activity extends React.Component {
   }
 
   componentDidMount() {
-    this.appConfig.tasksData(data => this.setState({
-      tasks: data,
-      dataReady: true,
-    }));
+    this.refreshTasks();
     this.appConfig.user(data => this.setState({
       user: this.appConfig.ensureUser(data),
       userReady: true,
     }));
   }
+  refreshTasks() {
+    this.appConfig.tasksData(data => this.setState({
+      tasks: data,
+      dataReady: true,
+    }));
+  }
   callbackTaskStop(task) {
-
-    const isBusy = !(task.status === 'FAILURE' || task.status === 'SUCCESS');
-    const isAuth = this.state.user.isAdmin;
+    const isBusy = !(task.status === 'FAILURE' || task.status === 'SUCCESS' || task.status === 'REVOKED');
+    const isAuth = this.state.user.is_admin || this.state.user.username === task.initiator;
 
     let ts = task.timestamp;
     if (!ts.endsWith('Z')) {
@@ -72,9 +75,9 @@ class Activity extends React.Component {
       const content = (
         <div>
           {taskSummary}
-          <p>
-            Are you sure you want to stop this task?
-          </p>
+          <h3>
+            You can stop this task prior to completion. Are you sure you want to stop this task?
+          </h3>
         </div>
       );
 
@@ -97,6 +100,8 @@ class Activity extends React.Component {
                 position: 'tr',
                 dismissible: 'click',
               });
+              this.dialog.hide();
+              this.refreshTasks();
             },
             (err) => {
               console.log(err);

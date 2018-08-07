@@ -294,12 +294,12 @@ class QuestionTasks(Resource):
         get_messages()
 
         tasks = question.tasks
-        logger.info(tasks[0].status)
         statuses = [
             {
                 'uuid': t.id,
                 'type': t.type,
                 'timestamp': t.timestamp.isoformat(),
+                'initiator': t.initiator,
                 'status': t.status
             } for t in tasks]
 

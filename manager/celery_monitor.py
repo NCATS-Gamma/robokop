@@ -18,6 +18,7 @@ def initialize():
         credentials=pika.credentials.PlainCredentials(os.environ['BROKER_USER'], os.environ['BROKER_PASSWORD'])))
     channel = connection.channel()
 
+    channel.exchange_declare(exchange='manager', exchange_type='topic', durable=True)
     channel.queue_declare(queue='manager_log')
     channel.queue_bind(queue='manager_log', exchange='manager', routing_key='manager.*')
 

@@ -51,6 +51,7 @@ class QuestionHeader extends React.Component {
       (newProps.enableQuestionEdit === this.props.enableQuestionEdit) &&
       (newProps.enableQuestionDelete === this.props.enableQuestionDelete) &&
       (newProps.enableQuestionFork === this.props.enableQuestionFork) &&
+      (newProps.enableTaskStatus === this.props.enableTaskStatus) &&
       (newProps.enableQuestionSelect === this.props.enableQuestionSelect) &&
       (newProps.showOtherQuestions === this.props.showOtherQuestions) &&
       _.isEqual(newProps.otherQuestions, this.props.otherQuestions) &&
@@ -237,12 +238,14 @@ class QuestionHeader extends React.Component {
                       callbackNewAnswerset={this.props.callbackNewAnswerset}
                       callbackRefresh={this.props.callbackRefresh}
                       callbackFork={this.props.callbackFork}
+                      callbackTaskStatus={this.props.callbackTaskStatus}
                       callbackDelete={this.props.callbackDelete}
 
                       enableNewAnswersets={this.props.enableNewAnswersets && !active}
                       enableQuestionRefresh={this.props.enableQuestionRefresh && !active}
                       enableQuestionDelete={this.props.enableQuestionDelete && !active}
                       enableQuestionFork={this.props.enableQuestionFork}
+                      enableTaskStatus={this.props.enableTaskStatus && active}
                     />
                   }
                   {this.props.showDownload &&
