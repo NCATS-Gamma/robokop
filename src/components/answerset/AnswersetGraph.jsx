@@ -25,6 +25,7 @@ class AnswersetGraph extends React.Component {
                 <SubGraphViewer
                   subgraph={this.props.answersetGraph}
                   concepts={this.props.concepts}
+                  layoutRandomSeed={Math.floor(Math.random() * 100)}
                   callbackOnGraphClick={() => {}}
                 />
               }
