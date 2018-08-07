@@ -137,7 +137,13 @@ class QuestionListTableAgGrid extends React.Component {
                     headerName: 'Question',
                     field: 'natural_question',
                     suppressMenu: true,
-                    width: 400,
+                    width: 300,
+                  },
+                  {
+                    headerName: 'User',
+                    field: 'user_email',
+                    suppressMenu: true,
+                    width: 100,
                   },
                   {
                     headerName: 'Notes',
