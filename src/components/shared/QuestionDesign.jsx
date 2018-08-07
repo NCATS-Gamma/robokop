@@ -36,9 +36,9 @@ class QuestionDesign extends React.Component {
     this.fetchMachineQuestion = this.fetchMachineQuestion.bind(this);
 
     this.questionExamples = [
-      'What genes affect ebola?',
+      'What genes affect ebola hemorrhagic fever?',
       'What is the COP for imatinib and asthma?',
-      'What genetic conditions protect against ebola?',
+      'What genetic conditions protect against ebola hemorrhagic fever?',
     ];
   }
 
