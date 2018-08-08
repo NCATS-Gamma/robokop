@@ -6,6 +6,8 @@ import os
 import sys
 import time
 import json
+import logging
+
 import requests
 from celery import Celery, signals
 from kombu import Queue, Exchange
@@ -15,7 +17,9 @@ import deploy.initialize_manager
 from manager.setup import app, mail, db
 from manager.answer import get_answerset_by_id, Answerset
 from manager.question import get_question_by_id
-from manager.logging_config import logger
+import manager.logging_config
+
+logger = logging.getLogger(__name__)
 
 # set up Celery
 celery = Celery(app.name)
