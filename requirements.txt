@@ -9,7 +9,6 @@ flask-restful
 flask-graphql
 graphene-sqlalchemy
 flasgger
-flower
 gunicorn
 kombu
 neo4j-driver==1.5.3
