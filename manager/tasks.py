@@ -26,6 +26,7 @@ celery = Celery(app.name)
 celery.conf.update(
     broker_url=os.environ["CELERY_BROKER_URL"],
     result_backend=os.environ["CELERY_RESULT_BACKEND"],
+    task_track_started=True,
 )
 task_exchange = Exchange('manager', type='topic')
 celery.conf.task_queues = (
@@ -108,14 +109,14 @@ def update_kg(self, question_id, user_email=None):
     polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{r.json()['task id']}"
     
     for _ in range(60*60*24): # wait up to 1 day
-        r = requests.get(polling_url)
-        if r.json()['state'] == 'FAILURE':
-            raise RuntimeError('Builder failed.')
-        if r.json()['state'] == 'REVOKED':
-            raise RuntimeError('Task terminated by admin.')
-        if r.json()['state'] == 'SUCCESS':
-            break
         time.sleep(1)
+        r = requests.get(polling_url)
+        if r.json()['status'] == 'FAILURE':
+            raise RuntimeError('Builder failed.')
+        if r.json()['status'] == 'REVOKED':
+            raise RuntimeError('Task terminated by admin.')
+        if r.json()['status'] == 'SUCCESS':
+            break
     else:
         raise RuntimeError("KG updating has not completed after 1 day. It will continue working, but we must return to the manager.")
 
