@@ -147,6 +147,7 @@ With all containers started you can now monitor each component using the urls be
 * http://127.0.0.1:6011/apidocs - The robokop-rank API
 * http://127.0.0.1:7474 - NEO4j http interface
 * bolt://127.0.0.1:7687 - NEO4j bolt interface
+* http://127.0.0.1:9003 - Ranker supervisord interface
 * http://127.0.0.1:5555 - UI to see the queues for the UI - Requires authentication
 * http://127.0.0.1:5556 - UI to see the queues for the builder - Requires authentication
 * http://127.0.0.1:5557 - UI to see the queues for the ranker - Requires authentication
