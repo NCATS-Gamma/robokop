@@ -53,7 +53,10 @@ robokop.env looks like this:
 NEO4J_HTTP_PORT=7474
 NEO4J_BOLT_PORT=7687
 
-REDIS_PORT=6379
+CACHE_PORT=6379
+RESULTS_PORT=6380
+BROKER_PORT=5672
+BROKER_USER=murphy
 
 POSTGRES_PORT=5432
 POSTGRES_USER=murphy
@@ -68,14 +71,16 @@ RANKER_PORT=6011
 
 # Services can be REACHED at these addresses. They should generally publish to 0.0.0.0.
 NEO4J_HOST=127.0.0.1
-REDIS_HOST=127.0.0.1
+CACHE_HOST=127.0.0.1
+RESULTS_HOST=127.0.0.1
+BROKER_HOST=127.0.0.1
 POSTGRES_HOST=127.0.0.1
 SUPERVISOR_HOST=127.0.0.1
 
-GREENT_REDIS_DB=0
-MANAGER_REDIS_DB=1
-BUILDER_REDIS_DB=2
-RANKER_REDIS_DB=3
+CACHE_DB=0
+MANAGER_RESULTS_DB=1
+BUILDER_RESULTS_DB=2
+RANKER_RESULTS_DB=3
 
 MANAGER_SUPERVISOR_PORT=9001
 BUILDER_SUPERVISOR_PORT=9002
@@ -83,6 +88,9 @@ RANKER_SUPERVISOR_PORT=9003
 SUPERVISOR_USER=admin
 
 COMPOSE_PROJECT_NAME=robokop
+
+NUM_BUILDERS=4
+NUM_RANKERS=4
 #############################################################
 
 ####################### Secret stuff ########################
@@ -90,7 +98,8 @@ ADMIN_EMAIL=<your-email@x.org>
 ADMIN_PASSWORD=----------------------------------
 
 NEO4J_PASSWORD=----------------------------------
-
+BROKER_PASSWORD=----------------------------------
+POSTGRES_PASSWORD=----------------------------------
 SUPERVISOR_PASSWORD=----------------------------------
 
 ROBOKOP_SECRET_KEY=----------------------------------
