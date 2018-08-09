@@ -7,6 +7,7 @@ import json
 import pika
 
 from manager.task import Task
+from manager.setup import session_scope
 import manager.logging_config
 
 logger = logging.getLogger(__name__)
@@ -47,23 +48,25 @@ def get_messages():
     # while channel.get_waiting_message_count():
     #     method_frame, properties, body = channel.consume('manager_log')
 
-    for method_frame, properties, body in channel.consume('manager_log', inactivity_timeout=0.0001):
-        if body is None:
-            break
-        body = json.loads(body.decode())
-        headers = properties.headers
+    with session_scope() as session:
+        for method_frame, properties, body in channel.consume('manager_log', inactivity_timeout=0.0001):
+            if body is None:
+                break
+            body = json.loads(body.decode())
+            headers = properties.headers
 
-        qid = re.match(r"[\[(]'(.*)',?[)\]]", headers['argsrepr']).group(1)
+            qid = re.match(r"[\[(]'(.*)',?[)\]]", headers['argsrepr']).group(1)
 
-        initiator = body[1]['user_email']
+            initiator = body[1]['user_email']
 
-        # create task
-        # it will be stored in the postgres database
-        Task(id=headers['id'], question_id=qid, type=headers['task'], initiator=initiator)
-        logger.debug(f'Got task {headers["id"]}')
+            # create task
+            # it will be stored in the postgres database
+            task = Task(id=headers['id'], question_id=qid, type=headers['task'], initiator=initiator)
+            session.add(task)
+            logger.debug(f'Got task {headers["id"]}')
 
-        # print(f" [x] Received {body}")
-        channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+            # print(f" [x] Received {body}")
+            channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
     # # Cancel the consumer and return any pending messages
     # requeued_messages = channel.cancel()

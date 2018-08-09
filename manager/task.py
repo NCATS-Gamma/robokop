@@ -10,7 +10,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, DateTime, String, ForeignKey
 from sqlalchemy.types import JSON
 
-from manager.setup import Base
+from manager.setup import Base, db
 from manager.question import Question
 import manager.logging_config
 
@@ -60,9 +60,6 @@ class Task(Base):
             else:
                 logger.warning("Keyword argument '%s' ignored.", key)
 
-        db.session.add(self)
-        db.session.commit()
-
     @property
     def status(self):
         """Task status."""
@@ -97,14 +94,18 @@ class Task(Base):
         return struct
 
 
-def list_tasks():
+def list_tasks(session=None):
     """Return all tasks."""
-    return db.session.query(Task).all()
+    if session is None:
+        session = db.session
+    return session.query(Task).all()
 
 
-def get_task_by_id(task_id):
+def get_task_by_id(task_id, session=None):
     """Return all tasks with id == task_id."""
-    task = db.session.query(Task).filter(Task.id == task_id).first()
+    if session is None:
+        session = db.session
+    task = session.query(Task).filter(Task.id == task_id).first()
     if not task:
         raise KeyError("No such task.")
     return task
