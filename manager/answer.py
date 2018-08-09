@@ -15,12 +15,12 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy import event
 from sqlalchemy import DDL
 
-from manager.setup import db
+from manager.setup import db, Base
 from manager.question import Question
 
 logger = logging.getLogger(__name__)
 
-class Answerset(db.Model):
+class Answerset(Base):
     '''
     An "answer" to a Question.
     Contains a ranked list of walks through the Knowledge Graph.
@@ -127,7 +127,7 @@ event.listen(
     DDL("ALTER SEQUENCE answerset_id_seq RESTART WITH 1453;")
 )
 
-class Answer(db.Model):
+class Answer(Base):
     '''
     Represents a single answer walk
     '''

@@ -11,10 +11,10 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from manager.question import Question
 from manager.answer import Answer
 from manager.user import User
-from manager.setup import db
+from manager.setup import Base, db
 from manager.util import DictLikeMixin
 
-class Feedback(db.Model, DictLikeMixin):
+class Feedback(Base, DictLikeMixin):
     '''
     Represents a chunk of feedback concerning a specific Answer.
     '''

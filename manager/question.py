@@ -19,10 +19,10 @@ from sqlalchemy.ext.declarative import declarative_base
 
 # our modules
 from manager.user import User
-from manager.setup import db
+from manager.setup import Base, db
 from manager.logging_config import logger
 
-class Question(db.Model):
+class Question(Base):
     '''
     Represents a question such as "What genetic condition provides protection against disease X?"
 
