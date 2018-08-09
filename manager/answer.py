@@ -20,7 +20,7 @@ from manager.question import Question
 
 logger = logging.getLogger(__name__)
 
-class Answerset(Base):
+class Answerset(db.Model):
     '''
     An "answer" to a Question.
     Contains a ranked list of walks through the Knowledge Graph.
@@ -127,7 +127,7 @@ event.listen(
     DDL("ALTER SEQUENCE answerset_id_seq RESTART WITH 1453;")
 )
 
-class Answer(Base):
+class Answer(db.Model):
     '''
     Represents a single answer walk
     '''

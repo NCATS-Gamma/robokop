@@ -18,7 +18,7 @@ import manager.logging_config
 logger = logging.getLogger(__name__)
 
 
-class Task(Base):
+class Task(db.Model):
     """Task object."""
 
     __tablename__ = 'task'

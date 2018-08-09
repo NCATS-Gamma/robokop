@@ -22,7 +22,7 @@ from manager.user import User
 from manager.setup import Base, db
 from manager.logging_config import logger
 
-class Question(Base):
+class Question(db.Model):
     '''
     Represents a question such as "What genetic condition provides protection against disease X?"
 

@@ -14,7 +14,7 @@ from manager.user import User
 from manager.setup import Base, db
 from manager.util import DictLikeMixin
 
-class Feedback(Base, DictLikeMixin):
+class Feedback(db.Model, DictLikeMixin):
     '''
     Represents a chunk of feedback concerning a specific Answer.
     '''
