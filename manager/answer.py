@@ -105,21 +105,6 @@ class Answerset(db.Model):
         }
         return output
 
-    def add(self, answer):
-        '''
-        Add an Answer to the AnswerSet
-        '''
-
-        if not isinstance(answer, Answer):
-            raise ValueError("Only Answers may be added to AnswerSets.")
-
-        self.answers += [answer]
-        db.session.commit()
-        return self
-
-    def __iadd__(self, answer):
-        return self.add(answer)
-
     def __getitem__(self, key):
         return self.answers[key]
         
