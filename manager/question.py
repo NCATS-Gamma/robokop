@@ -75,9 +75,6 @@ class Question(db.Model):
             else:
                 warnings.warn("Keyword argument {} ignored.".format(key))
 
-        db.session.add(self)
-        db.session.commit()
-
     def __str__(self):
         return "<ROBOKOP Question id={}>".format(self.id)
 

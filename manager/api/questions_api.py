@@ -66,6 +66,8 @@ class QuestionsAPI(Resource):
         # if not request.json['name']:
         #     return abort(400, "Question needs a name.")
         question = Question(request.json, id=qid, user_id=user_id)
+        db.session.add(question)
+        db.session.commit()
 
         if not 'RebuildCache' in request.headers or request.headers['RebuildCache'] == 'true':
             # To speed things along we start a answerset generation task for this question
