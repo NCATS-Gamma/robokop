@@ -7,7 +7,7 @@ from flask import jsonify
 from flask_restful import Resource
 
 from manager.question import get_question_by_id
-from manager.answer import get_answer_by_id, get_answerset_by_id, list_answers_by_answerset
+from manager.answer import get_answer_by_id, get_answerset_by_id
 from manager.util import getAuthData
 from manager.feedback import list_feedback_by_question_answer, list_feedback_by_question_answerset
 from manager.logging_config import logger

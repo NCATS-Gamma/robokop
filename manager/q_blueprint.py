@@ -13,7 +13,7 @@ from flask import Blueprint, jsonify, render_template, request
 from flask_security import auth_required
 from flask_security.core import current_user
 
-from manager.question import Question, get_question_by_id
+from manager.question import Question
 from manager.tasks import answer_question, update_kg
 from manager.util import getAuthData
 from manager.setup import db
