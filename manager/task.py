@@ -10,7 +10,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, DateTime, String, ForeignKey
 from sqlalchemy.types import JSON
 
-from manager.setup import db
+from manager.setup import Base
 from manager.question import Question
 import manager.logging_config
 
@@ -18,7 +18,7 @@ import manager.logging_config
 logger = logging.getLogger(__name__)
 
 
-class Task(db.Model):
+class Task(Base):
     """Task object."""
 
     __tablename__ = 'task'
