@@ -68,14 +68,22 @@ class Feedback(db.Model, DictLikeMixin):
         struct.pop('user_id')
         return struct
 
-def get_feedback_by_id(id):
-    return db.session.query(Feedback).filter(Feedback.id == id).first()
+def get_feedback_by_id(id, session=None):
+    if session is None:
+        session = db.session
+    return session.query(Feedback).filter(Feedback.id == id).first()
 
-def list_feedback_by_question(question):
-    return db.session.query(Feedback).filter(Feedback.question == question).all()
+def list_feedback_by_question(question, session=None):
+    if session is None:
+        session = db.session
+    return session.query(Feedback).filter(Feedback.question == question).all()
 
-def list_feedback_by_question_answerset(question, answerset):
-    return db.session.query(Feedback).filter(Feedback.question == question).filter(Feedback.answer_id.in_([a.id for a in answerset.answers])).all()
+def list_feedback_by_question_answerset(question, answerset, session=None):
+    if session is None:
+        session = db.session
+    return session.query(Feedback).filter(Feedback.question == question).filter(Feedback.answer_id.in_([a.id for a in answerset.answers])).all()
 
-def list_feedback_by_question_answer(question, answer):
-    return db.session.query(Feedback).filter(Feedback.question == question).filter(Feedback.answer == answer).all()
+def list_feedback_by_question_answer(question, answer, session=None):
+    if session is None:
+        session = db.session
+    return session.query(Feedback).filter(Feedback.question == question).filter(Feedback.answer == answer).all()

@@ -290,23 +290,31 @@ def standardize_node(node):
     }
     return output
 
-def list_answersets():
-    return db.session.query(Answerset).all()
+def list_answersets(session=None):
+    if session is None:
+        session = db.session
+    return session.query(Answerset).all()
 
-def get_answer_by_id(id):
-    answer = db.session.query(Answer).filter(Answer.id == id).first()
+def get_answer_by_id(id, session=None):
+    if session is None:
+        session = db.session
+    answer = session.query(Answer).filter(Answer.id == id).first()
     if not answer:
         raise KeyError("No such answer.")
     return answer
 
-def list_answers_by_answerset(answerset):
-    answers = db.session.query(Answer)\
+def list_answers_by_answerset(answerset, session=None):
+    if session is None:
+        session = db.session
+    answers = session.query(Answer)\
         .filter(Answer.answerset == answerset)\
         .all()
     return answers
 
-def get_answerset_by_id(id):
-    answerset = db.session.query(Answerset).filter(Answerset.id == id).first()
+def get_answerset_by_id(id, session=None):
+    if session is None:
+        session = db.session
+    answerset = session.query(Answerset).filter(Answerset.id == id).first()
     if not answerset:
         raise KeyError("No such answerset.")
     return answerset

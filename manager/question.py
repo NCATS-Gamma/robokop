@@ -84,23 +84,31 @@ class Question(db.Model):
         struct['tasks'] = [t.to_json() for t in struct['tasks']]
         return struct
 
-def list_questions():
-    return db.session.query(Question).all()
+def list_questions(session=None):
+    if session is None:
+        session = db.session
+    return session.query(Question).all()
 
-def list_questions_by_username(username, invert=False):
+def list_questions_by_username(username, invert=False, session=None):
+    if session is None:
+        session = db.session
     if invert:
-        return db.session.query(Question).join(Question.user).filter(User.username != username).all()
+        return session.query(Question).join(Question.user).filter(User.username != username).all()
     else:
-        return db.session.query(Question).join(Question.user).filter(User.username == username).all()
+        return session.query(Question).join(Question.user).filter(User.username == username).all()
 
-def list_questions_by_user_id(user_id, invert=False):
+def list_questions_by_user_id(user_id, invert=False, session=None):
+    if session is None:
+        session = db.session
     if invert:
-        return db.session.query(Question).filter(Question.user_id != user_id).all()
+        return session.query(Question).filter(Question.user_id != user_id).all()
     else:
-        return db.session.query(Question).filter(Question.user_id == user_id).all()
+        return session.query(Question).filter(Question.user_id == user_id).all()
 
-def get_question_by_id(id):
-    question = db.session.query(Question).filter(Question.id == id).first()
+def get_question_by_id(id, session=None):
+    if session is None:
+        session = db.session
+    question = session.query(Question).filter(Question.id == id).first()
     if not question:
         raise KeyError("No such question.")
     return question
