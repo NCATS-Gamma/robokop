@@ -58,6 +58,8 @@ class FeedbackAPI(Resource):
                 accuracy=request.json['accuracy'],
                 impact=request.json['impact'],
                 notes=request.json['notes'])
+            db.session.add(f)
+            db.session.commit()
 
         return "Feedback created", 201
 

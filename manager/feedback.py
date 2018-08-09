@@ -56,9 +56,6 @@ class Feedback(db.Model, DictLikeMixin):
 
         self.init_from_args(*args, **kwargs)
 
-        db.session.add(self)
-        db.session.commit()
-
     def __str__(self):
         return "<ROBOKOP Feedback id={}>".format(self.id)
 
