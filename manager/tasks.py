@@ -14,7 +14,7 @@ from kombu import Queue, Exchange
 from flask_mail import Message
 
 import deploy.initialize_manager
-from manager.setup import app, mail, db
+from manager.setup import app, mail, session_scope
 from manager.answer import get_answerset_by_id, Answerset
 from manager.question import get_question_by_id
 import manager.logging_config
@@ -50,29 +50,29 @@ def answer_question(self, question_id, user_email=None):
 
     self.update_state(state='ANSWERING')
     logger.info("Answering your question...")
+    with session_scope() as session:
+        question = get_question_by_id(question_id, session)
 
-    question = get_question_by_id(question_id)
+        r = requests.post(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/', json=question.to_json())
+        polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{r.json()['task_id']}"
+        
+        for _ in range(60*60*24): # wait up to 1 day
+            time.sleep(1)
+            r = requests.get(polling_url)
+            if r.json()['status'] == 'FAILURE':
+                raise RuntimeError('Question answering failed.')
+            if r.json()['status'] == 'REVOKED':
+                raise RuntimeError('Task terminated by admin.')
+            if r.json()['status'] == 'SUCCESS':
+                break
+        else:
+            raise RuntimeError("Question answering has not completed after 1 day. It will continue working, but will not be monitored from here.")
 
-    r = requests.post(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/', json=question.to_json())
-    polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{r.json()['task_id']}"
-    
-    for _ in range(60*60*24): # wait up to 1 day
-        time.sleep(1)
-        r = requests.get(polling_url)
-        if r.json()['status'] == 'FAILURE':
-            raise RuntimeError('Question answering failed.')
-        if r.json()['status'] == 'REVOKED':
-            raise RuntimeError('Task terminated by admin.')
-        if r.json()['status'] == 'SUCCESS':
-            break
-    else:
-        raise RuntimeError("Question answering has not completed after 1 day. It will continue working, but will not be monitored from here.")
-
-    answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{r.json()['task_id']}")
-    
-    answerset = Answerset(answerset_json.json())
-    question.answersets.append(answerset)
-    db.session.commit()
+        answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{r.json()['task_id']}")
+        
+        answerset = Answerset(answerset_json.json())
+        session.add(answerset)  # this might be redundant given the following
+        question.answersets.append(answerset)
 
     if user_email:
         try:
@@ -101,7 +101,8 @@ def update_kg(self, question_id, user_email=None):
 
     self.update_state(state='UPDATING KG')
 
-    question = get_question_by_id(question_id)
+    with session_scope() as session:
+        question = get_question_by_id(question_id, session)
 
     logger.info(f"Updating the knowledge graph for '{question_id}'...")
     
