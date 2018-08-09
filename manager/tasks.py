@@ -51,7 +51,7 @@ def answer_question(self, question_id, user_email=None):
     self.update_state(state='ANSWERING')
     logger.info("Answering your question...")
     with session_scope() as session:
-        question = get_question_by_id(question_id, , session=session)
+        question = get_question_by_id(question_id, session=session)
 
         r = requests.post(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/', json=question.to_json())
         polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{r.json()['task_id']}"
