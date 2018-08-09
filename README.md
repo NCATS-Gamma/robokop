@@ -114,25 +114,28 @@ You'll need to supply values for the secret things at the end.
 
 ### Build
 
-Environemnts are configured in several docker containers managed by docker-compose.
+Environments are configured in several docker containers managed by docker-compose.
 
 * robokop/robokop/helpers - Common storage databases - Redis, Neo4j, Postgres
 * robokop/robokop/deploy - UI API and web server
 * robokop/robokop-interfaces/deploy - robokop-interfaces API server
 * robokop/robokop-rank/deploy - robokop-interfaces API server
 
+For robokop,
+* `cd robokop/deploy`
+* `docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t robokop_manager .`
 
 First we must build the containers. For each of robokop, robokop-interfaces, and robokop-rank,
 * cd into <repo>/deploy
-* docker-compose build
+* `docker-compose build`
 
 When those are all complete, we must start the helpers (storage containers).
 * cd robokop/robokop/helpers
-* docker-compose up
+* `docker-compose up`
 
 Then for each of robokop, robokop-interfaces, and robokop-rank,
 * cd into <repo>/deploy
-* docker-compose up
+* `docker-compose up`
 
 With all containers started you can now monitor each component using the urls below.
 
