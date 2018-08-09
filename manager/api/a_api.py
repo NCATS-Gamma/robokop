@@ -137,12 +137,6 @@ class AnswerAPI(Resource):
         except Exception as err:
             return "Invalid answerset or answer key.", 404
 
-        questions = answerset.questions
-        idx = questions.index(question)
-        questions.pop(idx)
-        idx = answersets.index(answerset)
-        answersets.pop(idx)
-
         feedback = list_feedback_by_question_answer(question, answer)
 
         user = getAuthData()
@@ -152,8 +146,8 @@ class AnswerAPI(Resource):
                 'answer': answer.to_json(),\
                 'feedback': [f.to_json() for f in feedback],\
                 'question': question.to_json(),\
-                'other_answersets': [aset.to_json() for aset in answersets],
-                'other_questions': [q.to_json() for q in questions]}, 200
+                'other_answersets': [],
+                'other_questions': []}, 200
 
 api.add_resource(AnswerAPI, '/a/<qa_id>/<int:answer_id>/')
 
