@@ -34,15 +34,15 @@ class FeedbackAPI(Resource):
         auth = request.authorization
         if auth:
             user_email = auth.username
-            user = get_user_by_email(user_email)
+            user = get_user_by_email(user_email, session=db.session)
             user_id = user.id
         else:
             user_id = current_user.id
-            user = get_user_by_id(user_id)
+            user = get_user_by_id(user_id, session=db.session)
         
-        answer = get_answer_by_id(request.json['answer_id'])
-        question = get_question_by_id(request.json['question_id'])
-        feedback = list_feedback_by_question_answer(question, answer)
+        answer = get_answer_by_id(request.json['answer_id'], session=db.session)
+        question = get_question_by_id(request.json['question_id'], session=db.session)
+        feedback = list_feedback_by_question_answer(question, answer, session=db.session)
         user_ids = [f.user_id for f in feedback]
         if user_id in user_ids:
             f = feedback[user_ids.index(user_id)]

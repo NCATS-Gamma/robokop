@@ -102,7 +102,7 @@ def update_kg(self, question_id, user_email=None):
     self.update_state(state='UPDATING KG')
 
     with session_scope() as session:
-        question = get_question_by_id(question_id, session)
+        question = get_question_by_id(question_id, session=session)
 
     logger.info(f"Updating the knowledge graph for '{question_id}'...")
     

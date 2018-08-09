@@ -131,7 +131,7 @@ class AnswerAPI(Resource):
             answersets = question.answersets
             if not answerset in answersets:
                 raise AssertionError()
-            answer = get_answer_by_id(answer_id)
+            answer = get_answer_by_id(answer_id, session=db.session)
             if not answer in answerset.answers:
                 raise AssertionError()
         except Exception as err:
@@ -183,7 +183,7 @@ class GetFeedbackByAnswer(Resource):
             question_id, answerset_id = qa_id.split('_')
             question = get_question_by_id(question_id, session=db.session)
             answerset = get_answerset_by_id(answerset_id, session=db.session)
-            answer = get_answer_by_id(answer_id)
+            answer = get_answer_by_id(answer_id, session=db.session)
         except Exception as err:
             return "Invalid answerset/answer key", 404
         feedback = list_feedback_by_question_answer(question, answer, session=db.session)
