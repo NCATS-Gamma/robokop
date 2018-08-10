@@ -63,7 +63,10 @@ class Task(db.Model):
     @property
     def status(self):
         """Task status."""
-        return self.result['status']
+        if self.result is not None:
+            return self.result['status']
+        else:
+            return None
 
     @property
     def result(self):
