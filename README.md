@@ -84,6 +84,11 @@ BUILDER_SUPERVISOR_PORT=9002
 RANKER_SUPERVISOR_PORT=9003
 SUPERVISOR_USER=admin
 
+OMNICORP_HOST=robokopdb.renci.org
+OMNICORP_USER=murphy
+OMNICORP_DB=robokop
+OMNICORP_PORT=5432
+
 COMPOSE_PROJECT_NAME=robokop
 
 NUM_BUILDERS=4
@@ -98,6 +103,7 @@ NEO4J_PASSWORD=----------------------------------
 BROKER_PASSWORD=----------------------------------
 POSTGRES_PASSWORD=----------------------------------
 SUPERVISOR_PASSWORD=----------------------------------
+OMNICORP_PASSWORD=----------------------------------
 
 ROBOKOP_SECRET_KEY=----------------------------------
 ROBOKOP_SECURITY_PASSWORD_SALT=----------------------------------
