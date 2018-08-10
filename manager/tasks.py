@@ -67,7 +67,7 @@ def answer_question(self, question_id, user_email=None):
         else:
             raise RuntimeError("Question answering has not completed after 1 day. It will continue working, but will not be monitored from here.")
 
-        answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{r.json()['task_id']}")
+        answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{response.json()['task_id']}")
 
         answerset = Answerset(answerset_json.json())
         session.add(answerset)  # this might be redundant given the following
