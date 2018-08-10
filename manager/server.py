@@ -11,6 +11,7 @@ from flask import render_template
 from flask_security import Security, SQLAlchemySessionUserDatastore
 
 from manager.setup import app, db
+import deploy.initialize_manager
 import manager.api.graphql
 from manager.logging_config import logger
 from manager.user import User, Role
