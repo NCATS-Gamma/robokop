@@ -2,7 +2,7 @@ from flask_security import UserMixin, RoleMixin
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Boolean, DateTime, Column, Integer, \
                        String, ForeignKey
-from manager.setup import db
+from manager.setup import Base, db
 
 class RolesUsers(db.Model):
     __tablename__ = 'roles_users'
@@ -37,16 +37,22 @@ class User(db.Model, UserMixin):
         struct = {key:getattr(self, key) for key in keys}
         return struct
 
-def get_user_by_id(id):
-    return db.session.query(User)\
+def get_user_by_id(id, session=None):
+    if session is None:
+        session = db.session
+    return session.query(User)\
         .filter(User.id == id)\
         .first()
 
-def list_users():
-    return db.session.query(User)\
+def list_users(session=None):
+    if session is None:
+        session = db.session
+    return session.query(User)\
         .all()
 
-def get_user_by_email(user_email):
-    return db.session.query(User)\
+def get_user_by_email(user_email, session=None):
+    if session is None:
+        session = db.session
+    return session.query(User)\
         .filter(User.email == user_email)\
         .first()

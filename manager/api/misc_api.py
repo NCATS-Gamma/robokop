@@ -11,7 +11,7 @@ import requests
 from flask import request, Response
 from flask_restful import Resource
 
-from manager.setup import app, api
+from manager.setup import app, api, db
 from manager.logging_config import logger
 from manager.util import getAuthData
 import manager.api.questions_api
@@ -34,7 +34,7 @@ class Tasks(Resource):
                 items:
                     $ref: '#/definitions/Task'
         """
-        tasks = list_tasks()
+        tasks = list_tasks(session=db.session)
         return [t.to_json() for t in tasks]
 
 api.add_resource(Tasks, '/tasks/')

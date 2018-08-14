@@ -12,7 +12,7 @@ from flask_security import auth_required, current_user
 from flask_restful import Resource
 
 from manager.util import getAuthData
-from manager.question import list_questions, list_questions_by_username, Question
+from manager.question import Question, list_questions
 from manager.task import Task
 from manager.tasks import update_kg, answer_question
 from manager.setup import api, db
@@ -66,6 +66,8 @@ class QuestionsAPI(Resource):
         # if not request.json['name']:
         #     return abort(400, "Question needs a name.")
         question = Question(request.json, id=qid, user_id=user_id)
+        db.session.add(question)
+        db.session.commit()
 
         if not 'RebuildCache' in request.headers or request.headers['RebuildCache'] == 'true':
             # To speed things along we start a answerset generation task for this question
@@ -93,9 +95,7 @@ class QuestionsAPI(Resource):
                         $ref: '#/definitions/Question'
         """
         user = getAuthData()
-        question_list = list_questions()
-        # user_question_list = list_questions_by_username(user['username'])
-        # nonuser_question_list = list_questions_by_username(user['username'], invert=True)
+        question_list = list_questions(session=db.session)
 
         def augment_info(question):
             answerset_timestamps = [a.timestamp for a in question.answersets]

@@ -49,7 +49,7 @@ class QuestionAPI(Resource):
         """
 
         try:
-            question = get_question_by_id(question_id)
+            question = get_question_by_id(question_id, session=db.session)
         except Exception as err:
             return "Invalid question key.", 404
 
@@ -99,7 +99,7 @@ class QuestionAPI(Resource):
             user = current_user
         logger.info('Editing question %s', question_id)
         try:
-            question = get_question_by_id(question_id)
+            question = get_question_by_id(question_id, session=db.session)
         except Exception as err:
             return "Invalid question key.", 404
         if not (user == question.user or user.has_role('admin')):
@@ -138,7 +138,7 @@ class QuestionAPI(Resource):
             user = current_user
         logger.info('Deleting question %s', question_id)
         try:
-            question = get_question_by_id(question_id)
+            question = get_question_by_id(question_id, session=db.session)
         except Exception as err:
             return "Invalid question key.", 404
         if not (user == question.user or user.has_role('admin')):
@@ -169,8 +169,8 @@ class GetFeedbackByQuestion(Resource):
                 description: "invalid question key"
         """
         try:
-            question = get_question_by_id(question_id)
-            feedback = list_feedback_by_question(question)
+            question = get_question_by_id(question_id, session=db.session)
+            feedback = list_feedback_by_question(question, session=db.session)
         except Exception as err:
             return "Invalid question id", 404
 
@@ -208,7 +208,7 @@ class AnswerQuestion(Resource):
             user_id = current_user.id
             user_email = current_user.email
         try:
-            question = get_question_by_id(question_id)
+            question = get_question_by_id(question_id, session=db.session)
         except Exception as err:
             return "Invalid question key.", 404
         # Answer a question
@@ -247,7 +247,7 @@ class RefreshKG(Resource):
             user_id = current_user.id
             user_email = current_user.email
         try:
-            question = get_question_by_id(question_id)
+            question = get_question_by_id(question_id, session=db.session)
         except Exception as err:
             return "Invalid question key.", 404
         # Update the knowledge graph for a question
@@ -287,7 +287,7 @@ class QuestionTasks(Resource):
         """
 
         try:
-            question = get_question_by_id(question_id)
+            question = get_question_by_id(question_id, session=db.session)
         except Exception as err:
             return "Invalid question key.", 404
 
@@ -330,7 +330,7 @@ class QuestionSubgraph(Resource):
         """
 
         try:
-            question = get_question_by_id(question_id)
+            question = get_question_by_id(question_id, session=db.session)
         except Exception as err:
             return "Invalid question key.", 404
 

@@ -11,6 +11,7 @@ from flask import render_template
 from flask_security import Security, SQLAlchemySessionUserDatastore
 
 from manager.setup import app, db
+import deploy.initialize_manager
 import manager.api.graphql
 from manager.logging_config import logger
 from manager.user import User, Role
@@ -63,38 +64,6 @@ def app_answerset():
 def app_comparison():
     """Template COP Comparison"""
     return render_template('app_comparison.html')
-    
-# from celery.app.control import Inspect
-@app.route('/tasks/')
-def show_tasks():
-    """Fetch queued/active task list"""
-    r = redis.Redis(
-        host=os.environ['RESULTS_HOST'],
-        port=os.environ['RESULTS_PORT'],
-        db=os.environ['MANAGER_RESULTS_DB'])
-
-    output = []
-    output.append("""
-    <style>
-    table, th, td {
-        border: 1px solid black
-    }
-    </style>
-    """)
-    output.append(f"<tr><th>task id</th><th>name</th><th>user</th><th>state</th><th /></tr>")
-    for name in r.scan_iter('*'):
-        name = name.decode() # convert bytes to str
-        task = json.loads(r.get(name))
-        # name = task['name'] or '' if 'name' in task else ''
-        task_id = task['task_id']
-        # question_id = re.search(r"'question_id': '(\w*)'", task['kwargs']).group(1) if task['kwargs'] and not task['kwargs'] == '{}' else ''
-        # user_email = re.search(r"'user_email': '([\w@.]*)'", task['kwargs']).group(1) if task['kwargs'] and not task['kwargs'] == '{}' else ''
-        user_email = ''
-        state = task['status'] or ''
-
-        output.append(f"<tr><td>{task_id}</td><td>{name}</td><td>{user_email}</td><td>{state}</td><td><a>revoke</a></td></tr>")
-
-    return "<table>\n"+"\n".join(output)+"\n</table>"
 
 ################################################################################
 ##### Run Webserver ############################################################

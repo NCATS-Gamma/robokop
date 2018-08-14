@@ -28,7 +28,6 @@ services:
       - NLP_PORT=9475
     ports:
       - "${MANAGER_PORT}:${MANAGER_PORT}"
-      - "${MANAGER_FLOWER_PORT}:${MANAGER_FLOWER_PORT}"
       - "${MANAGER_SUPERVISOR_PORT}:${MANAGER_SUPERVISOR_PORT}"
     volumes:
       - ../../logs:/home/murphy/logs

@@ -15,7 +15,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy import event
 from sqlalchemy import DDL
 
-from manager.setup import db
+from manager.setup import db, Base
 from manager.question import Question
 
 logger = logging.getLogger(__name__)
@@ -66,9 +66,6 @@ class Answerset(db.Model):
             else:
                 warnings.warn("Keyword argument {} ignored.".format(key))
 
-        db.session.add(self)
-        db.session.commit()
-
     def __str__(self):
         return "<ROBOKOP Answer Set id={}>".format(self.id)
 
@@ -107,21 +104,6 @@ class Answerset(db.Model):
             'result_list': [a.toStandard() for a in self.answers] if data else None
         }
         return output
-
-    def add(self, answer):
-        '''
-        Add an Answer to the AnswerSet
-        '''
-
-        if not isinstance(answer, Answer):
-            raise ValueError("Only Answers may be added to AnswerSets.")
-
-        self.answers += [answer]
-        db.session.commit()
-        return self
-
-    def __iadd__(self, answer):
-        return self.add(answer)
 
     def __getitem__(self, key):
         return self.answers[key]
@@ -308,23 +290,31 @@ def standardize_node(node):
     }
     return output
 
-def list_answersets():
-    return db.session.query(Answerset).all()
+def list_answersets(session=None):
+    if session is None:
+        session = db.session
+    return session.query(Answerset).all()
 
-def get_answer_by_id(id):
-    answer = db.session.query(Answer).filter(Answer.id == id).first()
+def get_answer_by_id(id, session=None):
+    if session is None:
+        session = db.session
+    answer = session.query(Answer).filter(Answer.id == id).first()
     if not answer:
         raise KeyError("No such answer.")
     return answer
 
-def list_answers_by_answerset(answerset):
-    answers = db.session.query(Answer)\
+def list_answers_by_answerset(answerset, session=None):
+    if session is None:
+        session = db.session
+    answers = session.query(Answer)\
         .filter(Answer.answerset == answerset)\
         .all()
     return answers
 
-def get_answerset_by_id(id):
-    answerset = db.session.query(Answerset).filter(Answerset.id == id).first()
+def get_answerset_by_id(id, session=None):
+    if session is None:
+        session = db.session
+    answerset = session.query(Answerset).filter(Answerset.id == id).first()
     if not answerset:
         raise KeyError("No such answerset.")
     return answerset

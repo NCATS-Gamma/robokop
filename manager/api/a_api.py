@@ -7,11 +7,11 @@ from flask import jsonify
 from flask_restful import Resource
 
 from manager.question import get_question_by_id
-from manager.answer import get_answer_by_id, get_answerset_by_id, list_answers_by_answerset
+from manager.answer import get_answer_by_id, get_answerset_by_id
 from manager.util import getAuthData
 from manager.feedback import list_feedback_by_question_answer, list_feedback_by_question_answerset
 from manager.logging_config import logger
-from manager.setup import app, api
+from manager.setup import app, api, db
 
 class AnswersetAPI(Resource):
     def get(self, qa_id):
@@ -55,8 +55,8 @@ class AnswersetAPI(Resource):
         """
         try:
             question_id, answerset_id = qa_id.split('_')
-            question = get_question_by_id(question_id)
-            answerset = get_answerset_by_id(answerset_id)
+            question = get_question_by_id(question_id, session=db.session)
+            answerset = get_answerset_by_id(answerset_id, session=db.session)
             answersets = question.answersets
             if not answerset in answersets:
                 raise AssertionError()
@@ -65,7 +65,7 @@ class AnswersetAPI(Resource):
 
         user = getAuthData()
 
-        feedback = list_feedback_by_question_answerset(question, answerset)
+        feedback = list_feedback_by_question_answerset(question, answerset, session=db.session)
 
         return {'question': question.to_json(),\
                 'answerset': answerset.toStandard(),\
@@ -126,24 +126,18 @@ class AnswerAPI(Resource):
 
         try:
             question_id, answerset_id = qa_id.split('_')
-            question = get_question_by_id(question_id)
-            answerset = get_answerset_by_id(answerset_id)
+            question = get_question_by_id(question_id, session=db.session)
+            answerset = get_answerset_by_id(answerset_id, session=db.session)
             answersets = question.answersets
             if not answerset in answersets:
                 raise AssertionError()
-            answer = get_answer_by_id(answer_id)
+            answer = get_answer_by_id(answer_id, session=db.session)
             if not answer in answerset.answers:
                 raise AssertionError()
         except Exception as err:
             return "Invalid answerset or answer key.", 404
 
-        questions = answerset.questions
-        idx = questions.index(question)
-        questions.pop(idx)
-        idx = answersets.index(answerset)
-        answersets.pop(idx)
-
-        feedback = list_feedback_by_question_answer(question, answer)
+        feedback = list_feedback_by_question_answer(question, answer, session=db.session)
 
         user = getAuthData()
 
@@ -152,8 +146,8 @@ class AnswerAPI(Resource):
                 'answer': answer.to_json(),\
                 'feedback': [f.to_json() for f in feedback],\
                 'question': question.to_json(),\
-                'other_answersets': [aset.to_json() for aset in answersets],
-                'other_questions': [q.to_json() for q in questions]}, 200
+                'other_answersets': [],
+                'other_questions': []}, 200
 
 api.add_resource(AnswerAPI, '/a/<qa_id>/<int:answer_id>/')
 
@@ -187,12 +181,12 @@ class GetFeedbackByAnswer(Resource):
         """
         try:
             question_id, answerset_id = qa_id.split('_')
-            question = get_question_by_id(question_id)
-            answerset = get_answerset_by_id(answerset_id)
-            answer = get_answer_by_id(answer_id)
+            question = get_question_by_id(question_id, session=db.session)
+            answerset = get_answerset_by_id(answerset_id, session=db.session)
+            answer = get_answer_by_id(answer_id, session=db.session)
         except Exception as err:
             return "Invalid answerset/answer key", 404
-        feedback = list_feedback_by_question_answer(question, answer)
+        feedback = list_feedback_by_question_answer(question, answer, session=db.session)
 
         return [f.to_json() for f in feedback], 200
 
@@ -223,11 +217,11 @@ class GetFeedbackByAnswerset(Resource):
         """
         try:
             question_id, answerset_id = qa_id.split('_')
-            question = get_question_by_id(question_id)
-            answerset = get_answerset_by_id(answerset_id)
+            question = get_question_by_id(question_id, session=db.session)
+            answerset = get_answerset_by_id(answerset_id, session=db.session)
         except Exception as err:
             return "Invalid answerset key", 404
-        feedback = list_feedback_by_question_answerset(question, answerset)
+        feedback = list_feedback_by_question_answerset(question, answerset, session=db.session)
 
         return [f.to_json() for f in feedback], 200
 

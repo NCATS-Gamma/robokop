@@ -17,9 +17,6 @@ See an instance at http://robokop.renci.org
 * http://robokop.renci.org:6011/apidocs - The robokop-rank API
 * http://robokop.renci.org:7474 - NEO4j http interface
 * bolt://robokop.renci.org:7687 - NEO4j bolt interface
-* http://robokop.renci.org:5555 - UI to see the worker queues for the UI - Requires authentication
-* http://robokop.renci.org:5556 - UI to see the worker queues for the builder - Requires authentication
-* http://robokop.renci.org:5557 - UI to see the worker queues for the ranker - Requires authentication
 
 ## Setup Instructions 
 
@@ -53,7 +50,10 @@ robokop.env looks like this:
 NEO4J_HTTP_PORT=7474
 NEO4J_BOLT_PORT=7687
 
-REDIS_PORT=6379
+CACHE_PORT=6379
+RESULTS_PORT=6380
+BROKER_PORT=5672
+BROKER_USER=murphy
 
 POSTGRES_PORT=5432
 POSTGRES_USER=murphy
@@ -68,28 +68,31 @@ RANKER_PORT=6011
 
 # Services can be REACHED at these addresses. They should generally publish to 0.0.0.0.
 NEO4J_HOST=127.0.0.1
-REDIS_HOST=127.0.0.1
+CACHE_HOST=127.0.0.1
+RESULTS_HOST=127.0.0.1
+BROKER_HOST=127.0.0.1
 POSTGRES_HOST=127.0.0.1
-FLOWER_HOST=127.0.0.1
 SUPERVISOR_HOST=127.0.0.1
 
-GREENT_REDIS_DB=0
-MANAGER_REDIS_DB=1
-BUILDER_REDIS_DB=2
-RANKER_REDIS_DB=3
-
-FLOWER_ADDRESS=0.0.0.0
-MANAGER_FLOWER_PORT=5555
-BUILDER_FLOWER_PORT=5556
-RANKER_FLOWER_PORT=5557
-FLOWER_USER=admin
+CACHE_DB=0
+MANAGER_RESULTS_DB=1
+BUILDER_RESULTS_DB=2
+RANKER_RESULTS_DB=3
 
 MANAGER_SUPERVISOR_PORT=9001
 BUILDER_SUPERVISOR_PORT=9002
 RANKER_SUPERVISOR_PORT=9003
 SUPERVISOR_USER=admin
 
+OMNICORP_HOST=robokopdb.renci.org
+OMNICORP_USER=murphy
+OMNICORP_DB=robokop
+OMNICORP_PORT=5432
+
 COMPOSE_PROJECT_NAME=robokop
+
+NUM_BUILDERS=4
+NUM_RANKERS=4
 #############################################################
 
 ####################### Secret stuff ########################
@@ -97,10 +100,10 @@ ADMIN_EMAIL=<your-email@x.org>
 ADMIN_PASSWORD=----------------------------------
 
 NEO4J_PASSWORD=----------------------------------
-
-FLOWER_PASSWORD=----------------------------------
-
+BROKER_PASSWORD=----------------------------------
+POSTGRES_PASSWORD=----------------------------------
 SUPERVISOR_PASSWORD=----------------------------------
+OMNICORP_PASSWORD=----------------------------------
 
 ROBOKOP_SECRET_KEY=----------------------------------
 ROBOKOP_SECURITY_PASSWORD_SALT=----------------------------------
@@ -117,39 +120,42 @@ You'll need to supply values for the secret things at the end.
 
 ### Build
 
-Environemnts are configured in several docker containers managed by docker-compose.
+Environments are configured in several docker containers managed by docker-compose.
 
 * robokop/robokop/helpers - Common storage databases - Redis, Neo4j, Postgres
 * robokop/robokop/deploy - UI API and web server
 * robokop/robokop-interfaces/deploy - robokop-interfaces API server
 * robokop/robokop-rank/deploy - robokop-interfaces API server
 
+For robokop,
+* `cd robokop/deploy`
+* `docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t robokop_manager .`
 
 First we must build the containers. For each of robokop, robokop-interfaces, and robokop-rank,
 * cd into <repo>/deploy
-* docker-compose build
+* `docker-compose build`
 
 When those are all complete, we must start the helpers (storage containers).
 * cd robokop/robokop/helpers
-* docker-compose up
+* `docker-compose up`
 
 Then for each of robokop, robokop-interfaces, and robokop-rank,
 * cd into <repo>/deploy
-* docker-compose up
+* `docker-compose up`
 
 With all containers started you can now monitor each component using the urls below.
 
 ### Interfaces
 
 * http://127.0.0.1 - The Robokop user interface
-* http://127.0.0.1/api/ - The Robokop user interface API
+* http://127.0.0.1/apidocs/ - The Robokop user interface API
 * http://127.0.0.1:6010/apidocs - The robokop-interfaces API
 * http://127.0.0.1:6011/apidocs - The robokop-rank API
 * http://127.0.0.1:7474 - NEO4j http interface
 * bolt://127.0.0.1:7687 - NEO4j bolt interface
-* http://127.0.0.1:5555 - UI to see the queues for the UI - Requires authentication
-* http://127.0.0.1:5556 - UI to see the queues for the builder - Requires authentication
-* http://127.0.0.1:5557 - UI to see the queues for the ranker - Requires authentication
+* http://127.0.0.1:9001 - Manager supervisord interface
+* http://127.0.0.1:9002 - Builder supervisord interface
+* http://127.0.0.1:9003 - Ranker supervisord interface
 
 
 
