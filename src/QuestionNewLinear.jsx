@@ -109,7 +109,7 @@ class QuestionNewLinear extends React.Component {
         continue;
       }
       if (i > 0 && oldMachineQuestion[i - 1].nodeSpecType === 'UnspecifiedNodes') {
-        edge.min_length = oldMachineQuestion[i - 1].meta.numNodesMin + 1
+        edge.min_length = oldMachineQuestion[i - 1].meta.numNodesMin + 1;
         edge.max_length = oldMachineQuestion[i - 1].meta.numNodesMax + 1;
       } else {
         edge.min_length = 1;
