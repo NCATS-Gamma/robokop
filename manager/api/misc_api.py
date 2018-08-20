@@ -5,6 +5,7 @@
 import os
 import sys
 import json
+import time
 
 import redis
 import requests
@@ -20,6 +21,71 @@ import manager.api.a_api
 import manager.api.feedback_api
 from manager.tasks import celery
 from manager.task import list_tasks, get_task_by_id
+
+class OneShot(Resource):
+    def post(self):
+        """
+        Get answers to a question
+        ---
+        tags: [answer]
+        parameters:
+          - in: body
+            name: question
+            description: The machine-readable question graph.
+            schema:
+                $ref: '#/definitions/Question'
+            required: true
+        responses:
+            200:
+                description: Answer
+                schema:
+                    type: object
+                    required:
+                      - thingsandstuff
+                    properties:
+                        thingsandstuff:
+                            type: string
+                            description: all the things and stuff
+        """
+
+        response = requests.post(
+            f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/',
+            json=request.json)
+        polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task id']}"
+
+        for _ in range(60 * 60):  # wait up to 1 hour
+            time.sleep(1)
+            response = requests.get(polling_url)
+            if response.json()['status'] == 'FAILURE':
+                raise RuntimeError('Builder failed.')
+            if response.json()['status'] == 'REVOKED':
+                raise RuntimeError('Task terminated by admin.')
+            if response.json()['status'] == 'SUCCESS':
+                break
+        else:
+            raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
+
+        response = requests.post(
+            f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/',
+            json=request.json)
+        polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
+
+        for _ in range(60 * 60):  # wait up to 1 hour
+            time.sleep(1)
+            response = requests.get(polling_url)
+            if response.json()['status'] == 'FAILURE':
+                raise RuntimeError('Question answering failed.')
+            if response.json()['status'] == 'REVOKED':
+                raise RuntimeError('Task terminated by admin.')
+            if response.json()['status'] == 'SUCCESS':
+                break
+        else:
+            raise RuntimeError("Question answering has not completed after 1 hour. You may with to try the non-blocking API.")
+
+        answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{response.json()['task_id']}")
+        return answerset_json
+
+api.add_resource(OneShot, '/oneshot/')
 
 class Tasks(Resource):
     def get(self):
