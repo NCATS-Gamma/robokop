@@ -64,6 +64,8 @@ class OneShot(Resource):
                 break
         else:
             raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
+            
+        logger.info('Done updating KG. Answering question...')
 
         response = requests.post(
             f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/',
@@ -83,7 +85,7 @@ class OneShot(Resource):
             raise RuntimeError("Question answering has not completed after 1 hour. You may with to try the non-blocking API.")
 
         answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{response.json()['task_id']}")
-        return answerset_json
+        return answerset_json.json()
 
 api.add_resource(OneShot, '/oneshot/')
 
