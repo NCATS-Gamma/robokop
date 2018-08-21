@@ -12,7 +12,6 @@ class SubGraphViewer extends React.Component {
     this.styles = {
       supportEdgeColors: {
         color: '#aaa',
-        highlight: '#3da4ed',
         hover: '#aaa',
       },
     };
@@ -45,16 +44,10 @@ class SubGraphViewer extends React.Component {
       },
       nodes: {
         shape: 'box',
-        labelHighlightBold: true,
-        color: {
-          border: '#000',
-          highlight: {
-            border: '#848484',
-          },
-          hover: {
-            border: '#333',
-          },
-        },
+        labelHighlightBold: false,
+        borderWidthSelected: 2,
+        borderWidth: 1,
+        chosen: false,
       },
       interaction: {
         hover: true,
@@ -218,10 +211,12 @@ class SubGraphViewer extends React.Component {
     g.nodes.forEach((n) => {
       const backgroundColor = nodeTypeColorMap(n.type);
       n.color = {
+        border: '#000000',
         background: backgroundColor,
-        highlight: { background: backgroundColor },
-        hover: { background: backgroundColor },
+        highlight: { background: backgroundColor, border: '#000000' },
+        hover: { background: backgroundColor, border: '#000000' },
       };
+
       n.label = n.name;
     });
 

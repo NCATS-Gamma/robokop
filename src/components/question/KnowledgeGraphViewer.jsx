@@ -161,7 +161,7 @@ class KnowledgeGraphViewer extends React.Component {
   }
 
   render() {
-    const showGraph = this.props.graph.nodes.length > 0
+    const showGraph = 'nodes' in this.props.graph && Array.isArray(this.props.graph.nodes) && this.props.graph.nodes.length > 0;
     const showNoGraph = !showGraph;
     return (
       <div>

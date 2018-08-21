@@ -70,10 +70,21 @@ class MachineQuestionView extends React.Component {
     graph.nodes.forEach((n) => {
       const backgroundColor = nodeTypeColorMap(n.type);
       n.color = {
+        border: '#000000',
         background: backgroundColor,
-        highlight: { background: backgroundColor },
-        hover: { background: backgroundColor },
+        highlight: { background: backgroundColor, border: '#000000' },
+        hover: { background: backgroundColor, border: '#000000' },
       };
+
+      n.isSet = ('set' in n) && (((typeof n.set === typeof true) && n.set) || ((typeof n.set === 'string') && n.set === 'true'));
+      n.chosen = false;
+      n.borderWidthSelected = 1;
+      if (n.isSet) {
+        n.borderWidth = 3;
+        n.borderWidthSelected = 3;
+      } else {
+        n.borderWidth = 1;
+      }
 
       if ('label' in n) {
         if (('nodeSpecType' in n) && (n.nodeSpecType === CardTypes.NODETYPE)) {
@@ -186,16 +197,7 @@ class MachineQuestionView extends React.Component {
       },
       nodes: {
         shape: 'box',
-        labelHighlightBold: true,
-        color: {
-          border: '#000',
-          highlight: {
-            border: '#848484',
-          },
-          hover: {
-            border: '#333',
-          },
-        },
+        labelHighlightBold: false,
       },
       interaction: {
         hover: false,
