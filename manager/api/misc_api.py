@@ -22,6 +22,86 @@ import manager.api.feedback_api
 from manager.tasks import celery
 from manager.task import list_tasks, get_task_by_id
 
+
+class Simple(Resource):
+    def post(self, type1, id1, type2):
+        """
+        Get list of tasks (queued and completed)
+        ---
+        tags: [util]
+        parameters:
+          - in: path
+            name: type1
+            description: "type of first node"
+            type: string
+            required: true
+            default: "disease"
+          - in: path
+            name: id1
+            description: "curie of first node"
+            type: string
+            required: true
+            default: "MONDO:0005737"
+          - in: path
+            name: type2
+            description: "type of second node"
+            type: string
+            required: true
+            default: "gene"
+          - in: query
+            name: predicate
+            type: string
+            default: "disease_to_gene_association"
+          - in: query
+            name: csv
+            type: boolean
+            default: false
+        responses:
+            200:
+                description: answers
+                type: object
+                properties:
+                    answers:
+                        type: array
+                        items:
+                            $ref: '#/definitions/Answer'
+        """
+        question = {
+            'machine_question': {
+                'nodes': [
+                    {
+                        'id': 0,
+                        'curie': id1,
+                        'type': type1
+                    },
+                    {
+                        'id': 1,
+                        'type': type2
+                    }
+                ],
+                'edges': [
+                    {
+                        'source_id': 0,
+                        'target_id': 1
+                    }
+                ]
+            }
+        }
+        predicate = request.args.get('predicate')
+        if predicate is not None:
+            question['machine_question']['edges'][0]['type'] = predicate
+        csv = request.args.get('csv', default='false')
+        response = requests.post(
+            f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/oneshot/',
+            json=question)
+        answerset = response.json()
+        if csv == 'true':
+            node_names = [f"{a['nodes'][-1]['name']}({a['nodes'][-1]['id']})" for a in answerset['answers']]
+            return ','.join(node_names)
+        return answerset
+
+api.add_resource(Simple, '/gamma/<type1>/<id1>/<type2>')
+
 class OneShot(Resource):
     def post(self):
         """
@@ -64,7 +144,7 @@ class OneShot(Resource):
                 break
         else:
             raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
-            
+
         logger.info('Done updating KG. Answering question...')
 
         response = requests.post(
