@@ -26,7 +26,7 @@ from manager.task import list_tasks, get_task_by_id
 class Simple(Resource):
     def get(self, type1, id1, type2):
         """
-        Get list of tasks (queued and completed)
+        Get answer to simple question
         ---
         tags: [util]
         parameters:
