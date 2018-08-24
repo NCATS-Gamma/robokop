@@ -96,7 +96,7 @@ class Simple(Resource):
             json=question)
         answerset = response.json()
         if csv == 'true':
-            node_names = [f"{a['nodes'][-1]['name']}({a['nodes'][-1]['id']})" for a in answerset['answers']]
+            node_names = [f"{a['nodes'][-1]['name']}({a['nodes'][-1]['id']})" if 'name' in a['nodes'][-1] else a['nodes'][-1]['id'] for a in answerset['answers']]
             return ','.join(node_names)
         return answerset
 
