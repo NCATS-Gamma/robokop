@@ -13,9 +13,9 @@ from flask import Blueprint, jsonify, render_template, request
 from flask_security import auth_required
 from flask_security.core import current_user
 
-from manager.question import Question, get_question_by_id
+from manager.question import Question
 from manager.tasks import answer_question, update_kg
-from manager.util import getAuthData, get_tasks
+from manager.util import getAuthData
 from manager.setup import db
 from manager.logging_config import logger
 
@@ -27,6 +27,11 @@ q = Blueprint('question', __name__,
 def new():
     """Deliver new-question interface"""
     return render_template('questionNew.html', question_id='')
+
+@q.route('/new/linear/', methods=['GET'])
+def newLinear():
+    """Deliver new-question linear interface"""
+    return render_template('questionNewLinear.html', question_id='')
 
 # New Question Submission
 @q.route('/new/', methods=['POST'])

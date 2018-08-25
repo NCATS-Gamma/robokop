@@ -30,10 +30,11 @@ class QuestionListPres extends React.Component {
   }
 
   syncStateAndProps(newProps) {
-    let questions = newProps.questions.map((q) => {
+    const questions = newProps.questions.map((q) => {
       q.isUserOwned = q.user_email === this.props.user.username;
       q.hasAnswerset = Boolean(q.latest_answerset_id);
-      q.isBusy = Array.isArray(q.tasks) && q.tasks.length > 0;
+      const qTasks = Array.isArray(q.tasks) ? q.tasks.filter(t => t.status !== 'FAILURE' && t.status !== 'SUCCESS') : [];
+      q.isBusy = qTasks.length > 0;
       return q;
     });
     // Move the user owned questions to the top

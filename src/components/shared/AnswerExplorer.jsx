@@ -61,7 +61,7 @@ class AnswerExplorer extends React.Component {
       feedbackRight = 25;
     }
     const hasFeedback = (this.props.answerFeedback) && (Array.isArray(this.props.answerFeedback)) && this.props.answerFeedback.length > 0;
-    const showFeedbackButton = this.props.enableFeedbackView || hasFeedback;
+    const showFeedbackButton = (this.props.enableFeedbackView && hasFeedback) || this.props.enableFeedbackSubmit;
     return (
       <Panel>
         <Panel.Heading>
@@ -72,7 +72,7 @@ class AnswerExplorer extends React.Component {
                 {showFeedbackButton &&
                   <div style={{ position: 'absolute', top: -2, right: feedbackRight }}>
                     <span style={{ fontSize: '22px' }} title="Feedback">
-                      <FaCommentO style={{ cursor: 'pointer' }} onClick={() => this.feedbackModalOpen()} />
+                      <FaCommentO style={{ cursor: 'pointer' }} onClick={this.feedbackModalOpen} />
                     </span>
                   </div>
                 }
@@ -114,7 +114,7 @@ class AnswerExplorer extends React.Component {
                 answerFeedback={this.props.answerFeedback}
                 enableSubmit={this.props.enableFeedbackSubmit}
                 callbackUpdate={this.feedbackUpdate}
-                callbackClose={this.feedbackModalClose}
+                callbackClose={this.modalClose}
               />
               }
               {modalIsInfo &&

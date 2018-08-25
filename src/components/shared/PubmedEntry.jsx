@@ -5,6 +5,25 @@ import FaExternalLink from 'react-icons/lib/fa/external-link';
 
 const shortid = require('shortid');
 
+
+const makeCancelable = (promise) => {
+  let hasCanceled = false;
+
+  const wrappedPromise = new Promise((resolve, reject) => {
+    promise.then(
+      val => (hasCanceled ? reject(new Error('canceled')) : resolve(val)),
+      error => (hasCanceled ? reject(new Error('canceled')) : reject(error)),
+    );
+  });
+
+  return {
+    promise: wrappedPromise,
+    cancel() {
+      hasCanceled = true;
+    },
+  };
+};
+
 class PubmedEntry extends React.Component {
   constructor(props) {
     super(props);
@@ -35,31 +54,54 @@ class PubmedEntry extends React.Component {
       doid: '',
     };
 
+    this.updatePromise = new Promise(() => {});
     this.updateInformation = this.updateInformation.bind(this);
     this.getPubmedInformation = this.getPubmedInformation.bind(this);
   }
 
   componentDidMount() {
-    this.updateInformation(this.props);
+    this.updatePromise = this.updateInformation(this.props);
+    this.updatePromise.promise
+      .then(newState => this.setState(newState))
+      .catch(() => {});
   }
+
   componentWillReceiveProps(newProps) {
     if (newProps.pmid !== this.props.pmid) {
-      this.updateInformation(newProps);
+      this.updatePromise = this.updateInformation(newProps);
+
+      this.updatePromise.promise
+        .then(newState => this.setState(newState))
+        .catch(() => {});
     }
   }
 
-  getPubmedInformation(pmid, successFun, failFun) {
+  componentWillUnmount() {
+    try {
+      this.updatePromise.cancel();
+    } catch (err) {
+      // Nothing
+    }
+  }
+
+  getPubmedInformation(pmid) {
     const pmidNum = pmid.substr(pmid.indexOf(':') + 1);
     const postUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi';
-    const postData = { db: 'pubmed', id: pmidNum.toString(), version: '2.0', retmode: 'json' };
+    const postData = {
+      db: 'pubmed',
+      id: pmidNum.toString(),
+      version: '2.0',
+      retmode: 'json',
+    };
 
-    $.post(postUrl, postData, data => successFun(data.result)).fail(err => failFun(err));
+    return new Promise((resolve, reject) => $.post(postUrl, postData, response => resolve(response)).fail(response => reject(response)));
   }
   updateInformation(newProps) {
     const { pmid } = newProps;
-    this.getPubmedInformation(
-      pmid,
-      (data) => {
+
+    return makeCancelable(this.getPubmedInformation(pmid)
+      .then((response) => {
+        const data = response.result;
         const pmidNum = pmid.substr(pmid.indexOf(':') + 1);
         if (pmidNum in data) {
           const paperInfo = data[pmidNum];
@@ -74,17 +116,14 @@ class PubmedEntry extends React.Component {
             url: `https://www.ncbi.nlm.nih.gov/pubmed/${pmidNum}/`,
             doid: paperInfo.elocationid,
           };
-          this.setState({ info, ready: true, isFailure: false });
-        } else {
-          const info = Object.assign({}, this.defaultFailureInfo);
-          this.setState({ info, isFailure: true });
+          return { info, ready: true, isFailure: false };
         }
-      },
-      (err) => {
+        throw new Error('Bad response from https://www.ncbi.nlm.nih.gov/pubmed');
+      })
+      .catch((err) => {
         console.log('Error fetching from pubmed', err);
-        this.setState({ info: Object.assign({}, this.defaultFailureInfo), isFailure: true });
-      },
-    );
+        return { info: Object.assign({}, this.defaultFailureInfo), isFailure: true };
+      }));
   }
 
   renderFailure() {

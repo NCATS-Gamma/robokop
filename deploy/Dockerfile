@@ -1,6 +1,6 @@
 # This Dockerfile is used to build ROBOKOP
 
-FROM python:3
+FROM python:3.6.6-stretch
 
 LABEL maintainer="patrick@covar.com"
 ENV REFRESHED_AT 2018-06-05
@@ -22,7 +22,10 @@ RUN apt-get install -yq \
     libkrb5-dev
 
 ## Set up home directory
-RUN useradd -m -s /bin/bash murphy
+ARG UID=1000
+ARG GID=1000
+RUN groupadd -g $GID murphy
+RUN useradd -m -u $UID -g $GID -s /bin/bash murphy
 WORKDIR /home/murphy
 
 ## Get ROBOKOP software

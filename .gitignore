@@ -20,3 +20,4 @@ neo4j_plugins
 .babelrc
 *.tsv
 *.tsv.gz
+deploy/src

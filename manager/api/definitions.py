@@ -90,6 +90,27 @@ class Result():
     """
     pass
 
+@swagger.definition('Answer')
+class Answer():
+    """
+    Answer
+    ---
+    type: "object"
+    description: "An answer to a question."
+    properties:
+        nodes:
+            type: "array"
+            items:
+                $ref: "#/definitions/Node"
+        edges:
+            type: "array"
+            items:
+                $ref: "#/definitions/Edge"
+        score:
+            type: number
+    """
+    pass
+
 @swagger.definition('Graph')
 class Graph():
     """
@@ -169,7 +190,7 @@ class Task():
     ---
     type: object
     properties:
-        uuid: 
+        uuid:
             type: string
             example: "000481a4-0a42-41a3-8d82-f957aa0242cd"
         name:
@@ -235,11 +256,11 @@ class Task():
         root_id:
             type: string
             example: "000481a4-0a42-41a3-8d82-f957aa0242cd"
-        parent: 
+        parent:
             type: string
-        parent_id: 
+        parent_id:
             type: string
-        children: 
+        children:
             type: array
             example: []
     """

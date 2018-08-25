@@ -1,5 +1,5 @@
 from flask_graphql import GraphQLView
-from deploy import initialize_manager
+# from deploy import initialize_manager
 from manager.api.schema import schema
 from manager.setup import app
 

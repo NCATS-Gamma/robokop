@@ -20,7 +20,6 @@ class QuestionListTableAgGrid extends React.Component {
     this.onFilterTextChange = this.onFilterTextChange.bind(this);
     this.getRowClass = this.getRowClass.bind(this);
 
-    this.cellRendererAnswersetTimeStamp = this.cellRendererAnswersetTimeStamp.bind(this);
     this.cellRendererAnswers = this.cellRendererAnswers.bind(this);
     this.cellRendererBusy = this.cellRendererBusy.bind(this);
   }
@@ -52,14 +51,6 @@ class QuestionListTableAgGrid extends React.Component {
       return 'question-row-is-owned';
     }
     return 'question-row-is-unowned';
-  }
-  cellRendererAnswersetTimeStamp(params) {
-    let out = '';
-    if (params.value) {
-      const d = Date(params.value);
-      out = d.toLocaleString();
-    }
-    return out;
   }
   cellRendererAnswers(params) {
     let out = '';
@@ -143,17 +134,16 @@ class QuestionListTableAgGrid extends React.Component {
                     suppressResize: true,
                   },
                   {
-                    headerName: 'Name',
-                    field: 'name',
-                    suppressMenu: true,
-                    hide: true,
-                    tooltip: value => (value),
-                  },
-                  {
                     headerName: 'Question',
                     field: 'natural_question',
                     suppressMenu: true,
-                    width: 400,
+                    width: 300,
+                  },
+                  {
+                    headerName: 'User',
+                    field: 'user_email',
+                    suppressMenu: true,
+                    width: 100,
                   },
                   {
                     headerName: 'Notes',
@@ -210,7 +200,7 @@ QuestionListTableAgGrid.defaultProps = {
 
 QuestionListTableAgGrid.propTypes = {
   height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  questions: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })).isRequired,
+  questions: PropTypes.arrayOf(PropTypes.shape({ natural_question: PropTypes.string })).isRequired,
   showSearch: PropTypes.bool.isRequired,
   callbackQuestionSelect: PropTypes.func.isRequired,
   callbackAnswersetSelect: PropTypes.func.isRequired,

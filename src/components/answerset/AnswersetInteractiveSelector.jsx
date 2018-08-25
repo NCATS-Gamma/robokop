@@ -1,8 +1,10 @@
 import React from 'react';
 import Select from 'react-select';
-import { Panel, PanelGroup, Badge } from 'react-bootstrap';
+import { Panel, PanelGroup, Badge, OverlayTrigger, Popover } from 'react-bootstrap';
+import { TagCloud } from "react-tagcloud";
 
 import GoSync from 'react-icons/lib/go/sync';
+import GoEye from 'react-icons/lib/go/eye';
 
 import getNodeTypeColorMap from '../util/colorUtils';
 import entityNameDisplay from '../util/entityNameDisplay';
@@ -43,6 +45,56 @@ class AnswersetInteractiveSelector extends React.Component {
       if (thisIsSelected) {
         style = { border: '2px solid #444' };
       }
+      const showWordCloud = !thisIsSelected;
+      let wordCloudPopover = (<div />);
+
+      if (showWordCloud) {
+        const wordCloudTitle = `${entityNameDisplay(p[0].type)} Word Cloud`;
+
+        const wordCloudData = p.map((e, i) => ({
+          value: e.name,
+          count: e.score,
+          key: e.id,
+          opt: opts[i],
+        }));
+
+        const wordCloudRenderer = (tag, size, color) => (
+          <span
+            className="tag-cloud-tag"
+            key={tag.key}
+            style={{
+              color,
+              fontSize: `${size}px`,
+              cursor: 'pointer',
+              margin: '0px 3px',
+              verticalAlign: 'middle',
+              display: 'inline-block',
+            }}
+          >
+            {tag.value}
+          </span>
+        );
+
+        wordCloudPopover = (
+          <Popover
+            id="popover-wordcloud"
+            title={wordCloudTitle}
+            style={{ minWidth: '750px', minHeight: '350px' }}
+          >
+            <TagCloud
+              minSize={12}
+              maxSize={35}
+              tags={wordCloudData}
+              colorOptions={{
+                luminosity: 'dark',
+              }}
+              style={{ textAlign: 'center' }}
+              renderer={wordCloudRenderer}
+              onClick={tag => this.handleSelectChange(ind, tag.opt)}
+            />
+          </Popover>
+        );
+      }
 
       return (
         <Panel key={shortid.generate()} style={{ margin: '5px 5px 0 5px' }}>
@@ -57,6 +109,18 @@ class AnswersetInteractiveSelector extends React.Component {
             {!disableButton &&
               <div className="pull-right">
                 <GoSync style={{ cursor: 'pointer' }} onClick={() => this.handleClear(ind)} />
+              </div>
+            }
+            {showWordCloud &&
+              <div className="pull-right">
+                <OverlayTrigger
+                  trigger="click"
+                  placement="right"
+                  rootClose
+                  overlay={wordCloudPopover}
+                >
+                  <GoEye style={{ cursor: 'pointer' }} />
+                </OverlayTrigger>
               </div>
             }
           </Panel.Heading>

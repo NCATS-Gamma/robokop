@@ -21,6 +21,7 @@ class KnowledgeGraphViewer extends React.Component {
 
     this.graphOptions = {
       height: '500px',
+      autoResize: true,
       physics: {
         enabled: true,
         forceAtlas2Based: {
@@ -112,6 +113,14 @@ class KnowledgeGraphViewer extends React.Component {
       return n;
     });
 
+    g.edges = g.edges.map((e) => {
+      e.from = e.source_id;
+      e.to = e.target_id;
+      delete e.source_id;
+      delete e.target_id;
+      return e;
+    });
+
     // Prune out support edges
     g.edges = g.edges.filter(e => e.type !== 'literature_co-occurrence'); // Keep only result edges for this graph display
     return g;
@@ -152,7 +161,7 @@ class KnowledgeGraphViewer extends React.Component {
   }
 
   render() {
-    const showGraph = this.props.graph.nodes.length > 0
+    const showGraph = 'nodes' in this.props.graph && Array.isArray(this.props.graph.nodes) && this.props.graph.nodes.length > 0;
     const showNoGraph = !showGraph;
     return (
       <div>

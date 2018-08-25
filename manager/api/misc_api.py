@@ -4,20 +4,170 @@
 
 import os
 import sys
+import json
+import time
 
+import redis
 import requests
 from flask import request, Response
 from flask_restful import Resource
 
-from manager.setup import app, api
+from manager.setup import app, api, db
 from manager.logging_config import logger
-from manager.util import get_tasks, getAuthData
+from manager.util import getAuthData
 import manager.api.questions_api
 import manager.api.q_api
 import manager.api.a_api
 import manager.api.feedback_api
-
 from manager.tasks import celery
+from manager.task import list_tasks, get_task_by_id
+
+
+class Simple(Resource):
+    def get(self, type1, id1, type2):
+        """
+        Get answer to simple question
+        ---
+        tags: [util]
+        parameters:
+          - in: path
+            name: type1
+            description: "type of first node"
+            type: string
+            required: true
+            default: "disease"
+          - in: path
+            name: id1
+            description: "curie of first node"
+            type: string
+            required: true
+            default: "MONDO:0005737"
+          - in: path
+            name: type2
+            description: "type of second node"
+            type: string
+            required: true
+            default: "gene"
+          - in: query
+            name: predicate
+            type: string
+            default: "disease_to_gene_association"
+          - in: query
+            name: csv
+            type: boolean
+            default: false
+        responses:
+            200:
+                description: answers
+                type: object
+                properties:
+                    answers:
+                        type: array
+                        items:
+                            $ref: '#/definitions/Answer'
+        """
+        question = {
+            'machine_question': {
+                'nodes': [
+                    {
+                        'id': 0,
+                        'curie': id1,
+                        'type': type1
+                    },
+                    {
+                        'id': 1,
+                        'type': type2
+                    }
+                ],
+                'edges': [
+                    {
+                        'source_id': 0,
+                        'target_id': 1
+                    }
+                ]
+            }
+        }
+        predicate = request.args.get('predicate')
+        if predicate is not None:
+            question['machine_question']['edges'][0]['type'] = predicate
+        csv = request.args.get('csv', default='false')
+        response = requests.post(
+            f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/oneshot/',
+            json=question)
+        answerset = response.json()
+        if csv == 'true':
+            node_names = [f"{a['nodes'][-1]['name']}({a['nodes'][-1]['id']})" if 'name' in a['nodes'][-1] else a['nodes'][-1]['id'] for a in answerset['answers']]
+            return ','.join(node_names)
+        return answerset
+
+api.add_resource(Simple, '/gamma/<type1>/<id1>/<type2>')
+
+class OneShot(Resource):
+    def post(self):
+        """
+        Get answers to a question
+        ---
+        tags: [answer]
+        parameters:
+          - in: body
+            name: question
+            description: The machine-readable question graph.
+            schema:
+                $ref: '#/definitions/Question'
+            required: true
+        responses:
+            200:
+                description: Answer
+                schema:
+                    type: object
+                    required:
+                      - thingsandstuff
+                    properties:
+                        thingsandstuff:
+                            type: string
+                            description: all the things and stuff
+        """
+
+        response = requests.post(
+            f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/',
+            json=request.json)
+        polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task id']}"
+
+        for _ in range(60 * 60):  # wait up to 1 hour
+            time.sleep(1)
+            response = requests.get(polling_url)
+            if response.json()['status'] == 'FAILURE':
+                raise RuntimeError('Builder failed.')
+            if response.json()['status'] == 'REVOKED':
+                raise RuntimeError('Task terminated by admin.')
+            if response.json()['status'] == 'SUCCESS':
+                break
+        else:
+            raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
+
+        logger.info('Done updating KG. Answering question...')
+
+        response = requests.post(
+            f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/',
+            json=request.json)
+        polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
+
+        for _ in range(60 * 60):  # wait up to 1 hour
+            time.sleep(1)
+            response = requests.get(polling_url)
+            if response.json()['status'] == 'FAILURE':
+                raise RuntimeError('Question answering failed.')
+            if response.json()['status'] == 'REVOKED':
+                raise RuntimeError('Task terminated by admin.')
+            if response.json()['status'] == 'SUCCESS':
+                break
+        else:
+            raise RuntimeError("Question answering has not completed after 1 hour. You may with to try the non-blocking API.")
+
+        answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{response.json()['task_id']}")
+        return answerset_json.json()
+
+api.add_resource(OneShot, '/oneshot/')
 
 class Tasks(Resource):
     def get(self):
@@ -32,8 +182,8 @@ class Tasks(Resource):
                 items:
                     $ref: '#/definitions/Task'
         """
-        tasks = get_tasks()
-        return tasks
+        tasks = list_tasks(session=db.session)
+        return [t.to_json() for t in tasks]
 
 api.add_resource(Tasks, '/tasks/')
 
@@ -54,12 +204,8 @@ class TaskStatus(Resource):
                 schema:
                     $ref: '#/definitions/Task'
         """
-        # task = celery.AsyncResult(task_id)
-        # return task.state
-
-        flower_url = f'http://{os.environ["FLOWER_HOST"]}:{os.environ["FLOWER_PORT"]}/api/task/result/{task_id}'
-        response = requests.get(flower_url, auth=(os.environ['FLOWER_USER'], os.environ['FLOWER_PASSWORD']))
-        return response.json()
+        
+        return get_task_by_id(task_id).to_json()
 
     def delete(self, task_id):
         """Revoke task

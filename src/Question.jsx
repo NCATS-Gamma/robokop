@@ -30,7 +30,6 @@ class Question extends React.Component {
       prevRunningTasks: [],
       refreshBusy: false,
       answerBusy: false,
-      initializerBusy: false,
       isValid: false,
     };
 
@@ -46,6 +45,7 @@ class Question extends React.Component {
     this.callbackRefresh = this.callbackRefresh.bind(this);
     this.callbackNewAnswerset = this.callbackNewAnswerset.bind(this);
     this.callbackFork = this.callbackFork.bind(this);
+    this.callbackTaskStatus = this.callbackTaskStatus.bind(this);
     this.callbackDelete = this.callbackDelete.bind(this);
     this.callbackFetchGraph = this.callbackFetchGraph.bind(this);
 
@@ -85,7 +85,16 @@ class Question extends React.Component {
       this.props.id,
       (data) => {
         const prevRunningTasks = this.state.runningTasks;
-        this.setState({ runningTasks: data, prevRunningTasks }, this.updateTaskStatus);
+        /*
+          data is of the form
+          [
+            {type: "manager.tasks.answer_question", timestamp: "2018-08-05T01:04:32.782701", status: "FAILURE"},
+            {type: "manager.tasks.update_kg", timestamp: "2018-08-05T01:06:59.364998", status: "SUCCESS"},
+            {type: "manager.tasks.answer_question", timestamp: "2018-08-05T01:06:59.372607", status: "SUCCESS"}
+          ]
+        */
+        const dataFilter = data.filter(x => x.status !== 'FAILURE' && x.status !== 'SUCCESS' && x.status !== 'REVOKED');
+        this.setState({ runningTasks: dataFilter, prevRunningTasks }, this.updateTaskStatus);
       },
       err => console.log('Issues fetching active tasks', err),
     );
@@ -94,61 +103,49 @@ class Question extends React.Component {
     const tasks = this.state.runningTasks;
     const prevTasks = this.state.prevRunningTasks;
 
+    const answerTasks = tasks.filter(x => x.type.endsWith('answer_question'));
+    const updateTasks = tasks.filter(x => x.type.endsWith('update_kg'));
     // console.log('Checking for finished tasks', prevTasks, tasks);
 
-    const refreshBusy = tasks.updaters.length > 0;
-    const answerBusy = tasks.answerers.length > 0;
-    const initializerBusy = false;
+    const answerBusy = answerTasks.length > 0;
+    const refreshBusy = updateTasks.length > 0;
 
-    const refreshFinished = !refreshBusy && this.state.refreshBusy;
     const answerFinished = !answerBusy && this.state.answerBusy;
-    const initializerFinished = false;
+    const refreshFinished = !refreshBusy && this.state.refreshBusy;
 
     this.setState({
-      refreshBusy,
       answerBusy,
-      initializerBusy,
+      refreshBusy,
     });
 
     // If someing is going on, we will ask again soon
-    if (refreshBusy || answerBusy || initializerBusy) {
+    if (refreshBusy || answerBusy) {
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
-    if (initializerFinished) {
+    if (refreshFinished) {
+      const prevUpdateTasks = prevTasks.filter(x => x.type.endsWith('update_kg'));
+      if (prevUpdateTasks.length > 0) {
+        this.notifyRefresh(prevUpdateTasks[0].uuid);
+      }
+      setTimeout(this.pullTasks, this.taskPollingWaitTime);
+    }
+    if (answerFinished) {
       this.appConfig.questionData(
         this.props.id,
         data => this.setState({
           answersets: data.answerset_list,
         }),
       );
-      if (('initializers' in prevTasks) && Array.isArray(prevTasks.initializers) && (prevTasks.initializers.length > 0) && ('uuid' in prevTasks.initializers[0])) {
-        this.notifyInitializer(prevTasks.initializers[0].uuid);
-      }
-      setTimeout(this.pullTasks, this.taskPollingWaitTime);
-      return;
-    }
-    if (refreshFinished && !initializerBusy) {
-      if (('updaters' in prevTasks) && Array.isArray(prevTasks.updaters) && (prevTasks.updaters.length > 0) && ('uuid' in prevTasks.updaters[0])) {
-        this.notifyRefresh(prevTasks.updaters[0].uuid);
-      }
-      setTimeout(this.pullTasks, this.taskPollingWaitTime);
-    }
-    if (answerFinished && !initializerBusy) {
-      this.appConfig.questionData(
-        this.props.id,
-        data => this.setState({
-          answersets: data.answerset_list,
-        }),
-      );
-      if (('answerers' in prevTasks) && Array.isArray(prevTasks.answerers) && (prevTasks.answerers.length > 0) && ('uuid' in prevTasks.answerers[0])) {
-        this.notifyAnswers(prevTasks.answerers[0].uuid);
+      const prevAnswerTasks = prevTasks.filter(x => x.type.endsWith('answer_question'));
+      if (prevAnswerTasks.length > 0) {
+        this.notifyAnswers(prevAnswerTasks[0].uuid);
       }
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
   }
   notifyRefresh(taskId) {
     this.appConfig.taskStatus(taskId, (data) => {
-      if (data.state == 'SUCCESS') {
+      if (data.status === 'SUCCESS') {
         this.notificationSystem.addNotification({
           title: 'Knowledge Graph Update Complete',
           message: 'We finished updating the knowledge graph for this question. Go check it out!',
@@ -156,20 +153,26 @@ class Question extends React.Component {
           dismissible: 'click',
           position: 'tr',
         });
-      } else if (data.state == 'REVOKED') {
+      } else if (data.status === 'REVOKED') {
         console.log(taskId, data);
         this.notificationSystem.addNotification({
           title: 'Knowledge Graph Update Terminated',
-          message: `The knowledge graph update process was terminated by admin. If this is a surprise to you, please contact... someone.`,
+          message: 'The knowledge graph update process was terminated before it could finish.',
           level: 'error',
           dismissible: 'click',
           position: 'tr',
         });
       } else {
         console.log(taskId, data);
+        const { traceback } = data.result;
         this.notificationSystem.addNotification({
           title: 'Error Updating Knowledge Graph',
-          message: `We encountered an error while trying to update the knowledge graph for this question. If this error persists please contact a system administrator.\r\n\r\nError Report:\r\n${data.result}`,
+          message: `
+            We encountered an error while trying to update the knowledge graph for this question.
+            If this error persists please contact a system administrator.
+            Error Report:
+            ${traceback}
+          `,
           level: 'error',
           dismissible: 'click',
           position: 'tr',
@@ -179,7 +182,9 @@ class Question extends React.Component {
   }
   notifyAnswers(taskId) {
     this.appConfig.taskStatus(taskId, (data) => {
-      const success = data.state !== 'FAILURE';
+      const success = data.status === 'SUCCESS';
+      const revoked = data.status === 'REVOKED';
+      // const failure = data.status === 'FAILURE'; // Assume failure
       if (success) {
         this.notificationSystem.addNotification({
           title: 'New Answers are Available',
@@ -188,34 +193,25 @@ class Question extends React.Component {
           dismissible: 'click',
           position: 'tr',
         });
-      } else {
-        console.log(taskId, data);
+      } else if (revoked) {
         this.notificationSystem.addNotification({
-          title: 'Error Finding New Answers',
-          message: `We encountered an error while trying to find new answers for this question. If this error persists please contact a system administrator.\r\n\r\nError Report:\r\n${data.result}`,
+          title: 'New Answer Generation Was Canceled',
+          message: 'Question answering was canceled before it was able to finish.',
           level: 'error',
           dismissible: 'click',
           position: 'tr',
         });
-      }
-    });
-  }
-  notifyInitializer(taskId) {
-    this.appConfig.taskStatus(taskId, (data) => {
-      const success = data.state !== 'FAILURE';
-      if (success) {
-        this.notificationSystem.addNotification({
-          title: 'Initial Answers are Available',
-          message: 'We finished finding initial answers for this question. Go check them out!',
-          level: 'success',
-          dismissible: 'click',
-          position: 'tr',
-        });
       } else {
         console.log(taskId, data);
+        const { traceback } = data.result;
         this.notificationSystem.addNotification({
-          title: 'Error Finding Initial Answers',
-          message: `We encountered an error while trying to find answers for this question. Robokop may not be capable of answering the question as phrased.\r\n\r\nError Report:\r\n${data.result}`,
+          title: 'Error Finding New Answers',
+          message: `
+            We encountered an error while trying to find new answers for this question.
+            If this error persists please contact a system administrator.
+            Error Report:
+            ${traceback}
+          `,
           level: 'error',
           dismissible: 'click',
           position: 'tr',
@@ -276,13 +272,95 @@ class Question extends React.Component {
       },
     );
   }
-  
+
   callbackUpdateMeta(newMeta, fun) {
     this.appConfig.questionUpdateMeta(this.props.id, newMeta, fun);
   }
   callbackFork() {
     const q = this.state.question;
     this.appConfig.questionFork(q.id);
+  }
+  callbackTaskStatus() {
+    const task = this.state.runningTasks[0];
+    const isAuth = this.state.user.is_admin || this.state.user.username === task.initiator;
+
+    let ts = task.timestamp;
+    if (!ts.endsWith('Z')) {
+      ts = `${ts}Z`;
+    }
+    const d = new Date(ts);
+    const timeString = d.toLocaleString();
+
+    const { status } = task;
+    const taskSummary = (
+      <ul>
+        <li>{`ID: ${task.uuid}`}</li>
+        <li>{`Initiator: ${task.initiator}`}</li>
+        <li>{`Started: ${timeString}`}</li>
+        <li>{`Status: ${status}`}</li>
+      </ul>
+    );
+
+    if (isAuth) {
+      const content = (
+        <div>
+          {taskSummary}
+          <h3>
+            You can stop this task prior to completion. Would you like to stop this task?
+          </h3>
+        </div>
+      );
+
+      this.dialogConfirm(
+        () => {
+          this.dialogWait({
+            title: 'Stoping Task...',
+            text: '',
+            showLoading: true,
+          });
+
+          // Actually try to delete the question here.
+          this.appConfig.taskStop(
+            task.uuid,
+            () => {
+              this.notificationSystem.addNotification({
+                title: 'Task Stopped',
+                message: 'Task succesfully stopped.',
+                level: 'info',
+                position: 'tr',
+                dismissible: 'click',
+              });
+              this.dialog.hide();
+            },
+            (err) => {
+              console.log(err);
+              this.dialogMessage({
+                title: 'Task Not Stopped!',
+                text: 'We were unable to stop the task. This could due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+                buttonText: 'OK',
+              });
+            },
+          );
+        },
+        {
+          confirmationTitle: 'Task Status',
+          confirmationText: content,
+          confirmationButtonText: 'Stop',
+        },
+      );
+    } else {
+      const content = (
+        <div>
+          {taskSummary}
+        </div>
+      );
+      this.dialogMessage({
+        title: 'Task Status',
+        text: content,
+        buttonText: 'OK',
+        buttonAction: () => {},
+      });
+    }
   }
   callbackDelete() {
     const q = this.state.question;
@@ -317,7 +395,19 @@ class Question extends React.Component {
     );
   }
   callbackFetchGraph(afterDoneFun, afterDoneFunFail) {
-    this.appConfig.questionSubgraph(this.props.id, data => this.setState({ subgraph: data }, afterDoneFun()), (err) => { console.log(err); this.setState({ subgraph: { edges: [], nodes: [] } }, afterDoneFunFail()); });
+    this.appConfig.questionSubgraph(
+      this.props.id,
+      (data) => {
+        if (typeof data === 'string' || data instanceof String) {
+          // This usually happens due to a 404 but our current axios settings pass 404s as success
+          // Rather than changes that global we just catch it here, since this is the only place
+          this.setState({ subgraph: { edges: [], nodes: [] } }, afterDoneFunFail());
+          return;
+        }
+        this.setState({ subgraph: data }, afterDoneFun());
+      },
+      (err) => { console.log(err); this.setState({ subgraph: { edges: [], nodes: [] } }, afterDoneFunFail()); },
+    );
   }
   dialogConfirm(callbackToDo, inputOptions) {
     const defaultOptions = {
@@ -412,10 +502,13 @@ class Question extends React.Component {
         this.appConfig.questionTasks(
           this.props.id,
           (data) => {
-            console.log('Checking if our new task actually started', data);
+            // Remove failed and completed tasks here. We will check for these below.
+            const activeTasks = data.filter(x => x.status !== 'FAILURE' && x.status !== 'SUCCESS' && x.status !== 'REVOKED');
+            console.log('Checking if our new task actually started', activeTasks);
             let allOk = true;
             if (isAnswerTask) {
-              const ind = data.answerers.findIndex(a => a.uuid === newTask.answersetTask);
+              const answerTasks = activeTasks.filter(x => x.type.endsWith('answer_question'));
+              const ind = answerTasks.findIndex(a => a.uuid === newTask.answersetTask);
               if (ind < 0) {
                 // Task is not in the list of active tasks
 
@@ -429,9 +522,10 @@ class Question extends React.Component {
                     // Anything else // Assume lost, how are you doing this but not in the active list for this question
                     // 'SUCCESS' // Already done, great, fire notification
                     // 'FAILURE' // Already failued, fire notificaiton
-                    const success = taskStatusData.state === 'SUCCESS';
-                    const failure = taskStatusData.state === 'FAILURE';
-                    if (success || failure) {
+                    const success = taskStatusData.status === 'SUCCESS';
+                    const failure = taskStatusData.status === 'FAILURE';
+                    const revoked = taskStatusData.status === 'REVOKED';
+                    if (success || failure || revoked) {
                       this.notifyAnswers(newTask.answersetTask);
                       return;
                     }
@@ -440,7 +534,7 @@ class Question extends React.Component {
                     console.log('Missing Question Task!!?!', newTask.answersetTask);
 
                     this.dialogMessage({
-                      title: 'Trouble Queuing Knowledge Graph Update',
+                      title: 'Trouble Queuing Question Answering',
                       text: 'We have lost track of your task. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
                       buttonText: 'OK',
                       buttonAction: () => {},
@@ -451,7 +545,8 @@ class Question extends React.Component {
               // Task is appropriately in the list of active tasks, start polling as normal
             }
             if (isRefreshTask) {
-              const ind = data.updaters.findIndex(a => a.uuid === newTask.questionTask);
+              const updateTasks = activeTasks.filter(x => x.type.endsWith('update_kg'));
+              const ind = updateTasks.findIndex(a => a.uuid === newTask.questionTask);
               if (ind < 0) {
                 // Task is not in the list of active tasks
 
@@ -465,9 +560,10 @@ class Question extends React.Component {
                     // Anything else // Assume lost, how are you doing this but not in the active list for this question
                     // 'SUCCESS' // Already done, great, fire notification
                     // 'FAILURE' // Already failued, fire notificaiton
-                    const success = taskStatusData.state === 'SUCCESS';
-                    const failure = taskStatusData.state === 'FAILURE';
-                    if (success || failure) {
+                    const success = taskStatusData.status === 'SUCCESS';
+                    const failure = taskStatusData.status === 'FAILURE';
+                    const revoked = taskStatusData.status === 'REVOKED';
+                    if (success || failure || revoked) {
                       this.notifyRefresh(newTask.questionTask);
                       return;
                     }
@@ -489,8 +585,8 @@ class Question extends React.Component {
             if (allOk) {
               this.setState(
                 {
-                  prevRunningTasks: data,
-                  runningTasks: data,
+                  prevRunningTasks: activeTasks,
+                  runningTasks: activeTasks,
                   answerBusy: isAnswerTask,
                   refreshBusy: isRefreshTask,
                 },
@@ -567,6 +663,7 @@ class Question extends React.Component {
               callbackFork={this.callbackFork}
               callbackDelete={this.callbackDelete}
               callbackFetchGraph={this.callbackFetchGraph}
+              callbackTaskStatus={this.callbackTaskStatus}
               answersetUrl={a => this.appConfig.urls.answerset(this.props.id, a.id)}
               question={this.state.question}
               answersets={this.state.answersets}
@@ -574,13 +671,13 @@ class Question extends React.Component {
               concepts={this.state.concepts}
               refreshBusy={this.state.refreshBusy}
               answerBusy={this.state.answerBusy}
-              initializerBusy={this.state.initializerBusy}
               enableNewAnswersets={this.appConfig.enableNewAnswersets}
               enableNewQuestions={this.appConfig.enableNewQuestions}
               enableQuestionRefresh={this.appConfig.enableQuestionRefresh}
               enableQuestionEdit={this.appConfig.enableQuestionEdit}
               enableQuestionDelete={this.appConfig.enableQuestionDelete}
               enableQuestionFork={this.appConfig.enableQuestionFork}
+              enableTaskStatus={this.appConfig.enableTaskStatus}
             />
           }
           {!this.state.isValid &&

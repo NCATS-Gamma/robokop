@@ -37,7 +37,6 @@ class AnswersetPres extends React.Component {
     a.href = url;
     a.click();
     a.remove();
-
   }
 
   handleTabSelect(tabKey) {

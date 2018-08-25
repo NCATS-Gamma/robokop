@@ -17,6 +17,7 @@ class AnswerExplorerInfo extends React.Component {
       selectedNodeId: null,
       subgraph: { nodes: [], edges: [] },
       disbleGraphClick: false,
+      downloadingPubs: false,
     };
 
     this.onGraphClick = this.onGraphClick.bind(this);
@@ -65,9 +66,13 @@ class AnswerExplorerInfo extends React.Component {
       publicationListFrag = <PubmedList publications={publications} />;
     }
 
-    const downloadCallback = () => this.downloadPublicationsInfo(publications);
+    const downloadCallback = () => this.setState({ downloadingPubs: true }, () => this.downloadPublicationsInfo(publications));
     const showDownload = publications.length >= 1;
 
+    const cursor = this.state.downloadingPubs ? 'progress' : 'pointer';
+    const activeCallback = this.state.downloadingPubs ? () => {} : downloadCallback;
+    const downloadTitle = this.state.downloadingPubs ? 'Downloading Please Wait' : 'Download Publications';
+    const downloadColor = this.state.downloadingPubs ? '#333' : '#000';
     return (
       <div>
         {somethingSelected &&
@@ -79,8 +84,8 @@ class AnswerExplorerInfo extends React.Component {
                 <div style={{ position: 'relative' }}>
                   {showDownload &&
                     <div style={{ position: 'absolute', top: -3, right: -8 }}>
-                      <span style={{ fontSize: '22px' }} title="Download Publications">
-                        <FaDownload onClick={downloadCallback} style={{ cursor: 'pointer' }} />
+                      <span style={{ fontSize: '22px', color: downloadColor }} title={downloadTitle}>
+                        <FaDownload onClick={activeCallback} style={{ cursor }} />
                       </span>
                     </div>
                   }
@@ -233,11 +238,11 @@ class AnswerExplorerInfo extends React.Component {
         retmode: 'json',
       };
 
-      return Promise.resolve($.post(postUrl, postData))
+      return new Promise((resolve, reject) => $.post(postUrl, postData, response => resolve(response)).fail(response => reject(response)))
         .then(info => getInfo(info.result, pmid, pmidNum)).catch((err) => {console.log(err); return defaultInfo;});
     };
 
-    Promise.all(publications.map(p => getPubmedInformation(p))).then((data) => {
+    Promise.all(publications.map((p, i) => new Promise(resolve => setTimeout(resolve, (i * 100) + 1)).then(() => getPubmedInformation(p)))).then((data) => {
       // Transform the data into a json blob and give it a url
       // const json = JSON.stringify(data);
       // const blob = new Blob([json], { type: 'application/json' });
@@ -255,11 +260,11 @@ class AnswerExplorerInfo extends React.Component {
 
       // Create a link with that URL and click it.
       const a = document.createElement('a');
-      a.download = 'publications.json';
+      a.download = 'publications.csv';
       a.href = url;
       a.click();
       a.remove();
-    });
+    }).then(() => this.setState({ downloadingPubs: false }));
   }
 
 

@@ -60,6 +60,15 @@ class QuestionGraphViewer extends React.Component {
         hover: { background: backgroundColor },
       };
 
+      n.isSet = ('set' in n) && (((typeof n.set === typeof true) && n.set) || ((typeof n.set === 'string') && n.set === 'true'));
+
+      n.borderWidthSelected = 1;
+      if (n.isSet) {
+        n.borderWidth = 2;
+      } else {
+        n.borderWidth = 1;
+      }
+
       if ('label' in n) {
         if (('nodeSpecType' in n) && (n.nodeSpecType === CardTypes.NODETYPE)) {
           n.label = entityNameDisplay(n.label);
@@ -84,7 +93,6 @@ class QuestionGraphViewer extends React.Component {
       } else {
         n.label = '';
       }
-      
       return n;
     });
     return graph;
@@ -96,6 +104,7 @@ class QuestionGraphViewer extends React.Component {
 
     const options = {
       height: '250px',
+      autoResize: true,
       physics: false,
       layout: {
         hierarchical: {
@@ -111,8 +120,6 @@ class QuestionGraphViewer extends React.Component {
         // smooth: { type: 'dynamic' },
         color: {
           color: '#000',
-          highlight: '#3da4ed',
-          hover: '#333',
         },
         length: 20,
       },
@@ -120,9 +127,6 @@ class QuestionGraphViewer extends React.Component {
         shape: 'box',
         color: {
           border: '#000',
-          highlight: {
-            border: '#3da4ed',
-          },
           hover: {
             border: '#000',
           },
@@ -138,8 +142,6 @@ class QuestionGraphViewer extends React.Component {
         selectConnectedEdges: false,
       },
     };
-    // console.log('Graphs is:', graph);
-    // border: '1px solid #d1d1d1', boxShadow: '0px 0px 5px #c3c3c3'
     return (
       <Graph
         graph={graph}

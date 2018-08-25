@@ -29,7 +29,6 @@ class PubmedList extends React.Component {
 
   rowRenderer({
     index,
-    isScrolling,
     key,
     style,
   }) {
@@ -38,16 +37,9 @@ class PubmedList extends React.Component {
         style={{ ...style, ...this.styles.row }}
         key={key}
       >
-        {isScrolling &&
-          <div style={{ color: '#ccc' }}>
-            Loading...
-          </div>
-        }
-        {!isScrolling &&
-          <PubmedEntry
-            pmid={this.props.publications[index]}
-          />
-        }
+        <PubmedEntry
+          pmid={this.props.publications[index]}
+        />
       </div>
     );
   }
@@ -74,7 +66,7 @@ class PubmedList extends React.Component {
             ref={(ref) => { this.list = ref; }}
             style={this.styles.list}
             height={listHeight}
-            overscanRowCount={10}
+            overscanRowCount={25}
             rowCount={rowCount}
             rowHeight={100}
             noRowsRenderer={this.noRowsRenderer}

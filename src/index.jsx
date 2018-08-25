@@ -6,18 +6,21 @@ import 'bootstrap/dist/css/bootstrap.css'; // path search within node_modules
 import 'ag-grid/dist/styles/ag-grid.css';
 import 'ag-grid/dist/styles/ag-theme-material.css';
 import 'react-select/dist/react-select.css';
+import 'react-widgets/dist/css/react-widgets.css';
 
 import 'babel-polyfill'; // For IE Promises
 
 import Landing from './Landing';
 import About from './About';
 import QuestionNew from './QuestionNew';
+import QuestionNewLinear from './QuestionNewLinear';
 import Question from './Question';
 import QuestionList from './QuestionList';
 import Answerset from './Answerset';
 import Workflow from './Workflow';
 import AnswersetApp from './AnswersetApp';
 import Comparison from './Comparison';
+import Activity from './Activity';
 
 // Our actual CSS and other images etc.
 import '../assets/css/style.css';
@@ -60,6 +63,23 @@ const robokop = {
       <QuestionNew
         config={config}
         initializationId={id}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  questionNewLinear: (id) => {
+    ReactDOM.render(
+      <QuestionNewLinear
+        config={config}
+        initializationId={id}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  activity: () => {
+    ReactDOM.render(
+      <Activity
+        config={config}
       />,
       document.getElementById('reactEntry'),
     );

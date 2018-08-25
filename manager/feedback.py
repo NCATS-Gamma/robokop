@@ -11,7 +11,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from manager.question import Question
 from manager.answer import Answer
 from manager.user import User
-from manager.setup import db
+from manager.setup import Base, db
 from manager.util import DictLikeMixin
 
 class Feedback(db.Model, DictLikeMixin):
@@ -56,9 +56,6 @@ class Feedback(db.Model, DictLikeMixin):
 
         self.init_from_args(*args, **kwargs)
 
-        db.session.add(self)
-        db.session.commit()
-
     def __str__(self):
         return "<ROBOKOP Feedback id={}>".format(self.id)
 
@@ -67,16 +64,26 @@ class Feedback(db.Model, DictLikeMixin):
         struct = {key:getattr(self, key) for key in keys}
         if 'timestamp' in struct:
             struct['timestamp'] = struct['timestamp'].isoformat()
+        struct['user_email'] = self.user_email
+        struct.pop('user_id')
         return struct
 
-def get_feedback_by_id(id):
-    return db.session.query(Feedback).filter(Feedback.id == id).first()
+def get_feedback_by_id(id, session=None):
+    if session is None:
+        session = db.session
+    return session.query(Feedback).filter(Feedback.id == id).first()
 
-def list_feedback_by_question(question):
-    return db.session.query(Feedback).filter(Feedback.question == question).all()
+def list_feedback_by_question(question, session=None):
+    if session is None:
+        session = db.session
+    return session.query(Feedback).filter(Feedback.question == question).all()
 
-def list_feedback_by_question_answerset(question, answerset):
-    return db.session.query(Feedback).filter(Feedback.question == question).filter(Feedback.answer_id.in_([a.id for a in answerset.answers])).all()
+def list_feedback_by_question_answerset(question, answerset, session=None):
+    if session is None:
+        session = db.session
+    return session.query(Feedback).filter(Feedback.question == question).filter(Feedback.answer_id.in_([a.id for a in answerset.answers])).all()
 
-def list_feedback_by_question_answer(question, answer):
-    return db.session.query(Feedback).filter(Feedback.question == question).filter(Feedback.answer == answer).all()
+def list_feedback_by_question_answer(question, answer, session=None):
+    if session is None:
+        session = db.session
+    return session.query(Feedback).filter(Feedback.question == question).filter(Feedback.answer == answer).all()
