@@ -153,7 +153,7 @@ api.add_resource(QuestionAPI, '/q/<question_id>/')
 class GetFeedbackByQuestion(Resource):
     def get(self, question_id):
         """
-        Create new feedback
+        Get feedback by question
         ---
         tags: [feedback]
         parameters:
@@ -184,7 +184,7 @@ class AnswerQuestion(Resource):
         """
         Answer question
         ---
-        tags: [answer]
+        tags: [question]
         parameters:
           - in: path
             name: question_id
@@ -223,7 +223,7 @@ class RefreshKG(Resource):
         """
         Refresh KG for question
         ---
-        tags: [cache]
+        tags: [question]
         parameters:
           - in: path
             name: question_id
