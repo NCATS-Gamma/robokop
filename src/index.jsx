@@ -21,6 +21,7 @@ import Workflow from './Workflow';
 import AnswersetApp from './AnswersetApp';
 import Comparison from './Comparison';
 import Activity from './Activity';
+import Search from './Search';
 
 // Our actual CSS and other images etc.
 import '../assets/css/style.css';
@@ -72,6 +73,14 @@ const robokop = {
       <QuestionNewLinear
         config={config}
         initializationId={id}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  search: () => {
+    ReactDOM.render(
+      <Search
+        config={config}
       />,
       document.getElementById('reactEntry'),
     );
