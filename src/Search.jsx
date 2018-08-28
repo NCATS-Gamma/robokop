@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Grid, Row, Col } from 'react-bootstrap';
+import { AutoSizer } from 'react-virtualized';
 
 import AppConfig from './AppConfig';
 import Loading from './components/Loading';
@@ -25,6 +26,7 @@ class Search extends React.Component {
 
     this.onSearch = this.onSearch.bind(this);
     this.onSelect = this.onSelect.bind(this);
+    this.onUnSelect = this.onUnSelect.bind(this);
   }
 
   componentDidMount() {
@@ -44,9 +46,11 @@ class Search extends React.Component {
     return this.appConfig.questionNewSearch(input, nodeType);
   }
   onSelect(selected) {
-    console.log(selected);
+    // console.log(selected);
   }
-
+  onUnSelect() {
+    // console.log('un-selected');
+  }
   renderLoading() {
     return (
       <Loading />
@@ -62,11 +66,34 @@ class Search extends React.Component {
         <Grid>
           <Row>
             <Col md={12}>
-              <Bionames
-                concepts={this.state.concepts}
-                search={(input, nodeType) => this.onSearch(input, nodeType)}
-                onSelect={selected => this.onSelect(selected)}
-              />
+              <div
+                style={{
+                  paddingBottom: '15px',
+                }}
+              >
+                <h2>
+                  Bionames Search
+                  <br />
+                  <small>
+                    An easy to use interface for the <a href="https://bionames.renci.org/apidocs/">Bionames service</a>
+                  </small>
+                </h2>
+              </div>
+              <AutoSizer disableHeight>
+                {({ width }) => (
+                  <div
+                    id="searchBionames"
+                  >
+                    <Bionames
+                      concepts={this.state.concepts}
+                      search={(input, nodeType) => this.onSearch(input, nodeType)}
+                      onSelect={this.onSelect}
+                      onUnSelect={this.onUnSelect}
+                      width={width}
+                    />
+                  </div>
+                )}
+              </AutoSizer>
             </Col>
           </Row>
         </Grid>
