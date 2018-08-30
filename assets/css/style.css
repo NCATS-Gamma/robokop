@@ -207,3 +207,10 @@ div.vis-tooltip-inner {
       rgba(255, 255, 255, 1) 100%
   );
 }
+
+#bionames .form-control:focus {
+  border-color: #ccc;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+

@@ -241,7 +241,7 @@ class QuestionLinearEditorCard extends Component {
                   backspaceRemoves={true}
                   filterOptions={(options, filter, currentValues) => {
                     // Do no filtering, just return all options
-                    // We need to disable filtering so taht search results do not have to contain our input string.
+                    // We need to disable filtering so that search results do not have to contain our input string.
                     return options;
                   }}
                 />
