@@ -13,6 +13,7 @@ import 'babel-polyfill'; // For IE Promises
 import Landing from './Landing';
 import About from './About';
 import QuestionNew from './QuestionNew';
+import QuestionNewLinear from './QuestionNewLinear';
 import Question from './Question';
 import QuestionList from './QuestionList';
 import Answerset from './Answerset';
@@ -60,6 +61,15 @@ const robokop = {
   questionNew: (id) => {
     ReactDOM.render(
       <QuestionNew
+        config={config}
+        initializationId={id}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  questionNewLinear: (id) => {
+    ReactDOM.render(
+      <QuestionNewLinear
         config={config}
         initializationId={id}
       />,

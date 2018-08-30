@@ -395,7 +395,19 @@ class Question extends React.Component {
     );
   }
   callbackFetchGraph(afterDoneFun, afterDoneFunFail) {
-    this.appConfig.questionSubgraph(this.props.id, data => this.setState({ subgraph: data }, afterDoneFun()), (err) => { console.log(err); this.setState({ subgraph: { edges: [], nodes: [] } }, afterDoneFunFail()); });
+    this.appConfig.questionSubgraph(
+      this.props.id,
+      (data) => {
+        if (typeof data === 'string' || data instanceof String) {
+          // This usually happens due to a 404 but our current axios settings pass 404s as success
+          // Rather than changes that global we just catch it here, since this is the only place
+          this.setState({ subgraph: { edges: [], nodes: [] } }, afterDoneFunFail());
+          return;
+        }
+        this.setState({ subgraph: data }, afterDoneFun());
+      },
+      (err) => { console.log(err); this.setState({ subgraph: { edges: [], nodes: [] } }, afterDoneFunFail()); },
+    );
   }
   dialogConfirm(callbackToDo, inputOptions) {
     const defaultOptions = {

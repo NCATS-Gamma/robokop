@@ -203,7 +203,7 @@ class MachineQuestionEditor extends React.Component {
             </div>
           </div>
         </div>
-        <div style={containerStyle}>
+        <div style={{ ...containerStyle, marginRight: '-15px'}}>
           {!thinking &&
             <SplitterLayout>
               <div style={{ paddingTop: '10px' }}>

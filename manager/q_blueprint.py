@@ -28,6 +28,11 @@ def new():
     """Deliver new-question interface"""
     return render_template('questionNew.html', question_id='')
 
+@q.route('/new/linear/', methods=['GET'])
+def newLinear():
+    """Deliver new-question linear interface"""
+    return render_template('questionNewLinear.html', question_id='')
+
 # New Question Submission
 @q.route('/new/', methods=['POST'])
 @auth_required('session', 'basic')
