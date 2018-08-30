@@ -65,6 +65,11 @@ def search():
     """Search for biomedical concept identifiers"""
     return render_template('search.html')
 
+@app.route('/simple/')
+def simple():
+    """Simple Interface"""
+    return render_template('simple.html')
+
 @app.route('/app/answerset/')
 def app_answerset():
     """Answerset Browser with upload"""

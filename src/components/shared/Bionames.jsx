@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { FormGroup, FormControl, InputGroup, DropdownButton, MenuItem, Button, Glyphicon } from 'react-bootstrap';
+import { FormGroup, FormControl, InputGroup, DropdownButton, MenuItem, Glyphicon } from 'react-bootstrap';
 
 import BionamesBrowser from './BionamesBrowser';
 
@@ -55,7 +55,12 @@ class Bionames extends React.Component {
   }
   handleSelect(value) {
     this.input.value = value.label;
-    this.setState({ showOptions: false, selected: value, hasSelected: true }, () => this.props.onSelect(value));
+    const selected = {
+      name: value.label,
+      curie: value.value,
+      type: this.state.type,
+    }
+    this.setState({ showOptions: false, selected, hasSelected: true }, () => this.props.onSelect(selected));
   }
   handleTermChange(event) {
     const term = event.target.value;
@@ -88,7 +93,7 @@ class Bionames extends React.Component {
 
     const { showOptions, hasSelected, selected } = this.state;
 
-    const curie = hasSelected ? selected.value : '';
+    const curie = hasSelected ? selected.curie : '';
     const rightButtonCallback = (showOptions || !hasSelected) ? this.handleClear : this.handleReopen;
     const rightButtonContents = (showOptions || !hasSelected) ? (<Glyphicon glyph="remove" />) : (<Glyphicon glyph="triangle-bottom" />);
 

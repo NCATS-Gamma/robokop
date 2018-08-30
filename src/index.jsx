@@ -22,6 +22,7 @@ import AnswersetApp from './AnswersetApp';
 import Comparison from './Comparison';
 import Activity from './Activity';
 import Search from './Search';
+import Simple from './Simple';
 
 // Our actual CSS and other images etc.
 import '../assets/css/style.css';
@@ -131,6 +132,14 @@ const robokop = {
   app_comparison: () => {
     ReactDOM.render(
       <Comparison
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  simple: () => {
+    ReactDOM.render(
+      <Simple
         config={config}
       />,
       document.getElementById('reactEntry'),
