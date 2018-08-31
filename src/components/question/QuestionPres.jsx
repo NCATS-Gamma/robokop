@@ -201,6 +201,7 @@ class QuestionPres extends React.Component {
                   callbackFetchGraph={this.props.callbackFetchGraph}
                   callbackRefresh={this.props.callbackRefresh}
                   subgraph={this.props.subgraph}
+                  concepts={this.props.concepts}
                   wait={this.props.refreshBusy}
                   scrollToId="#localKGHeader"
                 />
