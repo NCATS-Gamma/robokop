@@ -93,6 +93,7 @@ class KnowledgeGraphFetchAndView extends React.Component {
                 width={width}
                 graph={this.props.subgraph}
                 callbackRefresh={this.props.callbackRefresh}
+                concepts={this.props.concepts}
               />
               }
             </Panel.Body>

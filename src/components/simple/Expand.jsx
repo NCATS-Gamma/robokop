@@ -6,7 +6,7 @@ import { AutoSizer } from 'react-virtualized';
 import Bionames from '../shared/Bionames';
 
 import entityNameDisplay from '../util/entityNameDisplay';
-import { findIndex } from 'rxjs/operator/findIndex';
+// import { findIndex } from 'rxjs/operator/findIndex';
 
 class Expand extends React.Component {
   constructor(props) {
