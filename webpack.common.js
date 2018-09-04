@@ -12,7 +12,7 @@ const config = {
           options: {
             cacheDirectory: true,
             babelrc: false,
-            presets: ['babel-preset-es2015', 'babel-preset-react'].map(require.resolve),
+            presets: ['babel-preset-env', 'babel-preset-react'].map(require.resolve),
             plugins: ['transform-decorators-legacy', 'transform-object-rest-spread', 'transform-export-extensions'],
           },
         },
@@ -33,7 +33,7 @@ const config = {
         test: /react-icons\/(.)*(.js)$/,
         loader: 'babel-loader',
         query: {
-          presets: ['babel-preset-es2015', 'babel-preset-react'].map(require.resolve),
+          presets: ['babel-preset-env', 'babel-preset-react'].map(require.resolve),
         },
       },
     ],
