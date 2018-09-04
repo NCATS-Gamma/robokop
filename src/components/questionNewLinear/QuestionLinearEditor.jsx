@@ -5,7 +5,7 @@ import update from 'immutability-helper'
 import { DropTarget, DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import { Button } from 'react-bootstrap';
-import FaPlus from 'react-icons/fa/plus';
+import FaPlus from 'react-icons/lib/fa/plus';
 
 import QuestionLinearEditorCard from './QuestionLinearEditorCard';
 import CardTypes from '../util/questionNewCardTypes';

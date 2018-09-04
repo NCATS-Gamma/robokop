@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Grid, Row, Col, Popover, OverlayTrigger, Panel } from 'react-bootstrap';
-import GoQuestion from 'react-icons/go/question';
+import GoQuestion from 'react-icons/lib/go/question';
 
 import QuestionHeader from '../shared/QuestionHeader';
 import MachineQuestionView from '../shared/MachineQuestionView';
