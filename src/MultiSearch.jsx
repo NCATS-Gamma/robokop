@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Grid, Row, Col, FormControl, Button, FormGroup } from 'react-bootstrap';
+import { Grid, Row, Col, FormControl, Button } from 'react-bootstrap';
 import { AutoSizer } from 'react-virtualized';
 
 
@@ -10,8 +10,9 @@ import Loading from './components/Loading';
 import Header from './components/Header';
 import Footer from './components/Footer';
 
-import Bionames from './components/shared/Bionames';
 import CurieSelectorContainer from './components/shared/CurieSelectorContainer';
+
+const _ = require('lodash');
 
 class MultiSearch extends React.Component {
   constructor(props) {
@@ -29,8 +30,6 @@ class MultiSearch extends React.Component {
     };
 
     this.onSearch = this.onSearch.bind(this);
-    this.onSelect = this.onSelect.bind(this);
-    this.onUnSelect = this.onUnSelect.bind(this);
     this.handleRawJsonChange = this.handleRawJsonChange.bind(this);
   }
 
@@ -50,12 +49,6 @@ class MultiSearch extends React.Component {
   onSearch(input, nodeType) {
     return this.appConfig.questionNewSearch(input, nodeType);
   }
-  onSelect(selected) {
-    // console.log(selected);
-  }
-  onUnSelect() {
-    // console.log('un-selected');
-  }
   handleRawJsonChange(event) {
     this.setState({ rawInputJson: event.target.value });
   }
@@ -65,6 +58,38 @@ class MultiSearch extends React.Component {
     );
   }
   renderLoaded() {
+    const isEmptyJsonInput = this.state.submittedJSON === '';
+    let curieSelectorElements;
+    if (isEmptyJsonInput) {
+      curieSelectorElements = width => (
+        <CurieSelectorContainer
+          concepts={this.state.concepts}
+          search={(input, nodeType) => this.onSearch(input, nodeType)}
+          width={width}
+          displayType
+        />
+      );
+    } else {
+      let submittedJSON = JSON.parse(this.state.submittedJSON);
+      if (_.isPlainObject(submittedJSON)) {
+        submittedJSON = [submittedJSON];
+      }
+      if (Array.isArray(submittedJSON)) {
+        console.log('Array is:', submittedJSON);
+        curieSelectorElements = width => (
+          submittedJSON.map(jsonBlob => (
+            <CurieSelectorContainer
+              concepts={this.state.concepts}
+              search={(input, nodeType) => this.onSearch(input, nodeType)}
+              width={width}
+              displayType
+              initialInputs={jsonBlob}
+              key={jsonBlob.curie}
+            />
+          ))
+        );
+      }
+    }
     return (
       <div>
         <Header
@@ -92,7 +117,7 @@ class MultiSearch extends React.Component {
                   <div
                     id="searchBionames"
                   >
-                    <div style={{ width }}>
+                    <div style={{ width: width / 2, padding: '10px 0px 30px 0px' }}>
                       <FormControl
                         componentClass="textarea"
                         value={this.state.rawInputJson}
@@ -100,6 +125,7 @@ class MultiSearch extends React.Component {
                           this.input = ref;
                         }}
                         onChange={this.handleRawJsonChange}
+                        style={{ height: '200px' }}
                       />
                       <Button
                         onClick={() => this.setState({ submittedJSON: this.state.rawInputJson })}
@@ -108,22 +134,7 @@ class MultiSearch extends React.Component {
                       </Button>
                     </div>
 
-                    <Bionames
-                      concepts={this.state.concepts}
-                      search={(input, nodeType) => this.onSearch(input, nodeType)}
-                      onSelect={this.onSelect}
-                      onUnSelect={this.onUnSelect}
-                      width={width}
-                    />
-
-                    <CurieSelectorContainer
-                      concepts={this.state.concepts}
-                      initialInputs={this.state.submittedJSON === '' ? undefined : JSON.parse(this.state.submittedJSON)}
-                      search={(input, nodeType) => this.onSearch(input, nodeType)}
-                      width={width}
-                      displayType
-                      onChangeHook={(type, term, curie) => console.log('OnChangeHook:', type, term, curie)}
-                    />
+                    {curieSelectorElements(width)}
                   </div>
                 )}
               </AutoSizer>
