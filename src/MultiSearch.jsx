@@ -1,9 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Grid, Row, Col, FormControl, Button } from 'react-bootstrap';
+import { Grid, Row, Col, FormControl, Button, Glyphicon } from 'react-bootstrap';
 import { AutoSizer } from 'react-virtualized';
-
 
 import AppConfig from './AppConfig';
 import Loading from './components/Loading';
@@ -26,11 +25,14 @@ class MultiSearch extends React.Component {
       user: {},
       concepts: [],
       rawInputJson: '',
-      submittedJSON: '',
+      submittedJSON: this.stringify([this.defaultCurie()]),
     };
 
     this.onSearch = this.onSearch.bind(this);
     this.handleRawJsonChange = this.handleRawJsonChange.bind(this);
+    this.updateCurie = this.updateCurie.bind(this);
+    this.addCurie = this.addCurie.bind(this);
+    this.deleteCurie = this.deleteCurie.bind(this);
   }
 
   componentDidMount() {
@@ -48,6 +50,28 @@ class MultiSearch extends React.Component {
 
   onSearch(input, nodeType) {
     return this.appConfig.questionNewSearch(input, nodeType);
+  }
+  stringify(jsonObj, spaces = 2) {
+    // Stringifies while retaining desired order
+    return JSON.stringify(jsonObj, ['type', 'term', 'curie'], spaces);
+  }
+  defaultCurie() {
+    return { type: 'disease', term: '', curie: '' };
+  }
+  deleteCurie(i) {
+    const submittedJSONObj = JSON.parse(this.state.submittedJSON);
+    submittedJSONObj.splice(i, 1);
+    this.setState({ submittedJSON: this.stringify(submittedJSONObj) });
+  }
+  addCurie() {
+    const submittedJSONObj = JSON.parse(this.state.submittedJSON);
+    submittedJSONObj.push(this.defaultCurie());
+    this.setState({ submittedJSON: this.stringify(submittedJSONObj) });
+  }
+  updateCurie(i, type, term, curie) {
+    const submittedJSONObj = JSON.parse(this.state.submittedJSON);
+    submittedJSONObj[i] = { type, term, curie };
+    this.setState({ submittedJSON: this.stringify(submittedJSONObj) });
   }
   handleRawJsonChange(event) {
     this.setState({ rawInputJson: event.target.value });
@@ -77,16 +101,41 @@ class MultiSearch extends React.Component {
       if (Array.isArray(submittedJSON)) {
         console.log('Array is:', submittedJSON);
         curieSelectorElements = width => (
-          submittedJSON.map(jsonBlob => (
-            <CurieSelectorContainer
-              concepts={this.state.concepts}
-              search={(input, nodeType) => this.onSearch(input, nodeType)}
-              width={width}
-              displayType
-              initialInputs={jsonBlob}
-              key={jsonBlob.curie}
-            />
-          ))
+          submittedJSON.map((jsonBlob, i) => {
+            const curieSelectorElement = (
+              <div style={{ display: 'table-row' }}>
+                <div
+                  style={{ display: 'table-cell', padding: '5px 0px' }}
+                >
+                  <CurieSelectorContainer
+                    concepts={this.state.concepts}
+                    search={(input, nodeType) => this.onSearch(input, nodeType)}
+                    width={width}
+                    displayType
+                    initialInputs={jsonBlob}
+                    // key={i}
+                    onChangeHook={(ty, te, cu) => this.updateCurie(i, ty, te, cu)}
+                  />
+                </div>
+                <div
+                  style={{
+                    display: 'table-cell', width: '30px', verticalAlign: 'middle', paddingLeft: '10px',
+                  }}
+                >
+                  {(i !== 0) &&
+                    <Button
+                      bsStyle="default"
+                      onClick={() => this.deleteCurie(i)}
+                      style={{ padding: '8px' }}
+                    >
+                      <Glyphicon glyph="trash" />
+                    </Button>
+                  }
+                </div>
+              </div>
+            );
+            return curieSelectorElement;
+          })
         );
       }
     }
@@ -132,9 +181,25 @@ class MultiSearch extends React.Component {
                       >
                         Submit
                       </Button>
+                      <Button
+                        onClick={() => this.setState({ rawInputJson: this.state.submittedJSON })}
+                      >
+                        Export
+                      </Button>
                     </div>
-
-                    {curieSelectorElements(width)}
+                    <div style={{ display: 'table' }}>
+                      {curieSelectorElements(width)}
+                      <div style={{ display: 'table-row', textAlign: 'center' }}>
+                        <Button
+                          bsStyle="default"
+                          bsSize="sm"
+                          style={{ marginTop: '20px' }}
+                          onClick={() => this.addCurie()}
+                        >
+                          <Glyphicon glyph="plus" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </AutoSizer>
