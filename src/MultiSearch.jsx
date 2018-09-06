@@ -1,8 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Grid, Row, Col } from 'react-bootstrap';
+import { Grid, Row, Col, FormControl, Button, FormGroup } from 'react-bootstrap';
 import { AutoSizer } from 'react-virtualized';
+
 
 import AppConfig from './AppConfig';
 import Loading from './components/Loading';
@@ -12,7 +13,7 @@ import Footer from './components/Footer';
 import Bionames from './components/shared/Bionames';
 import CurieSelectorContainer from './components/shared/CurieSelectorContainer';
 
-class Search extends React.Component {
+class MultiSearch extends React.Component {
   constructor(props) {
     super(props);
     // We only read the communications config on creation
@@ -23,11 +24,14 @@ class Search extends React.Component {
       userReady: false,
       user: {},
       concepts: [],
+      rawInputJson: '',
+      submittedJSON: '',
     };
 
     this.onSearch = this.onSearch.bind(this);
     this.onSelect = this.onSelect.bind(this);
     this.onUnSelect = this.onUnSelect.bind(this);
+    this.handleRawJsonChange = this.handleRawJsonChange.bind(this);
   }
 
   componentDidMount() {
@@ -51,6 +55,9 @@ class Search extends React.Component {
   }
   onUnSelect() {
     // console.log('un-selected');
+  }
+  handleRawJsonChange(event) {
+    this.setState({ rawInputJson: event.target.value });
   }
   renderLoading() {
     return (
@@ -85,6 +92,22 @@ class Search extends React.Component {
                   <div
                     id="searchBionames"
                   >
+                    <div style={{ width }}>
+                      <FormControl
+                        componentClass="textarea"
+                        value={this.state.rawInputJson}
+                        inputRef={(ref) => {
+                          this.input = ref;
+                        }}
+                        onChange={this.handleRawJsonChange}
+                      />
+                      <Button
+                        onClick={() => this.setState({ submittedJSON: this.state.rawInputJson })}
+                      >
+                        Submit
+                      </Button>
+                    </div>
+
                     <Bionames
                       concepts={this.state.concepts}
                       search={(input, nodeType) => this.onSearch(input, nodeType)}
@@ -95,6 +118,7 @@ class Search extends React.Component {
 
                     <CurieSelectorContainer
                       concepts={this.state.concepts}
+                      initialInputs={this.state.submittedJSON === '' ? undefined : JSON.parse(this.state.submittedJSON)}
                       search={(input, nodeType) => this.onSearch(input, nodeType)}
                       width={width}
                       displayType
@@ -121,7 +145,7 @@ class Search extends React.Component {
   }
 }
 
-Search.propTypes = {
+MultiSearch.propTypes = {
   config: PropTypes.shape({
     protocol: PropTypes.string,
     clientHost: PropTypes.string,
@@ -129,4 +153,4 @@ Search.propTypes = {
   }).isRequired,
 };
 
-export default Search;
+export default MultiSearch;
