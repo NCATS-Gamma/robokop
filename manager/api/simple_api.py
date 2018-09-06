@@ -62,6 +62,7 @@ class Expand(Resource):
                         items:
                             $ref: '#/definitions/Answer'
         """
+        logger.info('simple expand')
         question = {
             'machine_question': {
                 'nodes': [
@@ -87,9 +88,12 @@ class Expand(Resource):
         if predicate is not None:
             question['machine_question']['edges'][0]['type'] = predicate
         csv = request.args.get('csv', default='false')
+        logger.info('go to quick?')
         response = requests.post(
-            f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/simple/quick',
+            f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/simple/quick/',
             json=question)
+        logger.info(response.status_code)
+        logger.info(response)
         answerset = response.json()
         if csv == 'true':
             node_names = [f"{a['nodes'][-1]['name']}({a['nodes'][-1]['id']})" if 'name' in a['nodes'][-1] else a['nodes'][-1]['id'] for a in answerset['answers']]
@@ -123,7 +127,7 @@ class Quick(Resource):
                             type: string
                             description: all the things and stuff
         """
-
+        logger.info('quick')
         response = requests.post(
             f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/',
             json=request.json)
@@ -132,12 +136,13 @@ class Quick(Resource):
         for _ in range(60 * 60):  # wait up to 1 hour
             time.sleep(1)
             response = requests.get(polling_url)
-            if response.json()['status'] == 'FAILURE':
-                raise RuntimeError('Builder failed.')
-            if response.json()['status'] == 'REVOKED':
-                raise RuntimeError('Task terminated by admin.')
-            if response.json()['status'] == 'SUCCESS':
-                break
+            if response.status_code == 200:
+                if response.json()['status'] == 'FAILURE':
+                    raise RuntimeError('Builder failed.')
+                if response.json()['status'] == 'REVOKED':
+                    raise RuntimeError('Task terminated by admin.')
+                if response.json()['status'] == 'SUCCESS':
+                    break
         else:
             raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
 
@@ -227,8 +232,8 @@ class SimilaritySearch(Resource):
         """
         #TODO:Add another argument:
         #- in: query
-        #  name: descendents
-        #  description: "Include ontological descendents in the result"
+        #  name: descendants
+        #  description: "Include ontological descendants in the result"
         #  type: boolean
         #  default: false
         response = requests.post( f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/synonymize/{id1}/{type1}/' )
@@ -305,3 +310,157 @@ class SimilaritySearch(Resource):
         return response.json()
 
 api.add_resource(SimilaritySearch, '/simple/similarity/<type1>/<id1>/<type2>/<by_type>')
+
+class EnrichedExpansion(Resource):
+    def post(self, type1, type2 ):
+        """
+        Expand out from a given node to another node type optionally along a particular predicate
+        ---
+        tags: [simple]
+        parameters:
+          - in: path
+            name: type1
+            description: "type of query node"
+            type: string
+            required: true
+            default: "disease"
+          - in: path
+            name: type2
+            description: "type of return nodes"
+            type: string
+            required: true
+            default: "disease"
+          - in: json
+            name: threshhold
+            description: "Number between 0 and 1 indicating the minimum similarity to return"
+            type: float
+            default: 0.5
+          - in: json
+            name: maxresults
+            description: "The maximum number of results to return. Set to 0 to return all results."
+            type: integer
+            default: 100
+          - in: json
+            name: identifiers
+            description: "The entities being enriched"
+            type: list
+            required: true
+          - in: json
+            name: include_descendants
+            description: "Extend the starting entities to use all of their descendants as well"
+            type: boolean
+            default: false
+          - in: json
+            name: numtype1
+            description: "The total number of entities of type 1 that exist"
+            default: Uses a value based on querying the cache
+          - in: json
+            name: rebuild
+            description: "Rebuild local knowledge graph for this similarity search"
+            type: boolean
+            default: false
+        """
+        parameters = request.json
+        logger.info(json.dumps(parameters,indent=4))
+        identifiers = parameters['identifiers']
+        normed_identifiers = set()
+        for id1 in identifiers:
+            response = requests.post( f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/synonymize/{id1}/{type1}/' )
+            logger.info(response.status_code)
+            normed_identifiers.add(response.json()['id'])
+        logger.info(normed_identifiers)
+        if 'include_descendants' in parameters and parameters['include_descendants']:
+            self.add_descendants(normed_identifiers)
+        else:
+            logger.info('Dont add descendants')
+        logger.info("OK")
+        if 'rebuild' in parameters and parameters['rebuild']:
+            for normed_id in normed_identifiers:
+                try:
+                    question = {
+                        'machine_question': {
+                            'nodes': [
+                                {
+                                    'id': 0,
+                                    'curie': normed_id,
+                                    'type': type1
+                                },
+                                {
+                                    'id': 1,
+                                    'type': type2
+                                },
+                                {
+                                    'id': 2,
+                                    'type': type1
+                                }
+                            ],
+                            'edges': [
+                                {
+                                    'source_id': 0,
+                                    'target_id': 1
+                                },
+                                {
+                                    'source_id': 1,
+                                    'target_id': 2
+                                }
+                            ]
+                        }
+                    }
+                    response = requests.post( f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question)
+                    polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task id']}"
+
+                    for _ in range(60 * 60):  # wait up to 1 hour
+                        time.sleep(1)
+                        response = requests.get(polling_url)
+                        if response.status_code == 200:
+                            if response.json()['status'] == 'FAILURE':
+                                raise RuntimeError('Builder failed.')
+                            if response.json()['status'] == 'REVOKED':
+                                raise RuntimeError('Task terminated by admin.')
+                            if response.json()['status'] == 'SUCCESS':
+                                break
+                    else:
+                        raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
+
+                    logger.info('Rebuild completed, status', response.json()['status'])
+                except Exception as e:
+                    logger.error(e)
+            else:
+                logger.info("No rebuild")
+
+        #Now we've updated the knowledge graph if demanded.  We can do the enrichment.
+        if 'threshhold' in parameters:
+            threshhold = parameters['threshhold']
+        else:
+            threshhold = 0.05
+        if 'maxresults' in parameters:
+            maxresults = parameters['maxresults']
+        else:
+            maxresults = 100
+        if 'num_type1' in parameters:
+            num_type1 = parameters['num_type1']
+        else:
+            num_type1 = None
+        params = {'identifiers':list(normed_identifiers),
+                  'threshhold':threshhold,
+                  'maxresults':maxresults,
+                  'num_type1':num_type1}
+        logger.info(params)
+        response = requests.post( f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/enrichment/{type1}/{type2}',json=params)
+        logger.info(response.status_code)
+        return response.json()
+
+    def add_descendants(self,identifiers):
+        logger.info('Adding descendants')
+        descendants = set()
+        for ident in identifiers:
+            logger.info(f' {ident}')
+            response = requests.get( f'https://onto.renci.org/descendants/{ident}' ).json()
+            logger.info(response)
+            descendants.update(response['descendants'])
+            logger.info(f' {len(descendants)}')
+        logger.info(f'Identifiers went from {len(identifiers)}')
+        identifiers.update(descendants)
+        logger.info(f'    to {len(identifiers)}')
+
+api.add_resource(EnrichedExpansion, '/simple/enriched/<type1>/<type2>')
