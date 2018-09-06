@@ -22,6 +22,7 @@ import AnswersetApp from './AnswersetApp';
 import Comparison from './Comparison';
 import Activity from './Activity';
 import Search from './Search';
+import MultiSearch from './MultiSearch';
 import Simple from './Simple';
 
 // Our actual CSS and other images etc.
@@ -80,7 +81,7 @@ const robokop = {
   },
   search: () => {
     ReactDOM.render(
-      <Search
+      <MultiSearch
         config={config}
       />,
       document.getElementById('reactEntry'),

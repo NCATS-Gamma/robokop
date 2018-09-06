@@ -1,6 +1,6 @@
 import React from 'react';
 import { Grid, Row, Col, ButtonToolbar, Button, ButtonGroup, OverlayTrigger, Popover, FormControl } from 'react-bootstrap';
-import GoQuestion from 'react-icons/go/question';
+import GoQuestion from 'react-icons/lib/go/question';
 
 import QuestionLinearEditor from './QuestionLinearEditor';
 import QuestionLinearGraph from './QuestionLinearGraph';

@@ -5,7 +5,7 @@ import { Button, Form, FormGroup, ControlLabel, FormControl, HelpBlock } from 'r
 import { DragSource, DropTarget } from 'react-dnd'
 import Select from 'react-select';
 
-import MdCancel from 'react-icons/md/cancel'
+import MdCancel from 'react-icons/lib/md/cancel'
 
 import CardTypes from '../util/questionNewCardTypes';
 import getNodeTypeColorMap from '../util/colorUtils';

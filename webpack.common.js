@@ -29,13 +29,6 @@ const config = {
         test: /\.(ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,
         loader: 'url-loader',
       },
-      {
-        test: /react-icons\/(.)*(.js)$/,
-        loader: 'babel-loader',
-        query: {
-          presets: ['babel-preset-env', 'babel-preset-react'].map(require.resolve),
-        },
-      },
     ],
   },
   output: {

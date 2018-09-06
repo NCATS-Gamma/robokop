@@ -67,8 +67,8 @@
   },
   "scripts": {
     "startserver": "sudo -E python python/server.py",
-    "webpackDev": "webpack --mode='development' --config webpack.dev.js ",
-    "webpackProd": "webpack --mode='production' --config webpack.prod.js"
+    "webpackDev": "webpack --mode=development --config webpack.dev.js",
+    "webpackProd": "webpack --mode=production --config webpack.prod.js"
   },
   "repository": {
     "type": "git",
