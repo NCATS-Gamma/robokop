@@ -205,7 +205,7 @@ class CurieSelector extends React.Component {
               top: '100%',
               left: 0,
               right: 0,
-              overflowY: 'scroll',
+              overflowY: 'none',
               backgroundColor: '#fff',
               borderBottom: '1px solid #d4d4d4',
               marginLeft: '5px',
