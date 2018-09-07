@@ -96,9 +96,10 @@ class Expand(Resource):
             f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/simple/quick/',
             json=question)
         answerset = response.json()
-        if csv == 'true':
+        if csv.upper() == 'TRUE':
             node_names = [f"{a['nodes'][-1]['name']}({a['nodes'][-1]['id']})" if 'name' in a['nodes'][-1] else a['nodes'][-1]['id'] for a in answerset['answers']]
-            return ','.join(node_names)
+            #return ','.join(node_names)
+            return node_names
         return answerset
 
 api.add_resource(Expand, '/simple/expand/<type1>/<id1>/<type2>')
