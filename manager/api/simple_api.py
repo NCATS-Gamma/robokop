@@ -127,30 +127,35 @@ class Quick(Resource):
                             type: string
                             description: all the things and stuff
         """
-        logger.info('quick')
-        response = requests.post(
-            f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/',
-            json=request.json)
-        polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task id']}"
+        question = request.json
+        rebuild = False
+        if 'rebuild' in question:
+            rebuild = question['rebuild']
 
-        for _ in range(60 * 60):  # wait up to 1 hour
-            time.sleep(1)
-            response = requests.get(polling_url)
-            if response.status_code == 200:
-                if response.json()['status'] == 'FAILURE':
-                    raise RuntimeError('Builder failed.')
-                if response.json()['status'] == 'REVOKED':
-                    raise RuntimeError('Task terminated by admin.')
-                if response.json()['status'] == 'SUCCESS':
-                    break
-        else:
-            raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
+        if rebuild:
+            response = requests.post(
+                f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/',
+                json=request.json)
+            polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task id']}"
 
-        logger.info('Done updating KG. Answering question...')
+            for _ in range(60 * 60):  # wait up to 1 hour
+                time.sleep(1)
+                response = requests.get(polling_url)
+                if response.status_code == 200:
+                    if response.json()['status'] == 'FAILURE':
+                        raise RuntimeError('Builder failed.')
+                    if response.json()['status'] == 'REVOKED':
+                        raise RuntimeError('Task terminated by admin.')
+                    if response.json()['status'] == 'SUCCESS':
+                        break
+            else:
+                raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
+
+            logger.info('Done updating KG. Answering question...')
 
         response = requests.post(
             f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/',
-            json=request.json)
+            json=question)
         polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
 
         for _ in range(60 * 60):  # wait up to 1 hour

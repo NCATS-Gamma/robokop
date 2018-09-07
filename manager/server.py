@@ -27,6 +27,7 @@ import manager.api.a_api
 import manager.api.feedback_api
 import manager.api.misc_api
 import manager.api.simple_api
+import manager.api.flowbokop_api
 
 # Initialization
 @app.before_first_request
