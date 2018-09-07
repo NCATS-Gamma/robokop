@@ -43,6 +43,10 @@ class AppConfig {
       feedbackNew: this.url('api/feedback/'),
       feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
       search: this.url('api/search/'),
+      flowbokop: {
+        execute: this.url('api/flowbokop/'),
+        graph: this.url('api/flowbokop/graph/'),
+      },
     };
 
     this.url = this.url.bind(this);
@@ -57,6 +61,9 @@ class AppConfig {
     this.answersetData = this.answersetData.bind(this);
     this.answerData = this.answerData.bind(this);
     this.tasksData = this.tasksData.bind(this);
+
+    this.flowbokopGraph = this.flowbokopGraph.bind(this);
+    this.flowbokopExectue = this.flowbokopExectue.bind(this);
 
     // Question and Answer Manipulation
     this.questionCreate = this.questionCreate.bind(this);
@@ -243,6 +250,23 @@ class AppConfig {
   answerFeedback(questionId, answersetId, successFun, failureFun) {
     this.getRequest(
       this.apis.feedback(questionId, answersetId),
+      successFun,
+      failureFun,
+    );
+  }
+
+  flowbokopGraph(postData, successFun, failureFun) {
+    this.postRequest(
+      this.apis.flowbokop.graph,
+      postData,
+      successFun,
+      failureFun,
+    );
+  }
+  flowbokopExectue(postData, successFun, failureFun) {
+    this.postRequest(
+      this.apis.flowbokop.execute,
+      postData,
       successFun,
       failureFun,
     );
