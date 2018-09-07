@@ -52,6 +52,10 @@ class Expand(Resource):
             name: csv
             type: boolean
             default: false
+          - in: query
+            name: rebuild
+            type: boolean
+            default: false
         responses:
             200:
                 description: answers
@@ -62,7 +66,6 @@ class Expand(Resource):
                         items:
                             $ref: '#/definitions/Answer'
         """
-        logger.info('simple expand')
         question = {
             'machine_question': {
                 'nodes': [
@@ -88,16 +91,15 @@ class Expand(Resource):
         if predicate is not None:
             question['machine_question']['edges'][0]['type'] = predicate
         csv = request.args.get('csv', default='false')
-        logger.info('go to quick?')
+        question['rebuild'] = request.args.get('rebuild', default='false')
         response = requests.post(
             f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/simple/quick/',
             json=question)
-        logger.info(response.status_code)
-        logger.info(response)
         answerset = response.json()
-        if csv == 'true':
+        if csv.upper() == 'TRUE':
             node_names = [f"{a['nodes'][-1]['name']}({a['nodes'][-1]['id']})" if 'name' in a['nodes'][-1] else a['nodes'][-1]['id'] for a in answerset['answers']]
-            return ','.join(node_names)
+            #return ','.join(node_names)
+            return node_names
         return answerset
 
 api.add_resource(Expand, '/simple/expand/<type1>/<id1>/<type2>')
@@ -128,11 +130,8 @@ class Quick(Resource):
                             description: all the things and stuff
         """
         question = request.json
-        rebuild = False
-        if 'rebuild' in question:
-            rebuild = question['rebuild']
-
-        if rebuild:
+        
+        if ('rebuild' in question) and (question['rebuild'].upper() == 'TRUE'):
             response = requests.post(
                 f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/',
                 json=request.json)
@@ -161,12 +160,13 @@ class Quick(Resource):
         for _ in range(60 * 60):  # wait up to 1 hour
             time.sleep(1)
             response = requests.get(polling_url)
-            if response.json()['status'] == 'FAILURE':
-                raise RuntimeError('Question answering failed.')
-            if response.json()['status'] == 'REVOKED':
-                raise RuntimeError('Task terminated by admin.')
-            if response.json()['status'] == 'SUCCESS':
-                break
+            if response.status_code == 200:
+                if response.json()['status'] == 'FAILURE':
+                    raise RuntimeError('Question answering failed.')
+                if response.json()['status'] == 'REVOKED':
+                    raise RuntimeError('Task terminated by admin.')
+                if response.json()['status'] == 'SUCCESS':
+                    break
         else:
             raise RuntimeError("Question answering has not completed after 1 hour. You may with to try the non-blocking API.")
 
@@ -366,19 +366,13 @@ class EnrichedExpansion(Resource):
             default: false
         """
         parameters = request.json
-        logger.info(json.dumps(parameters,indent=4))
         identifiers = parameters['identifiers']
         normed_identifiers = set()
         for id1 in identifiers:
             response = requests.post( f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/synonymize/{id1}/{type1}/' )
-            logger.info(response.status_code)
             normed_identifiers.add(response.json()['id'])
-        logger.info(normed_identifiers)
         if 'include_descendants' in parameters and parameters['include_descendants']:
             self.add_descendants(normed_identifiers)
-        else:
-            logger.info('Dont add descendants')
-        logger.info("OK")
         if 'rebuild' in parameters and parameters['rebuild']:
             for normed_id in normed_identifiers:
                 try:
@@ -450,22 +444,14 @@ class EnrichedExpansion(Resource):
                   'threshhold':threshhold,
                   'maxresults':maxresults,
                   'num_type1':num_type1}
-        logger.info(params)
         response = requests.post( f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/enrichment/{type1}/{type2}',json=params)
-        logger.info(response.status_code)
         return response.json()
 
     def add_descendants(self,identifiers):
-        logger.info('Adding descendants')
         descendants = set()
         for ident in identifiers:
-            logger.info(f' {ident}')
             response = requests.get( f'https://onto.renci.org/descendants/{ident}' ).json()
-            logger.info(response)
             descendants.update(response['descendants'])
-            logger.info(f' {len(descendants)}')
-        logger.info(f'Identifiers went from {len(identifiers)}')
         identifiers.update(descendants)
-        logger.info(f'    to {len(identifiers)}')
 
 api.add_resource(EnrichedExpansion, '/simple/enriched/<type1>/<type2>')
