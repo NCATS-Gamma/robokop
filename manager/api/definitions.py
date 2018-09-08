@@ -387,3 +387,91 @@ class Edge():
     """
     pass
     
+@swagger.definition('Curie')
+class Curie():
+    """
+    Curie
+    ---
+    type: object
+    properties:
+        curie:
+            type: string
+            required: true
+            example: "MONDO:0005737"
+        label:
+            type: string
+            required: false
+            example: "Ebola hemorrhagic fever"
+    """
+    pass
+
+@swagger.definition('Curie2')
+class Curie2():
+    """
+    Curie
+    ---
+    type: object
+    properties:
+        curie:
+            type: string
+            required: true
+            example: "MONDO:0008753"
+        label:
+            type: string
+            required: false
+            example: "Alkaptonuria"
+    """
+    pass
+
+@swagger.definition('Curie3')
+class Curie3():
+    """
+    Curie
+    ---
+    type: object
+    properties:
+        curie:
+            type: string
+            required: true
+            example: "MONDO:0000265"
+        label:
+            type: string
+            required: false
+            example: "Usher syndrome type 1"
+            
+    """
+    pass
+
+@swagger.definition('Curie4')
+class Curie4():
+    """
+    Curie
+    ---
+    type: object
+    properties:
+        curie:
+            type: string
+            required: true
+            example: "MONDO:0016484"
+        label:
+            type: string
+            required: false
+            example: "Usher syndrome type 2"
+    """
+    pass
+
+@swagger.definition('FlowbokopServiceInput')
+class FlowbokopServiceInput():
+    """
+    Flowbokop Service Input
+    ---
+    type: object
+    properties:
+        input:
+            type: array
+            items:
+                $ref: "#/definitions/Curie"
+        options:
+            type: object
+    """
+    pass

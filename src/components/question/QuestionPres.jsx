@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Grid, Row, Col, Popover, OverlayTrigger, Panel } from 'react-bootstrap';
-import GoQuestion from 'react-icons/go/question';
+import GoQuestion from 'react-icons/lib/go/question';
 
 import QuestionHeader from '../shared/QuestionHeader';
 import MachineQuestionView from '../shared/MachineQuestionView';
@@ -201,6 +201,7 @@ class QuestionPres extends React.Component {
                   callbackFetchGraph={this.props.callbackFetchGraph}
                   callbackRefresh={this.props.callbackRefresh}
                   subgraph={this.props.subgraph}
+                  concepts={this.props.concepts}
                   wait={this.props.refreshBusy}
                   scrollToId="#localKGHeader"
                 />

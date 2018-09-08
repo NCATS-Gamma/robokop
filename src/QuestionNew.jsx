@@ -2,7 +2,7 @@ import React from 'react';
 import Dialog from 'react-bootstrap-dialog';
 
 import { Grid, Row, Col, Popover, OverlayTrigger } from 'react-bootstrap';
-import GoQuestion from 'react-icons/go/question';
+import GoQuestion from 'react-icons/lib/go/question';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';

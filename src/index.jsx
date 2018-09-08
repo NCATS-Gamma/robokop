@@ -21,6 +21,9 @@ import Workflow from './Workflow';
 import AnswersetApp from './AnswersetApp';
 import Comparison from './Comparison';
 import Activity from './Activity';
+import Search from './Search';
+import MultiSearch from './MultiSearch';
+import Simple from './Simple';
 
 // Our actual CSS and other images etc.
 import '../assets/css/style.css';
@@ -76,6 +79,14 @@ const robokop = {
       document.getElementById('reactEntry'),
     );
   },
+  search: () => {
+    ReactDOM.render(
+      <MultiSearch
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
   activity: () => {
     ReactDOM.render(
       <Activity
@@ -122,6 +133,14 @@ const robokop = {
   app_comparison: () => {
     ReactDOM.render(
       <Comparison
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  simple: () => {
+    ReactDOM.render(
+      <Simple
         config={config}
       />,
       document.getElementById('reactEntry'),

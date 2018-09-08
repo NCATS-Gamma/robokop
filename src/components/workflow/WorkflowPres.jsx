@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Grid, Row, Col, Button, PanelGroup, Panel } from 'react-bootstrap';
-import FaPlus from 'react-icons/fa/plus';
+import FaPlus from 'react-icons/lib/fa/plus';
 import WorkflowStep from './WorkflowStep';
 
 

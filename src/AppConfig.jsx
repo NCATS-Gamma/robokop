@@ -19,6 +19,7 @@ class AppConfig {
       answerset: (questionId, answersetId) => this.url(`a/${questionId}_${answersetId}`),
       answer: (questionId, answersetId, answerId) => this.url(`a/${questionId}_${answersetId}/${answerId}`),
       about: this.url('about/'),
+      search: this.url('search/'),
       workflow: this.url('workflow/'),
       appAnswerset: this.url('app/answerset'),
       appComparison: this.url('app/comparison'),
@@ -28,6 +29,7 @@ class AppConfig {
     this.apis = {
       user: this.url('api/user/'),
       concepts: this.url('api/concepts/'),
+      operations: this.url('api/operations/'),
       questions: this.url('api/questions/'),
       question: questionId => this.url(`api/q/${questionId}/`),
       answerset: answersetId => this.url(`api/a/${answersetId}/`),
@@ -41,6 +43,10 @@ class AppConfig {
       feedbackNew: this.url('api/feedback/'),
       feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
       search: this.url('api/search/'),
+      flowbokop: {
+        execute: this.url('api/flowbokop/'),
+        graph: this.url('api/flowbokop/graph/'),
+      },
     };
 
     this.url = this.url.bind(this);
@@ -48,12 +54,16 @@ class AppConfig {
     // Methods for fetching data
     this.user = this.user.bind(this);
     this.concepts = this.concepts.bind(this);
+    this.operations = this.operations.bind(this);
     this.questionListData = this.questionListData.bind(this);
     this.questionData = this.questionData.bind(this);
     this.questionSubgraph = this.questionSubgraph.bind(this);
     this.answersetData = this.answersetData.bind(this);
     this.answerData = this.answerData.bind(this);
     this.tasksData = this.tasksData.bind(this);
+
+    this.flowbokopGraph = this.flowbokopGraph.bind(this);
+    this.flowbokopExectue = this.flowbokopExectue.bind(this);
 
     // Question and Answer Manipulation
     this.questionCreate = this.questionCreate.bind(this);
@@ -94,6 +104,7 @@ class AppConfig {
   }
 
   concepts(fun) { this.getRequest(`${this.apis.concepts}`, fun); }
+  operations(fun) { this.getRequest(`${this.apis.operations}`, fun); }
   user(successFun, failureFun) { this.getRequest(`${this.apis.user}`, successFun, failureFun); }
   questionListData(fun) { this.getRequest(`${this.apis.questions}`, fun); }
   questionData(id, successFun, failureFun) { this.getRequest(`${this.apis.question(id)}`, successFun, failureFun); }
@@ -239,6 +250,23 @@ class AppConfig {
   answerFeedback(questionId, answersetId, successFun, failureFun) {
     this.getRequest(
       this.apis.feedback(questionId, answersetId),
+      successFun,
+      failureFun,
+    );
+  }
+
+  flowbokopGraph(postData, successFun, failureFun) {
+    this.postRequest(
+      this.apis.flowbokop.graph,
+      postData,
+      successFun,
+      failureFun,
+    );
+  }
+  flowbokopExectue(postData, successFun, failureFun) {
+    this.postRequest(
+      this.apis.flowbokop.execute,
+      postData,
       successFun,
       failureFun,
     );

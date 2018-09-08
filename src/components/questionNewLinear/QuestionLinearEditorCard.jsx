@@ -5,7 +5,7 @@ import { Button, Form, FormGroup, ControlLabel, FormControl, HelpBlock } from 'r
 import { DragSource, DropTarget } from 'react-dnd'
 import Select from 'react-select';
 
-import MdCancel from 'react-icons/md/cancel'
+import MdCancel from 'react-icons/lib/md/cancel'
 
 import CardTypes from '../util/questionNewCardTypes';
 import getNodeTypeColorMap from '../util/colorUtils';
@@ -241,7 +241,7 @@ class QuestionLinearEditorCard extends Component {
                   backspaceRemoves={true}
                   filterOptions={(options, filter, currentValues) => {
                     // Do no filtering, just return all options
-                    // We need to disable filtering so taht search results do not have to contain our input string.
+                    // We need to disable filtering so that search results do not have to contain our input string.
                     return options;
                   }}
                 />

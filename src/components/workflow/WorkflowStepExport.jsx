@@ -20,7 +20,7 @@ class WorkflowStepExport extends React.Component {
       <Grid>
         <Row>
           <Col>
-            Export content
+            Export something from the selected answer
             <ButtonToolbar>
               <Button bsSize="large" onClick={this.export}>
                 Export

@@ -21,7 +21,13 @@ from manager.a_blueprint import a
 from manager.util import getAuthData
 import manager.tasks  # set up rabbitmq exchange/queues
 
+import manager.api.questions_api
+import manager.api.q_api
+import manager.api.a_api
+import manager.api.feedback_api
 import manager.api.misc_api
+import manager.api.simple_api
+import manager.api.flowbokop_api
 
 # Initialization
 @app.before_first_request
@@ -54,6 +60,16 @@ def activity():
 def workflow():
     """Workflow UI."""
     return render_template('workflow.html')
+
+@app.route('/search/')
+def search():
+    """Search for biomedical concept identifiers"""
+    return render_template('search.html')
+
+@app.route('/simple/')
+def simple():
+    """Simple Interface"""
+    return render_template('simple.html')
 
 @app.route('/app/answerset/')
 def app_answerset():
