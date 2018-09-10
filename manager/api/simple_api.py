@@ -129,8 +129,9 @@ class Quick(Resource):
                             description: all the things and stuff
         """
         question = request.json
-        
-        if ('rebuild' in question) and (question['rebuild'].upper() == 'TRUE'):
+        logger.info("quack")
+        if ('rebuild' in question) and (str(question['rebuild']).upper() == 'TRUE'):
+            logger.info("rebuild")
             response = requests.post(
                 f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/',
                 json=request.json)
