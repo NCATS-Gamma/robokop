@@ -128,7 +128,9 @@ class Quick(Resource):
                             type: string
                             description: all the things and stuff
         """
-        if ('rebuild' in request.json) and (request.json['rebuild'].upper() == 'TRUE'):
+        question = request.json
+        
+        if ('rebuild' in question) and (question['rebuild'].upper() == 'TRUE'):
             response = requests.post(
                 f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/',
                 json=request.json)
@@ -147,11 +149,11 @@ class Quick(Resource):
             else:
                 raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
 
-        logger.info('Done updating KG. Answering question...')
+            logger.info('Done updating KG. Answering question...')
 
         response = requests.post(
             f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/',
-            json=request.json)
+            json=question)
         polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
 
         for _ in range(60 * 60):  # wait up to 1 hour

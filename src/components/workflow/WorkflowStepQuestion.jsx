@@ -10,7 +10,7 @@ class WorkflowStepQuestion extends React.Component {
   }
 
   next(newQuestion) {
-    this.callbackToNextTab(newQuestion);
+    this.props.callbackToNextTab(newQuestion);
   }
 
   render() {

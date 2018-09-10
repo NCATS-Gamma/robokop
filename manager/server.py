@@ -27,6 +27,7 @@ import manager.api.a_api
 import manager.api.feedback_api
 import manager.api.misc_api
 import manager.api.simple_api
+import manager.api.flowbokop_api
 
 # Initialization
 @app.before_first_request
@@ -64,6 +65,11 @@ def workflow():
 def search():
     """Search for biomedical concept identifiers"""
     return render_template('search.html')
+
+@app.route('/flowbokop/')
+def flowbokop():
+    """Flowbokop UI."""
+    return render_template('flowbokop.html')
 
 @app.route('/simple/')
 def simple():

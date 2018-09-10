@@ -10,6 +10,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 
 import CurieSelectorContainer from './components/shared/CurieSelectorContainer';
+import CurieBrowser from './components/shared/CurieBrowser';
 
 const _ = require('lodash');
 
@@ -33,6 +34,7 @@ class MultiSearch extends React.Component {
     this.updateCurie = this.updateCurie.bind(this);
     this.addCurie = this.addCurie.bind(this);
     this.deleteCurie = this.deleteCurie.bind(this);
+    this.curieListFromSubmittedJSON = this.curieListFromSubmittedJSON.bind(this);
   }
 
   componentDidMount() {
@@ -72,6 +74,11 @@ class MultiSearch extends React.Component {
     const submittedJSONObj = JSON.parse(this.state.submittedJSON);
     submittedJSONObj[i] = { type, term, curie };
     this.setState({ submittedJSON: this.stringify(submittedJSONObj) });
+  }
+  curieListFromSubmittedJSON() {
+    const submittedJSON = JSON.parse(this.state.submittedJSON);
+    submittedJSON.map(blob => (blob.label = blob.term));
+    return submittedJSON;
   }
   handleRawJsonChange(event) {
     this.setState({ rawInputJson: event.target.value });
@@ -113,7 +120,7 @@ class MultiSearch extends React.Component {
                     width={width}
                     displayType
                     initialInputs={jsonBlob}
-                    // key={i}
+                    // key={shortid.generate()}
                     onChangeHook={(ty, te, cu) => this.updateCurie(i, ty, te, cu)}
                   />
                 </div>
@@ -203,6 +210,11 @@ class MultiSearch extends React.Component {
                   </div>
                 )}
               </AutoSizer>
+              <div style={{ padding: '20px 0' }}>
+                <CurieBrowser
+                  curieList={this.curieListFromSubmittedJSON()}
+                />
+              </div>
             </Col>
           </Row>
         </Grid>
