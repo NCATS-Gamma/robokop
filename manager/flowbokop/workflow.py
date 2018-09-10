@@ -221,7 +221,7 @@ class Workflow(Service):
             op = cn['operation']
             n = {
                 'id': i,
-                'name': op.label,
+                'name': op.output,
                 'operation': {
                     'service': op.service.url,
                     'options': op.service.options
