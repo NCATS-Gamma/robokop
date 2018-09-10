@@ -7,7 +7,9 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Loading from './components/Loading';
 import FlowbokopGraphFetchAndView, { graphStates } from './components/flowbokop/FlowbokopGraphFetchAndView';
+import FlowbokopInputBuilder from './components/flowbokop/FlowbokopInputBuilder';
 
+const _ = require('lodash');
 
 const demoGraph = {
   "nodes": [
@@ -85,7 +87,8 @@ const demoPanelState = [
     data: {
       input: 'usher1',
       output: 'usher1_genes',
-      service: 'http://127.0.0.1/api/flowbokop/expand/disease/gene/'
+      service: 'http://127.0.0.1/api/flowbokop/expand/disease/gene/',
+      options: '',
     },
   },
   { 
@@ -94,7 +97,8 @@ const demoPanelState = [
     data: {
       input: 'usher2',
       output: 'usher2_genes',
-      service: 'http://127.0.0.1/api/flowbokop/expand/disease/gene/'
+      service: 'http://127.0.0.1/api/flowbokop/expand/disease/gene/',
+      options: '',
     },
   },
   { 
@@ -103,25 +107,32 @@ const demoPanelState = [
     data: {
       input: ['usher1_genes', 'usher2_genes'],
       output: 'common_genes',
-      service: 'http://127.0.0.1/api/flowbokop/intersection/'
+      service: 'http://127.0.0.1/api/flowbokop/intersection/',
+      options: '',
     },
   },
 ];
 
 // Convert internal panel state representation to Flowbokop workflow input
 // representation that is required to be POSTed to the Flowbokop endpoint
-const panelStateToWorkflowInputs = (panelState) => {
+const panelStateToWorkflowInputs = (panelSt) => {
+  const panelState = _.cloneDeep(panelSt);
   const workflowInputs = { input: {}, options: { output: 'all', operations: [] } };
   panelState.forEach((panelData) => {
     if (panelData.inputType === 'input') {
       workflowInputs.input[panelData.inputLabel] = panelData.data;
     }
     if (panelData.inputType === 'operation') {
+      if (Object.hasOwnProperty.call(panelData.data, 'options')) {
+        if (panelData.data.options === '') {
+          delete panelData.data.options; // Remove options if it is empty string
+        }
+      }
       workflowInputs.options.operations.push(panelData.data);
     }
-  })
+  });
   return workflowInputs;
-}
+};
 
 // Convert WorkflowInput representation for Flowbokop into internal panel state
 // representation
@@ -135,18 +146,24 @@ const workflowInputsToPanelState = (workflowInput) => {
         locked: true,
         inputLabel,
         data: workflowInput.input[inputLabel],
-      })
+      });
     });
   }
   if (Object.hasOwnProperty.call(workflowInput, 'options')) {
     if (Object.hasOwnProperty.call(workflowInput.options, 'operations')) {
       workflowInput.options.operations.forEach((operationData) => {
+        let options = '';
+        if (Object.hasOwnProperty.call(operationData, 'options')) {
+          if (typeof operationData.options === 'string' || operationData.options instanceof String) {
+            options = { operationData };
+          }
+        }
         panelState.push({
           inputType: 'operation',
           locked: true,
-          data: operationData,
-        })
-      })
+          data: Object.assign({}, operationData, { options }),
+        });
+      });
     }
   }
   return panelState;
@@ -248,7 +265,25 @@ class Flowbokop extends React.Component {
     const panels = panelState.map((panelObj, i) => {
       const { inputType } = panelObj;
       if (inputType === 'input') {
-        return <FlowbokopInputPanel data={panelObj.data} lock={panelObj.locked} label={panelObj.inputLabel} key={i} />;
+        return (
+          <Panel>
+            <Panel.Heading>
+              <Panel.Title>
+                Input - {`${panelObj.inputLabel}`}
+              </Panel.Title>
+            </Panel.Heading>
+            <Panel.Body>
+              <FlowbokopInputBuilder
+                config={this.props.config}
+                onChangeHook={inputCurieList => console.log(inputCurieList)}
+                inputCurieList={panelObj.data}
+              />
+              {/* {JSON.stringify(this.props.label, null , 2)}
+              {JSON.stringify(this.props.data, null , 2)} */}
+            </Panel.Body>
+          </Panel>
+        );
+        // return <FlowbokopInputPanel data={panelObj.data} lock={panelObj.locked} label={panelObj.inputLabel} key={i} />;
       }
       return <FlowbokopOperationPanel data={panelObj.data} lock={panelObj.locked} key={i} />;
     });
