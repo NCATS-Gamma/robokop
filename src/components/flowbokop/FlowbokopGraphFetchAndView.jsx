@@ -76,43 +76,37 @@ class FlowbokopGraphFetchAndView extends React.Component {
 
     return (
       <div id={this.divId}>
-        <Grid>
-          <Row>
-            <Col md={12}>
-              <Panel style={panelExtraStyle} expanded={showGraph}>
-                <Panel.Heading>
-                  <Panel.Title>
-                    Flowbokop Query Graph
-                  </Panel.Title>
-                </Panel.Heading>
-                <Panel.Body style={{ padding: '0px' }}>
-                  {showGraph &&
-                    <FlowbokopGraphViewer
-                      height={height}
-                      width={width}
-                      graph={this.props.graph}
-                    />
-                  }
-                  {showFetching &&
-                    <div style={{ margin: '15px', height, display: 'table', width: '100%' }}>
-                      <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
-                        <FaSpinner className="icon-spin" style={{ marginRight: '10px', verticalAlign: 'text-top' }} />
-                        Graph update in progress... Please wait.
-                      </div>
-                    </div>
-                  }
-                  {notInitialized &&
-                    <div style={{ margin: '15px', height, display: 'table', width: '100%' }}>
-                      <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
-                        Please setup input(s) to generate query graph.
-                      </div>
-                    </div>
-                  }
-                </Panel.Body>
-              </Panel>
-            </Col>
-          </Row>
-        </Grid>
+        <Panel style={panelExtraStyle} expanded={showGraph}>
+          <Panel.Heading>
+            <Panel.Title>
+              Flowbokop Query Graph
+            </Panel.Title>
+          </Panel.Heading>
+          <Panel.Body style={{ padding: '0px' }}>
+            {showGraph &&
+              <FlowbokopGraphViewer
+                height={height}
+                width={width}
+                graph={this.props.graph}
+              />
+            }
+            {showFetching &&
+              <div style={{ margin: '15px', height, display: 'table', width: '100%' }}>
+                <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                  <FaSpinner className="icon-spin" style={{ marginRight: '10px', verticalAlign: 'text-top' }} />
+                  Graph update in progress... Please wait.
+                </div>
+              </div>
+            }
+            {notInitialized &&
+              <div style={{ margin: '15px', height, display: 'table', width: '100%' }}>
+                <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+                  Please setup input(s) to generate query graph.
+                </div>
+              </div>
+            }
+          </Panel.Body>
+        </Panel>
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 // import { Button } from 'react-bootstrap';
+import { nodeType } from '../util/flowbokop';
 
 const Graph = require('react-graph-vis').default;
 const _ = require('lodash');
@@ -9,8 +10,6 @@ const queryColorMap = {
   input: '#b3de69',
   operation: '#fed9a6',
 };
-
-const nodeType = node => (_.isEmpty(node.operation) ? 'input' : 'operation');
 
 const propTypes = {
   height: PropTypes.string,
