@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Grid, Row, Col, FormControl, Button, Glyphicon } from 'react-bootstrap';
+import { Form, FormGroup, ControlLabel, FormControl, Button, Glyphicon } from 'react-bootstrap';
 import { AutoSizer } from 'react-virtualized';
 
 import AppConfig from './../../AppConfig';
@@ -25,10 +25,13 @@ const propTypes = {
     label: PropTypes.string.isRequired,
     curie: PropTypes.string.isRequired,
   })),
+  inputLabel: PropTypes.string.isRequired,
+  onChangeLabel: PropTypes.func,
 };
 
 const defaultProps = {
   onChangeHook: () => {},
+  onChangeLabel: () => {},
   inputCurieList: [{ type: 'disease', label: '', curie: '' }],
 };
 
@@ -229,6 +232,16 @@ class FlowbokopInputBuilder extends React.Component {
                   Export
                 </Button>
               </div> */}
+              <Form inline>
+                <FormGroup controlId="formInlineInputLabel">
+                  <ControlLabel>Input Label:</ControlLabel>{' '}
+                  <FormControl
+                    type="text"
+                    value={this.props.inputLabel}
+                    onChange={this.props.onChangeLabel}
+                  />
+                </FormGroup>
+              </Form>
               <div style={{ display: 'table' }}>
                 {curieSelectorElements(width)}
                 <div style={{ display: 'table-row', textAlign: 'center' }}>

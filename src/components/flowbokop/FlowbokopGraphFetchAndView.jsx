@@ -21,6 +21,8 @@ const propTypes = {
     nodes: PropTypes.array,
     edges: PropTypes.array,
   }).isRequired,
+  nodeSelectCallback: PropTypes.func,
+  edgeSelectCallback: PropTypes.func,
   // wait: ,
   // callbackRefresh: PropTypes.func,
   // concepts: ,
@@ -30,6 +32,8 @@ const defaultProps = {
   graphState: graphStates.display,
   height: null,
   width: null,
+  nodeSelectCallback: () => {},
+  edgeSelectCallback: () => {},
 };
 
 class FlowbokopGraphFetchAndView extends React.Component {
@@ -76,7 +80,7 @@ class FlowbokopGraphFetchAndView extends React.Component {
 
     return (
       <div id={this.divId}>
-        <Panel style={panelExtraStyle} expanded={showGraph}>
+        <Panel style={panelExtraStyle}>
           <Panel.Heading>
             <Panel.Title>
               Flowbokop Query Graph
@@ -88,6 +92,8 @@ class FlowbokopGraphFetchAndView extends React.Component {
                 height={height}
                 width={width}
                 graph={this.props.graph}
+                nodeSelectCallback={this.props.nodeSelectCallback}
+                edgeSelectCallback={this.props.edgeSelectCallback}
               />
             }
             {showFetching &&

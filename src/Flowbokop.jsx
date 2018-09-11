@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Grid, Row, Col, Button, PanelGroup, Panel } from 'react-bootstrap';
+import { Grid, Row, Col, Button, ButtonGroup, PanelGroup, Panel } from 'react-bootstrap';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
@@ -8,6 +8,10 @@ import Footer from './components/Footer';
 import Loading from './components/Loading';
 import FlowbokopGraphFetchAndView, { graphStates } from './components/flowbokop/FlowbokopGraphFetchAndView';
 import FlowbokopInputBuilder from './components/flowbokop/FlowbokopInputBuilder';
+import FaFloppyO from 'react-icons/lib/fa/floppy-o';
+import FaTrash from 'react-icons/lib/fa/trash';
+import FaPlus from 'react-icons/lib/fa/plus';
+import FaPlusSquare from 'react-icons/lib/fa/plus-square';
 
 const _ = require('lodash');
 
@@ -214,9 +218,23 @@ class Flowbokop extends React.Component {
       queryGraph: this.getEmptyGraph(),
       graphState: graphStates.fetching,
       panelState: workflowInputsToPanelState(props.workflowInputs),
+
+      activePanelInd: 0,
+      activePanelState: {},
     };
 
+    // Set activePanelState appropriately
+    if (this.state.panelState.length > (this.state.activePanelInd + 1)) {
+      this.state.activePanelState = _.cloneDeep(this.state.panelState[this.state.activePanelInd]);
+    }
+
     this.getGraph = this.getGraph.bind(this);
+    this.nodeSelectCallback = this.nodeSelectCallback.bind(this);
+    this.getPanelIndFromNodeId = this.getPanelIndFromNodeId.bind(this);
+    this.onChangeInputLabel = this.onChangeInputLabel.bind(this);
+    this.getInputOperationPanel = this.getInputOperationPanel.bind(this);
+    this.updatePanelState = this.updatePanelState.bind(this);
+    this.saveActivePanel = this.saveActivePanel.bind(this);
   }
 
   componentDidMount() {
@@ -233,30 +251,25 @@ class Flowbokop extends React.Component {
     this.getGraph();
   }
 
-  /**
-   * Fetch query graph from Flowbokop /graph endpoint in async manner
-   * and display status accordingly in UI
-   */
-  getGraph() {
-    this.setState({ graphState: graphStates.fetching }, () => {
-      this.appConfig.flowbokopGraph(
-        panelStateToWorkflowInputs(this.state.panelState),
-        (data) => {
-          const validGraph = this.isValidGraph(data);
-          const graphState = validGraph ? graphStates.display : graphStates.empty;
-          this.setState({ queryGraph: data, graphState });
-        },
-        err => console.log('Error fetching query graph', err),
-      );
+  getPanelIndFromNodeId(id) {
+    const nodeOfInterest = this.state.queryGraph.nodes.filter((n) => {
+      return n.id === id;
     });
-  }
-
-  getEmptyGraph() {
-    // return demoGraph;
-    return {
-      nodes: [],
-      edges: [],
-    };
+    const nodeName = nodeOfInterest[0].name;
+    let panelInd;
+    this.state.panelState.forEach((panelObj, i) => {
+      if (panelObj.inputType === 'input') {
+        if (panelObj.inputLabel === nodeName) {
+          panelInd = i;
+        }
+      }
+      if (panelObj.inputType === 'operation') {
+        if (panelObj.data.output === nodeName) {
+          panelInd = i;
+        }
+      }
+    });
+    return panelInd;
   }
 
   getInputOperationPanels() {
@@ -277,6 +290,8 @@ class Flowbokop extends React.Component {
                 config={this.props.config}
                 onChangeHook={inputCurieList => console.log(inputCurieList)}
                 inputCurieList={panelObj.data}
+                inputLabel={panelObj.inputLabel}
+                onChangeLabel={e => (panelObj.inputLabel = e.target.value)}
               />
               {/* {JSON.stringify(this.props.label, null , 2)}
               {JSON.stringify(this.props.data, null , 2)} */}
@@ -288,6 +303,118 @@ class Flowbokop extends React.Component {
       return <FlowbokopOperationPanel data={panelObj.data} lock={panelObj.locked} key={i} />;
     });
     return panels;
+  }
+
+  getInputOperationPanel() {
+    const { activePanelState, activePanelInd } = this.state;
+    if (_.isEmpty(activePanelState)) {
+      return null;
+    }
+    const panelObj = _.cloneDeep(activePanelState);
+    const { inputType } = panelObj;
+    if (inputType === 'input') {
+      const onCurieListChange = (inputCurieList) => {
+        panelObj.data = inputCurieList;
+        this.updatePanelState(panelObj, activePanelInd);
+      };
+      return (
+        <Panel style={{ marginTop: '15px' }}>
+          <Panel.Heading>
+            <Panel.Title>
+              Input - {`${panelObj.inputLabel}`}
+            </Panel.Title>
+          </Panel.Heading>
+          <Panel.Body>
+            <FlowbokopInputBuilder
+              config={this.props.config}
+              onChangeHook={onCurieListChange}
+              inputCurieList={panelObj.data}
+              inputLabel={panelObj.inputLabel}
+              onChangeLabel={e => this.onChangeInputLabel(e.target.value)}
+            />
+            {/* {JSON.stringify(this.props.label, null , 2)}
+            {JSON.stringify(this.props.data, null , 2)} */}
+          </Panel.Body>
+        </Panel>
+      );
+    }
+    return <FlowbokopOperationPanel data={panelObj.data} lock={panelObj.locked} />;
+  }
+
+  updatePanelState(newPanelObj, ind) {
+    // const panelState = _.cloneDeep(this.state.panelState);
+    // panelState[ind] = _.cloneDeep(newPanelObj);
+    this.setState({ activePanelState: _.cloneDeep(newPanelObj) });
+  }
+
+  saveActivePanel() {
+    const panelState = _.cloneDeep(this.state.panelState);
+    const { activePanelInd, activePanelState } = this.state;
+    if (activePanelInd <= panelState.length) {
+      // Check if "output" name for block changed and rename
+      // the matching input in all other blocks (only if editing existing block)
+      let outputLabelSelector;
+      if (activePanelState.inputType === 'input') {
+        outputLabelSelector = x => x.inputLabel;
+      }
+      if (activePanelState.inputType === 'operation') {
+        outputLabelSelector = x => x.data.output;
+      }
+      const newOutputLabel = outputLabelSelector(activePanelState);
+      const oldOutputLabel = outputLabelSelector(panelState[activePanelInd]);
+      if (newOutputLabel !== oldOutputLabel) {
+        // Rename input term in all other operation blocks that references renamed output
+        panelState.forEach((panelObj) => {
+          if (panelObj.data.input && panelObj.data.input === oldOutputLabel) {
+            panelObj.data.input = newOutputLabel;
+          }
+        });
+      }
+    }
+    panelState[this.state.activePanelInd] = this.state.activePanelState;
+    this.setState({ panelState }, this.getGraph);
+  }
+
+  onChangeInputLabel(newLabel) {
+    const activePanelState = _.cloneDeep(this.state.activePanelState);
+    activePanelState.inputLabel = newLabel;
+    this.setState({ activePanelState });
+  }
+
+  nodeSelectCallback(data) {
+    let nodeId = -1;
+    if (data.nodes.length > 0) {
+      nodeId = data.nodes[0];
+    }
+    const panelInd = this.getPanelIndFromNodeId(nodeId);
+    this.setState({ activePanelInd: panelInd, activePanelState: this.state.panelState[panelInd] });
+  }
+
+  getEmptyGraph() {
+    // return demoGraph;
+    return {
+      nodes: [],
+      edges: [],
+    };
+  }
+
+  /**
+   * Fetch query graph from Flowbokop /graph endpoint in async manner
+   * and display status accordingly in UI
+   */
+  getGraph() {
+    console.log('Input to graph endpoint:', panelStateToWorkflowInputs(this.state.panelState));
+    this.setState({ graphState: graphStates.fetching }, () => {
+      this.appConfig.flowbokopGraph(
+        panelStateToWorkflowInputs(this.state.panelState),
+        (data) => {
+          const validGraph = this.isValidGraph(data);
+          const graphState = validGraph ? graphStates.display : graphStates.empty;
+          this.setState({ queryGraph: data, graphState });
+        },
+        err => console.log('Error fetching query graph', err),
+      );
+    });
   }
 
   isValidGraph(graph) {
@@ -314,16 +441,36 @@ class Flowbokop extends React.Component {
                 graph={this.state.queryGraph}
                 graphState={this.state.graphState}
                 height="350px"
+                nodeSelectCallback={this.nodeSelectCallback}
                 // width={700}
               />
-              <PanelGroup
+              {/* <PanelGroup
                 accordion={false}
                 id="workflow-accordion"
                 // activeKey={this.state.activeKey}
                 // onSelect={this.handleSelect}
-              >
-                {this.getInputOperationPanels()}
-              </PanelGroup>
+              > */}
+              {this.getInputOperationPanel()}
+              {/* </PanelGroup> */}
+              <div style={{ marginTop: '-15px', marginBottom: '10px' }}>
+                <ButtonGroup>
+                  <Button onClick={this.saveActivePanel}>
+                    <FaFloppyO style={{ verticalAlign: 'text-top' }} />
+                    {' Save'}
+                  </Button>
+                  {(this.state.panelState.length > 1) &&
+                    <Button onClick={this.deleteActivePanel}>
+                      <FaTrash style={{ verticalAlign: 'text-top' }} />{' Delete'}
+                    </Button>
+                  }
+                  <Button>
+                    <FaPlus style={{ verticalAlign: 'text-top' }} />{' New Input'}
+                  </Button>
+                  <Button>
+                    <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{' New Operation'}
+                  </Button>
+                </ButtonGroup>
+              </div>
             </Col>
           </Row>
         </Grid>

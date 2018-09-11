@@ -18,11 +18,15 @@ const propTypes = {
     nodes: PropTypes.array,
     edges: PropTypes.array,
   }).isRequired,
+  nodeSelectCallback: PropTypes.func,
+  edgeSelectCallback: PropTypes.func,
 };
 
 const defaultProps = {
   height: 500,
   width: 500,
+  nodeSelectCallback: () => {},
+  edgeSelectCallback: () => {},
 };
 
 class FlowbokopGraphViewer extends React.Component {
@@ -32,8 +36,8 @@ class FlowbokopGraphViewer extends React.Component {
     this.setNetworkCallbacks = this.setNetworkCallbacks.bind(this);
     this.addTagsToGraph = this.addTagsToGraph.bind(this);
 
-    this.nodeSelectCallback = () => {};
-    this.edgeSelectCallback = () => {};
+    // this.nodeSelectCallback = (data) => { console.log(data); };
+    // this.edgeSelectCallback = () => {};
 
     this.graphOptions = {
       height: '500px',
@@ -160,7 +164,7 @@ class FlowbokopGraphViewer extends React.Component {
             graph={graph}
             options={this.graphOptions}
             style={{ width: this.props.width }}
-            events={{ selectNode: this.nodeSelectCallback, selectEdge: this.edgeSelectCallback }}
+            events={{ selectNode: this.props.nodeSelectCallback, selectEdge: this.props.edgeSelectCallback }}
             getNetwork={(network) => { this.network = network; }} // Store network reference in the component
           />
         </div>
