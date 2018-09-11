@@ -161,9 +161,20 @@ class Workflow(Service):
             if node["is_output"]:
                 # all is a magic output variable that yields all variables
                 if self.output == "all":
-                    self.connectivity[...,ind] = 1
+                    # When we go to parse the output in run() we will actually give all of the outputs
+                    # we could just make the connectivity reflect this
+                    # self.connectivity[...,ind] = 1
+                    # self.connectivity[-1,-1] = 0
+
+                    # But for graph display it is more desirable to only connect unconnected nodes
+                    # At this point we assume that this is the last iteration of this loop and that 
+                    # the rest of connectivity is already accurate
+                    node_inds_without_outputs = numpy.where(numpy.sum(self.connectivity,axis=1)==0)
+                    self.connectivity[node_inds_without_outputs, -1] = 1
+                    self.connectivity[-1, -1] = 0 # Don't connect the output ot the output
                     continue
-                # otherwise find just the request output
+
+                # otherwise find just the requested output
                 input_variables = self.output # the requested outputs are the required inputs of the output node
             else:
                 # A regular operation
@@ -206,22 +217,36 @@ class Workflow(Service):
         # Assume we have connnectivity and connectivity_graph_nodes all in order
 
         nodes = []
+        output_id = -1
         for i, cn in enumerate(self.connectivity_graph_nodes):
             if cn['is_input']:
                 n = {
                     'id': i,
                     'name': cn['name'],
                     'operation': {},
+                    'is_input': True,
+                    'is_output': False,
                 }
                 nodes.append(n)
                 continue
             if cn['is_output']:
+                n = {
+                    'id': i,
+                    'name': 'Output',
+                    'operation': {},
+                    'is_input': False,
+                    'is_output': True,
+                }
+                nodes.append(n)
+                output_id = i
                 continue
 
             op = cn['operation']
             n = {
                 'id': i,
-                'name': op.output,
+                'name': op.label,
+                'is_input': False,
+                'is_output': False,
                 'operation': {
                     'service': op.service.url,
                     'options': op.service.options
@@ -231,16 +256,21 @@ class Workflow(Service):
         
         edges = []
         for i, cn in enumerate(self.connectivity_graph_nodes):
-            if cn['is_output']:
-                continue
-
             for j, dn in enumerate(self.connectivity_graph_nodes):
-                if dn['is_output']:
-                     continue
+                if cn['is_input'] or cn['is_output']:
+                    # Edge is from the input or output
+                    # Use name of variable
+                    label = cn['name']
+                else: 
+                    # Edge is from a regular node
+                    op = cn['operation']
+                    label = op.output
+
                 if self.connectivity[i, j]:
                     e = {
                         'source_id': i,
-                        'target_id': j
+                        'target_id': j,
+                        'label': label
                     }
                     edges.append(e)
         

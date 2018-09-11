@@ -98,7 +98,6 @@ class Expand(Resource):
         answerset = response.json()
         if csv.upper() == 'TRUE':
             node_names = [f"{a['nodes'][-1]['name']}({a['nodes'][-1]['id']})" if 'name' in a['nodes'][-1] else a['nodes'][-1]['id'] for a in answerset['answers']]
-            #return ','.join(node_names)
             return node_names
         return answerset
 
@@ -310,6 +309,7 @@ class SimilaritySearch(Resource):
         sim_params = {'threshhold':request.args.get('threshhold', default = None),
                       'maxresults':request.args.get('maxresults', default = None)}
         sim_params = {k:v for k,v in sim_params.items() if v is not None}
+        logger.info("Going into ranker:sim")
         response = requests.get( f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/similarity/{type1}/{sid1}/{type2}/{by_type}', params=sim_params)
 
         return response.json()
