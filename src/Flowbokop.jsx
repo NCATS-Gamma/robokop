@@ -1,6 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Grid, Row, Col, Button, ButtonGroup, PanelGroup, Panel } from 'react-bootstrap';
+import FaFloppyO from 'react-icons/lib/fa/floppy-o';
+import FaTrash from 'react-icons/lib/fa/trash';
+import FaPlus from 'react-icons/lib/fa/plus';
+import FaPlusSquare from 'react-icons/lib/fa/plus-square';
+import FaDownload from 'react-icons/lib/fa/download';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
@@ -8,10 +13,8 @@ import Footer from './components/Footer';
 import Loading from './components/Loading';
 import FlowbokopGraphFetchAndView, { graphStates } from './components/flowbokop/FlowbokopGraphFetchAndView';
 import FlowbokopInputBuilder from './components/flowbokop/FlowbokopInputBuilder';
-import FaFloppyO from 'react-icons/lib/fa/floppy-o';
-import FaTrash from 'react-icons/lib/fa/trash';
-import FaPlus from 'react-icons/lib/fa/plus';
-import FaPlusSquare from 'react-icons/lib/fa/plus-square';
+import FlowbokopOperationBuilder from './components/flowbokop/FlowbokopOperationBuilder';
+
 
 const _ = require('lodash');
 
@@ -184,16 +187,19 @@ const demoWorkflowInputs = {
           {
               'input': 'usher1',
               'output': 'usher1_genes',
+              'label': 'Expand',
               'service': 'http://127.0.0.1/api/flowbokop/expand/disease/gene/'
           },
           {
               'input': 'usher2',
               'output': 'usher2_genes',
+              'label': 'Expand',
               'service': 'http://127.0.0.1/api/flowbokop/expand/disease/gene/'
           },
           {
               'input': ['usher1_genes', 'usher2_genes'],
               'output': 'common_genes',
+              'label': 'Intersect',
               'service': 'http://127.0.0.1/api/flowbokop/intersection/'
           },
       ]
@@ -232,6 +238,7 @@ class Flowbokop extends React.Component {
     this.nodeSelectCallback = this.nodeSelectCallback.bind(this);
     this.getPanelIndFromNodeId = this.getPanelIndFromNodeId.bind(this);
     this.onChangeInputLabel = this.onChangeInputLabel.bind(this);
+    this.onOperationBuilderChange = this.onOperationBuilderChange.bind(this);
     this.getInputOperationPanel = this.getInputOperationPanel.bind(this);
     this.updatePanelState = this.updatePanelState.bind(this);
     this.saveActivePanel = this.saveActivePanel.bind(this);
@@ -255,16 +262,16 @@ class Flowbokop extends React.Component {
     const nodeOfInterest = this.state.queryGraph.nodes.filter((n) => {
       return n.id === id;
     });
-    const nodeName = nodeOfInterest[0].name;
+    const nodeOutputLabel = nodeOfInterest[0].is_input ? nodeOfInterest[0].name : nodeOfInterest[0].operation.output;
     let panelInd;
     this.state.panelState.forEach((panelObj, i) => {
       if (panelObj.inputType === 'input') {
-        if (panelObj.inputLabel === nodeName) {
+        if (panelObj.inputLabel === nodeOutputLabel) {
           panelInd = i;
         }
       }
       if (panelObj.inputType === 'operation') {
-        if (panelObj.data.output === nodeName) {
+        if (panelObj.data.output === nodeOutputLabel) {
           panelInd = i;
         }
       }
@@ -318,7 +325,7 @@ class Flowbokop extends React.Component {
         this.updatePanelState(panelObj, activePanelInd);
       };
       return (
-        <Panel style={{ marginTop: '15px' }}>
+        <Panel style={{ marginBottom: '5px' }}>
           <Panel.Heading>
             <Panel.Title>
               Input - {`${panelObj.inputLabel}`}
@@ -332,13 +339,26 @@ class Flowbokop extends React.Component {
               inputLabel={panelObj.inputLabel}
               onChangeLabel={e => this.onChangeInputLabel(e.target.value)}
             />
-            {/* {JSON.stringify(this.props.label, null , 2)}
-            {JSON.stringify(this.props.data, null , 2)} */}
           </Panel.Body>
         </Panel>
       );
     }
-    return <FlowbokopOperationPanel data={panelObj.data} lock={panelObj.locked} />;
+    return (
+      <Panel style={{ marginBottom: '5px' }}>
+        <Panel.Heading>
+          <Panel.Title>
+            {`Operation [ ${panelObj.data.input} → ${panelObj.data.output} ]`}
+          </Panel.Title>
+        </Panel.Heading>
+        <Panel.Body>
+          <FlowbokopOperationBuilder
+            onChangeHook={this.onOperationBuilderChange}
+            panelObj={panelObj}
+          />
+        </Panel.Body>
+      </Panel>
+    );
+    // return <FlowbokopOperationPanel data={panelObj.data} lock={panelObj.locked} />;
   }
 
   updatePanelState(newPanelObj, ind) {
@@ -349,7 +369,14 @@ class Flowbokop extends React.Component {
 
   saveActivePanel() {
     const panelState = _.cloneDeep(this.state.panelState);
-    const { activePanelInd, activePanelState } = this.state;
+    const activePanelState = _.cloneDeep(this.state.activePanelState);
+    const { activePanelInd } = this.state;
+    // Set list of input labels to JSON array instead of a string
+    if (Object.hasOwnProperty.call(activePanelState.data, 'input')) {
+      if (activePanelState.data.input.includes('[')) {
+        activePanelState.data.input = JSON.parse(activePanelState.data.input);
+      }
+    }
     if (activePanelInd <= panelState.length) {
       // Check if "output" name for block changed and rename
       // the matching input in all other blocks (only if editing existing block)
@@ -365,19 +392,37 @@ class Flowbokop extends React.Component {
       if (newOutputLabel !== oldOutputLabel) {
         // Rename input term in all other operation blocks that references renamed output
         panelState.forEach((panelObj) => {
-          if (panelObj.data.input && panelObj.data.input === oldOutputLabel) {
-            panelObj.data.input = newOutputLabel;
+          if (panelObj.data.input) {
+            // Handle when input is a simple string of a single input variable
+            if (typeof panelObj.data.input === 'string' || panelObj.data.input instanceof String) {
+              if (panelObj.data.input === oldOutputLabel) {
+                panelObj.data.input = newOutputLabel;
+              }
+            }
+            // Handle when input is a list of input variables
+            if (Array.isArray(panelObj.data.input)) {
+              const oldLabelInd = panelObj.data.input.indexOf(oldOutputLabel);
+              if (oldLabelInd >= 0) {
+                panelObj.data.input[oldLabelInd] = newOutputLabel;
+              }
+            }
           }
         });
       }
     }
-    panelState[this.state.activePanelInd] = this.state.activePanelState;
+    panelState[this.state.activePanelInd] = activePanelState;
     this.setState({ panelState }, this.getGraph);
   }
 
   onChangeInputLabel(newLabel) {
     const activePanelState = _.cloneDeep(this.state.activePanelState);
     activePanelState.inputLabel = newLabel;
+    this.setState({ activePanelState });
+  }
+
+  onOperationBuilderChange(operationDataObj) {
+    const activePanelState = _.cloneDeep(this.state.activePanelState);
+    activePanelState.data = operationDataObj;
     this.setState({ activePanelState });
   }
 
@@ -452,7 +497,7 @@ class Flowbokop extends React.Component {
               > */}
               {this.getInputOperationPanel()}
               {/* </PanelGroup> */}
-              <div style={{ marginTop: '-15px', marginBottom: '10px' }}>
+              <div style={{ marginTop: '0px', marginBottom: '10px' }}>
                 <ButtonGroup>
                   <Button onClick={this.saveActivePanel}>
                     <FaFloppyO style={{ verticalAlign: 'text-top' }} />
@@ -468,6 +513,9 @@ class Flowbokop extends React.Component {
                   </Button>
                   <Button>
                     <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{' New Operation'}
+                  </Button>
+                  <Button>
+                    <FaDownload style={{ verticalAlign: 'text-top' }} />{' Export Query JSON'}
                   </Button>
                 </ButtonGroup>
               </div>
@@ -492,27 +540,6 @@ class Flowbokop extends React.Component {
 
 Flowbokop.defaultProps = defaultProps;
 
-class FlowbokopInputPanel extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
-    return (
-      <Panel>
-        <Panel.Heading>
-          <Panel.Title>
-            Input
-          </Panel.Title>
-        </Panel.Heading>
-        <Panel.Body>
-          {JSON.stringify(this.props.label, null , 2)}
-          {JSON.stringify(this.props.data, null , 2)}
-        </Panel.Body>
-      </Panel>
-    );
-  }
-}
 
 class FlowbokopOperationPanel extends React.Component {
   constructor(props) {

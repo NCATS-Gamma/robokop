@@ -179,7 +179,6 @@ class FlowbokopInputBuilder extends React.Component {
                   width={width - 40}
                   displayType
                   initialInputs={jsonBlob}
-                  // key={shortid.generate()}
                   onChangeHook={(ty, te, cu) => this.updateCurie(i, ty, te, cu)}
                 />
               </div>
@@ -211,27 +210,6 @@ class FlowbokopInputBuilder extends React.Component {
             <div
               id="searchBionames"
             >
-              {/* <div style={{ width: width / 2, padding: '10px 0px 30px 0px' }}>
-                <FormControl
-                  componentClass="textarea"
-                  value={this.state.rawInputJson}
-                  inputRef={(ref) => {
-                    this.input = ref;
-                  }}
-                  onChange={this.handleRawJsonChange}
-                  style={{ height: '200px' }}
-                />
-                <Button
-                  onClick={() => this.setState({ submittedJSON: this.state.rawInputJson })}
-                >
-                  Submit
-                </Button>
-                <Button
-                  onClick={() => this.setState({ rawInputJson: this.state.submittedJSON })}
-                >
-                  Export
-                </Button>
-              </div> */}
               <Form inline>
                 <FormGroup controlId="formInlineInputLabel">
                   <ControlLabel>Input Label:</ControlLabel>{' '}
@@ -258,11 +236,6 @@ class FlowbokopInputBuilder extends React.Component {
             </div>
           )}
         </AutoSizer>
-        {/* <div style={{ padding: '20px 0' }}>
-          <CurieBrowser
-            curieList={this.curieListFromSubmittedJSON()}
-          />
-        </div> */}
       </div>
     );
   }

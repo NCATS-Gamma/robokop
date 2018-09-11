@@ -73,17 +73,17 @@ class FlowbokopGraphFetchAndView extends React.Component {
     const showGraph = (!(this.props.graph === null) && (this.props.graphState === graphStates.display));
     const showFetching = fetching;
 
-    const panelExtraStyle = { margin: 0 };
+    // const panelExtraStyle = { margin: 0 };
 
     const height = this.props.height ? this.props.height : this.getHeight();
     const width = this.props.width ? this.props.width : this.getWidth();
 
     return (
       <div id={this.divId}>
-        <Panel style={panelExtraStyle}>
+        <Panel>
           <Panel.Heading>
             <Panel.Title>
-              Flowbokop Query Graph
+              Flowbokop Operation Graph
             </Panel.Title>
           </Panel.Heading>
           <Panel.Body style={{ padding: '0px' }}>

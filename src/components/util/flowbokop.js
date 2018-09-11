@@ -1,6 +1,12 @@
-const _ = require('lodash');
-
 // Determine nodeType for a node from returned graph from flowbokop /graph endpoint
-const nodeType = node => (_.isEmpty(node.operation) ? 'input' : 'operation');
+const nodeType = (node) => {
+  if (node.is_input) {
+    return 'input';
+  }
+  if (node.is_output) {
+    return 'output';
+  }
+  return 'operation';
+};
 
 export { nodeType };
