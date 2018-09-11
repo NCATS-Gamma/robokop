@@ -41,7 +41,7 @@ class Operation:
 
         if not self.label:
             # Label is still empty, make one up
-            self.label = f"{self.input} -> {self.output}"
+            self.label = self.output
     
     def run(self, curies):
         # Call the service using the service object

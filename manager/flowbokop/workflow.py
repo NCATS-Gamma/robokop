@@ -217,7 +217,6 @@ class Workflow(Service):
         # Assume we have connnectivity and connectivity_graph_nodes all in order
 
         nodes = []
-        output_id = -1
         for i, cn in enumerate(self.connectivity_graph_nodes):
             if cn['is_input']:
                 n = {
@@ -248,6 +247,8 @@ class Workflow(Service):
                 'is_input': False,
                 'is_output': False,
                 'operation': {
+                    'input': op.input,
+                    'output': op.output,
                     'service': op.service.url,
                     'options': op.service.options
                 },
