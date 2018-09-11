@@ -93,7 +93,7 @@ class Expand(Resource):
         csv = request.args.get('csv', default='false')
         question['rebuild'] = request.args.get('rebuild', default='false')
         response = requests.post(
-            f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/simple/quick/',
+            f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/simple/quick/?max_results=-1',
             json=question)
         answerset = response.json()
         if csv.upper() == 'TRUE':
