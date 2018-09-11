@@ -104,7 +104,6 @@ class QuestionAPI(Resource):
             return "Invalid question key.", 404
         if not (user == question.user or user.has_role('admin')):
             return "UNAUTHORIZED", 401 # not authorized
-        question.name = request.json['name']
         question.notes = request.json['notes']
         question.natural_question = request.json['natural_question']
         db.session.commit()
