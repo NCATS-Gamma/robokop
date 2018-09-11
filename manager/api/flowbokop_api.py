@@ -159,7 +159,10 @@ class FlowbokopExpand(Resource):
         response = requests.post(
             f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/flowbokop/robokop/',
             json=post_data)
-        output = response.json()
+        if response.status_code < 300:
+            output = response.json()
+        else: 
+            raise RuntimeError(response.text)
 
         return output
 
@@ -191,7 +194,10 @@ class FlowbokopRobokop(Resource):
         response = requests.post(
             f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/simple/quick/',
             json=question)
-        answerset = response.json()
+        if response.status_code < 300:
+            answerset = response.json()
+        else: 
+            raise RuntimeError(response.text)
         
         out_curies = []
         for answer in answerset['answers']:
