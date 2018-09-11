@@ -116,6 +116,12 @@ class Quick(Resource):
             schema:
                 $ref: '#/definitions/Question'
             required: true
+          - in: query
+            name: max_results
+            description: Maximum number of results to return. Provide -1 to indicate no maximum.
+            schema:
+                type: integer
+            default: 250
         responses:
             200:
                 description: Answer
@@ -151,8 +157,10 @@ class Quick(Resource):
 
             logger.info('Done updating KG. Answering question...')
 
+        max_results = request.args.get('max_results')
+        max_results = max_results if max_results is not None else 250
         response = requests.post(
-            f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/',
+            f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/?max_results={max_results}',
             json=question)
         polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
 
