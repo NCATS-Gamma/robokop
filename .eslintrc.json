@@ -5,9 +5,50 @@
         "jsx-a11y",
         "import"
     ],
+    "env": {
+      "browser": true,
+      "node": true
+    },
     "rules": {
       "react/prop-types": "off",
       "class-methods-use-this": "off",
-      "max-len": "off"
+      "max-len": "off",
+      "react/sort-comp": ["error", {
+        "order": [
+          "static-methods",
+          "instance-variables",
+          "lifecycle",
+          "instance-methods",
+          "everything-else",
+          "rendering"
+        ],
+        "groups": {
+          "lifecycle": [
+            "displayName",
+            "propTypes",
+            "contextTypes",
+            "childContextTypes",
+            "mixins",
+            "statics",
+            "defaultProps",
+            "constructor",
+            "getDefaultProps",
+            "getInitialState",
+            "state",
+            "getChildContext",
+            "componentWillMount",
+            "componentDidMount",
+            "componentWillReceiveProps",
+            "shouldComponentUpdate",
+            "componentWillUpdate",
+            "componentDidUpdate",
+            "componentWillUnmount"
+          ],
+          "rendering": [
+            "/^render.+$/",
+            "render"
+          ]
+        }
+      }]
     }
 }
