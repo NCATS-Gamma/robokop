@@ -79,12 +79,10 @@ class FlowbokopInputBuilder extends React.Component {
         dataReady: true,
       });
     });
-    console.log('InputBuilder Mounted');
   }
 
   componentWillReceiveProps(nextProps) {
     // Reset display of CurieListSelector component if inputCurieList prop changes
-    // console.log('in componentWillReceiveProps', nextProps.initialInputs, this.props.initialInputs);
     if (!_.isEqual(nextProps.inputCurieList, this.props.inputCurieList)) {
       let inputCurieList;
       if (_.isPlainObject(nextProps.inputCurieList)) {
@@ -111,7 +109,6 @@ class FlowbokopInputBuilder extends React.Component {
     return { type: 'disease', term: '', curie: '' };
   }
   deleteCurie(i) {
-    console.log('FlowbokopInputBuilder::deleteCurie() executed');
     const submittedJSON = _.cloneDeep(this.state.submittedJSON);
     const keys = _.cloneDeep(this.state.keys);
     submittedJSON.splice(i, 1);
@@ -122,7 +119,6 @@ class FlowbokopInputBuilder extends React.Component {
     );
   }
   addCurie() {
-    console.log('FlowbokopInputBuilder::addCurie() executed');
     const submittedJSON = _.cloneDeep(this.state.submittedJSON);
     const keys = _.cloneDeep(this.state.keys);
     submittedJSON.push(this.defaultCurie());
@@ -133,15 +129,11 @@ class FlowbokopInputBuilder extends React.Component {
     );
   }
   updateCurie(i, type, term, curie) {
-    console.log('FlowbokopInputBuilder::updateCurie() executed', this.state.keys);
     const submittedJSON = _.cloneDeep(this.state.submittedJSON);
     submittedJSON[i] = { type, term, curie };
     this.setState(
       { submittedJSON },
-      () => {
-        this.props.onChangeHook(this.curieListFromSubmittedJSON());
-        console.log(this.state.keys);
-      },
+      () => this.props.onChangeHook(this.curieListFromSubmittedJSON()),
     );
   }
   curieListFromSubmittedJSON() {
@@ -176,7 +168,6 @@ class FlowbokopInputBuilder extends React.Component {
       submittedJSON = [submittedJSON];
     }
     if (Array.isArray(submittedJSON)) {
-      // console.log('Array is:', submittedJSON);
       curieSelectorElements = width => (
         submittedJSON.map((jsonBlob, i) => {
           const curieSelectorElement = (

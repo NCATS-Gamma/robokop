@@ -142,14 +142,14 @@ class Workflow(Service):
 
         self.connectivity_graph_nodes = []
         for in_var in self.input.names():
-            node = {"is_input": True, "is_output": False, "name": in_var, "operation": []}
+            node = {"is_input": True, "is_output": False, "name": in_var, "operation": [], "is_valid": True, "invalid_reason": ""}
             self.connectivity_graph_nodes.append(node)
 
         for op in self.operations:
-            node = {"is_input": False, "is_output": False, "name": op.label, "operation": op}
+            node = {"is_input": False, "is_output": False, "name": op.label, "operation": op, "is_valid": True, "invalid_reason": ""}
             self.connectivity_graph_nodes.append(node)
 
-        output_node = {"is_input": False, "is_output": True, "name": "output", "operation": []}
+        output_node = {"is_input": False, "is_output": True, "name": "output", "operation": [], "is_valid": True, "invalid_reason": ""}
         self.connectivity_graph_nodes.append(output_node)
 
         # For each operation find the inputs 
@@ -196,7 +196,8 @@ class Workflow(Service):
                     self.connectivity[num_input_lists + source_inds[0], ind] = 1
                 if len(source_inds) > 1:
                     # We found the requested input more than once -> Error
-                    raise Exception(f"Variable {in_var} has been declared more than once")
+                    node["is_valid"] = False
+                    node["invalid_reason"] = f"Variable {in_var} has been declared more than once"
                 if len(source_inds) < 1:
                     # We did not find the requested input, maybe its one of the inputs to the workflow
                     if self.input.has_list(in_var):
@@ -205,7 +206,8 @@ class Workflow(Service):
                         self.connectivity[input_ind, ind] = 1
                     else:
                         # Can't find the requested input anywhere
-                        raise Exception(f"Could not find variable {in_var}")
+                        node["is_valid"] = False
+                        node["invalid_reason"] = f"Could not find variable {in_var}"
         
 
         self.operation_order = topological_sort(self.connectivity)
@@ -215,7 +217,6 @@ class Workflow(Service):
 
     def graph(self):
         # Assume we have connnectivity and connectivity_graph_nodes all in order
-
         nodes = []
         for i, cn in enumerate(self.connectivity_graph_nodes):
             if cn['is_input']:
@@ -225,6 +226,8 @@ class Workflow(Service):
                     'operation': {},
                     'is_input': True,
                     'is_output': False,
+                    'is_valid': cn['is_valid'],
+                    'invalid_reason': cn['invalid_reason']
                 }
                 nodes.append(n)
                 continue
@@ -235,6 +238,8 @@ class Workflow(Service):
                     'operation': {},
                     'is_input': False,
                     'is_output': True,
+                    'is_valid': cn['is_valid'],
+                    'invalid_reason': cn['invalid_reason']
                 }
                 nodes.append(n)
                 output_id = i
@@ -246,6 +251,8 @@ class Workflow(Service):
                 'name': op.label,
                 'is_input': False,
                 'is_output': False,
+                'is_valid': cn['is_valid'],
+                'invalid_reason': cn['invalid_reason'],
                 'operation': {
                     'input': op.input,
                     'output': op.output,

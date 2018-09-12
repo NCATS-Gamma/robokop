@@ -100,6 +100,7 @@ class FlowbokopGraphViewer extends React.Component {
       interaction: {
         hover: true,
         selectConnectedEdges: false,
+        tooltipDelay: 100,
       },
     };
   }
@@ -135,15 +136,20 @@ class FlowbokopGraphViewer extends React.Component {
     // Adds vis.js specific tags primarily to style graph as desired
     const g = _.cloneDeep(graph);
     g.nodes = g.nodes.map((n) => {
-      const backgroundColor = queryColorMap[nodeType(n)];
+      const defaultBgColor = queryColorMap[nodeType(n)];
+      const backgroundColor = n.is_valid ? defaultBgColor : '#e5b7b7';
+      const borderColor = n.is_valid ? '#333333' : '#fc0000';
       n.color = {
-        border: '#333333',
+        border: borderColor,
         background: backgroundColor,
         highlight: { background: backgroundColor },
-        hover: { background: backgroundColor, border: '#333333' },
+        hover: { background: backgroundColor, border: borderColor },
       };
       // n.label = nodeType(n).charAt(0).toUpperCase() + nodeType(n).slice(1);
       n.label = (!n.is_input && !n.is_output) ? n.name : (nodeType(n).charAt(0).toUpperCase() + nodeType(n).slice(1));
+      if (!n.is_valid) {
+        n.title = `<div class="vis-tooltip-inner invalid-node">${n.invalid_reason}</div>`;
+      }
       return n;
     });
 
