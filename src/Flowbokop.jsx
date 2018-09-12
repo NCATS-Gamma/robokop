@@ -1,11 +1,13 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { Grid, Row, Col, Button, ButtonGroup, PanelGroup, Panel } from 'react-bootstrap';
+// import PropTypes from 'prop-types';
+import { Grid, Row, Col, Button, ButtonGroup, Panel } from 'react-bootstrap';
+import Dropzone from 'react-dropzone';
 import FaFloppyO from 'react-icons/lib/fa/floppy-o';
 import FaTrash from 'react-icons/lib/fa/trash';
 import FaPlus from 'react-icons/lib/fa/plus';
 import FaPlusSquare from 'react-icons/lib/fa/plus-square';
 import FaDownload from 'react-icons/lib/fa/download';
+import FaUpload from 'react-icons/lib/fa/upload';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
@@ -17,108 +19,6 @@ import FlowbokopOperationBuilder from './components/flowbokop/FlowbokopOperation
 
 
 const _ = require('lodash');
-
-const demoGraph = {
-  "nodes": [
-    {
-      "id": 0,
-      "name": "usher1",
-      "operation": {}
-    },
-    {
-      "id": 1,
-      "name": "usher2",
-      "operation": {}
-    },
-    {
-      "id": 2,
-      "name": "usher1_genes",
-      "operation": {
-        "service": "http://127.0.0.1/api/flowbokop/expand/disease/gene/",
-        "options": null
-      }
-    },
-    {
-      "id": 3,
-      "name": "usher2_genes",
-      "operation": {
-        "service": "http://127.0.0.1/api/flowbokop/expand/disease/gene/",
-        "options": null
-      }
-    },
-    {
-      "id": 4,
-      "name": "common_genes",
-      "operation": {
-        "service": "http://127.0.0.1/api/flowbokop/intersection/",
-        "options": null
-      }
-    }
-  ],
-  "edges": [
-    {
-      "source_id": 0,
-      "target_id": 2
-    },
-    {
-      "source_id": 1,
-      "target_id": 3
-    },
-    {
-      "source_id": 2,
-      "target_id": 4
-    },
-    {
-      "source_id": 3,
-      "target_id": 4
-    }
-  ]
-};
-
-const demoPanelState = [
-  { 
-    inputType: 'input',
-    locked: true,
-    inputLabel: 'usher1',
-    data: [{'type': 'disease', 'curie': 'MONDO:0010168', 'label': 'Usher syndrome type 1'}],
-  },
-  { 
-    inputType: 'input',
-    locked: true,
-    inputLabel: 'usher2',
-    data: [{'type': 'disease', 'curie': 'MONDO:0016484', 'label': 'Usher syndrome type 2'}],
-  },
-  { 
-    inputType: 'operation',
-    locked: true,
-    data: {
-      input: 'usher1',
-      output: 'usher1_genes',
-      service: 'http://127.0.0.1/api/flowbokop/expand/disease/gene/',
-      options: '',
-    },
-  },
-  { 
-    inputType: 'operation',
-    locked: true,
-    data: {
-      input: 'usher2',
-      output: 'usher2_genes',
-      service: 'http://127.0.0.1/api/flowbokop/expand/disease/gene/',
-      options: '',
-    },
-  },
-  { 
-    inputType: 'operation',
-    locked: true,
-    data: {
-      input: ['usher1_genes', 'usher2_genes'],
-      output: 'common_genes',
-      service: 'http://127.0.0.1/api/flowbokop/intersection/',
-      options: '',
-    },
-  },
-];
 
 // Convert internal panel state representation to Flowbokop workflow input
 // representation that is required to be POSTed to the Flowbokop endpoint
@@ -177,37 +77,37 @@ const workflowInputsToPanelState = (workflowInput) => {
 };
 
 const demoWorkflowInputs = {
-  'input': {
-      'usher1': {'type': 'disease', 'curie': 'MONDO:0010168', 'label': 'Usher syndrome type 1'},
-      'usher2': {'type': 'disease', 'curie': 'MONDO:0016484', 'label': 'Usher syndrome type 2'},
+  input: {
+    usher1: { type: 'genetic_condition', curie: 'MONDO:0010168', label: 'Usher syndrome type 1' },
+    usher2: { type: 'genetic_condition', curie: 'MONDO:0016484', label: 'Usher syndrome type 2' },
   },
-  'options': {
-      'output': 'all',
-      'operations': [
-          {
-              'input': 'usher1',
-              'output': 'usher1_genes',
-              'label': 'Expand',
-              'service': 'http://127.0.0.1/api/flowbokop/expand/disease/gene/'
-          },
-          {
-              'input': 'usher2',
-              'output': 'usher2_genes',
-              'label': 'Expand',
-              'service': 'http://127.0.0.1/api/flowbokop/expand/disease/gene/'
-          },
-          {
-              'input': ['usher1_genes', 'usher2_genes'],
-              'output': 'common_genes',
-              'label': 'Intersect',
-              'service': 'http://127.0.0.1/api/flowbokop/intersection/'
-          },
-      ]
-  }
+  options: {
+    output: 'all',
+    operations: [
+      {
+        input: 'usher1',
+        output: 'usher1_genes',
+        label: 'Expand',
+        service: 'http://127.0.0.1/api/flowbokop/expand/genetic_condition/gene/',
+      },
+      {
+        input: 'usher2',
+        output: 'usher2_genes',
+        label: 'Expand',
+        service: 'http://127.0.0.1/api/flowbokop/expand/genetic_condition/gene/',
+      },
+      {
+        input: ['usher1_genes', 'usher2_genes'],
+        output: 'common_genes',
+        label: 'Intersect',
+        service: 'http://127.0.0.1/api/flowbokop/intersection/',
+      },
+    ],
+  },
 };
 
 const defaultProps = {
-  workflowInputs: demoWorkflowInputs, // workflowInputs can be seeded externally if desired
+  workflowInputs: {}, // workflowInputs can be seeded externally if desired
 };
 
 class Flowbokop extends React.Component {
@@ -222,7 +122,7 @@ class Flowbokop extends React.Component {
       dataReady: false,
 
       queryGraph: this.getEmptyGraph(),
-      graphState: graphStates.fetching,
+      graphState: graphStates.empty,
       panelState: workflowInputsToPanelState(props.workflowInputs),
 
       activePanelInd: 0,
@@ -244,6 +144,8 @@ class Flowbokop extends React.Component {
     this.saveActivePanel = this.saveActivePanel.bind(this);
     this.deleteActivePanel = this.deleteActivePanel.bind(this);
     this.newActivePanel = this.newActivePanel.bind(this);
+    this.onDownloadWorkflow = this.onDownloadWorkflow.bind(this);
+    this.onDropFile = this.onDropFile.bind(this);
   }
 
   componentDidMount() {
@@ -261,9 +163,7 @@ class Flowbokop extends React.Component {
   }
 
   getPanelIndFromNodeId(id) {
-    const nodeOfInterest = this.state.queryGraph.nodes.filter((n) => {
-      return n.id === id;
-    });
+    const nodeOfInterest = this.state.queryGraph.nodes.filter(n => (n.id === id));
     const nodeOutputLabel = nodeOfInterest[0].is_input ? nodeOfInterest[0].name : nodeOfInterest[0].operation.output;
     let panelInd;
     this.state.panelState.forEach((panelObj, i) => {
@@ -279,39 +179,6 @@ class Flowbokop extends React.Component {
       }
     });
     return panelInd;
-  }
-
-  getInputOperationPanels() {
-    // Return array of Panel elements based on this.state.panelState
-    const { panelState } = this.state;
-    const panels = panelState.map((panelObj, i) => {
-      const { inputType } = panelObj;
-      if (inputType === 'input') {
-        return (
-          <Panel>
-            <Panel.Heading>
-              <Panel.Title>
-                Input - {`${panelObj.inputLabel}`}
-              </Panel.Title>
-            </Panel.Heading>
-            <Panel.Body>
-              <FlowbokopInputBuilder
-                config={this.props.config}
-                onChangeHook={inputCurieList => console.log(inputCurieList)}
-                inputCurieList={panelObj.data}
-                inputLabel={panelObj.inputLabel}
-                onChangeLabel={e => (panelObj.inputLabel = e.target.value)}
-              />
-              {/* {JSON.stringify(this.props.label, null , 2)}
-              {JSON.stringify(this.props.data, null , 2)} */}
-            </Panel.Body>
-          </Panel>
-        );
-        // return <FlowbokopInputPanel data={panelObj.data} lock={panelObj.locked} label={panelObj.inputLabel} key={i} />;
-      }
-      return <FlowbokopOperationPanel data={panelObj.data} lock={panelObj.locked} key={i} />;
-    });
-    return panels;
   }
 
   getInputOperationPanel() {
@@ -360,12 +227,9 @@ class Flowbokop extends React.Component {
         </Panel.Body>
       </Panel>
     );
-    // return <FlowbokopOperationPanel data={panelObj.data} lock={panelObj.locked} />;
   }
 
-  updatePanelState(newPanelObj, ind) {
-    // const panelState = _.cloneDeep(this.state.panelState);
-    // panelState[ind] = _.cloneDeep(newPanelObj);
+  updatePanelState(newPanelObj) {
     this.setState({ activePanelState: _.cloneDeep(newPanelObj) });
   }
 
@@ -445,7 +309,7 @@ class Flowbokop extends React.Component {
 
   defaultInputPanelState() {
     return (
-      { 
+      {
         inputType: 'input',
         locked: true,
         inputLabel: '',
@@ -485,7 +349,7 @@ class Flowbokop extends React.Component {
   nodeSelectCallback(data) {
     let nodeId = -1;
     if (data.nodes.length > 0) {
-      nodeId = data.nodes[0];
+      nodeId = data.nodes[0]; // eslint-disable-line prefer-destructuring
     }
     const panelInd = this.getPanelIndFromNodeId(nodeId);
     this.setState({ activePanelInd: panelInd, activePanelState: this.state.panelState[panelInd] });
@@ -505,6 +369,11 @@ class Flowbokop extends React.Component {
    */
   getGraph() {
     console.log('Input to graph endpoint:', panelStateToWorkflowInputs(this.state.panelState));
+    // Don't query /graph endpoint if we don't have any data
+    if (_.isEmpty(this.state.panelState)) {
+      this.setState({ graphState: graphStates.empty });
+      return;
+    }
     this.setState({ graphState: graphStates.fetching }, () => {
       this.appConfig.flowbokopGraph(
         panelStateToWorkflowInputs(this.state.panelState),
@@ -520,6 +389,50 @@ class Flowbokop extends React.Component {
 
   isValidGraph(graph) {
     return 'nodes' in graph && Array.isArray(graph.nodes) && graph.nodes.length > 0;
+  }
+
+  onDownloadWorkflow() {
+    const data = panelStateToWorkflowInputs(this.state.panelState);
+
+    // Transform the data into a json blob and give it a url
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    // This doesn't use Blob() might also work
+    // var url = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+
+    // Create a link with that URL and click it.
+    const a = document.createElement('a');
+    a.download = 'flowbokopWorkflow.json';
+    a.href = url;
+    a.click();
+    a.remove();
+  }
+
+  onDropFile(acceptedFiles, rejectedFiles) {
+    acceptedFiles.forEach((file) => {
+      const fr = new window.FileReader();
+      fr.onloadstart = () => this.setState({ graphState: graphStates.fetching });
+      // fr.onloadend = () => this.setState({ graphState: graphStates.fetching });
+      fr.onload = (e) => {
+        const fileContents = e.target.result;
+        try {
+          const fileContentObj = JSON.parse(fileContents);
+          const panelState = workflowInputsToPanelState(fileContentObj);
+          const activePanelState = panelState.length > 0 ? panelState[0] : {};
+          const activePanelInd = 0;
+          this.setState({ panelState, activePanelInd, activePanelState }, this.getGraph);
+        } catch (err) {
+          console.log(err);
+          window.alert('Failed to read this workflow template. Are you sure this is valid?');
+        }
+      };
+      fr.onerror = () => {
+        window.alert('Sorry but there was a problem uploading the file. The file may be invalid JSON.');
+      };
+      fr.readAsText(file);
+    });
   }
 
   renderLoading() {
@@ -538,27 +451,66 @@ class Flowbokop extends React.Component {
         <Grid>
           <Row>
             <Col md={12}>
-              <FlowbokopGraphFetchAndView
-                graph={this.state.queryGraph}
-                graphState={this.state.graphState}
-                height="350px"
-                nodeSelectCallback={this.nodeSelectCallback}
-                // width={700}
-              />
+              <Panel>
+                <Panel.Heading>
+                  <Panel.Title>
+                    Flowbokop Operation Graph
+                    <div style={{ position: 'relative', float: 'right' }}>
+                      <div
+                        style={{
+                          position: 'absolute', top: -3, right: 0, padding: '2px',
+                        }}
+                        className="btn btn-default"
+                      >
+                        <span style={{ fontSize: '22px' }} title="Download Workflow">
+                          <FaDownload style={{ cursor: 'pointer' }} onClick={this.onDownloadWorkflow} />
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          position: 'absolute', top: -3, right: 32, padding: '2px',
+                        }}
+                        className="btn btn-default"
+                      >
+                        <span style={{ fontSize: '22px' }} title="Import Workflow">
+                          <Dropzone
+                            onDrop={this.onDropFile}
+                            multiple={false}
+                            style={{
+                              border: 'none',
+                            }}
+                          >
+                            <FaUpload style={{ cursor: 'pointer' }} onClick={() => {}} />
+                          </Dropzone>
+                        </span>
+                      </div>
+                    </div>
+                  </Panel.Title>
+                </Panel.Heading>
+                <Panel.Body style={{ padding: '0px' }}>
+                  <FlowbokopGraphFetchAndView
+                    graph={this.state.queryGraph}
+                    graphState={this.state.graphState}
+                    height="350px"
+                    nodeSelectCallback={this.nodeSelectCallback}
+                    // width={700}
+                  />
+                </Panel.Body>
+              </Panel>
               {/* <PanelGroup
                 accordion={false}
                 id="workflow-accordion"
                 // activeKey={this.state.activeKey}
                 // onSelect={this.handleSelect}
               > */}
-              {this.getInputOperationPanel()}
-              {/* </PanelGroup> */}
-              <div style={{ marginTop: '0px', marginBottom: '10px' }}>
+              <div style={{ marginTop: '0px', marginBottom: '6px' }}>
                 <ButtonGroup>
-                  <Button onClick={this.saveActivePanel}>
-                    <FaFloppyO style={{ verticalAlign: 'text-top' }} />
-                    {' Save'}
-                  </Button>
+                  {!_.isEmpty(this.state.activePanelState) &&
+                    <Button onClick={this.saveActivePanel}>
+                      <FaFloppyO style={{ verticalAlign: 'text-top' }} />
+                      {' Save'}
+                    </Button>
+                  }
                   {(this.state.panelState.length > 1) &&
                     <Button onClick={this.deleteActivePanel}>
                       <FaTrash style={{ verticalAlign: 'text-top' }} />{' Delete'}
@@ -570,11 +522,10 @@ class Flowbokop extends React.Component {
                   <Button onClick={() => this.newActivePanel('operation')}>
                     <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{' New Operation'}
                   </Button>
-                  <Button>
-                    <FaDownload style={{ verticalAlign: 'text-top' }} />{' Export Query JSON'}
-                  </Button>
                 </ButtonGroup>
               </div>
+              {this.getInputOperationPanel()}
+              {/* </PanelGroup> */}
             </Col>
           </Row>
         </Grid>
@@ -595,29 +546,5 @@ class Flowbokop extends React.Component {
 }
 
 Flowbokop.defaultProps = defaultProps;
-
-
-class FlowbokopOperationPanel extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
-    return (
-      <Panel>
-        <Panel.Heading>
-          <Panel.Title>
-            Operation
-          </Panel.Title>
-        </Panel.Heading>
-        <Panel.Body>
-          {this.props.data.output}
-          {JSON.stringify(this.props.data, null , 2)}
-        </Panel.Body>
-      </Panel>
-    );
-  }
-}
-
 
 export default Flowbokop;

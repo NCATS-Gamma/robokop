@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Panel, Row, Col, Grid } from 'react-bootstrap';
 import { FaSpinner } from 'react-icons/lib/fa';
 
 import FlowbokopGraphViewer from './FlowbokopGraphViewer';
@@ -80,39 +79,30 @@ class FlowbokopGraphFetchAndView extends React.Component {
 
     return (
       <div id={this.divId}>
-        <Panel>
-          <Panel.Heading>
-            <Panel.Title>
-              Flowbokop Operation Graph
-            </Panel.Title>
-          </Panel.Heading>
-          <Panel.Body style={{ padding: '0px' }}>
-            {showGraph &&
-              <FlowbokopGraphViewer
-                height={height}
-                width={width}
-                graph={this.props.graph}
-                nodeSelectCallback={this.props.nodeSelectCallback}
-                edgeSelectCallback={this.props.edgeSelectCallback}
-              />
-            }
-            {showFetching &&
-              <div style={{ margin: '15px', height, display: 'table', width: '100%' }}>
-                <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
-                  <FaSpinner className="icon-spin" style={{ marginRight: '10px', verticalAlign: 'text-top' }} />
-                  Graph update in progress... Please wait.
-                </div>
-              </div>
-            }
-            {notInitialized &&
-              <div style={{ margin: '15px', height, display: 'table', width: '100%' }}>
-                <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
-                  Please setup input(s) to generate query graph.
-                </div>
-              </div>
-            }
-          </Panel.Body>
-        </Panel>
+        {showGraph &&
+          <FlowbokopGraphViewer
+            height={height}
+            width={width}
+            graph={this.props.graph}
+            nodeSelectCallback={this.props.nodeSelectCallback}
+            edgeSelectCallback={this.props.edgeSelectCallback}
+          />
+        }
+        {showFetching &&
+          <div style={{ margin: '15px', height, display: 'table', width: '100%' }}>
+            <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+              <FaSpinner className="icon-spin" style={{ marginRight: '10px', verticalAlign: 'text-top' }} />
+              Graph update in progress... Please wait.
+            </div>
+          </div>
+        }
+        {notInitialized &&
+          <div style={{ margin: '15px', height, display: 'table', width: '100%' }}>
+            <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+              Please setup input(s) to generate query graph.
+            </div>
+          </div>
+        }
       </div>
     );
   }
