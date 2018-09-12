@@ -91,7 +91,7 @@ class FlowbokopGraphViewer extends React.Component {
         color: '#333333',
         font: {
           align: 'top',
-        }
+        },
       },
       nodes: {
         shape: 'box',
@@ -106,7 +106,6 @@ class FlowbokopGraphViewer extends React.Component {
 
   componentDidMount() {
     this.setNetworkCallbacks();
-    console.log(this.network);
   }
 
   shouldComponentUpdate(nextProps) {

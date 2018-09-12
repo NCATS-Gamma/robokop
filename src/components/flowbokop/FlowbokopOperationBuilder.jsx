@@ -37,6 +37,7 @@ class FlowbokopOperationBuilder extends React.Component {
       validationStatus: {
         input: '',
         output: '',
+        label: '',
         service: '',
         options: '',
       },
@@ -53,7 +54,7 @@ class FlowbokopOperationBuilder extends React.Component {
 
   onChangeFactory(tag) {
     // Returns an onChange handler for supplied tag which when fired, returns
-    // an up to data object of form { input, output, service, options }
+    // an up to data object of form { input, output, label, service, options }
     return (event) => {
       const defaultObj = _.cloneDeep(this.props.panelObj.data);
       defaultObj[tag] = event.target.value;
@@ -63,7 +64,7 @@ class FlowbokopOperationBuilder extends React.Component {
   }
 
   render() {
-    const { input, output, service, options } = this.props.panelObj.data;
+    const { input, output, label, service, options } = this.props.panelObj.data;
     const isInputArray = Array.isArray(input);
     return (
       <div>
@@ -92,6 +93,19 @@ class FlowbokopOperationBuilder extends React.Component {
               value={output}
               // placeholder={''}
               onChange={this.onChangeFactory('output')}
+            />
+          </LabeledFormGroup>
+          <LabeledFormGroup
+            formLabel="Operation Label"
+            value={label}
+            validationHookFn={validationState => this.updateValidationStatus('label', validationState)}
+            classNames={classNames}
+          >
+            <FormControl
+              type="text"
+              value={label}
+              // placeholder={''}
+              onChange={this.onChangeFactory('label')}
             />
           </LabeledFormGroup>
           <LabeledFormGroup

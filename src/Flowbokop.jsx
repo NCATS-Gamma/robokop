@@ -230,7 +230,7 @@ class Flowbokop extends React.Component {
     };
 
     // Set activePanelState appropriately
-    if (this.state.panelState.length > (this.state.activePanelInd + 1)) {
+    if (this.state.panelState.length >= (this.state.activePanelInd + 1)) {
       this.state.activePanelState = _.cloneDeep(this.state.panelState[this.state.activePanelInd]);
     }
 
@@ -242,6 +242,8 @@ class Flowbokop extends React.Component {
     this.getInputOperationPanel = this.getInputOperationPanel.bind(this);
     this.updatePanelState = this.updatePanelState.bind(this);
     this.saveActivePanel = this.saveActivePanel.bind(this);
+    this.deleteActivePanel = this.deleteActivePanel.bind(this);
+    this.newActivePanel = this.newActivePanel.bind(this);
   }
 
   componentDidMount() {
@@ -377,7 +379,7 @@ class Flowbokop extends React.Component {
         activePanelState.data.input = JSON.parse(activePanelState.data.input);
       }
     }
-    if (activePanelInd <= panelState.length) {
+    if (activePanelInd < panelState.length) {
       // Check if "output" name for block changed and rename
       // the matching input in all other blocks (only if editing existing block)
       let outputLabelSelector;
@@ -412,6 +414,60 @@ class Flowbokop extends React.Component {
     }
     panelState[this.state.activePanelInd] = activePanelState;
     this.setState({ panelState }, this.getGraph);
+  }
+
+  deleteActivePanel() {
+    const panelState = _.cloneDeep(this.state.panelState);
+    let activePanelState = _.cloneDeep(this.state.activePanelState);
+    let { activePanelInd } = this.state;
+    // Handle if deleting an existing node in graph
+    if (activePanelInd < panelState.length) {
+      panelState.splice(activePanelInd, 1); // Delete the panel
+      activePanelInd = activePanelInd > 0 ? activePanelInd - 1 : 0;
+      if (panelState.length >= activePanelInd + 1) {
+        activePanelState = _.cloneDeep(panelState[activePanelInd]);
+      } else {
+        activePanelState = {};
+      }
+    } else {
+      // Handle when deleting new node panel (that was not patched into panelState)
+      activePanelInd = 0;
+      activePanelState = panelState.length > 0 ? _.cloneDeep(panelState[activePanelInd]) : {};
+    }
+    this.setState({ activePanelInd, activePanelState, panelState }, this.getGraph);
+  }
+
+  newActivePanel(panelType) {
+    const activePanelInd = this.state.panelState.length;
+    const activePanelState = (panelType.toLowerCase() === 'input') ? this.defaultInputPanelState() : this.defaultOperationPanelState();
+    this.setState({ activePanelInd, activePanelState });
+  }
+
+  defaultInputPanelState() {
+    return (
+      { 
+        inputType: 'input',
+        locked: true,
+        inputLabel: '',
+        data: [{ type: 'disease', curie: '', label: '' }],
+      }
+    );
+  }
+
+  defaultOperationPanelState() {
+    return (
+      {
+        inputType: 'operation',
+        locked: true,
+        data: {
+          input: '',
+          output: '',
+          label: '',
+          service: '',
+          options: '',
+        },
+      }
+    );
   }
 
   onChangeInputLabel(newLabel) {
@@ -508,10 +564,10 @@ class Flowbokop extends React.Component {
                       <FaTrash style={{ verticalAlign: 'text-top' }} />{' Delete'}
                     </Button>
                   }
-                  <Button>
+                  <Button onClick={() => this.newActivePanel('input')}>
                     <FaPlus style={{ verticalAlign: 'text-top' }} />{' New Input'}
                   </Button>
-                  <Button>
+                  <Button onClick={() => this.newActivePanel('operation')}>
                     <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{' New Operation'}
                   </Button>
                   <Button>

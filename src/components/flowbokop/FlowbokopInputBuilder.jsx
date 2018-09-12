@@ -79,6 +79,7 @@ class FlowbokopInputBuilder extends React.Component {
         dataReady: true,
       });
     });
+    console.log('InputBuilder Mounted');
   }
 
   componentWillReceiveProps(nextProps) {
@@ -91,7 +92,11 @@ class FlowbokopInputBuilder extends React.Component {
       } else {
         inputCurieList = this.submittedJSONFromCurieList(nextProps.inputCurieList);
       }
-      const keys = inputCurieList.map(() => shortid.generate());
+      let { keys } = this.state;
+      // Only regenerate keys if different number of input Curie lists are in the new props
+      if (this.state.submittedJSON.length !== inputCurieList.length) {
+        keys = inputCurieList.map(() => shortid.generate());
+      }
       this.setState(
         { submittedJSON: inputCurieList, keys },
         () => this.props.onChangeHook(this.curieListFromSubmittedJSON()),
@@ -106,6 +111,7 @@ class FlowbokopInputBuilder extends React.Component {
     return { type: 'disease', term: '', curie: '' };
   }
   deleteCurie(i) {
+    console.log('FlowbokopInputBuilder::deleteCurie() executed');
     const submittedJSON = _.cloneDeep(this.state.submittedJSON);
     const keys = _.cloneDeep(this.state.keys);
     submittedJSON.splice(i, 1);
@@ -116,6 +122,7 @@ class FlowbokopInputBuilder extends React.Component {
     );
   }
   addCurie() {
+    console.log('FlowbokopInputBuilder::addCurie() executed');
     const submittedJSON = _.cloneDeep(this.state.submittedJSON);
     const keys = _.cloneDeep(this.state.keys);
     submittedJSON.push(this.defaultCurie());
@@ -126,11 +133,15 @@ class FlowbokopInputBuilder extends React.Component {
     );
   }
   updateCurie(i, type, term, curie) {
+    console.log('FlowbokopInputBuilder::updateCurie() executed', this.state.keys);
     const submittedJSON = _.cloneDeep(this.state.submittedJSON);
     submittedJSON[i] = { type, term, curie };
     this.setState(
       { submittedJSON },
-      () => this.props.onChangeHook(this.curieListFromSubmittedJSON()),
+      () => {
+        this.props.onChangeHook(this.curieListFromSubmittedJSON());
+        console.log(this.state.keys);
+      },
     );
   }
   curieListFromSubmittedJSON() {
