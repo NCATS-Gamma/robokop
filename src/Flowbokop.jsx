@@ -48,11 +48,13 @@ const workflowInputsToPanelState = (workflowInput) => {
   if (Object.hasOwnProperty.call(workflowInput, 'input')) {
     const inputLabels = Object.keys(workflowInput.input);
     inputLabels.forEach((inputLabel) => {
+      const isCurieListArray = Array.isArray(workflowInput.input[inputLabel]);
+      // Ensure data is always an array
       panelState.push({
         inputType: 'input',
         locked: true,
         inputLabel,
-        data: workflowInput.input[inputLabel],
+        data: isCurieListArray ? workflowInput.input[inputLabel] : [workflowInput.input[inputLabel]],
       });
     });
   }
@@ -435,6 +437,21 @@ class Flowbokop extends React.Component {
     });
   }
 
+  // Report if current panel has unsaved changes
+  isUnsavedChanges() {
+    const { activePanelState, activePanelInd, panelState } = this.state;
+    if (panelState.length === 0) {
+      if (!_.isEmpty(activePanelState)) {
+        return true;
+      }
+      return false;
+    }
+    if (_.isEqual(activePanelState, panelState[activePanelInd])) {
+      return false;
+    }
+    return true;
+  }
+
   renderLoading() {
     return (
       <Loading />
@@ -442,6 +459,7 @@ class Flowbokop extends React.Component {
   }
 
   renderLoaded() {
+    const unsavedChanges = this.isUnsavedChanges();
     return (
       <div>
         <Header
@@ -506,7 +524,12 @@ class Flowbokop extends React.Component {
               <div style={{ marginTop: '0px', marginBottom: '6px' }}>
                 <ButtonGroup>
                   {!_.isEmpty(this.state.activePanelState) &&
-                    <Button onClick={this.saveActivePanel}>
+                    <Button
+                      onClick={this.saveActivePanel}
+                      disabled={!unsavedChanges}
+                      bsStyle={unsavedChanges ? 'primary' : 'default'}
+                      title={unsavedChanges ? 'Save changes' : 'No changes to save'}
+                    >
                       <FaFloppyO style={{ verticalAlign: 'text-top' }} />
                       {' Save'}
                     </Button>

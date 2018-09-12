@@ -129,7 +129,7 @@ class FlowbokopOperationBuilder extends React.Component {
             classNames={classNames}
           >
             <FormControl
-              type="textarea"
+              componentClass="textarea"
               value={options}
               // placeholder={''}
               onChange={this.onChangeFactory('options')}
