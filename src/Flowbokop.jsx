@@ -114,6 +114,49 @@ const demoWorkflowInputs = {
   },
 };
 
+// Buttons displayed in title-bar of Graph Viewer
+const GraphTitleButtons = ({ onDropFile, onDownloadWorkflow, onResetGraph }) => {
+  const buttonStyles = { padding: '2px', marginLeft: '5px' };
+  return (
+    <div style={{ position: 'relative', float: 'right', top: '-3px' }}>
+      <div
+        style={buttonStyles}
+        className="btn btn-default"
+      >
+        <span style={{ fontSize: '22px' }} title="Import Workflow">
+          <Dropzone
+            onDrop={onDropFile}
+            // onClick={() => this.setState({ graphState: graphStates.fetching })}
+            multiple={false}
+            style={{
+              border: 'none',
+            }}
+          >
+            <FaUpload style={{ cursor: 'pointer' }} onClick={() => {}} />
+          </Dropzone>
+        </span>
+      </div>
+      <div
+        style={buttonStyles}
+        className="btn btn-default"
+      >
+        <span style={{ fontSize: '22px' }} title="Download Workflow">
+          <FaDownload style={{ cursor: 'pointer' }} onClick={onDownloadWorkflow} />
+        </span>
+      </div>
+      {/* Delete/ Reset Graph Button */}
+      <div
+        style={buttonStyles}
+        className="btn btn-default"
+      >
+        <span style={{ fontSize: '22px' }} title="Reset to Blank Graph">
+          <FaTrash style={{ cursor: 'pointer' }} onClick={onResetGraph} />
+        </span>
+      </div>
+    </div>
+  );
+};
+
 const defaultProps = {
   workflowInputs: {}, // workflowInputs can be seeded externally if desired
 };
@@ -156,6 +199,7 @@ class Flowbokop extends React.Component {
     this.newActivePanel = this.newActivePanel.bind(this);
     this.onDownloadWorkflow = this.onDownloadWorkflow.bind(this);
     this.onDropFile = this.onDropFile.bind(this);
+    this.onResetGraph = this.onResetGraph.bind(this);
     // this.onOperationPanelInputSelect = this.onOperationPanelInputSelect.bind(this);
   }
 
@@ -454,6 +498,17 @@ class Flowbokop extends React.Component {
     });
   }
 
+  onResetGraph() {
+    this.setState({
+      queryGraph: this.getEmptyGraph(),
+      activePanelState: {},
+      activePanelInd: 0,
+      graphState: graphStates.empty,
+      panelState: [],
+      inputLabelList: [],
+    });
+  }
+
   // Report if current panel has unsaved changes
   isUnsavedChanges() {
     const { activePanelState, activePanelInd, panelState } = this.state;
@@ -511,37 +566,11 @@ class Flowbokop extends React.Component {
                 <Panel.Heading>
                   <Panel.Title>
                     Flowbokop Operation Graph
-                    <div style={{ position: 'relative', float: 'right' }}>
-                      <div
-                        style={{
-                          position: 'absolute', top: -3, right: 0, padding: '2px',
-                        }}
-                        className="btn btn-default"
-                      >
-                        <span style={{ fontSize: '22px' }} title="Download Workflow">
-                          <FaDownload style={{ cursor: 'pointer' }} onClick={this.onDownloadWorkflow} />
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          position: 'absolute', top: -3, right: 32, padding: '2px',
-                        }}
-                        className="btn btn-default"
-                      >
-                        <span style={{ fontSize: '22px' }} title="Import Workflow">
-                          <Dropzone
-                            onDrop={this.onDropFile}
-                            onClick={() => this.setState({ graphState: graphStates.fetching })}
-                            multiple={false}
-                            style={{
-                              border: 'none',
-                            }}
-                          >
-                            <FaUpload style={{ cursor: 'pointer' }} onClick={() => {}} />
-                          </Dropzone>
-                        </span>
-                      </div>
-                    </div>
+                    <GraphTitleButtons
+                      onDownloadWorkflow={this.onDownloadWorkflow}
+                      onDropFile={this.onDropFile}
+                      onResetGraph={this.onResetGraph}
+                    />
                   </Panel.Title>
                 </Panel.Heading>
                 <Panel.Body style={{ padding: '0px' }}>
