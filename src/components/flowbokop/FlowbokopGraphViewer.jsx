@@ -9,6 +9,7 @@ const _ = require('lodash');
 const queryColorMap = {
   input: '#b3de69',
   operation: '#fed9a6',
+  output: '#b3cde3',
 };
 
 const propTypes = {
@@ -18,11 +19,15 @@ const propTypes = {
     nodes: PropTypes.array,
     edges: PropTypes.array,
   }).isRequired,
+  nodeSelectCallback: PropTypes.func,
+  edgeSelectCallback: PropTypes.func,
 };
 
 const defaultProps = {
   height: 500,
   width: 500,
+  nodeSelectCallback: () => {},
+  edgeSelectCallback: () => {},
 };
 
 class FlowbokopGraphViewer extends React.Component {
@@ -32,8 +37,8 @@ class FlowbokopGraphViewer extends React.Component {
     this.setNetworkCallbacks = this.setNetworkCallbacks.bind(this);
     this.addTagsToGraph = this.addTagsToGraph.bind(this);
 
-    this.nodeSelectCallback = () => {};
-    this.edgeSelectCallback = () => {};
+    // this.nodeSelectCallback = (data) => { console.log(data); };
+    // this.edgeSelectCallback = () => {};
 
     this.graphOptions = {
       height: '500px',
@@ -68,8 +73,8 @@ class FlowbokopGraphViewer extends React.Component {
       layout: {
         hierarchical: {
           enabled: true,
-          levelSeparation: 150,
-          nodeSpacing: 100,
+          levelSeparation: 175,
+          nodeSpacing: 125,
           treeSpacing: 200,
           blockShifting: true,
           edgeMinimization: true,
@@ -80,9 +85,13 @@ class FlowbokopGraphViewer extends React.Component {
         improvedLayout: true,
       },
       edges: {
-        smooth: { type: 'continuous' },
+        // smooth: { type: 'continuous' },
+        smooth: false,
         length: 120,
         color: '#333333',
+        font: {
+          align: 'top',
+        },
       },
       nodes: {
         shape: 'box',
@@ -91,6 +100,7 @@ class FlowbokopGraphViewer extends React.Component {
       interaction: {
         hover: true,
         selectConnectedEdges: false,
+        tooltipDelay: 100,
       },
     };
   }
@@ -99,13 +109,13 @@ class FlowbokopGraphViewer extends React.Component {
     this.setNetworkCallbacks();
   }
 
-  // shouldComponentUpdate(nextProps) {
-  //   // Only redraw/remount component if graph components change
-  //   if (nextProps.showProgress === this.state.showProgress && _.isEqual(this.props.graph, nextProps.graph)) {
-  //     return false;
-  //   }
-  //   return true;
-  // }
+  shouldComponentUpdate(nextProps) {
+    // Only redraw/remount component if graph components change
+    if (!_.isEqual(this.props.graph, nextProps.graph)) {
+      return true;
+    }
+    return false;
+  }
 
   componentDidUpdate() {
     this.setNetworkCallbacks();
@@ -114,7 +124,7 @@ class FlowbokopGraphViewer extends React.Component {
   // Bind network fit callbacks to resize graph and cancel fit callbacks on start of zoom/pan
   setNetworkCallbacks() {
     if (!(this.network == null)) {
-      this.network.on('afterDrawing', () => this.network.fit());
+      // this.network.on('afterDrawing', () => this.network.fit()); // Causes CPU/GPU thrashing for some reason
       this.network.on('doubleClick', () => this.network.fit());
       this.network.on('zoom', () => this.network.off('afterDrawing'));
       this.network.on('dragStart', () => this.network.off('afterDrawing'));
@@ -126,14 +136,20 @@ class FlowbokopGraphViewer extends React.Component {
     // Adds vis.js specific tags primarily to style graph as desired
     const g = _.cloneDeep(graph);
     g.nodes = g.nodes.map((n) => {
-      const backgroundColor = queryColorMap[nodeType(n)];
+      const defaultBgColor = queryColorMap[nodeType(n)];
+      const backgroundColor = n.is_valid ? defaultBgColor : '#e5b7b7';
+      const borderColor = n.is_valid ? '#333333' : '#fc0000';
       n.color = {
-        border: '#333333',
+        border: borderColor,
         background: backgroundColor,
         highlight: { background: backgroundColor },
-        hover: { background: backgroundColor, border: '#333333' },
+        hover: { background: backgroundColor, border: borderColor },
       };
-      n.label = n.name;
+      // n.label = nodeType(n).charAt(0).toUpperCase() + nodeType(n).slice(1);
+      n.label = (!n.is_input && !n.is_output) ? n.name : (nodeType(n).charAt(0).toUpperCase() + nodeType(n).slice(1));
+      if (!n.is_valid) {
+        n.title = `<div class="vis-tooltip-inner invalid-node">${n.invalid_reason}</div>`;
+      }
       return n;
     });
 
@@ -160,7 +176,7 @@ class FlowbokopGraphViewer extends React.Component {
             graph={graph}
             options={this.graphOptions}
             style={{ width: this.props.width }}
-            events={{ selectNode: this.nodeSelectCallback, selectEdge: this.edgeSelectCallback }}
+            events={{ selectNode: this.props.nodeSelectCallback, selectEdge: this.props.edgeSelectCallback }}
             getNetwork={(network) => { this.network = network; }} // Store network reference in the component
           />
         </div>

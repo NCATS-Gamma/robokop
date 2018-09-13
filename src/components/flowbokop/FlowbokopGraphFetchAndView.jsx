@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Panel, Row, Col, Grid } from 'react-bootstrap';
 import { FaSpinner } from 'react-icons/lib/fa';
 
 import FlowbokopGraphViewer from './FlowbokopGraphViewer';
@@ -21,6 +20,8 @@ const propTypes = {
     nodes: PropTypes.array,
     edges: PropTypes.array,
   }).isRequired,
+  nodeSelectCallback: PropTypes.func,
+  edgeSelectCallback: PropTypes.func,
   // wait: ,
   // callbackRefresh: PropTypes.func,
   // concepts: ,
@@ -30,6 +31,8 @@ const defaultProps = {
   graphState: graphStates.display,
   height: null,
   width: null,
+  nodeSelectCallback: () => {},
+  edgeSelectCallback: () => {},
 };
 
 class FlowbokopGraphFetchAndView extends React.Component {
@@ -69,44 +72,37 @@ class FlowbokopGraphFetchAndView extends React.Component {
     const showGraph = (!(this.props.graph === null) && (this.props.graphState === graphStates.display));
     const showFetching = fetching;
 
-    const panelExtraStyle = { margin: 0 };
+    // const panelExtraStyle = { margin: 0 };
 
     const height = this.props.height ? this.props.height : this.getHeight();
     const width = this.props.width ? this.props.width : this.getWidth();
 
     return (
       <div id={this.divId}>
-        <Panel style={panelExtraStyle} expanded={showGraph}>
-          <Panel.Heading>
-            <Panel.Title>
-              Flowbokop Query Graph
-            </Panel.Title>
-          </Panel.Heading>
-          <Panel.Body style={{ padding: '0px' }}>
-            {showGraph &&
-              <FlowbokopGraphViewer
-                height={height}
-                width={width}
-                graph={this.props.graph}
-              />
-            }
-            {showFetching &&
-              <div style={{ margin: '15px', height, display: 'table', width: '100%' }}>
-                <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
-                  <FaSpinner className="icon-spin" style={{ marginRight: '10px', verticalAlign: 'text-top' }} />
-                  Graph update in progress... Please wait.
-                </div>
-              </div>
-            }
-            {notInitialized &&
-              <div style={{ margin: '15px', height, display: 'table', width: '100%' }}>
-                <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
-                  Please setup input(s) to generate query graph.
-                </div>
-              </div>
-            }
-          </Panel.Body>
-        </Panel>
+        {showGraph &&
+          <FlowbokopGraphViewer
+            height={height}
+            width={width}
+            graph={this.props.graph}
+            nodeSelectCallback={this.props.nodeSelectCallback}
+            edgeSelectCallback={this.props.edgeSelectCallback}
+          />
+        }
+        {showFetching &&
+          <div style={{ margin: '15px', height, display: 'table', width: '100%' }}>
+            <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+              <FaSpinner className="icon-spin" style={{ marginRight: '10px', verticalAlign: 'text-top' }} />
+              Graph update in progress... Please wait.
+            </div>
+          </div>
+        }
+        {notInitialized &&
+          <div style={{ margin: '15px', height, display: 'table', width: '100%' }}>
+            <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+              Please setup input(s) to generate query graph.
+            </div>
+          </div>
+        }
       </div>
     );
   }

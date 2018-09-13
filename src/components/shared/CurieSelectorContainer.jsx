@@ -52,7 +52,7 @@ class CurieSelectorContainter extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    console.log('in componentWillReceiveProps', nextProps.initialInputs, this.props.initialInputs);
+    // console.log('in componentWillReceiveProps', nextProps.initialInputs, this.props.initialInputs);
     if (!_.isEqual(nextProps.initialInputs, this.props.initialInputs)) {
       const { type, term, curie } = nextProps.initialInputs;
       this.setState(
