@@ -2,8 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Form, FormGroup, ControlLabel, FormControl, Button, Glyphicon } from 'react-bootstrap';
-import { AutoSizer } from 'react-virtualized';
-
+import FaPlus from 'react-icons/lib/fa/plus';
 import AppConfig from './../../AppConfig';
 import Loading from './../Loading';
 import LabeledFormGroup from './../shared/LabeledFormGroup';
@@ -168,93 +167,72 @@ class FlowbokopInputBuilder extends React.Component {
       submittedJSON = [submittedJSON];
     }
     if (Array.isArray(submittedJSON)) {
-      curieSelectorElements = width => (
-        submittedJSON.map((jsonBlob, i) => {
-          const curieSelectorElement = (
-            <div style={{ display: 'table-row' }} key={this.state.keys[i]} >
-              <div
-                style={{ display: 'table-cell', padding: '5px 0px' }}
-              >
-                <CurieSelectorContainer
-                  concepts={this.state.concepts}
-                  search={(input, nodeType) => this.onSearch(input, nodeType)}
-                  width={width - 40}
-                  displayType
-                  initialInputs={jsonBlob}
-                  onChangeHook={(ty, te, cu) => this.updateCurie(i, ty, te, cu)}
-                />
-              </div>
-              <div
-                style={{
-                  display: 'table-cell', width: '30px', verticalAlign: 'middle', paddingLeft: '10px',
-                }}
-              >
-                {(i !== 0) &&
-                  <Button
-                    bsStyle="default"
-                    onClick={() => this.deleteCurie(i)}
-                    style={{ padding: '8px' }}
-                  >
-                    <Glyphicon glyph="trash" />
-                  </Button>
-                }
-              </div>
+      curieSelectorElements = submittedJSON.map((jsonBlob, i) => {
+        const curieSelectorElement = (
+          <div style={{ display: 'table-row' }} key={this.state.keys[i]} >
+            <div
+              style={{ display: 'table-cell', padding: '5px 0px' }}
+            >
+              <CurieSelectorContainer
+                concepts={this.state.concepts}
+                search={this.onSearch}
+                // width={width - 40}
+                displayType
+                initialInputs={jsonBlob}
+                onChangeHook={(ty, te, cu) => this.updateCurie(i, ty, te, cu)}
+              />
             </div>
-          );
-          return curieSelectorElement;
-        })
-      );
+            <div
+              style={{
+                display: 'table-cell', width: '30px', verticalAlign: 'middle', paddingLeft: '10px',
+              }}
+            >
+              {(i !== 0) &&
+                <Button
+                  bsStyle="default"
+                  onClick={() => this.deleteCurie(i)}
+                  style={{ padding: '8px' }}
+                >
+                  <Glyphicon glyph="trash" />
+                </Button>
+              }
+            </div>
+          </div>
+        );
+        return curieSelectorElement;
+      })
     }
     const classNames = {
       formLabel: 'col-md-2 form-label',
       formControl: 'col-md-10',
     };
     return (
-      <div>
-        <AutoSizer disableHeight>
-          {({ width }) => (
-            <div
-              id="searchBionames"
-            >
-              <Form horizontal>
-                <LabeledFormGroup
-                  formLabel="Input"
-                  value={this.props.inputLabel}
-                  // validationHookFn={validationState => this.updateValidationStatus('input', validationState)}
-                  classNames={classNames}
-                >
-                  <FormControl
-                    type="text"
-                    value={this.props.inputLabel}
-                    // placeholder={''}
-                    onChange={this.props.onChangeLabel}
-                  />
-                </LabeledFormGroup>
-                {/* <FormGroup controlId="formInlineInputLabel">
-                  <ControlLabel>Input Label:</ControlLabel>{' '}
-                  <FormControl
-                    type="text"
-                    value={this.props.inputLabel}
-                    onChange={this.props.onChangeLabel}
-                  />
-                </FormGroup> */}
-              </Form>
-              <div style={{ display: 'table' }}>
-                {curieSelectorElements(width)}
-                <div style={{ display: 'table-row', textAlign: 'center' }}>
-                  <Button
-                    bsStyle="default"
-                    bsSize="sm"
-                    style={{ marginTop: '20px' }}
-                    onClick={() => this.addCurie()}
-                  >
-                    <Glyphicon glyph="plus" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-        </AutoSizer>
+      <div
+        id="searchBionames"
+      >
+        <Form horizontal>
+          <LabeledFormGroup
+            formLabel="Input"
+            value={this.props.inputLabel}
+            // validationHookFn={validationState => this.updateValidationStatus('input', validationState)}
+            classNames={classNames}
+          >
+            <FormControl
+              type="text"
+              value={this.props.inputLabel}
+              // placeholder={''}
+              onChange={this.props.onChangeLabel}
+            />
+          </LabeledFormGroup>
+        </Form>
+        <div style={{ display: 'table', width: '100%' }}>
+          {curieSelectorElements}
+          <div style={{ display: 'table-row', textAlign: 'center' }}>
+            <Button style={{ marginTop: '10px' }} onClick={this.addCurie}>
+              <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Curie'}
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }

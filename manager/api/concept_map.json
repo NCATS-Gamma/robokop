@@ -1,0 +1,71 @@
+{
+    "anatomical_entity": [
+        "anatomical_entity"
+    ],
+    "biological_entity": [
+        "anatomical_entity",
+        "biological_process_or_activity",
+        "chemical_substance",
+        "disease",
+        "gene",
+        "phenotypic_feature"
+    ],
+    "biological_process": [
+        "biological_process"
+    ],
+    "biological_process_or_activity": [
+        "biological_process_or_activity"
+    ],
+    "cell": [
+        "cell"
+    ],
+    "cellular_component": [
+        "anatomical_entity"
+    ],
+    "chemical_substance": [
+        "chemical_substance"
+    ],
+    "disease": [
+        "disease"
+    ],
+    "disease_or_phenotypic_feature": [
+        "disease",
+        "phenotypic_feature"
+    ],
+    "drug": [
+        "chemical_substance"
+    ],
+    "gene": [
+        "gene"
+    ],
+    "genetic_condition": [
+        "genetic_condition"
+    ],
+    "gross_anatomical_structure": [
+        "anatomical_entity"
+    ],
+    "metabolite": [
+        "metabolite"
+    ],
+    "molecular_activity": [
+        "molecular_activity"
+    ],
+    "molecular_entity": [
+        "chemical_substance",
+        "gene"
+    ],
+    "named_thing": [
+        "anatomical_entity",
+        "biological_process_or_activity",
+        "chemical_substance",
+        "disease",
+        "gene",
+        "phenotypic_feature"
+    ],
+    "pathway": [
+        "biological_process"
+    ],
+    "phenotypic_feature": [
+        "phenotypic_feature"
+    ]
+}

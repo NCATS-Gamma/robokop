@@ -67,9 +67,12 @@ def answer_question(self, question_id, user_email=None):
         else:
             raise RuntimeError("Question answering has not completed after 1 day. It will continue working, but will not be monitored from here.")
 
-        answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{response.json()['task_id']}")
+        response = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{response.json()['task_id']}")
+        answerset_json = response.json()
 
-        answerset = Answerset(answerset_json.json())
+        if not answerset_json['answers']:
+            raise NoAnswersException("Question answering complete, found 0 answers.")
+        answerset = Answerset(answerset_json)
         session.add(answerset)  # this might be redundant given the following
         question.answersets.append(answerset)
 
