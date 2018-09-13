@@ -343,35 +343,52 @@ class EnrichedExpansion(Resource):
             type: string
             required: true
             default: "disease"
-          - in: json
-            name: threshhold
-            description: "Number between 0 and 1 indicating the minimum similarity to return"
-            type: float
-            default: 0.5
-          - in: json
-            name: maxresults
-            description: "The maximum number of results to return. Set to 0 to return all results."
-            type: integer
-            default: 100
-          - in: json
-            name: identifiers
-            description: "The entities being enriched"
-            type: list
-            required: true
-          - in: json
-            name: include_descendants
-            description: "Extend the starting entities to use all of their descendants as well"
-            type: boolean
-            default: false
-          - in: json
-            name: numtype1
-            description: "The total number of entities of type 1 that exist"
-            default: Uses a value based on querying the cache
-          - in: json
-            name: rebuild
-            description: "Rebuild local knowledge graph for this similarity search"
-            type: boolean
-            default: false
+          - in: body
+            name: all_the_things
+            description: "This should probably be a schema object"
+            schema:
+                type: object
+                properties:
+                    threshhold:
+                        description: "Number between 0 and 1 indicating the minimum similarity to return"
+                        type: number
+                        default: 0.5
+                    maxresults:
+                        description: "The maximum number of results to return. Set to 0 to return all results."
+                        type: integer
+                        default: 100
+                    identifiers:
+                        description: "The entities being enriched"
+                        type: array
+                        items:
+                            type: string
+                        required: true
+                    include_descendants:
+                        description: "Extend the starting entities to use all of their descendants as well"
+                        type: boolean
+                        default: false
+                    numtype1:
+                        type: integer
+                        description: "The total number of entities of type 1 that exist. By default uses a value based on querying the cache"
+                    rebuild:
+                        description: "Rebuild local knowledge graph for this similarity search"
+                        type: boolean
+                        default: false
+                example:
+                    threshhold: 0.5
+                    maxresults: 100
+                    identifiers: ["MONDO:0014683", "MONDO:0005737"]
+                    include_descendants: false
+                    rebuild: false
+        responses:
+            200:
+                description: answers
+                type: object
+                properties:
+                    answers:
+                        type: array
+                        items:
+                            $ref: '#/definitions/Answer'
         """
         parameters = request.json
         identifiers = parameters['identifiers']

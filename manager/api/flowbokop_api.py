@@ -168,6 +168,163 @@ class FlowbokopExpand(Resource):
 
 api.add_resource(FlowbokopExpand, '/flowbokop/expand/<type1>/<type2>/')
 
+class FlowbokopSimilarity(Resource):
+    def post(self, type1, type2, by_type):
+        """
+        Use robokop as a flowbokop service
+        ---
+        tags: [flowbokop]
+        parameters:
+          - in: body
+            name: Flowbokop service input
+            description: An object that specifes input curies and options
+            schema:
+                $ref: '#/definitions/FlowbokopServiceInput'
+            required: true
+          - in: path
+            name: type1
+            description: "type of query node"
+            type: string
+            required: true
+            default: "disease"
+          - in: path
+            name: type2
+            description: "type of return nodes"
+            type: string
+            required: true
+            default: "disease"
+          - in: path
+            name: by_type
+            description: "type used to evaluate similarity"
+            type: string
+            required: true
+            default: "phenotypic_feature"
+        responses:
+            200:
+                description: A curie list
+                type: object
+                properties:
+                    curies:
+                        type: array
+                        items:
+                            type: string
+        """
+
+        data = request.json
+        in_curies = CurieSet(data['input'])
+        in_curies_list = CurieSet.to_curie_list(in_curies)
+
+        options = data['options']
+        # threshhold: "Number between 0 and 1 indicating the minimum similarity to return"
+        #     type: float
+        #     default: 0.5
+        # maxresults: "The maximum number of results to return. Set to 0 to return all results."
+        #     type: integer
+        #     default: 100
+        # csv
+        #     type: boolean
+        #     default: true
+        # rebuild: "Rebuild local knowledge graph for this similarity search"
+        #     type: boolean
+        #     default: false
+
+        out_curies = []
+        for curie_dict in in_curies_list:
+            url = f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/simple/similarity/{type1}/{curie_dict["curie"]}/{type2}/{by_type}'
+            option_string = [f'{key}={options[key]}' for key in options]
+            if option_string:
+                url += '?' + '&'.join(option_string)
+            logger.debug(f"Calling robokop/similarity with {url}")
+
+            response = requests.get(url)
+            if response.status_code >= 300:
+                raise RuntimeError(response.text)
+            nodes = response.json()
+            for node in nodes:
+                curie_dict = {
+                    "label": node['name'] if 'name' in node else '',
+                    "curie": node['id']
+                }
+                out_curies.append(curie_dict)
+        return out_curies
+
+api.add_resource(FlowbokopSimilarity, '/flowbokop/similarity/<type1>/<type2>/<by_type>')
+
+
+class FlowbokopEnrichment(Resource):
+    def post(self, type1, type2):
+        """
+        Use robokop as a flowbokop service
+        ---
+        tags: [flowbokop]
+        parameters:
+          - in: body
+            name: Flowbokop service input
+            description: An object that specifes input curies and options
+            schema:
+                $ref: '#/definitions/FlowbokopServiceInput'
+            required: true
+          - in: path
+            name: type1
+            description: "type of query node"
+            type: string
+            required: true
+            default: "disease"
+          - in: path
+            name: type2
+            description: "type of return nodes"
+            type: string
+            required: true
+            default: "phenotypic_feature"
+        responses:
+            200:
+                description: A curie list
+                type: object
+                properties:
+                    curies:
+                        type: array
+                        items:
+                            type: string
+        """
+
+        data = request.json
+        in_curies = CurieSet(data['input'])
+        in_curies_list = CurieSet.to_curie_list(in_curies)
+
+        data = data['options']
+        # threshhold: "Number between 0 and 1 indicating the minimum similarity to return"
+        #     type: float
+        #     default: 0.5
+        # maxresults: "The maximum number of results to return. Set to 0 to return all results."
+        #     type: integer
+        #     default: 100
+        # include_descendants: "Extend the starting entities to use all of their descendants as well"
+        #     type: boolean
+        #     default: false
+        # numtype1: "The total number of entities of type 1 that exist"
+        #     default: Uses a value based on querying the cache
+        # rebuild: "Rebuild local knowledge graph for this similarity search"
+        #     type: boolean
+        #     default: false
+
+        out_curies = []
+        data['identifiers'] = [n['curie'] for n in in_curies_list]
+        url = f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/simple/enriched/{type1}/{type2}'
+
+        response = requests.post(url, json=data)
+        if response.status_code >= 300:
+            raise RuntimeError(response.text)
+        nodes = response.json()
+        for node in nodes:
+            curie_dict = {
+                "label": node['name'] if 'name' in node else '',
+                "curie": node['id']
+            }
+            out_curies.append(curie_dict)
+        return out_curies
+
+api.add_resource(FlowbokopEnrichment, '/flowbokop/enrichment/<type1>/<type2>')
+
 class FlowbokopRobokop(Resource):
     def post(self):
         """
@@ -196,9 +353,9 @@ class FlowbokopRobokop(Resource):
             json=question)
         if response.status_code < 300:
             answerset = response.json()
-        else: 
+        else:
             raise RuntimeError(response.text)
-        
+
         out_curies = []
         for answer in answerset['answers']:
             node = answer['nodes'][-1]
