@@ -217,6 +217,14 @@ div.vis-tooltip .invalid-node {
   box-shadow: none;
 }
 
+/* Form Validation Color for MultiSelect component from react-widgets*/
+.rw-widget-container.valid {
+  border-color: #3c763d;
+}
+.rw-widget-container.invalid {
+  border-color: #a94442;
+}
+
 /* Custom "icon-spin" class that spins the icon 360 degrees */
 .icon-spin {
   -webkit-animation: icon-spin 2s infinite linear;

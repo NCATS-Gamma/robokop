@@ -82,7 +82,7 @@ class FlowbokopGraphViewer extends React.Component {
           direction: 'LR',        // UD, DU, LR, RL
           sortMethod: 'directed',  // hubsize, directed
         },
-        improvedLayout: false,
+        improvedLayout: true,
       },
       edges: {
         // smooth: { type: 'continuous' },

@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { Form, FormControl } from 'react-bootstrap';
+import Multiselect from 'react-widgets/lib/Multiselect';
 // import { AutoSizer } from 'react-virtualized';
 import LabeledFormGroup from './../shared/LabeledFormGroup';
 
@@ -18,10 +19,13 @@ const propTypes = {
     }).isRequired,
   }).isRequired,
   onChangeHook: PropTypes.func, // Form of ({input, output, service, options}) => {}
+  // onInputSelect: PropTypes.func, // Callback when input(s) selection changes (value) => {}
+  inputLabelList: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 const defaultProps = {
   onChangeHook: () => {},
+  // onInputSelect: () => {},
 };
 
 const classNames = {
@@ -57,19 +61,24 @@ class FlowbokopOperationBuilder extends React.Component {
     // an up to data object of form { input, output, label, service, options }
     return (event) => {
       const defaultObj = _.cloneDeep(this.props.panelObj.data);
-      defaultObj[tag] = event.target.value;
-      // defaultObj.input = JSON.parse(defaultObj.input);
+      if (tag === 'input') {
+        // This is a callback from MultiSelect input selector component
+        defaultObj.input = event;
+      } else {
+        defaultObj[tag] = event.target.value;
+      }
       this.props.onChangeHook(defaultObj);
     };
   }
 
   render() {
-    const { input, output, label, service, options } = this.props.panelObj.data;
-    const isInputArray = Array.isArray(input);
+    const { input: inp, output, label, service, options } = this.props.panelObj.data;
+    const isInputArray = Array.isArray(inp);
+    const input = isInputArray ? inp : [inp];
     return (
       <div>
         <Form horizontal>
-          <LabeledFormGroup
+          {/* <LabeledFormGroup
             formLabel="Input"
             value={isInputArray ? JSON.stringify(input) : input}
             validationHookFn={validationState => this.updateValidationStatus('input', validationState)}
@@ -80,6 +89,20 @@ class FlowbokopOperationBuilder extends React.Component {
               value={isInputArray ? JSON.stringify(input) : input}
               // placeholder={''}
               onChange={this.onChangeFactory('input')}
+            />
+          </LabeledFormGroup> */}
+          <LabeledFormGroup
+            formLabel="Input"
+            value={JSON.stringify(input)}
+            validationHookFn={validationState => this.updateValidationStatus('input', validationState)}
+            classNames={classNames}
+          >
+            <Multiselect
+              data={this.props.inputLabelList}
+              value={input}
+              filter="contains"
+              onChange={this.onChangeFactory('input')}
+              containerClassName={input.length > 0 ? 'valid' : 'invalid'}
             />
           </LabeledFormGroup>
           <LabeledFormGroup

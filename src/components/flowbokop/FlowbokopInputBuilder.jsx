@@ -6,7 +6,7 @@ import { AutoSizer } from 'react-virtualized';
 
 import AppConfig from './../../AppConfig';
 import Loading from './../Loading';
-
+import LabeledFormGroup from './../shared/LabeledFormGroup';
 import CurieSelectorContainer from './../shared/CurieSelectorContainer';
 
 const _ = require('lodash');
@@ -205,6 +205,10 @@ class FlowbokopInputBuilder extends React.Component {
         })
       );
     }
+    const classNames = {
+      formLabel: 'col-md-2 form-label',
+      formControl: 'col-md-10',
+    };
     return (
       <div>
         <AutoSizer disableHeight>
@@ -212,15 +216,28 @@ class FlowbokopInputBuilder extends React.Component {
             <div
               id="searchBionames"
             >
-              <Form inline>
-                <FormGroup controlId="formInlineInputLabel">
+              <Form horizontal>
+                <LabeledFormGroup
+                  formLabel="Input"
+                  value={this.props.inputLabel}
+                  // validationHookFn={validationState => this.updateValidationStatus('input', validationState)}
+                  classNames={classNames}
+                >
+                  <FormControl
+                    type="text"
+                    value={this.props.inputLabel}
+                    // placeholder={''}
+                    onChange={this.props.onChangeLabel}
+                  />
+                </LabeledFormGroup>
+                {/* <FormGroup controlId="formInlineInputLabel">
                   <ControlLabel>Input Label:</ControlLabel>{' '}
                   <FormControl
                     type="text"
                     value={this.props.inputLabel}
                     onChange={this.props.onChangeLabel}
                   />
-                </FormGroup>
+                </FormGroup> */}
               </Form>
               <div style={{ display: 'table' }}>
                 {curieSelectorElements(width)}

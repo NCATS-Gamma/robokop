@@ -43,8 +43,9 @@ const panelStateToWorkflowInputs = (panelSt) => {
 
 // Convert WorkflowInput representation for Flowbokop into internal panel state
 // representation
-const workflowInputsToPanelState = (workflowInput) => {
+const workflowInputsToPanelState = (workflowInp) => {
   const panelState = [];
+  const workflowInput = _.cloneDeep(workflowInp);
   if (Object.hasOwnProperty.call(workflowInput, 'input')) {
     const inputLabels = Object.keys(workflowInput.input);
     inputLabels.forEach((inputLabel) => {
@@ -62,9 +63,14 @@ const workflowInputsToPanelState = (workflowInput) => {
     if (Object.hasOwnProperty.call(workflowInput.options, 'operations')) {
       workflowInput.options.operations.forEach((operationData) => {
         let options = '';
+        // Always convert input(s) into a list of string(s)
+        if (typeof operationData.input === 'string' || operationData.input instanceof String) {
+          operationData.input = [operationData.input];
+        }
         if (Object.hasOwnProperty.call(operationData, 'options')) {
           if (typeof operationData.options === 'string' || operationData.options instanceof String) {
-            options = { operationData };
+            // options = { operationData };
+            ({ options } = operationData);
           }
         }
         panelState.push({
@@ -129,6 +135,8 @@ class Flowbokop extends React.Component {
 
       activePanelInd: 0,
       activePanelState: {},
+
+      inputLabelList: [],
     };
 
     // Set activePanelState appropriately
@@ -148,6 +156,7 @@ class Flowbokop extends React.Component {
     this.newActivePanel = this.newActivePanel.bind(this);
     this.onDownloadWorkflow = this.onDownloadWorkflow.bind(this);
     this.onDropFile = this.onDropFile.bind(this);
+    // this.onOperationPanelInputSelect = this.onOperationPanelInputSelect.bind(this);
   }
 
   componentDidMount() {
@@ -161,6 +170,7 @@ class Flowbokop extends React.Component {
         dataReady: true,
       });
     });
+    this.updateInputList();
     this.getGraph();
   }
 
@@ -224,7 +234,9 @@ class Flowbokop extends React.Component {
         <Panel.Body>
           <FlowbokopOperationBuilder
             onChangeHook={this.onOperationBuilderChange}
+            onInputSelect={this.onOperationPanelInputSelect}
             panelObj={panelObj}
+            inputLabelList={this.state.inputLabelList}
           />
         </Panel.Body>
       </Panel>
@@ -279,6 +291,7 @@ class Flowbokop extends React.Component {
       }
     }
     panelState[this.state.activePanelInd] = activePanelState;
+    this.updateInputList(panelState);
     this.setState({ panelState }, this.getGraph);
   }
 
@@ -300,6 +313,7 @@ class Flowbokop extends React.Component {
       activePanelInd = 0;
       activePanelState = panelState.length > 0 ? _.cloneDeep(panelState[activePanelInd]) : {};
     }
+    this.updateInputList(panelState);
     this.setState({ activePanelInd, activePanelState, panelState }, this.getGraph);
   }
 
@@ -326,7 +340,7 @@ class Flowbokop extends React.Component {
         inputType: 'operation',
         locked: true,
         data: {
-          input: '',
+          input: [],
           output: '',
           label: '',
           service: '',
@@ -424,14 +438,17 @@ class Flowbokop extends React.Component {
           const panelState = workflowInputsToPanelState(fileContentObj);
           const activePanelState = panelState.length > 0 ? panelState[0] : {};
           const activePanelInd = 0;
+          this.updateInputList(panelState);
           this.setState({ panelState, activePanelInd, activePanelState }, this.getGraph);
         } catch (err) {
           console.log(err);
           window.alert('Failed to read this workflow template. Are you sure this is valid?');
+          this.setState({ graphState: graphStates.empty });
         }
       };
       fr.onerror = () => {
         window.alert('Sorry but there was a problem uploading the file. The file may be invalid JSON.');
+        this.setState({ graphState: graphStates.empty });
       };
       fr.readAsText(file);
     });
@@ -451,6 +468,27 @@ class Flowbokop extends React.Component {
     }
     return true;
   }
+
+  updateInputList(panelSt) {
+    if (arguments.length === 0) {
+      panelSt = this.state.panelState; // eslint-disable-line no-param-reassign
+    }
+    let inputList = [];
+    const panelState = _.cloneDeep(panelSt);
+    panelState.forEach((panelObj) => {
+      const input = panelObj.inputType === 'input' ? panelObj.inputLabel : panelObj.data.output;
+      inputList.push(input);
+    });
+    inputList = Array.from(new Set(inputList)).sort();
+    this.setState({ inputLabelList: inputList });
+  }
+
+  // // Callback sent to MultiSelect component for input list specification in OperationBuilder
+  // onOperationPanelInputSelect(value) {
+  //   const activePanelState = _.cloneDeep(this.state.activePanelState);
+  //   activePanelState.data.output = value;
+  //   this.setState({ activePanelState });
+  // }
 
   renderLoading() {
     return (
@@ -493,6 +531,7 @@ class Flowbokop extends React.Component {
                         <span style={{ fontSize: '22px' }} title="Import Workflow">
                           <Dropzone
                             onDrop={this.onDropFile}
+                            onClick={() => this.setState({ graphState: graphStates.fetching })}
                             multiple={false}
                             style={{
                               border: 'none',
