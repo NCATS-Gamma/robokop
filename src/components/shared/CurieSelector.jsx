@@ -61,10 +61,10 @@ class CurieSelector extends React.Component {
     // this.input.focus();
   }
   componentDidUpdate(prevProps) {
-    if ((this.props.term !== prevProps.term) && (this.props.curie === '')) { // Re-do search if term changes
-      this.setState({ loadingOptions: true }, () => this.handleSearch(this.props.term, this.props.type));
-      // this.handleTermChange({ target: { value: this.props.term } });
-    }
+    // if ((this.props.term !== prevProps.term) && (this.props.curie === '')) { // Re-do search if term changes
+    //   this.setState({ loadingOptions: true }, () => this.handleSearch(this.props.term, this.props.type));
+    //   // this.handleTermChange({ target: { value: this.props.term } });
+    // }
   }
 
   // onInputFocus() {
