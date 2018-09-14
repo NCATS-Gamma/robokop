@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FormGroup, FormControl, InputGroup, DropdownButton, MenuItem, Glyphicon } from 'react-bootstrap';
+import { DropdownList } from 'react-widgets';
 
 import BionamesBrowser from './BionamesBrowser';
-
 import entityNameDisplay from '../util/entityNameDisplay';
 
 
@@ -40,6 +40,7 @@ class CurieSelector extends React.Component {
 
     this.handleSearch = this.handleSearch.bind(this);
     this.wrapSearch = this.wrapSearch.bind(this);
+    this.debouncedHandleSearch = _.debounce(this.handleSearch, 250);
     this.handleSelect = this.handleSelect.bind(this);
     this.handleTypeChange = this.handleTypeChange.bind(this);
     this.handleTermChange = this.handleTermChange.bind(this);
@@ -90,7 +91,7 @@ class CurieSelector extends React.Component {
   handleTermChange(event) {
     this.props.onTermChange(event);
     const term = event.target.value;
-    this.setState({ loadingOptions: true }, () => this.handleSearch(term, this.props.type));
+    this.setState({ loadingOptions: true }, () => this.debouncedHandleSearch(term, this.props.type));
   }
   handleTypeChange(type) {
     this.input.focus();
@@ -110,6 +111,7 @@ class CurieSelector extends React.Component {
     const {
       concepts, size, curie, type, term, onClear, displayType,
     } = this.props;
+    const dropDownObjList = concepts.map(c => ({ text: entityNameDisplay(c), value: c }));
     const typeOptions = concepts.map((c) => {
       const displayConcept = entityNameDisplay(c);
       return (
@@ -149,6 +151,18 @@ class CurieSelector extends React.Component {
           <FormGroup style={{ marginBottom: 0 }}>
             <InputGroup>
               {displayType &&
+                <DropdownList
+                  filter
+                  dropUp
+                  style={{ display: 'table-cell', verticalAlign: 'middle', width: '200px' }}
+                  data={dropDownObjList}
+                  textField="text"
+                  valueField="value"
+                  value={type}
+                  onChange={value => this.handleTypeChange(value.value)}
+                />
+              }
+              {/* {displayType &&
                 <DropdownButton
                   componentClass={InputGroup.Button}
                   id="input-dropdown-addon"
@@ -157,7 +171,7 @@ class CurieSelector extends React.Component {
                 >
                   {typeOptions}
                 </DropdownButton>
-              }
+              } */}
               <FormControl
                 type="text"
                 bsSize={size}
