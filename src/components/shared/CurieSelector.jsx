@@ -18,7 +18,7 @@ const propTypes = {
   onTypeChange: PropTypes.func.isRequired, // When type changed by drop-down selection
   onTermChange: PropTypes.func.isRequired, // When term input field is typed in
   onSelect: PropTypes.func.isRequired, // When entity is selected: (type, term, curie) => {}
-  displayType: PropTypes.bool, // Whether to display the Type drop-down
+  disableType: PropTypes.bool, // Whether to display the Type drop-down
   width: PropTypes.number,
   search: PropTypes.func,
   size: PropTypes.string, // undefined (default size) or 'small', 'xsmall', 'large'
@@ -27,7 +27,7 @@ const propTypes = {
 const defaultProps = {
   search: () => Promise.resolve({ options: [] }),
   width: 0, // will be ignored
-  displayType: true,
+  disableType: true,
 };
 
 class CurieSelector extends React.Component {
@@ -106,7 +106,7 @@ class CurieSelector extends React.Component {
 
   render() {
     const {
-      concepts, size, curie, type, term, onClear, displayType,
+      concepts, size, curie, type, term, onClear, disableType,
     } = this.props;
     const dropDownObjList = concepts.map(c => ({ text: entityNameDisplay(c), value: c }));
     const showOptions = curie === '';
@@ -130,25 +130,21 @@ class CurieSelector extends React.Component {
         <div>
           <FormGroup style={{ marginBottom: 0 }}>
             <InputGroup>
-              {displayType &&
-                <DropdownList
-                  filter
-                  dropUp
-                  style={{ display: 'table-cell', verticalAlign: 'middle', width: '200px' }}
-                  data={dropDownObjList}
-                  textField="text"
-                  valueField="value"
-                  value={type}
-                  onChange={value => this.handleTypeChange(value.value)}
-                />
-              }
+              <DropdownList
+                filter
+                dropUp
+                disabled={disableType}
+                style={{ display: 'table-cell', verticalAlign: 'middle', width: '200px' }}
+                data={dropDownObjList}
+                textField="text"
+                valueField="value"
+                value={type}
+                onChange={value => this.handleTypeChange(value.value)}
+              />
               <FormControl
                 type="text"
                 bsSize={size}
-                style={displayType ? {
-                  borderLeft: 0,
-                  borderRight: 0,
-                } : {}}
+                style={{ borderLeft: 0, borderRight: 0 }}
                 value={term}
                 inputRef={(ref) => {
                   this.input = ref;
