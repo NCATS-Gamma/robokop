@@ -1,11 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormGroup, FormControl, InputGroup, DropdownButton, MenuItem, Glyphicon } from 'react-bootstrap';
+import { FormGroup, FormControl, InputGroup, Glyphicon } from 'react-bootstrap';
 import { DropdownList } from 'react-widgets';
 
 import BionamesBrowser from './BionamesBrowser';
 import entityNameDisplay from '../util/entityNameDisplay';
 
+const _ = require('lodash');
 
 const propTypes = {
   term: PropTypes.string.isRequired,
@@ -44,11 +45,7 @@ class CurieSelector extends React.Component {
     this.handleSelect = this.handleSelect.bind(this);
     this.handleTypeChange = this.handleTypeChange.bind(this);
     this.handleTermChange = this.handleTermChange.bind(this);
-    // this.handleClear = this.handleClear.bind(this);
     this.handleReopen = this.handleReopen.bind(this);
-
-    // this.onInputFocus = this.onInputFocus.bind(this);
-    // this.onUnSelect = this.onUnSelect.bind(this);
 
     this.state = {
       options: null,
@@ -58,15 +55,15 @@ class CurieSelector extends React.Component {
     this.input = null; // Input reference for focusing
   }
 
-  componentDidMount() {
-    // this.input.focus();
-  }
-  componentDidUpdate(prevProps) {
-    // if ((this.props.term !== prevProps.term) && (this.props.curie === '')) { // Re-do search if term changes
-    //   this.setState({ loadingOptions: true }, () => this.handleSearch(this.props.term, this.props.type));
-    //   // this.handleTermChange({ target: { value: this.props.term } });
-    // }
-  }
+  // componentDidMount() {
+  //   // this.input.focus();
+  // }
+  // componentDidUpdate(prevProps) {
+  //   // if ((this.props.term !== prevProps.term) && (this.props.curie === '')) { // Re-do search if term changes
+  //   //   this.setState({ loadingOptions: true }, () => this.handleSearch(this.props.term, this.props.type));
+  //   //   // this.handleTermChange({ target: { value: this.props.term } });
+  //   // }
+  // }
 
   // onInputFocus() {
   //   this.setState({ showOptions: true }, () => { this.onUnSelect(); this.handleTermChange({ target: { value: this.state.term } }); });
@@ -112,23 +109,6 @@ class CurieSelector extends React.Component {
       concepts, size, curie, type, term, onClear, displayType,
     } = this.props;
     const dropDownObjList = concepts.map(c => ({ text: entityNameDisplay(c), value: c }));
-    const typeOptions = concepts.map((c) => {
-      const displayConcept = entityNameDisplay(c);
-      return (
-        <MenuItem
-          key={c}
-          onClick={() => this.handleTypeChange(c)}
-        >
-          {displayConcept}
-        </MenuItem>
-      );
-    });
-
-    // const {
-    //   showOptions, hasSelected, selected, displayType,
-    // } = this.state;
-
-    // const curie = hasSelected ? selected.curie : '';
     const showOptions = curie === '';
 
     // const showClearResultsIcon = (showOptions || !hasSelected);
@@ -162,16 +142,6 @@ class CurieSelector extends React.Component {
                   onChange={value => this.handleTypeChange(value.value)}
                 />
               }
-              {/* {displayType &&
-                <DropdownButton
-                  componentClass={InputGroup.Button}
-                  id="input-dropdown-addon"
-                  title={entityNameDisplay(type)}
-                  bsSize={size}
-                >
-                  {typeOptions}
-                </DropdownButton>
-              } */}
               <FormControl
                 type="text"
                 bsSize={size}
@@ -182,14 +152,6 @@ class CurieSelector extends React.Component {
                 value={term}
                 inputRef={(ref) => {
                   this.input = ref;
-                  // try {
-                  //   this.input.onfocus = this.onInputFocus;
-                  //   this.input.onblur = this.onInputBlur;
-                  // } catch (err) {
-                  //   // pass
-                  //   // On initial creation this might get called before everything is ready.
-                  //   // It will get called again.
-                  // }
                 }}
                 onChange={this.handleTermChange}
               />
