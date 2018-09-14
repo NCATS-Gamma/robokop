@@ -245,8 +245,10 @@ class Flowbokop extends React.Component {
     const panelObj = _.cloneDeep(activePanelState);
     const { inputType } = panelObj;
     if (inputType === 'input') {
-      const onCurieListChange = (inputCurieList) => {
-        panelObj.data = inputCurieList;
+      const onCurieListChange = ({ curieList, inputLabel, isValid }) => {
+        panelObj.data = curieList;
+        panelObj.inputLabel = inputLabel;
+        panelObj.isValid = isValid;
         this.updatePanelState(panelObj, activePanelInd);
       };
       return (
@@ -260,9 +262,10 @@ class Flowbokop extends React.Component {
             <FlowbokopInputBuilder
               config={this.props.config}
               onChangeHook={onCurieListChange}
-              inputCurieList={panelObj.data}
-              inputLabel={panelObj.inputLabel}
-              onChangeLabel={e => this.onChangeInputLabel(e.target.value)}
+              panelObj={panelObj}
+              // inputCurieList={panelObj.data}
+              // inputLabel={panelObj.inputLabel}
+              // onChangeLabel={e => this.onChangeInputLabel(e.target.value)}
             />
           </Panel.Body>
         </Panel>

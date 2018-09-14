@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Form, FormGroup, ControlLabel, FormControl, Button, Glyphicon } from 'react-bootstrap';
+import { Form, FormControl, Button, Glyphicon } from 'react-bootstrap';
 import FaPlus from 'react-icons/lib/fa/plus';
 import AppConfig from './../../AppConfig';
 import Loading from './../Loading';
@@ -18,20 +18,25 @@ const propTypes = {
     clientHost: PropTypes.string,
     port: PropTypes.number,
   }).isRequired,
-  onChangeHook: PropTypes.func, // Returns updated CurieList state on any internal state changes
-  inputCurieList: PropTypes.arrayOf(PropTypes.shape({
-    type: PropTypes.string.isRequired,
-    label: PropTypes.string.isRequired,
-    curie: PropTypes.string.isRequired,
-  })),
-  inputLabel: PropTypes.string.isRequired,
-  onChangeLabel: PropTypes.func,
+  onChangeHook: PropTypes.func, // (curieList, inputLabel, isValid) => {}
+  panelObj: PropTypes.shape({
+    inputType: PropTypes.string.isRequired,
+    inputLabel: PropTypes.string.isRequired,
+    isValid: PropTypes.bool.isRequired,
+    data: PropTypes.arrayOf(PropTypes.shape({
+      type: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+      curie: PropTypes.string.isRequired,
+    })),
+  }).isRequired,
+  // inputLabel: PropTypes.string.isRequired,
+  // onChangeLabel: PropTypes.func,
 };
 
 const defaultProps = {
   onChangeHook: () => {},
-  onChangeLabel: () => {},
-  inputCurieList: [{ type: 'disease', label: '', curie: '' }],
+  // onChangeLabel: () => {},
+  // inputCurieList: [{ type: 'disease', label: '', curie: '' }],
 };
 
 class FlowbokopInputBuilder extends React.Component {
@@ -42,11 +47,9 @@ class FlowbokopInputBuilder extends React.Component {
 
     this.state = {
       dataReady: false,
-      // userReady: false,
-      // user: {},
       concepts: [],
-      // rawInputJson: '',
-      submittedJSON: _.isPlainObject(props.inputCurieList) ? [props.inputCurieList] : props.inputCurieList,
+      isValid: false,
+      submittedJSON: [],
     };
 
     this.state.keys = this.state.submittedJSON.map(() => shortid.generate());
@@ -58,12 +61,14 @@ class FlowbokopInputBuilder extends React.Component {
     this.deleteCurie = this.deleteCurie.bind(this);
     this.curieListFromSubmittedJSON = this.curieListFromSubmittedJSON.bind(this);
     this.submittedJSONFromCurieList = this.submittedJSONFromCurieList.bind(this);
+    this.isValidInput = this.isValidInput.bind(this);
+    this.onChangeFactory = this.onChangeFactory.bind(this);
 
     // Replace 'label' param with 'term' param
-    if (_.isPlainObject(props.inputCurieList)) {
-      this.state.submittedJSON = this.submittedJSONFromCurieList([props.inputCurieList]);
+    if (_.isPlainObject(props.panelObj.data)) {
+      this.state.submittedJSON = this.submittedJSONFromCurieList([props.panelObj.data]);
     } else {
-      this.state.submittedJSON = this.submittedJSONFromCurieList(props.inputCurieList);
+      this.state.submittedJSON = this.submittedJSONFromCurieList(props.panelObj.data);
     }
   }
 
@@ -82,30 +87,88 @@ class FlowbokopInputBuilder extends React.Component {
 
   componentWillReceiveProps(nextProps) {
     // Reset display of CurieListSelector component if inputCurieList prop changes
-    if (!_.isEqual(nextProps.inputCurieList, this.props.inputCurieList)) {
+    if (!_.isEqual(nextProps.panelObj.data, this.props.panelObj.data)) {
       let inputCurieList;
-      if (_.isPlainObject(nextProps.inputCurieList)) {
-        inputCurieList = this.submittedJSONFromCurieList([nextProps.inputCurieList]);
+      if (_.isPlainObject(nextProps.panelObj.data)) {
+        inputCurieList = this.submittedJSONFromCurieList([nextProps.panelObj.data]);
       } else {
-        inputCurieList = this.submittedJSONFromCurieList(nextProps.inputCurieList);
+        inputCurieList = this.submittedJSONFromCurieList(nextProps.panelObj.data);
       }
       let { keys } = this.state;
       // Only regenerate keys if different number of input Curie lists are in the new props
       if (this.state.submittedJSON.length !== inputCurieList.length) {
         keys = inputCurieList.map(() => shortid.generate());
       }
-      this.setState(
-        { submittedJSON: inputCurieList, keys },
-        () => this.props.onChangeHook(this.curieListFromSubmittedJSON()),
-      );
+      this.setState({ submittedJSON: inputCurieList, keys });
+      // () => this.props.onChangeHook(this.curieListFromSubmittedJSON()),
+      // );
     }
   }
 
+  // componentDidUpdate(prevProps) {
+  //   // Update isValid state of entire panel any time the panel data changes
+  //   if (!_.isEqual(prevProps.panelObj, this.props.panelObj.data)) {
+  //     this.isValidInput(this.props.panelObj, () => {
+  //       const curieList = _.cloneDeep(this.props.panelObj.data);
+  //       this.props.onChangeHook(Object.assign({}, curieList, { isValid: this.state.isValid, inputLabel: this.props.panelObj.inputLabel }));
+  //     });
+  //   }
+  // }
+
+  /**
+   * Handles publishing any onChange events to supplied onChangeHook method in props
+   * @param {*} tag {'curieList' or 'inputLabel'}
+   */
+  onChangeFactory(tag) {
+    return (val) => {
+      const curieList = this.curieListFromSubmittedJSON();
+      const inputLabel = tag === 'inputLabel' ? val.target.value : this.props.panelObj.inputLabel;
+      const panelObj = { data: curieList, inputLabel };
+      this.isValidInput(panelObj, () => {
+        panelObj.isValid = this.state.isValid;
+        panelObj.curieList = panelObj.data;
+        delete panelObj.data;
+        // console.log('in onChangeFactory:', defaultObj, this.state.isValid);
+        this.props.onChangeHook(panelObj);
+      });
+    };
+  }
+
+  isValidLabel(val) {
+    return /^[a-z0-9_ ]+$/i.test(val);
+  }
+  isValidCurie(val) {
+    return /^[a-z0-9_\+\-]+:[a-z0-9_\+\-]+/i.test(val); // eslint-disable-line no-useless-escape
+  }
+  isValidCurieList(val) {
+    if (_.isPlainObject(val)) {
+      val = [val];
+    }
+    let isValid = true;
+    val.forEach((curieObj) => {
+      const { curie, type } = curieObj;
+      isValid = isValid && this.isValidCurie(curie);
+      isValid = isValid && (this.state.concepts.indexOf(type) > -1); // Ensure type is in concept list
+    });
+    // Ensure all types in the CurieList are identical
+    if (isValid) {
+      const curieTypes = val.map(curieBlob => curieBlob.type);
+      isValid = isValid && curieTypes.every((t, i, arr) => t === arr[0]);
+    }
+    return isValid;
+  }
+  isValidInput(panelObj, callbackFn) {
+    const { inputLabel, data } = panelObj;
+    const isValid = this.isValidLabel(inputLabel) && this.isValidCurieList(data);
+    this.setState({ isValid }, callbackFn);
+  }
   onSearch(input, nodeType) {
     return this.appConfig.questionNewSearch(input, nodeType);
   }
   defaultCurie() {
-    return { type: 'disease', term: '', curie: '' };
+    // Return default curie for new CurieSelector such that the returned type
+    // always matches that of the 1st CurieSelector element in the panel
+    return { type: this.state.submittedJSON[0].type, term: '', curie: '' };
   }
   deleteCurie(i) {
     const submittedJSON = _.cloneDeep(this.state.submittedJSON);
@@ -114,7 +177,7 @@ class FlowbokopInputBuilder extends React.Component {
     keys.splice(i, i);
     this.setState(
       { submittedJSON, keys },
-      () => this.props.onChangeHook(this.curieListFromSubmittedJSON()),
+      this.onChangeFactory('curieList'),
     );
   }
   addCurie() {
@@ -124,15 +187,21 @@ class FlowbokopInputBuilder extends React.Component {
     keys.push(shortid.generate());
     this.setState(
       { submittedJSON, keys },
-      () => this.props.onChangeHook(this.curieListFromSubmittedJSON()),
+      this.onChangeFactory('curieList'),
     );
   }
   updateCurie(i, type, term, curie) {
     const submittedJSON = _.cloneDeep(this.state.submittedJSON);
     submittedJSON[i] = { type, term, curie };
+    const keys = _.cloneDeep(this.state.keys);
+    // Check if type of 1st Curie List was changed
+    if ((i === 0) && (submittedJSON.length > 1) && (submittedJSON[0].type !== submittedJSON[1].type)) {
+      submittedJSON.splice(1); // Delete all other CurieSelectors except first
+      keys.splice(1);
+    }
     this.setState(
-      { submittedJSON },
-      () => this.props.onChangeHook(this.curieListFromSubmittedJSON()),
+      { submittedJSON, keys },
+      this.onChangeFactory('curieList'),
     );
   }
   curieListFromSubmittedJSON() {
@@ -149,7 +218,7 @@ class FlowbokopInputBuilder extends React.Component {
     cL.map((blob) => {
       blob.term = blob.label;
       delete blob.label;
-    })
+    });
     return cL;
   }
   // handleRawJsonChange(event) {
@@ -176,8 +245,7 @@ class FlowbokopInputBuilder extends React.Component {
               <CurieSelectorContainer
                 concepts={this.state.concepts}
                 search={this.onSearch}
-                // width={width - 40}
-                displayType
+                disableType={i !== 0} // Only enable for 1st CurieSelector element
                 initialInputs={jsonBlob}
                 onChangeHook={(ty, te, cu) => this.updateCurie(i, ty, te, cu)}
               />
@@ -200,7 +268,7 @@ class FlowbokopInputBuilder extends React.Component {
           </div>
         );
         return curieSelectorElement;
-      })
+      });
     }
     const classNames = {
       formLabel: 'col-md-2 form-label',
@@ -213,15 +281,15 @@ class FlowbokopInputBuilder extends React.Component {
         <Form horizontal>
           <LabeledFormGroup
             formLabel="Input"
-            value={this.props.inputLabel}
+            value={this.props.panelObj.inputLabel}
             // validationHookFn={validationState => this.updateValidationStatus('input', validationState)}
             classNames={classNames}
           >
             <FormControl
               type="text"
-              value={this.props.inputLabel}
+              value={this.props.panelObj.inputLabel}
               // placeholder={''}
-              onChange={this.props.onChangeLabel}
+              onChange={this.onChangeFactory('inputLabel')}
             />
           </LabeledFormGroup>
         </Form>
