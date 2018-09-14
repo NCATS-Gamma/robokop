@@ -87,13 +87,14 @@ class Expand(Resource):
                 ]
             }
         }
+        logger.info('expand')
         predicate = request.args.get('predicate')
         if predicate is not None:
             question['machine_question']['edges'][0]['type'] = predicate
         csv = request.args.get('csv', default='false')
         question['rebuild'] = request.args.get('rebuild', default='false')
         response = requests.post(
-            f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/simple/quick/?max_results=-1',
+            f'http://manager:{os.environ["MANAGER_PORT"]}/api/simple/quick/?max_results=-1',
             json=question)
         answerset = response.json()
         if csv.upper() == 'TRUE':
@@ -134,6 +135,7 @@ class Quick(Resource):
                             type: string
                             description: all the things and stuff
         """
+        logger.info('quick')
         question = request.json
         
         if ('rebuild' in question) and (question['rebuild'].upper() == 'TRUE'):
@@ -317,7 +319,6 @@ class SimilaritySearch(Resource):
         sim_params = {'threshhold':request.args.get('threshhold', default = None),
                       'maxresults':request.args.get('maxresults', default = None)}
         sim_params = {k:v for k,v in sim_params.items() if v is not None}
-        logger.info("Going into ranker:sim")
         response = requests.get( f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/similarity/{type1}/{sid1}/{type2}/{by_type}', params=sim_params)
 
         return response.json()
