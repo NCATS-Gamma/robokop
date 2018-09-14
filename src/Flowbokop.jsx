@@ -53,7 +53,7 @@ const workflowInputsToPanelState = (workflowInp) => {
       // Ensure data is always an array
       panelState.push({
         inputType: 'input',
-        locked: true,
+        isValid: true,
         inputLabel,
         data: isCurieListArray ? workflowInput.input[inputLabel] : [workflowInput.input[inputLabel]],
       });
@@ -75,7 +75,7 @@ const workflowInputsToPanelState = (workflowInp) => {
         }
         panelState.push({
           inputType: 'operation',
-          locked: true,
+          isValid: true,
           data: Object.assign({}, operationData, { options }),
         });
       });
@@ -371,7 +371,7 @@ class Flowbokop extends React.Component {
     return (
       {
         inputType: 'input',
-        locked: true,
+        isValid: false,
         inputLabel: '',
         data: [{ type: 'disease', curie: '', label: '' }],
       }
@@ -382,7 +382,7 @@ class Flowbokop extends React.Component {
     return (
       {
         inputType: 'operation',
-        locked: true,
+        isValid: false,
         data: {
           input: [],
           output: '',
@@ -401,8 +401,15 @@ class Flowbokop extends React.Component {
   }
 
   onOperationBuilderChange(operationDataObj) {
+    // console.log('onOperationBuilderChange:', operationDataObj);
+    const {
+      input, output, label, service, options, isValid,
+    } = operationDataObj;
     const activePanelState = _.cloneDeep(this.state.activePanelState);
-    activePanelState.data = operationDataObj;
+    activePanelState.data = {
+      input, output, label, service, options,
+    };
+    activePanelState.isValid = isValid;
     this.setState({ activePanelState });
   }
 
@@ -553,6 +560,7 @@ class Flowbokop extends React.Component {
 
   renderLoaded() {
     const unsavedChanges = this.isUnsavedChanges();
+    const { isValid: isValidPanel } = this.state.activePanelState;
     return (
       <div>
         <Header
@@ -583,20 +591,14 @@ class Flowbokop extends React.Component {
                   />
                 </Panel.Body>
               </Panel>
-              {/* <PanelGroup
-                accordion={false}
-                id="workflow-accordion"
-                // activeKey={this.state.activeKey}
-                // onSelect={this.handleSelect}
-              > */}
               <div style={{ marginTop: '0px', marginBottom: '6px' }}>
                 <ButtonGroup>
                   {!_.isEmpty(this.state.activePanelState) &&
                     <Button
                       onClick={this.saveActivePanel}
-                      disabled={!unsavedChanges}
-                      bsStyle={unsavedChanges ? 'primary' : 'default'}
-                      title={unsavedChanges ? 'Save changes' : 'No changes to save'}
+                      disabled={!unsavedChanges || !isValidPanel}
+                      bsStyle={isValidPanel ? (unsavedChanges ? 'primary' : 'default') : 'danger'} // eslint-disable-line no-nested-ternary
+                      title={isValidPanel ? (unsavedChanges ? 'Save changes' : 'No changes to save') : 'Fix invalid panel entries first'} // eslint-disable-line no-nested-ternary
                     >
                       <FaFloppyO style={{ verticalAlign: 'text-top' }} />
                       {' Save'}
