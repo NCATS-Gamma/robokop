@@ -63,6 +63,7 @@ class FlowbokopInputBuilder extends React.Component {
     this.submittedJSONFromCurieList = this.submittedJSONFromCurieList.bind(this);
     this.isValidInput = this.isValidInput.bind(this);
     this.onChangeFactory = this.onChangeFactory.bind(this);
+    this.validateFormElement = this.validateFormElement.bind(this);
 
     // Replace 'label' param with 'term' param
     if (_.isPlainObject(props.panelObj.data)) {
@@ -161,6 +162,22 @@ class FlowbokopInputBuilder extends React.Component {
     const { inputLabel, data } = panelObj;
     const isValid = this.isValidLabel(inputLabel) && this.isValidCurieList(data);
     this.setState({ isValid }, callbackFn);
+  }
+  /**
+   * Return if the specific form element is valid. If val is supplied, then uses
+   * its value for validation. If not supplied, looks up corresponding prop and
+   * returns associated validation flag
+   */
+  validateFormElement(field, val) {
+    let isValid = false;
+    switch (field.toLowerCase()) {
+      case 'input':
+        isValid = this.isValidLabel(val);
+        break;
+      default:
+        break;
+    }
+    return isValid ? 'success' : 'error';
   }
   onSearch(input, nodeType) {
     return this.appConfig.questionNewSearch(input, nodeType);
@@ -282,6 +299,7 @@ class FlowbokopInputBuilder extends React.Component {
           <LabeledFormGroup
             formLabel="Input"
             value={this.props.panelObj.inputLabel}
+            validateForm={val => this.validateFormElement('input', val)}
             // validationHookFn={validationState => this.updateValidationStatus('input', validationState)}
             classNames={classNames}
           >
