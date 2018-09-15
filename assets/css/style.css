@@ -117,13 +117,16 @@ div.vis-tooltip {
 div.vis-tooltip-inner {
   margin: 0px;
   padding: 7px 10px 10px 10px;
-  border: 1px solid #555;
+  border: 1px solid #444;
   border-radius: 8px;
   background-color: rgba(0, 0, 0, 0.85);
-  box-shadow: 2px 2px 2px 0px #444;
+  box-shadow: 2px 2px 5px 0px #444;
   font-family: sans-serif;
-  font-size: 0.8em;
+  font-size: 0.9em;
   color: #eee;
+}
+div.vis-tooltip .invalid-node {
+  background-color: rgba(134, 0, 0, 0.85);
 }
 .vis-tooltip span.title {
   color:#60adec;
@@ -212,5 +215,41 @@ div.vis-tooltip-inner {
   border-color: #ccc;
   -webkit-box-shadow: none;
   box-shadow: none;
+}
+
+/* Form Validation Color for MultiSelect component from react-widgets*/
+.rw-widget-container.valid {
+  border-color: #3c763d;
+}
+.rw-widget-container.invalid {
+  border-color: #a94442;
+}
+
+/* Custom "icon-spin" class that spins the icon 360 degrees */
+.icon-spin {
+  -webkit-animation: icon-spin 2s infinite linear;
+          animation: icon-spin 2s infinite linear;
+}
+
+@-webkit-keyframes icon-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+            transform: rotate(359deg);
+  }
+}
+
+@keyframes icon-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+            transform: rotate(359deg);
+  }
 }
 

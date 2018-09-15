@@ -24,6 +24,7 @@ import Activity from './Activity';
 import Search from './Search';
 import MultiSearch from './MultiSearch';
 import Simple from './Simple';
+import Flowbokop from './Flowbokop';
 
 // Our actual CSS and other images etc.
 import '../assets/css/style.css';
@@ -141,6 +142,14 @@ const robokop = {
   simple: () => {
     ReactDOM.render(
       <Simple
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  flowbokop: () => {
+    ReactDOM.render(
+      <Flowbokop
         config={config}
       />,
       document.getElementById('reactEntry'),

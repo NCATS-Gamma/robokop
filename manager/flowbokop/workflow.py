@@ -142,14 +142,14 @@ class Workflow(Service):
 
         self.connectivity_graph_nodes = []
         for in_var in self.input.names():
-            node = {"is_input": True, "is_output": False, "name": in_var, "operation": []}
+            node = {"is_input": True, "is_output": False, "name": in_var, "operation": [], "is_valid": True, "invalid_reason": ""}
             self.connectivity_graph_nodes.append(node)
 
         for op in self.operations:
-            node = {"is_input": False, "is_output": False, "name": op.label, "operation": op}
+            node = {"is_input": False, "is_output": False, "name": op.label, "operation": op, "is_valid": True, "invalid_reason": ""}
             self.connectivity_graph_nodes.append(node)
 
-        output_node = {"is_input": False, "is_output": True, "name": "output", "operation": []}
+        output_node = {"is_input": False, "is_output": True, "name": "output", "operation": [], "is_valid": True, "invalid_reason": ""}
         self.connectivity_graph_nodes.append(output_node)
 
         # For each operation find the inputs 
@@ -161,9 +161,20 @@ class Workflow(Service):
             if node["is_output"]:
                 # all is a magic output variable that yields all variables
                 if self.output == "all":
-                    self.connectivity[...,ind] = 1
+                    # When we go to parse the output in run() we will actually give all of the outputs
+                    # we could just make the connectivity reflect this
+                    # self.connectivity[...,ind] = 1
+                    # self.connectivity[-1,-1] = 0
+
+                    # But for graph display it is more desirable to only connect unconnected nodes
+                    # At this point we assume that this is the last iteration of this loop and that 
+                    # the rest of connectivity is already accurate
+                    node_inds_without_outputs = numpy.where(numpy.sum(self.connectivity,axis=1)==0)
+                    self.connectivity[node_inds_without_outputs, -1] = 1
+                    self.connectivity[-1, -1] = 0 # Don't connect the output ot the output
                     continue
-                # otherwise find just the request output
+
+                # otherwise find just the requested output
                 input_variables = self.output # the requested outputs are the required inputs of the output node
             else:
                 # A regular operation
@@ -185,7 +196,8 @@ class Workflow(Service):
                     self.connectivity[num_input_lists + source_inds[0], ind] = 1
                 if len(source_inds) > 1:
                     # We found the requested input more than once -> Error
-                    raise Exception(f"Variable {in_var} has been declared more than once")
+                    node["is_valid"] = False
+                    node["invalid_reason"] = f"Variable {in_var} has been declared more than once"
                 if len(source_inds) < 1:
                     # We did not find the requested input, maybe its one of the inputs to the workflow
                     if self.input.has_list(in_var):
@@ -194,7 +206,8 @@ class Workflow(Service):
                         self.connectivity[input_ind, ind] = 1
                     else:
                         # Can't find the requested input anywhere
-                        raise Exception(f"Could not find variable {in_var}")
+                        node["is_valid"] = False
+                        node["invalid_reason"] = f"Could not find variable {in_var}"
         
 
         self.operation_order = topological_sort(self.connectivity)
@@ -204,7 +217,6 @@ class Workflow(Service):
 
     def graph(self):
         # Assume we have connnectivity and connectivity_graph_nodes all in order
-
         nodes = []
         for i, cn in enumerate(self.connectivity_graph_nodes):
             if cn['is_input']:
@@ -212,17 +224,38 @@ class Workflow(Service):
                     'id': i,
                     'name': cn['name'],
                     'operation': {},
+                    'is_input': True,
+                    'is_output': False,
+                    'is_valid': cn['is_valid'],
+                    'invalid_reason': cn['invalid_reason']
                 }
                 nodes.append(n)
                 continue
             if cn['is_output']:
+                n = {
+                    'id': i,
+                    'name': 'Output',
+                    'operation': {},
+                    'is_input': False,
+                    'is_output': True,
+                    'is_valid': cn['is_valid'],
+                    'invalid_reason': cn['invalid_reason']
+                }
+                nodes.append(n)
+                output_id = i
                 continue
 
             op = cn['operation']
             n = {
                 'id': i,
                 'name': op.label,
+                'is_input': False,
+                'is_output': False,
+                'is_valid': cn['is_valid'],
+                'invalid_reason': cn['invalid_reason'],
                 'operation': {
+                    'input': op.input,
+                    'output': op.output,
                     'service': op.service.url,
                     'options': op.service.options
                 },
@@ -231,16 +264,21 @@ class Workflow(Service):
         
         edges = []
         for i, cn in enumerate(self.connectivity_graph_nodes):
-            if cn['is_output']:
-                continue
-
             for j, dn in enumerate(self.connectivity_graph_nodes):
-                if dn['is_output']:
-                     continue
+                if cn['is_input'] or cn['is_output']:
+                    # Edge is from the input or output
+                    # Use name of variable
+                    label = cn['name']
+                else: 
+                    # Edge is from a regular node
+                    op = cn['operation']
+                    label = op.output
+
                 if self.connectivity[i, j]:
                     e = {
                         'source_id': i,
-                        'target_id': j
+                        'target_id': j,
+                        'label': label
                     }
                     edges.append(e)
         

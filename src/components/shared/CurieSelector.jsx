@@ -1,11 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormGroup, FormControl, InputGroup, DropdownButton, MenuItem, Glyphicon } from 'react-bootstrap';
+import { FormGroup, FormControl, InputGroup, Glyphicon } from 'react-bootstrap';
+import { DropdownList } from 'react-widgets';
 
 import BionamesBrowser from './BionamesBrowser';
-
 import entityNameDisplay from '../util/entityNameDisplay';
 
+const _ = require('lodash');
 
 const propTypes = {
   term: PropTypes.string.isRequired,
@@ -17,7 +18,7 @@ const propTypes = {
   onTypeChange: PropTypes.func.isRequired, // When type changed by drop-down selection
   onTermChange: PropTypes.func.isRequired, // When term input field is typed in
   onSelect: PropTypes.func.isRequired, // When entity is selected: (type, term, curie) => {}
-  displayType: PropTypes.bool, // Whether to display the Type drop-down
+  disableType: PropTypes.bool, // Whether to display the Type drop-down
   width: PropTypes.number,
   search: PropTypes.func,
   size: PropTypes.string, // undefined (default size) or 'small', 'xsmall', 'large'
@@ -26,7 +27,7 @@ const propTypes = {
 const defaultProps = {
   search: () => Promise.resolve({ options: [] }),
   width: 0, // will be ignored
-  displayType: true,
+  disableType: true,
 };
 
 class CurieSelector extends React.Component {
@@ -40,14 +41,11 @@ class CurieSelector extends React.Component {
 
     this.handleSearch = this.handleSearch.bind(this);
     this.wrapSearch = this.wrapSearch.bind(this);
+    this.debouncedHandleSearch = _.debounce(this.handleSearch, 250);
     this.handleSelect = this.handleSelect.bind(this);
     this.handleTypeChange = this.handleTypeChange.bind(this);
     this.handleTermChange = this.handleTermChange.bind(this);
-    // this.handleClear = this.handleClear.bind(this);
     this.handleReopen = this.handleReopen.bind(this);
-
-    // this.onInputFocus = this.onInputFocus.bind(this);
-    // this.onUnSelect = this.onUnSelect.bind(this);
 
     this.state = {
       options: null,
@@ -57,13 +55,9 @@ class CurieSelector extends React.Component {
     this.input = null; // Input reference for focusing
   }
 
-  componentDidMount() {
-    // this.input.focus();
-  }
   componentDidUpdate(prevProps) {
-    if ((this.props.term !== prevProps.term) && (this.props.curie === '')) { // Re-do search if term changes
-      this.setState({ loadingOptions: true }, () => this.handleSearch(this.props.term, this.props.type));
-      // this.handleTermChange({ target: { value: this.props.term } });
+    if ((this.props.term !== prevProps.term)) { // Re-do search if term changes
+      this.setState({ loadingOptions: true }, () => this.debouncedHandleSearch(this.props.term, this.props.type));
     }
   }
 
@@ -79,7 +73,7 @@ class CurieSelector extends React.Component {
     this.props.onSelect(this.props.type, term, curie);
   }
   handleSearch(input, nodeType) {
-    this.wrapSearch(input, nodeType).catch(() => ({ options: [] })).then(data => this.setState({ options: data.options, loadingOptions: false }));
+    this.wrapSearch(input, nodeType).catch(() => this.setState({ options: [] })).then(data => this.setState({ options: data.options, loadingOptions: false }));
   }
   wrapSearch(input, nodeType) {
     if (!input || (input.length < 3)) {
@@ -89,18 +83,12 @@ class CurieSelector extends React.Component {
   }
   handleTermChange(event) {
     this.props.onTermChange(event);
-    const term = event.target.value;
-    this.setState({ loadingOptions: true }, () => this.handleSearch(term, this.props.type));
   }
   handleTypeChange(type) {
     this.input.focus();
-    this.props.onTypeChange(type);
+    this.setState({ options: [] }, () => this.props.onTypeChange(type));
     // this.setState({ type }, () => this.handleTermChange({ target: { value: this.state.term } }));
   }
-  // handleClear() {
-  //   this.input.value = '';
-  //   this.handleTermChange({ target: { value: '' } });
-  // }
   handleReopen() {
     this.props.onReopen();
     this.input.focus();
@@ -108,28 +96,11 @@ class CurieSelector extends React.Component {
 
   render() {
     const {
-      concepts, size, curie, type, term, onClear, displayType,
+      concepts, size, curie, type, term, onClear, disableType,
     } = this.props;
-    const typeOptions = concepts.map((c) => {
-      const displayConcept = entityNameDisplay(c);
-      return (
-        <MenuItem
-          key={c}
-          onClick={() => this.handleTypeChange(c)}
-        >
-          {displayConcept}
-        </MenuItem>
-      );
-    });
-
-    // const {
-    //   showOptions, hasSelected, selected, displayType,
-    // } = this.state;
-
-    // const curie = hasSelected ? selected.curie : '';
+    const dropDownObjList = concepts.map(c => ({ text: entityNameDisplay(c), value: c }));
     const showOptions = curie === '';
 
-    // const showClearResultsIcon = (showOptions || !hasSelected);
     const rightButtonCallback = showOptions ? onClear : this.handleReopen;
     const rightButtonContents = showOptions ? (<Glyphicon glyph="remove" />) : (<Glyphicon glyph="triangle-bottom" />);
 
@@ -148,34 +119,24 @@ class CurieSelector extends React.Component {
         <div>
           <FormGroup style={{ marginBottom: 0 }}>
             <InputGroup>
-              {displayType &&
-                <DropdownButton
-                  componentClass={InputGroup.Button}
-                  id="input-dropdown-addon"
-                  title={entityNameDisplay(type)}
-                  bsSize={size}
-                >
-                  {typeOptions}
-                </DropdownButton>
-              }
+              <DropdownList
+                filter
+                dropUp
+                disabled={disableType}
+                style={{ display: 'table-cell', verticalAlign: 'middle', width: '200px' }}
+                data={dropDownObjList}
+                textField="text"
+                valueField="value"
+                value={type}
+                onChange={value => this.handleTypeChange(value.value)}
+              />
               <FormControl
                 type="text"
                 bsSize={size}
-                style={displayType ? {
-                  borderLeft: 0,
-                  borderRight: 0,
-                } : {}}
+                style={{ borderLeft: 0, borderRight: 0 }}
                 value={term}
                 inputRef={(ref) => {
                   this.input = ref;
-                  // try {
-                  //   this.input.onfocus = this.onInputFocus;
-                  //   this.input.onblur = this.onInputBlur;
-                  // } catch (err) {
-                  //   // pass
-                  //   // On initial creation this might get called before everything is ready.
-                  //   // It will get called again.
-                  // }
                 }}
                 onChange={this.handleTermChange}
               />

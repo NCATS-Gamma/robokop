@@ -66,6 +66,11 @@ def search():
     """Search for biomedical concept identifiers"""
     return render_template('search.html')
 
+@app.route('/flowbokop/')
+def flowbokop():
+    """Flowbokop UI."""
+    return render_template('flowbokop.html')
+
 @app.route('/simple/')
 def simple():
     """Simple Interface"""

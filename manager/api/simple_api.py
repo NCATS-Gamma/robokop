@@ -87,18 +87,18 @@ class Expand(Resource):
                 ]
             }
         }
+        logger.info('expand')
         predicate = request.args.get('predicate')
         if predicate is not None:
             question['machine_question']['edges'][0]['type'] = predicate
         csv = request.args.get('csv', default='false')
         question['rebuild'] = request.args.get('rebuild', default='false')
         response = requests.post(
-            f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/simple/quick/',
+            f'http://manager:{os.environ["MANAGER_PORT"]}/api/simple/quick/?max_results=-1',
             json=question)
         answerset = response.json()
         if csv.upper() == 'TRUE':
             node_names = [f"{a['nodes'][-1]['name']}({a['nodes'][-1]['id']})" if 'name' in a['nodes'][-1] else a['nodes'][-1]['id'] for a in answerset['answers']]
-            #return ','.join(node_names)
             return node_names
         return answerset
 
@@ -117,6 +117,12 @@ class Quick(Resource):
             schema:
                 $ref: '#/definitions/Question'
             required: true
+          - in: query
+            name: max_results
+            description: Maximum number of results to return. Provide -1 to indicate no maximum.
+            schema:
+                type: integer
+            default: 250
         responses:
             200:
                 description: Answer
@@ -129,6 +135,7 @@ class Quick(Resource):
                             type: string
                             description: all the things and stuff
         """
+        logger.info('quick')
         question = request.json
         
         if ('rebuild' in question) and (question['rebuild'].upper() == 'TRUE'):
@@ -152,8 +159,10 @@ class Quick(Resource):
 
             logger.info('Done updating KG. Answering question...')
 
+        max_results = request.args.get('max_results')
+        max_results = max_results if max_results is not None else 250
         response = requests.post(
-            f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/',
+            f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/?max_results={max_results}',
             json=question)
         polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
 
@@ -335,35 +344,52 @@ class EnrichedExpansion(Resource):
             type: string
             required: true
             default: "disease"
-          - in: json
-            name: threshhold
-            description: "Number between 0 and 1 indicating the minimum similarity to return"
-            type: float
-            default: 0.5
-          - in: json
-            name: maxresults
-            description: "The maximum number of results to return. Set to 0 to return all results."
-            type: integer
-            default: 100
-          - in: json
-            name: identifiers
-            description: "The entities being enriched"
-            type: list
-            required: true
-          - in: json
-            name: include_descendants
-            description: "Extend the starting entities to use all of their descendants as well"
-            type: boolean
-            default: false
-          - in: json
-            name: numtype1
-            description: "The total number of entities of type 1 that exist"
-            default: Uses a value based on querying the cache
-          - in: json
-            name: rebuild
-            description: "Rebuild local knowledge graph for this similarity search"
-            type: boolean
-            default: false
+          - in: body
+            name: all_the_things
+            description: "This should probably be a schema object"
+            schema:
+                type: object
+                properties:
+                    threshhold:
+                        description: "Number between 0 and 1 indicating the minimum similarity to return"
+                        type: number
+                        default: 0.5
+                    maxresults:
+                        description: "The maximum number of results to return. Set to 0 to return all results."
+                        type: integer
+                        default: 100
+                    identifiers:
+                        description: "The entities being enriched"
+                        type: array
+                        items:
+                            type: string
+                        required: true
+                    include_descendants:
+                        description: "Extend the starting entities to use all of their descendants as well"
+                        type: boolean
+                        default: false
+                    numtype1:
+                        type: integer
+                        description: "The total number of entities of type 1 that exist. By default uses a value based on querying the cache"
+                    rebuild:
+                        description: "Rebuild local knowledge graph for this similarity search"
+                        type: boolean
+                        default: false
+                example:
+                    threshhold: 0.5
+                    maxresults: 100
+                    identifiers: ["MONDO:0014683", "MONDO:0005737"]
+                    include_descendants: false
+                    rebuild: false
+        responses:
+            200:
+                description: answers
+                type: object
+                properties:
+                    answers:
+                        type: array
+                        items:
+                            $ref: '#/definitions/Answer'
         """
         parameters = request.json
         identifiers = parameters['identifiers']

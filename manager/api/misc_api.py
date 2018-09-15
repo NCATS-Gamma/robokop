@@ -10,13 +10,23 @@ import time
 import redis
 import requests
 from flask import request, Response
-from flask_restful import Resource
+from flask_restful import Resource, abort
 
 from manager.setup import app, api, db
 from manager.logging_config import logger
 from manager.util import getAuthData
 from manager.tasks import celery
 from manager.task import list_tasks, get_task_by_id
+
+concept_map = {}
+try:
+    with app.open_resource('api/concept_map.json') as map_file:
+        concept_map = json.load(map_file)
+        logger.warning('Succesfully read concept_map.json')
+except Exception as e:
+    logger.error(
+        'misc_api.py:: Could not '
+        f'find/read concept_map.json - {e}')
 
 class Tasks(Resource):
     def get(self):
@@ -195,24 +205,40 @@ class Search(Resource):
                 items:
                     type: string
         """
-        url = f"https://bionames.renci.org/lookup/{term}/{category}/"
-        r = requests.get(url)
-        all_results = r.json()
+        if category not in concept_map:
+            abort(400, error_message=f'Unsupported category: {category} provided')
+        bionames = concept_map[category]
+        
+        if not bionames: # No matching biolink name for this category
+            return []
+        
         results = []
-        for r in all_results:
-            if not 'id' in r:
-                continue
-            if 'label' in r:
-                r['label'] = r['label'] or r['id']
-            elif 'desc' in r:
-                r['label'] = r['desc'] or r['id']
-                r.pop('desc')
+        error_status = {'isError': False}
+        for bioname in bionames:
+            url = f"https://bionames.renci.org/lookup/{term}/{bioname}/"
+            r = requests.get(url)
+            if r.ok:
+                all_results = r.json()
+                for r in all_results:
+                    if not 'id' in r:
+                        continue
+                    if 'label' in r:
+                        r['label'] = r['label'] or r['id']
+                    elif 'desc' in r:
+                        r['label'] = r['desc'] or r['id']
+                        r.pop('desc')
+                    else:
+                        continue
+                    results.append(r)
             else:
-                continue
-            results.append(r)
+                error_status['isError'] = True
+                error_status['code'] = r.status_code
 
-        results = list({r['id']:r for r in all_results}.values())
-        return results
+        results = list({r['id']:r for r in results}.values())
+        if not results and error_status['isError'] :
+            abort(error_status['code'], f"Bionames lookup endpoint returned {error_status['code']} error code")
+        else:
+            return results
 
 api.add_resource(Search, '/search/<term>/<category>/')
 

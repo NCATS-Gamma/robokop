@@ -13,7 +13,7 @@ const propTypes = {
     curie: PropTypes.string.isRequired,
   }),
   onChangeHook: PropTypes.func, // Hook to be notified any time there is any user activated changes: (type, term, curie) => {}
-  displayType: PropTypes.bool,
+  disableType: PropTypes.bool,
   width: PropTypes.number,
   search: PropTypes.func,
   size: PropTypes.string,
@@ -26,7 +26,7 @@ const defaultProps = {
   search: () => Promise.resolve({ options: [] }),
   size: undefined,
   width: 0, // will be ignored
-  displayType: true,
+  disableType: false,
   onChangeHook: () => {},
 };
 
@@ -52,7 +52,7 @@ class CurieSelectorContainter extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    console.log('in componentWillReceiveProps', nextProps.initialInputs, this.props.initialInputs);
+    // console.log('in componentWillReceiveProps', nextProps.initialInputs, this.props.initialInputs);
     if (!_.isEqual(nextProps.initialInputs, this.props.initialInputs)) {
       const { type, term, curie } = nextProps.initialInputs;
       this.setState(
@@ -101,7 +101,7 @@ class CurieSelectorContainter extends React.Component {
 
   render() {
     const {
-      concepts, search, width, size, displayType,
+      concepts, search, width, size, disableType,
     } = this.props;
     const { type, term, curie } = this.state;
     return (
@@ -115,7 +115,7 @@ class CurieSelectorContainter extends React.Component {
         onTypeChange={this.onTypeChange}
         onTermChange={this.onTermChange}
         onSelect={this.onSelect}
-        displayType={displayType}
+        disableType={disableType}
         search={search}
         width={width}
         size={size}
