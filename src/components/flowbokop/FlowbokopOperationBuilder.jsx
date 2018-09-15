@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
-import { Form, FormControl } from 'react-bootstrap';
+import { Form, FormControl, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import FaInfoCircle from 'react-icons/lib/fa/info-circle';
 import Multiselect from 'react-widgets/lib/Multiselect';
-// import { AutoSizer } from 'react-virtualized';
+
 import LabeledFormGroup from './../shared/LabeledFormGroup';
 
 const _ = require('lodash');
@@ -32,6 +32,36 @@ const classNames = {
   formLabel: 'col-md-2 form-label',
   formControl: 'col-md-10',
 };
+
+const inputTooltip = (
+  <Tooltip placement="top" className="in" id="tooltip-top-1">
+    Select one or more inputs for this operation
+  </Tooltip>
+);
+
+const outputTooltip = (
+  <Tooltip placement="top" className="in" id="tooltip-top-2">
+    A unique variable name for the output of this operation (A-Z, 0-9 and _ allowed)
+  </Tooltip>
+);
+
+const operationLabelTooltip = (
+  <Tooltip placement="top" className="in" id="tooltip-top-3">
+    Label for this operation
+  </Tooltip>
+);
+
+const serviceTooltip = (
+  <Tooltip placement="top" className="in" id="tooltip-top-4">
+    Valid URL to Flowbokop service endpoint for desired operation
+  </Tooltip>
+);
+
+const optionsTooltip = (
+  <Tooltip placement="top" className="in" id="tooltip-top-5">
+    A valid JSON string of options for this Flowbokop service
+  </Tooltip>
+);
 
 class FlowbokopOperationBuilder extends React.Component {
   constructor(props) {
@@ -180,7 +210,13 @@ class FlowbokopOperationBuilder extends React.Component {
       <div>
         <Form horizontal>
           <LabeledFormGroup
-            formLabel="Input"
+            formLabel={
+              <span>{'Input  '}
+                <OverlayTrigger placement="top" overlay={inputTooltip}>
+                  <FaInfoCircle size={10} />
+                </OverlayTrigger>
+              </span>
+            }
             value={JSON.stringify(input)}
             validateForm={val => this.validateFormElement('input', val)}
             classNames={classNames}
@@ -194,7 +230,13 @@ class FlowbokopOperationBuilder extends React.Component {
             />
           </LabeledFormGroup>
           <LabeledFormGroup
-            formLabel="Output"
+            formLabel={
+              <span>{'Output  '}
+                <OverlayTrigger placement="top" overlay={outputTooltip}>
+                  <FaInfoCircle size={10} />
+                </OverlayTrigger>
+              </span>
+            }
             value={output}
             validateForm={val => this.validateFormElement('output', val)}
             classNames={classNames}
@@ -206,7 +248,13 @@ class FlowbokopOperationBuilder extends React.Component {
             />
           </LabeledFormGroup>
           <LabeledFormGroup
-            formLabel="Operation Label"
+            formLabel={
+              <span>{'Operation Label  '}
+                <OverlayTrigger placement="top" overlay={operationLabelTooltip}>
+                  <FaInfoCircle size={10} />
+                </OverlayTrigger>
+              </span>
+            }
             value={label}
             validateForm={val => this.validateFormElement('label', val)}
             classNames={classNames}
@@ -218,7 +266,13 @@ class FlowbokopOperationBuilder extends React.Component {
             />
           </LabeledFormGroup>
           <LabeledFormGroup
-            formLabel="Service URL"
+            formLabel={
+              <span>{'Service URL  '}
+                <OverlayTrigger placement="top" overlay={serviceTooltip}>
+                  <FaInfoCircle size={10} />
+                </OverlayTrigger>
+              </span>
+            }
             value={service}
             validateForm={val => this.validateFormElement('service', val)}
             classNames={classNames}
@@ -230,7 +284,13 @@ class FlowbokopOperationBuilder extends React.Component {
             />
           </LabeledFormGroup>
           <LabeledFormGroup
-            formLabel="Options"
+            formLabel={
+              <span>{'Options  '}
+                <OverlayTrigger placement="top" overlay={optionsTooltip}>
+                  <FaInfoCircle size={10} />
+                </OverlayTrigger>
+              </span>
+            }
             value={options}
             validateForm={val => this.validateFormElement('options', val)}
             classNames={classNames}

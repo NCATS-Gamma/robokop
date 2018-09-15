@@ -1,6 +1,6 @@
 import React from 'react';
 // import PropTypes from 'prop-types';
-import { Grid, Row, Col, Button, ButtonGroup, Panel } from 'react-bootstrap';
+import { Grid, Row, Col, Button, ButtonGroup, Panel, Popover, OverlayTrigger } from 'react-bootstrap';
 import Dropzone from 'react-dropzone';
 import FaFloppyO from 'react-icons/lib/fa/floppy-o';
 import FaTrash from 'react-icons/lib/fa/trash';
@@ -8,6 +8,7 @@ import FaPlus from 'react-icons/lib/fa/plus';
 import FaPlusSquare from 'react-icons/lib/fa/plus-square';
 import FaDownload from 'react-icons/lib/fa/download';
 import FaUpload from 'react-icons/lib/fa/upload';
+import FaInfoCircle from 'react-icons/lib/fa/info-circle';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
@@ -157,6 +158,18 @@ const GraphTitleButtons = ({ onDropFile, onDownloadWorkflow, onResetGraph }) => 
   );
 };
 
+const inputHelpPopover = (
+  <Popover id="popover-positioned-right" title="Input Builder Help">
+    <p>Specify a valid variable name for the output of this block in the <strong>Input</strong> field.</p>
+    <p>
+      The Curie selector can be used to select the input type from a pre-populated list of concepts.
+    Typing text in the search field will attempt to find matches via Bionames. User can always Specify
+    a custom Curie by directly typing it into the field - eg: &quot;MONDO:123456&quot;.
+    </p>
+    <p>A curie must always be selected by clicking the &quot;Select&quot; button for the curie in the search popup box</p>
+  </Popover>
+);
+
 const defaultProps = {
   workflowInputs: {}, // workflowInputs can be seeded externally if desired
 };
@@ -264,7 +277,10 @@ class Flowbokop extends React.Component {
         <Panel style={{ marginBottom: '5px' }}>
           <Panel.Heading>
             <Panel.Title>
-              Input - {`${panelObj.inputLabel}`}
+              Input - {`${panelObj.inputLabel} `}
+              <OverlayTrigger trigger="hover" placement="right" overlay={inputHelpPopover}>
+                <FaInfoCircle size={12} />
+              </OverlayTrigger>
             </Panel.Title>
           </Panel.Heading>
           <Panel.Body>
@@ -576,6 +592,7 @@ class Flowbokop extends React.Component {
   renderLoaded() {
     const unsavedChanges = this.isUnsavedChanges();
     const { isValid: isValidPanel } = this.state.activePanelState;
+    const atleastOneInput = this.state.panelState.some(panelObj => panelObj.inputType === 'input');
     return (
       <div>
         <Header
@@ -627,9 +644,11 @@ class Flowbokop extends React.Component {
                   <Button onClick={() => this.newActivePanel('input')}>
                     <FaPlus style={{ verticalAlign: 'text-top' }} />{' New Input'}
                   </Button>
-                  <Button onClick={() => this.newActivePanel('operation')}>
-                    <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{' New Operation'}
-                  </Button>
+                  {atleastOneInput &&
+                    <Button onClick={() => this.newActivePanel('operation')}>
+                      <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{' New Operation'}
+                    </Button>
+                  }
                 </ButtonGroup>
               </div>
               {this.getInputOperationPanel()}
