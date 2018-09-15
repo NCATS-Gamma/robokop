@@ -152,8 +152,9 @@ class FlowbokopOperationBuilder extends React.Component {
   }
 
   onChangeFactory(tag) {
-    // Returns an onChange handler for supplied tag which when fired, returns
+    // Returns an onChange handler for supplied tag which when fired, provides
     // an up to data object of form { input, output, label, service, options, isValid }
+    // to the supplied onChangeHook method in props
     return (event) => {
       const defaultObj = _.cloneDeep(this.props.panelObj.data);
       if (tag === 'input') {

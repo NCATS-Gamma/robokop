@@ -55,15 +55,11 @@ class CurieSelector extends React.Component {
     this.input = null; // Input reference for focusing
   }
 
-  // componentDidMount() {
-  //   // this.input.focus();
-  // }
-  // componentDidUpdate(prevProps) {
-  //   // if ((this.props.term !== prevProps.term) && (this.props.curie === '')) { // Re-do search if term changes
-  //   //   this.setState({ loadingOptions: true }, () => this.handleSearch(this.props.term, this.props.type));
-  //   //   // this.handleTermChange({ target: { value: this.props.term } });
-  //   // }
-  // }
+  componentDidUpdate(prevProps) {
+    if ((this.props.term !== prevProps.term)) { // Re-do search if term changes
+      this.setState({ loadingOptions: true }, () => this.debouncedHandleSearch(this.props.term, this.props.type));
+    }
+  }
 
   // onInputFocus() {
   //   this.setState({ showOptions: true }, () => { this.onUnSelect(); this.handleTermChange({ target: { value: this.state.term } }); });
@@ -77,7 +73,7 @@ class CurieSelector extends React.Component {
     this.props.onSelect(this.props.type, term, curie);
   }
   handleSearch(input, nodeType) {
-    this.wrapSearch(input, nodeType).catch(() => ({ options: [] })).then(data => this.setState({ options: data.options, loadingOptions: false }));
+    this.wrapSearch(input, nodeType).catch(() => this.setState({ options: [] })).then(data => this.setState({ options: data.options, loadingOptions: false }));
   }
   wrapSearch(input, nodeType) {
     if (!input || (input.length < 3)) {
@@ -87,18 +83,12 @@ class CurieSelector extends React.Component {
   }
   handleTermChange(event) {
     this.props.onTermChange(event);
-    const term = event.target.value;
-    this.setState({ loadingOptions: true }, () => this.debouncedHandleSearch(term, this.props.type));
   }
   handleTypeChange(type) {
     this.input.focus();
-    this.props.onTypeChange(type);
+    this.setState({ options: [] }, () => this.props.onTypeChange(type));
     // this.setState({ type }, () => this.handleTermChange({ target: { value: this.state.term } }));
   }
-  // handleClear() {
-  //   this.input.value = '';
-  //   this.handleTermChange({ target: { value: '' } });
-  // }
   handleReopen() {
     this.props.onReopen();
     this.input.focus();
@@ -111,7 +101,6 @@ class CurieSelector extends React.Component {
     const dropDownObjList = concepts.map(c => ({ text: entityNameDisplay(c), value: c }));
     const showOptions = curie === '';
 
-    // const showClearResultsIcon = (showOptions || !hasSelected);
     const rightButtonCallback = showOptions ? onClear : this.handleReopen;
     const rightButtonContents = showOptions ? (<Glyphicon glyph="remove" />) : (<Glyphicon glyph="triangle-bottom" />);
 
