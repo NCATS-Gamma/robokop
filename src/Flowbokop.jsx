@@ -218,8 +218,17 @@ class Flowbokop extends React.Component {
     this.getGraph();
   }
 
+  /**
+   * Returns panelInd from Node id in returned queryGraph from the flowbokop /graph
+   * endpoint. If Node-id corresponds to the output node, -1 is returned.
+   * @param {Int} id - Id of the node in the queryGraph data structure
+   * @returns {Int} panel index corresponding to the node with id: `id`. -1 for output node.
+   */
   getPanelIndFromNodeId(id) {
     const nodeOfInterest = this.state.queryGraph.nodes.filter(n => (n.id === id));
+    if (nodeOfInterest[0].is_output) {
+      return -1;
+    }
     const nodeOutputLabel = nodeOfInterest[0].is_input ? nodeOfInterest[0].name : nodeOfInterest[0].operation.output;
     let panelInd;
     this.state.panelState.forEach((panelObj, i) => {
@@ -422,7 +431,10 @@ class Flowbokop extends React.Component {
       nodeId = data.nodes[0]; // eslint-disable-line prefer-destructuring
     }
     const panelInd = this.getPanelIndFromNodeId(nodeId);
-    this.setState({ activePanelInd: panelInd, activePanelState: this.state.panelState[panelInd] });
+    // Don't change UI state if Output node is clicked
+    if (panelInd > -1) {
+      this.setState({ activePanelInd: panelInd, activePanelState: this.state.panelState[panelInd] });
+    }
   }
 
   getEmptyGraph() {
