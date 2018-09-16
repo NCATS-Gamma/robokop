@@ -9,6 +9,7 @@ import FaPlusSquare from 'react-icons/lib/fa/plus-square';
 import FaDownload from 'react-icons/lib/fa/download';
 import FaUpload from 'react-icons/lib/fa/upload';
 import FaInfoCircle from 'react-icons/lib/fa/info-circle';
+import FaUndo from 'react-icons/lib/fa/rotate-left';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
@@ -170,6 +171,26 @@ const inputHelpPopover = (
   </Popover>
 );
 
+const flowbokopGraphPopover = (
+  <Popover id="popover-positioned-right-2" title="Flowbowkop Graph Overview">
+    <p>
+      This graph provides an updated view of the Flowbokop workflow graph as it is construted by the user.
+    </p>
+    <p>
+      Each node in the graph can be clicked to display and edit the details for that node in the
+      panel below the graph. Changes must be saved by clicking the &#91;<FaFloppyO size={14} /> Save&#93;
+      button in the toolbar below the graph.
+    </p>
+    <p>New Input and Output nodes can be created by clicking the corresponding buttons in the
+       toolbar below the graph.
+    </p>
+    <p>
+      The <FaUpload size={14} /> <FaDownload size={14} /> <FaTrash size={14} /> buttons in the title bar
+      of the Graph panel can be clicked to import, export or reset the current workflow.
+    </p>
+  </Popover>
+);
+
 const defaultProps = {
   workflowInputs: {}, // workflowInputs can be seeded externally if desired
 };
@@ -213,6 +234,7 @@ class Flowbokop extends React.Component {
     this.onDownloadWorkflow = this.onDownloadWorkflow.bind(this);
     this.onDropFile = this.onDropFile.bind(this);
     this.onResetGraph = this.onResetGraph.bind(this);
+    this.revertActivePanel = this.revertActivePanel.bind(this);
     // this.onOperationPanelInputSelect = this.onOperationPanelInputSelect.bind(this);
   }
 
@@ -387,6 +409,14 @@ class Flowbokop extends React.Component {
     }
     this.updateInputList(panelState);
     this.setState({ activePanelInd, activePanelState, panelState }, this.getGraph);
+  }
+
+  // Revert any unsaved changes in a panel for an existing node
+  revertActivePanel() {
+    const panelState = _.cloneDeep(this.state.panelState);
+    // let activePanelState = _.cloneDeep(this.state.activePanelState);
+    const { activePanelInd } = this.state;
+    this.setState({ activePanelState: panelState[activePanelInd] });
   }
 
   newActivePanel(panelType) {
@@ -593,6 +623,7 @@ class Flowbokop extends React.Component {
     const unsavedChanges = this.isUnsavedChanges();
     const { isValid: isValidPanel } = this.state.activePanelState;
     const atleastOneInput = this.state.panelState.some(panelObj => panelObj.inputType === 'input');
+    const isNewPanel = this.state.activePanelInd === this.state.panelState.length;
     return (
       <div>
         <Header
@@ -605,7 +636,10 @@ class Flowbokop extends React.Component {
               <Panel>
                 <Panel.Heading>
                   <Panel.Title>
-                    Flowbokop Operation Graph
+                    {'Flowbokop Operation Graph '}
+                    <OverlayTrigger trigger="hover" placement="right" overlay={flowbokopGraphPopover}>
+                      <FaInfoCircle size={12} />
+                    </OverlayTrigger>
                     <GraphTitleButtons
                       onDownloadWorkflow={this.onDownloadWorkflow}
                       onDropFile={this.onDropFile}
@@ -636,9 +670,19 @@ class Flowbokop extends React.Component {
                       {' Save'}
                     </Button>
                   }
+                  {!isNewPanel &&
+                    <Button
+                      onClick={this.revertActivePanel}
+                      disabled={!unsavedChanges}
+                      title="Undo unsaved changes"
+                    >
+                      <FaUndo style={{ verticalAlign: 'text-top' }} />
+                      {' Undo'}
+                    </Button>
+                  }
                   {(this.state.panelState.length > 1) &&
-                    <Button onClick={this.deleteActivePanel}>
-                      <FaTrash style={{ verticalAlign: 'text-top' }} />{' Delete'}
+                    <Button onClick={this.deleteActivePanel} title={`${isNewPanel ? 'Discard' : 'Delete'} current node`}>
+                      <FaTrash style={{ verticalAlign: 'text-top' }} />{` ${isNewPanel ? 'Discard' : 'Delete'}`}
                     </Button>
                   }
                   <Button onClick={() => this.newActivePanel('input')}>
