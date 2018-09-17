@@ -212,7 +212,7 @@ class FlowbokopOperationBuilder extends React.Component {
           <LabeledFormGroup
             formLabel={
               <span>{'Input  '}
-                <OverlayTrigger placement="top" overlay={inputTooltip}>
+                <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={inputTooltip}>
                   <FaInfoCircle size={10} />
                 </OverlayTrigger>
               </span>
@@ -232,7 +232,7 @@ class FlowbokopOperationBuilder extends React.Component {
           <LabeledFormGroup
             formLabel={
               <span>{'Output  '}
-                <OverlayTrigger placement="top" overlay={outputTooltip}>
+                <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={outputTooltip}>
                   <FaInfoCircle size={10} />
                 </OverlayTrigger>
               </span>
@@ -250,7 +250,7 @@ class FlowbokopOperationBuilder extends React.Component {
           <LabeledFormGroup
             formLabel={
               <span>{'Operation Label  '}
-                <OverlayTrigger placement="top" overlay={operationLabelTooltip}>
+                <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={operationLabelTooltip}>
                   <FaInfoCircle size={10} />
                 </OverlayTrigger>
               </span>
@@ -268,7 +268,7 @@ class FlowbokopOperationBuilder extends React.Component {
           <LabeledFormGroup
             formLabel={
               <span>{'Service URL  '}
-                <OverlayTrigger placement="top" overlay={serviceTooltip}>
+                <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={serviceTooltip}>
                   <FaInfoCircle size={10} />
                 </OverlayTrigger>
               </span>
@@ -286,7 +286,7 @@ class FlowbokopOperationBuilder extends React.Component {
           <LabeledFormGroup
             formLabel={
               <span>{'Options  '}
-                <OverlayTrigger placement="top" overlay={optionsTooltip}>
+                <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={optionsTooltip}>
                   <FaInfoCircle size={10} />
                 </OverlayTrigger>
               </span>

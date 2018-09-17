@@ -1,6 +1,6 @@
 import React from 'react';
 // import PropTypes from 'prop-types';
-import { Grid, Row, Col, Button, ButtonGroup, Panel, Popover, OverlayTrigger } from 'react-bootstrap';
+import { Grid, Row, Col, Button, ButtonGroup, Panel, Popover, OverlayTrigger, Tabs, Tab } from 'react-bootstrap';
 import Dropzone from 'react-dropzone';
 import FaFloppyO from 'react-icons/lib/fa/floppy-o';
 import FaTrash from 'react-icons/lib/fa/trash';
@@ -10,6 +10,7 @@ import FaDownload from 'react-icons/lib/fa/download';
 import FaUpload from 'react-icons/lib/fa/upload';
 import FaInfoCircle from 'react-icons/lib/fa/info-circle';
 import FaUndo from 'react-icons/lib/fa/rotate-left';
+import FaPaperPlaneO from 'react-icons/lib/fa/paper-plane-o';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
@@ -18,9 +19,16 @@ import Loading from './components/Loading';
 import FlowbokopGraphFetchAndView, { graphStates } from './components/flowbokop/FlowbokopGraphFetchAndView';
 import FlowbokopInputBuilder from './components/flowbokop/FlowbokopInputBuilder';
 import FlowbokopOperationBuilder from './components/flowbokop/FlowbokopOperationBuilder';
+import CurieBrowser from './components/shared/CurieBrowser';
 
 
 const _ = require('lodash');
+
+// ENUM for active tab to display for a panel
+const activeTabKeys = {
+  configure: 1,
+  results: 2,
+};
 
 // Convert internal panel state representation to Flowbokop workflow input
 // representation that is required to be POSTed to the Flowbokop endpoint
@@ -43,84 +51,21 @@ const panelStateToWorkflowInputs = (panelSt) => {
   return workflowInputs;
 };
 
-// Convert WorkflowInput representation for Flowbokop into internal panel state
-// representation
-const workflowInputsToPanelState = (workflowInp) => {
-  const panelState = [];
-  const workflowInput = _.cloneDeep(workflowInp);
-  if (Object.hasOwnProperty.call(workflowInput, 'input')) {
-    const inputLabels = Object.keys(workflowInput.input);
-    inputLabels.forEach((inputLabel) => {
-      const isCurieListArray = Array.isArray(workflowInput.input[inputLabel]);
-      // Ensure data is always an array
-      panelState.push({
-        inputType: 'input',
-        isValid: true,
-        inputLabel,
-        data: isCurieListArray ? workflowInput.input[inputLabel] : [workflowInput.input[inputLabel]],
-      });
-    });
-  }
-  if (Object.hasOwnProperty.call(workflowInput, 'options')) {
-    if (Object.hasOwnProperty.call(workflowInput.options, 'operations')) {
-      workflowInput.options.operations.forEach((operationData) => {
-        let options = '';
-        // Always convert input(s) into a list of string(s)
-        if (typeof operationData.input === 'string' || operationData.input instanceof String) {
-          operationData.input = [operationData.input];
-        }
-        if (Object.hasOwnProperty.call(operationData, 'options')) {
-          if (typeof operationData.options === 'string' || operationData.options instanceof String) {
-            // options = { operationData };
-            ({ options } = operationData);
-          }
-        }
-        panelState.push({
-          inputType: 'operation',
-          isValid: true,
-          data: Object.assign({}, operationData, { options }),
-        });
-      });
-    }
-  }
-  return panelState;
-};
-
-const demoWorkflowInputs = {
-  input: {
-    usher1: { type: 'genetic_condition', curie: 'MONDO:0010168', label: 'Usher syndrome type 1' },
-    usher2: { type: 'genetic_condition', curie: 'MONDO:0016484', label: 'Usher syndrome type 2' },
-  },
-  options: {
-    output: 'all',
-    operations: [
-      {
-        input: 'usher1',
-        output: 'usher1_genes',
-        label: 'Expand',
-        service: 'http://127.0.0.1/api/flowbokop/expand/genetic_condition/gene/',
-      },
-      {
-        input: 'usher2',
-        output: 'usher2_genes',
-        label: 'Expand',
-        service: 'http://127.0.0.1/api/flowbokop/expand/genetic_condition/gene/',
-      },
-      {
-        input: ['usher1_genes', 'usher2_genes'],
-        output: 'common_genes',
-        label: 'Intersect',
-        service: 'http://127.0.0.1/api/flowbokop/intersection/',
-      },
-    ],
-  },
-};
-
 // Buttons displayed in title-bar of Graph Viewer
-const GraphTitleButtons = ({ onDropFile, onDownloadWorkflow, onResetGraph }) => {
+const GraphTitleButtons = ({
+  onDropFile, onDownloadWorkflow, onResetGraph, onSubmitWorkflow,
+}) => {
   const buttonStyles = { padding: '2px', marginLeft: '5px' };
   return (
     <div style={{ position: 'relative', float: 'right', top: '-3px' }}>
+      <div
+        style={buttonStyles}
+        className="btn btn-default"
+      >
+        <span style={{ fontSize: '22px' }} title="Submit Workflow">
+          <FaPaperPlaneO style={{ cursor: 'pointer' }} onClick={onSubmitWorkflow} />
+        </span>
+      </div>
       <div
         style={buttonStyles}
         className="btn btn-default"
@@ -208,18 +153,14 @@ class Flowbokop extends React.Component {
 
       queryGraph: this.getEmptyGraph(),
       graphState: graphStates.empty,
-      panelState: workflowInputsToPanelState(props.workflowInputs),
+      workflowResult: {},
+      panelState: [],
 
       activePanelInd: 0,
       activePanelState: {},
 
       inputLabelList: [],
     };
-
-    // Set activePanelState appropriately
-    if (this.state.panelState.length >= (this.state.activePanelInd + 1)) {
-      this.state.activePanelState = _.cloneDeep(this.state.panelState[this.state.activePanelInd]);
-    }
 
     this.getGraph = this.getGraph.bind(this);
     this.nodeSelectCallback = this.nodeSelectCallback.bind(this);
@@ -235,7 +176,16 @@ class Flowbokop extends React.Component {
     this.onDropFile = this.onDropFile.bind(this);
     this.onResetGraph = this.onResetGraph.bind(this);
     this.revertActivePanel = this.revertActivePanel.bind(this);
+    // this.onSubmitWorkflow = this.onSubmitWorkflow.bind(this);
+    this.onSubmitWorkflow = this.onSubmitWorkflowFake.bind(this);
     // this.onOperationPanelInputSelect = this.onOperationPanelInputSelect.bind(this);
+
+    // Update internal state
+    this.state.panelState = this.workflowInputsToPanelState(props.workflowInputs);
+    // Set activePanelState appropriately
+    if (this.state.panelState.length >= (this.state.activePanelInd + 1)) {
+      this.state.activePanelState = _.cloneDeep(this.state.panelState[this.state.activePanelInd]);
+    }
   }
 
   componentDidMount() {
@@ -251,6 +201,126 @@ class Flowbokop extends React.Component {
     });
     this.updateInputList();
     this.getGraph();
+  }
+
+  componentDidUpdate() {
+    // Update this.state.activePanelState if the current entry differs from the corresponding
+    // entry in this.state.panelState (for example when the latter gets updated with results)
+    if (this.state.panelState.length >= (this.state.activePanelInd + 1)) {
+      if (!_.isEqual(this.state.activePanelState, this.state.panelState[this.state.activePanelInd])) {
+        this.setState({ activePanelState: _.cloneDeep(this.state.panelState[this.state.activePanelInd]) });
+      }
+    }
+  }
+
+  /**
+   * Convert JSON workflow input format to internal Panel State representation.
+   * If any workflow results stored in this.state.workflowResult, then these are
+   * merged into the returned panel state objects under the `result` param.
+   * @param {JSON Object} workflowInp - Flowbokop Workflow input specification
+   * @returns {Array} Array in internal Panel state representation of form:
+   * [
+   *   {
+   *     inputType: 'input',
+   *     locked: true,
+   *     inputLabel: 'usher2',
+   *     result: [],
+   *     data: [{'type': 'disease', 'curie': 'MONDO:0016484', 'label': 'Usher syndrome type 2'}],
+   *   },
+   *   {
+   *     inputType: 'operation',
+   *     locked: true,
+   *     result: [],
+   *     data: {
+   *       input: 'usher1',
+   *       output: 'usher1_genes',
+   *       service: 'http://127.0.0.1/api/flowbokop/expand/disease/gene/',
+   *       options: '',
+   *     },
+   *   }
+   * ]
+   */
+  workflowInputsToPanelState(workflowInp) {
+    let panelState = [];
+    const outputLabels = []; // List of output variable names for each node/panel item
+    const workflowInput = _.cloneDeep(workflowInp);
+    if (Object.hasOwnProperty.call(workflowInput, 'input')) {
+      const inputLabels = Object.keys(workflowInput.input);
+      inputLabels.forEach((inputLabel) => {
+        const isCurieListArray = Array.isArray(workflowInput.input[inputLabel]);
+        // Ensure data is always an array
+        panelState.push({
+          inputType: 'input',
+          isValid: true,
+          inputLabel,
+          result: [],
+          data: isCurieListArray ? workflowInput.input[inputLabel] : [workflowInput.input[inputLabel]],
+        });
+        outputLabels.push(inputLabel);
+      });
+    }
+    if (Object.hasOwnProperty.call(workflowInput, 'options')) {
+      if (Object.hasOwnProperty.call(workflowInput.options, 'operations')) {
+        workflowInput.options.operations.forEach((operationData) => {
+          let options = '';
+          // Always convert input(s) into a list of string(s)
+          if (typeof operationData.input === 'string' || operationData.input instanceof String) {
+            operationData.input = [operationData.input];
+          }
+          if (Object.hasOwnProperty.call(operationData, 'options')) {
+            if (typeof operationData.options === 'string' || operationData.options instanceof String) {
+              // options = { operationData };
+              ({ options } = operationData);
+            }
+          }
+          panelState.push({
+            inputType: 'operation',
+            isValid: true,
+            result: [],
+            data: Object.assign({}, operationData, { options }),
+          });
+          outputLabels.push(operationData.output);
+        });
+      }
+    }
+    // Merge in `results` value to each panel if this.state.workflowResult is non-empty
+    panelState = this.updatePanelStateWithResults(panelState);
+    return panelState;
+  }
+
+  /**
+   * Mutates provided panelState array with updates to the `result` field for each node
+   * based on current value of this.state.workflowResult
+   * @param {Array} panelState - Panel state array representation (Will be mutated!)
+   */
+  updatePanelStateWithResults(panelState) {
+    if (arguments.length === 0) {
+      panelState = _.cloneDeep(this.state.panelState); // eslint-disable-line no-param-reassign
+    }
+    const outputLabels = []; // output variable names for each node in panelState
+    panelState.forEach((panelObj) => {
+      if (panelObj.inputType === 'input') {
+        outputLabels.push(panelObj.inputLabel);
+      }
+      if (panelObj.inputType === 'operation') {
+        outputLabels.push(panelObj.data.output);
+      }
+    });
+    if (!_.isEmpty(this.state.workflowResult)) {
+      const workflowResult = _.cloneDeep(this.state.workflowResult);
+      const outputVarNames = Object.keys(workflowResult);
+      outputVarNames.forEach((outputVarName) => {
+        const outputLabelInd = outputLabels.indexOf(outputVarName);
+        // Update panelState array entry with corresponding workflow result curieList
+        if (outputLabelInd > -1) {
+          panelState[outputLabelInd].result = workflowResult[outputVarName]; // eslint-disable-line no-param-reassign
+        }
+      });
+    } else {
+      // Reset the `result` param to [] for all panels if this.state.workflowResult is empty
+      panelState.forEach(panelObj => (panelObj.result = [])); // eslint-disable-line
+    }
+    return panelState;
   }
 
   /**
@@ -300,7 +370,7 @@ class Flowbokop extends React.Component {
           <Panel.Heading>
             <Panel.Title>
               Input - {`${panelObj.inputLabel} `}
-              <OverlayTrigger trigger="hover" placement="right" overlay={inputHelpPopover}>
+              <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={inputHelpPopover}>
                 <FaInfoCircle size={12} />
               </OverlayTrigger>
             </Panel.Title>
@@ -493,7 +563,8 @@ class Flowbokop extends React.Component {
 
   /**
    * Fetch query graph from Flowbokop /graph endpoint in async manner
-   * and display status accordingly in UI
+   * and display status accordingly in UI. Any existing results will
+   * be invalidated and deleted.
    */
   getGraph() {
     console.log('Input to graph endpoint:', panelStateToWorkflowInputs(this.state.panelState));
@@ -508,7 +579,13 @@ class Flowbokop extends React.Component {
         (data) => {
           const validGraph = this.isValidGraph(data);
           const graphState = validGraph ? graphStates.display : graphStates.empty;
-          this.setState({ queryGraph: data, graphState });
+          const newPanelStateWithNoResults = this.updatePanelStateWithResults();
+          this.setState({
+            queryGraph: data,
+            graphState,
+            workflowResult: {},
+            panelState: newPanelStateWithNoResults,
+          });
         },
         err => console.log('Error fetching query graph', err),
       );
@@ -547,7 +624,7 @@ class Flowbokop extends React.Component {
         const fileContents = e.target.result;
         try {
           const fileContentObj = JSON.parse(fileContents);
-          const panelState = workflowInputsToPanelState(fileContentObj);
+          const panelState = this.workflowInputsToPanelState(fileContentObj);
           const activePanelState = panelState.length > 0 ? panelState[0] : {};
           const activePanelInd = 0;
           this.updateInputList(panelState);
@@ -566,6 +643,140 @@ class Flowbokop extends React.Component {
     });
   }
 
+  onSubmitWorkflow() {
+    this.setState({ graphState: graphStates.fetching }, () => {
+      this.appConfig.flowbokopExecute(
+        panelStateToWorkflowInputs(this.state.panelState),
+        (data) => {
+          // const validGraph = this.isValidGraph(data);
+          // const graphState = validGraph ? graphStates.display : graphStates.empty;
+          console.log('Flowbokop Execute output:', data);
+          this.setState({
+            graphState: graphStates.display,
+            workflowResult: data,
+          }, () => this.setState({ panelState: this.updatePanelStateWithResults() }));
+        },
+        err => console.log('Error fetching query graph', err),
+      );
+    });
+  }
+
+  onSubmitWorkflowFake() {
+    this.setState({ graphState: graphStates.fetching }, () => {
+      const fakeWorkflowResult = {
+        "usher1": [
+          {
+            "curie": "MONDO:0010168",
+            "label": "Usher syndrome type 1"
+          }
+        ],
+        "usher2": [
+          {
+            "curie": "MONDO:0016484",
+            "label": "Usher syndrome type 2"
+          }
+        ],
+        "usher1_genes": [
+          {
+            "label": "FBXO9",
+            "curie": "HGNC:13588"
+          },
+          {
+            "label": "CDH17",
+            "curie": "HGNC:1756"
+          },
+          {
+            "label": "WDR91",
+            "curie": "HGNC:24997"
+          },
+          {
+            "label": "CIB4",
+            "curie": "HGNC:33703"
+          },
+          {
+            "label": "TAF9B",
+            "curie": "HGNC:17306"
+          },
+          {
+            "label": "AGBL5",
+            "curie": "HGNC:26147"
+          },
+          {
+            "label": "ADGRV1",
+            "curie": "HGNC:17416"
+          },
+          {
+            "label": "USH2A",
+            "curie": "HGNC:12601"
+          },
+          {
+            "label": "LRRC18",
+            "curie": "HGNC:23199"
+          },
+          {
+            "label": "ASZ1",
+            "curie": "HGNC:1350"
+          },
+          {
+            "label": "WDR81",
+            "curie": "HGNC:26600"
+          },
+          {
+            "label": "MYO7A",
+            "curie": "HGNC:7606"
+          },
+          {
+            "label": "JMY",
+            "curie": "HGNC:28916"
+          }
+        ],
+        "usher2_genes": [
+          {
+            "label": "WHRN",
+            "curie": "HGNC:16361"
+          },
+          {
+            "label": "ADGRV1",
+            "curie": "HGNC:17416"
+          },
+          {
+            "label": "USH2A",
+            "curie": "HGNC:12601"
+          },
+          {
+            "label": "PDZD7",
+            "curie": "HGNC:26257"
+          },
+          {
+            "label": "MYO7A",
+            "curie": "HGNC:7606"
+          }
+        ],
+        "common_genes": [
+          {
+            "label": "ADGRV1",
+            "curie": "HGNC:17416"
+          },
+          {
+            "label": "USH2A",
+            "curie": "HGNC:12601"
+          },
+          {
+            "label": "MYO7A",
+            "curie": "HGNC:7606"
+          }
+        ]
+      };
+      setTimeout(() => {
+        console.log('Flowbokop FAKE Execute output:', fakeWorkflowResult);
+        this.setState({
+          graphState: graphStates.display,
+          workflowResult: fakeWorkflowResult,
+        }, () => this.setState({ panelState: this.updatePanelStateWithResults() }));
+      }, 5000);
+    });
+  }
+
   onResetGraph() {
     this.setState({
       queryGraph: this.getEmptyGraph(),
@@ -574,6 +785,7 @@ class Flowbokop extends React.Component {
       graphState: graphStates.empty,
       panelState: [],
       inputLabelList: [],
+      workflowResult: {},
     });
   }
 
@@ -624,6 +836,7 @@ class Flowbokop extends React.Component {
     const { isValid: isValidPanel } = this.state.activePanelState;
     const atleastOneInput = this.state.panelState.some(panelObj => panelObj.inputType === 'input');
     const isNewPanel = this.state.activePanelInd === this.state.panelState.length;
+    const hasResults = !isNewPanel && this.state.activePanelState.result && this.state.activePanelState.result.length > 0;
     return (
       <div>
         <Header
@@ -637,13 +850,14 @@ class Flowbokop extends React.Component {
                 <Panel.Heading>
                   <Panel.Title>
                     {'Flowbokop Operation Graph '}
-                    <OverlayTrigger trigger="hover" placement="right" overlay={flowbokopGraphPopover}>
+                    <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={flowbokopGraphPopover}>
                       <FaInfoCircle size={12} />
                     </OverlayTrigger>
                     <GraphTitleButtons
                       onDownloadWorkflow={this.onDownloadWorkflow}
                       onDropFile={this.onDropFile}
                       onResetGraph={this.onResetGraph}
+                      onSubmitWorkflow={this.onSubmitWorkflow}
                     />
                   </Panel.Title>
                 </Panel.Heading>
@@ -657,45 +871,61 @@ class Flowbokop extends React.Component {
                   />
                 </Panel.Body>
               </Panel>
-              <div style={{ marginTop: '0px', marginBottom: '6px' }}>
-                <ButtonGroup>
-                  {!_.isEmpty(this.state.activePanelState) &&
-                    <Button
-                      onClick={this.saveActivePanel}
-                      disabled={!unsavedChanges || !isValidPanel}
-                      bsStyle={isValidPanel ? (unsavedChanges ? 'primary' : 'default') : 'danger'} // eslint-disable-line no-nested-ternary
-                      title={isValidPanel ? (unsavedChanges ? 'Save changes' : 'No changes to save') : 'Fix invalid panel entries first'} // eslint-disable-line no-nested-ternary
-                    >
-                      <FaFloppyO style={{ verticalAlign: 'text-top' }} />
-                      {' Save'}
-                    </Button>
+              <Tabs
+                activeKey={hasResults ? activeTabKeys.results : activeTabKeys.configure}
+                onSelect={() => {}}
+                id="node-display-tabs"
+              >
+                <Tab eventKey={activeTabKeys.configure} title="Configure">
+                  <div style={{ marginTop: '10px', marginBottom: '6px' }}>
+                    <ButtonGroup>
+                      {!_.isEmpty(this.state.activePanelState) &&
+                        <Button
+                          onClick={this.saveActivePanel}
+                          disabled={!unsavedChanges || !isValidPanel}
+                          bsStyle={isValidPanel ? (unsavedChanges ? 'primary' : 'default') : 'danger'} // eslint-disable-line no-nested-ternary
+                          title={isValidPanel ? (unsavedChanges ? 'Save changes' : 'No changes to save') : 'Fix invalid panel entries first'} // eslint-disable-line no-nested-ternary
+                        >
+                          <FaFloppyO style={{ verticalAlign: 'text-top' }} />
+                          {' Save'}
+                        </Button>
+                      }
+                      {!isNewPanel &&
+                        <Button
+                          onClick={this.revertActivePanel}
+                          disabled={!unsavedChanges}
+                          title="Undo unsaved changes"
+                        >
+                          <FaUndo style={{ verticalAlign: 'text-top' }} />
+                          {' Undo'}
+                        </Button>
+                      }
+                      {(this.state.panelState.length > 1) &&
+                        <Button onClick={this.deleteActivePanel} title={`${isNewPanel ? 'Discard' : 'Delete'} current node`}>
+                          <FaTrash style={{ verticalAlign: 'text-top' }} />{` ${isNewPanel ? 'Discard' : 'Delete'}`}
+                        </Button>
+                      }
+                      <Button onClick={() => this.newActivePanel('input')}>
+                        <FaPlus style={{ verticalAlign: 'text-top' }} />{' New Input'}
+                      </Button>
+                      {atleastOneInput &&
+                        <Button onClick={() => this.newActivePanel('operation')}>
+                          <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{' New Operation'}
+                        </Button>
+                      }
+                    </ButtonGroup>
+                  </div>
+                  {this.getInputOperationPanel()}
+                </Tab>
+                <Tab eventKey={activeTabKeys.results} title="Results" disabled={!hasResults}>
+                  {hasResults &&
+                    <CurieBrowser
+                      curieList={this.state.activePanelState.result}
+                      defaults={{ type: '', label: '<N/A>' }}
+                    />
                   }
-                  {!isNewPanel &&
-                    <Button
-                      onClick={this.revertActivePanel}
-                      disabled={!unsavedChanges}
-                      title="Undo unsaved changes"
-                    >
-                      <FaUndo style={{ verticalAlign: 'text-top' }} />
-                      {' Undo'}
-                    </Button>
-                  }
-                  {(this.state.panelState.length > 1) &&
-                    <Button onClick={this.deleteActivePanel} title={`${isNewPanel ? 'Discard' : 'Delete'} current node`}>
-                      <FaTrash style={{ verticalAlign: 'text-top' }} />{` ${isNewPanel ? 'Discard' : 'Delete'}`}
-                    </Button>
-                  }
-                  <Button onClick={() => this.newActivePanel('input')}>
-                    <FaPlus style={{ verticalAlign: 'text-top' }} />{' New Input'}
-                  </Button>
-                  {atleastOneInput &&
-                    <Button onClick={() => this.newActivePanel('operation')}>
-                      <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{' New Operation'}
-                    </Button>
-                  }
-                </ButtonGroup>
-              </div>
-              {this.getInputOperationPanel()}
+                </Tab>
+              </Tabs>
               {/* </PanelGroup> */}
             </Col>
           </Row>
