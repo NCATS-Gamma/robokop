@@ -37,9 +37,12 @@ class Tasks(Resource):
         responses:
             200:
                 description: tasks
-                type: array
-                items:
-                    $ref: '#/definitions/Task'
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                $ref: '#/definitions/Task'
         """
         tasks = list_tasks(session=db.session)
         return [t.to_json() for t in tasks]
@@ -55,13 +58,16 @@ class TaskStatus(Resource):
           - in: path
             name: task_id
             description: "task id"
-            type: string
+            schema:
+                type: string
             required: true
         responses:
             200:
                 description: task
-                schema:
-                    $ref: '#/definitions/Task'
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/definitions/Task'
         """
         
         return get_task_by_id(task_id).to_json()
@@ -74,11 +80,16 @@ class TaskStatus(Resource):
           - in: path
             name: task_id
             description: "task id"
-            type: string
+            schema:
+                type: string
             required: true
         responses:
             204:
                 description: task revoked
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
         
         celery.control.revoke(task_id, terminate=True)
@@ -96,21 +107,28 @@ class NLP(Resource):
         summary: "Convert a natural-language question into machine-readable form."
         consumes:
           - text/plain
-        parameters:
-          - in: "body"
+        requestBody:
             name: "question"
             description: "Natural-language question"
             required: true
-            schema:
-                type: string
-                example: "What genes affect Ebola?"
+            content:
+                text/plain:
+                    schema:
+                        type: string
+                        example: "What genes affect Ebola?"
         responses:
             200:
                 description: "Here's your graph"
-                schema:
-                    $ref: "#/definitions/Graph"
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/definitions/Graph"
             400:
                 description: "Something went wrong"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
         response = requests.post(f"http://{os.environ['NLP_HOST']}:{os.environ['NLP_PORT']}/api/parse/", data=request.get_data())
         return Response(response.content, response.status_code)
@@ -126,9 +144,12 @@ class Concepts(Resource):
         responses:
             200:
                 description: concepts
-                type: array
-                items:
-                    type: string
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: string
         """
         r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/concepts")
         concepts = r.json()
@@ -148,9 +169,12 @@ class Connections(Resource):
         responses:
             200:
                 description: concepts
-                type: array
-                items:
-                    type: string
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: string
         """
         r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/connections")
         connections = r.json()
@@ -168,9 +192,12 @@ class Operations(Resource):
         responses:
             200:
                 description: concepts
-                type: array
-                items:
-                    type: string
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: string
         """
         r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/operations")
         operations = r.json()
@@ -189,21 +216,26 @@ class Search(Resource):
           - in: path
             name: term
             description: "biomedical term"
-            type: string
+            schema:
+                type: string
             required: true
             example: ebola
           - in: path
             name: category
             description: "biomedical concept category"
-            type: string
+            schema:
+                type: string
             required: true
             example: disease
         responses:
             200:
                 description: "biomedical identifiers"
-                type: array
-                items:
-                    type: string
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: string
         """
         if category not in concept_map:
             abort(400, error_message=f'Unsupported category: {category} provided')
@@ -252,23 +284,26 @@ class User(Resource):
         responses:
             200:
                 description: user
-                type: object
-                properties:
-                    is_authenticated:
-                        type: string
-                        example: true
-                    is_active:
-                        type: string
-                        example: true
-                    is_anonymous:
-                        type: string
-                        example: false
-                    is_admin:
-                        type: string
-                        example: false
-                    username:
-                        type: string
-                        example: patrick@covar.com
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                is_authenticated:
+                                    type: string
+                                    example: true
+                                is_active:
+                                    type: string
+                                    example: true
+                                is_anonymous:
+                                    type: string
+                                    example: false
+                                is_admin:
+                                    type: string
+                                    example: false
+                                username:
+                                    type: string
+                                    example: me@mydomain.edu
         """
         user = getAuthData()
         return user
