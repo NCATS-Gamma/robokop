@@ -158,6 +158,7 @@ class Flowbokop extends React.Component {
 
       activePanelInd: 0,
       activePanelState: {},
+      activeTab: activeTabKeys.configure,
 
       inputLabelList: [],
     };
@@ -176,9 +177,10 @@ class Flowbokop extends React.Component {
     this.onDropFile = this.onDropFile.bind(this);
     this.onResetGraph = this.onResetGraph.bind(this);
     this.revertActivePanel = this.revertActivePanel.bind(this);
+    this.onChangeTab = this.onChangeTab.bind(this);
+    this.onDownloadResults = this.onDownloadResults.bind(this);
     // this.onSubmitWorkflow = this.onSubmitWorkflow.bind(this);
     this.onSubmitWorkflow = this.onSubmitWorkflowFake.bind(this);
-    // this.onOperationPanelInputSelect = this.onOperationPanelInputSelect.bind(this);
 
     // Update internal state
     this.state.panelState = this.workflowInputsToPanelState(props.workflowInputs);
@@ -204,10 +206,11 @@ class Flowbokop extends React.Component {
   }
 
   componentDidUpdate() {
-    // Update this.state.activePanelState if the current entry differs from the corresponding
+    // Update this.state.activePanelState if the current entry's result differs from the corresponding
     // entry in this.state.panelState (for example when the latter gets updated with results)
     if (this.state.panelState.length >= (this.state.activePanelInd + 1)) {
-      if (!_.isEqual(this.state.activePanelState, this.state.panelState[this.state.activePanelInd])) {
+      // if (!_.isEqual(this.state.activePanelState, this.state.panelState[this.state.activePanelInd])) {
+      if (!_.isEqual(this.state.activePanelState.result, this.state.panelState[this.state.activePanelInd].result)) {
         this.setState({ activePanelState: _.cloneDeep(this.state.panelState[this.state.activePanelInd]) });
       }
     }
@@ -352,7 +355,7 @@ class Flowbokop extends React.Component {
   }
 
   getInputOperationPanel() {
-    const { activePanelState, activePanelInd } = this.state;
+    const { activePanelState } = this.state;
     if (_.isEmpty(activePanelState)) {
       return null;
     }
@@ -363,7 +366,7 @@ class Flowbokop extends React.Component {
         panelObj.data = curieList;
         panelObj.inputLabel = inputLabel;
         panelObj.isValid = isValid;
-        this.updatePanelState(panelObj, activePanelInd);
+        this.updatePanelState(panelObj);
       };
       return (
         <Panel style={{ marginBottom: '5px' }}>
@@ -553,6 +556,11 @@ class Flowbokop extends React.Component {
     }
   }
 
+  // Handle clicks on Configure/Results tab
+  onChangeTab(key) {
+    this.setState({ activeTab: key });
+  }
+
   getEmptyGraph() {
     // return demoGraph;
     return {
@@ -579,13 +587,12 @@ class Flowbokop extends React.Component {
         (data) => {
           const validGraph = this.isValidGraph(data);
           const graphState = validGraph ? graphStates.display : graphStates.empty;
-          const newPanelStateWithNoResults = this.updatePanelStateWithResults();
           this.setState({
             queryGraph: data,
             graphState,
             workflowResult: {},
-            panelState: newPanelStateWithNoResults,
-          });
+            activeTab: activeTabKeys.configure,
+          }, () => this.setState({ panelState: this.updatePanelStateWithResults() }));
         },
         err => console.log('Error fetching query graph', err),
       );
@@ -594,6 +601,25 @@ class Flowbokop extends React.Component {
 
   isValidGraph(graph) {
     return 'nodes' in graph && Array.isArray(graph.nodes) && graph.nodes.length > 0;
+  }
+
+  onDownloadResults() {
+    const results = this.state.workflowResult;
+
+    // Transform the data into a json blob and give it a url
+    const json = JSON.stringify(results, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    // This doesn't use Blob() might also work
+    // var url = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+
+    // Create a link with that URL and click it.
+    const a = document.createElement('a');
+    a.download = 'flowbokopWorkflowResults.json';
+    a.href = url;
+    a.click();
+    a.remove();
   }
 
   onDownloadWorkflow() {
@@ -654,13 +680,14 @@ class Flowbokop extends React.Component {
           this.setState({
             graphState: graphStates.display,
             workflowResult: data,
-          }, () => this.setState({ panelState: this.updatePanelStateWithResults() }));
+          }, () => this.setState({ panelState: this.updatePanelStateWithResults(), activeTab: activeTabKeys.results }));
         },
         err => console.log('Error fetching query graph', err),
       );
     });
   }
 
+  // TODO: Delete - Test function for no-internet situations
   onSubmitWorkflowFake() {
     this.setState({ graphState: graphStates.fetching }, () => {
       const fakeWorkflowResult = {
@@ -772,7 +799,10 @@ class Flowbokop extends React.Component {
         this.setState({
           graphState: graphStates.display,
           workflowResult: fakeWorkflowResult,
-        }, () => this.setState({ panelState: this.updatePanelStateWithResults() }));
+        }, () => this.setState({
+          panelState: this.updatePanelStateWithResults(),
+          activeTab: activeTabKeys.results,
+        }));
       }, 5000);
     });
   }
@@ -786,6 +816,7 @@ class Flowbokop extends React.Component {
       panelState: [],
       inputLabelList: [],
       workflowResult: {},
+      activeTab: activeTabKeys.configure,
     });
   }
 
@@ -872,8 +903,8 @@ class Flowbokop extends React.Component {
                 </Panel.Body>
               </Panel>
               <Tabs
-                activeKey={hasResults ? activeTabKeys.results : activeTabKeys.configure}
-                onSelect={() => {}}
+                activeKey={this.state.activeTab}
+                onSelect={this.onChangeTab}
                 id="node-display-tabs"
               >
                 <Tab eventKey={activeTabKeys.configure} title="Configure">
@@ -919,10 +950,26 @@ class Flowbokop extends React.Component {
                 </Tab>
                 <Tab eventKey={activeTabKeys.results} title="Results" disabled={!hasResults}>
                   {hasResults &&
-                    <CurieBrowser
-                      curieList={this.state.activePanelState.result}
-                      defaults={{ type: '', label: '<N/A>' }}
-                    />
+                    <div>
+                      <div style={{ marginTop: '10px', marginBottom: '6px' }}>
+                        <ButtonGroup>
+                          {!_.isEmpty(this.state.activePanelState) &&
+                            <Button
+                              onClick={this.onDownloadResults}
+                              bsStyle="primary"
+                              title="Export Flowbokop workflow results as JSON file"
+                            >
+                              <FaDownload style={{ verticalAlign: 'text-top' }} />
+                              {' Export all results'}
+                            </Button>
+                          }
+                        </ButtonGroup>
+                      </div>
+                      <CurieBrowser
+                        curieList={this.state.activePanelState.result}
+                        defaults={{ type: '', label: '<N/A>' }}
+                      />
+                    </div>
                   }
                 </Tab>
               </Tabs>
