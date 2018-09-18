@@ -10,7 +10,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 
 import CurieSelectorContainer from './components/shared/CurieSelectorContainer';
-import CurieBrowser from './components/shared/CurieBrowser';
+// import CurieBrowser from './components/shared/CurieBrowser';
 
 const _ = require('lodash');
 
@@ -173,7 +173,7 @@ class MultiSearch extends React.Component {
                   <div
                     id="searchBionames"
                   >
-                    <div style={{ width: width / 2, padding: '10px 0px 30px 0px' }}>
+                    {/* <div style={{ width: width / 2, padding: '10px 0px 30px 0px' }}>
                       <FormControl
                         componentClass="textarea"
                         value={this.state.rawInputJson}
@@ -193,14 +193,14 @@ class MultiSearch extends React.Component {
                       >
                         Export
                       </Button>
-                    </div>
+                    </div> */}
                     <div style={{ display: 'table' }}>
                       {curieSelectorElements(width)}
                       <div style={{ display: 'table-row', textAlign: 'center' }}>
                         <Button
                           bsStyle="default"
                           bsSize="sm"
-                          style={{ marginTop: '20px' }}
+                          style={{ marginTop: '40px' }}
                           onClick={() => this.addCurie()}
                         >
                           <Glyphicon glyph="plus" />
@@ -210,11 +210,11 @@ class MultiSearch extends React.Component {
                   </div>
                 )}
               </AutoSizer>
-              <div style={{ padding: '20px 0' }}>
+              {/* <div style={{ padding: '20px 0' }}>
                 <CurieBrowser
                   curieList={this.curieListFromSubmittedJSON()}
                 />
-              </div>
+              </div> */}
             </Col>
           </Row>
         </Grid>
