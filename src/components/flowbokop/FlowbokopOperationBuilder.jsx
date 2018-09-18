@@ -67,17 +67,6 @@ class FlowbokopOperationBuilder extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      // validationStatus: {
-      //   input: '',
-      //   output: '',
-      //   label: '',
-      //   service: '',
-      //   options: '',
-      // },
-      isValid: false,
-    };
-
     this.isValidInput = this.isValidInput.bind(this);
     this.isValidLabel = this.isValidLabel.bind(this);
     this.isValidOptions = this.isValidOptions.bind(this);
@@ -87,20 +76,21 @@ class FlowbokopOperationBuilder extends React.Component {
   }
 
   componentDidMount() {
-    this.isValidOperation(this.props.panelObj.data, () => {
-      const defaultObj = _.cloneDeep(this.props.panelObj.data);
-      this.props.onChangeHook(Object.assign({}, defaultObj, { isValid: this.state.isValid }));
-    });
+    this.publishIsValidToOnChangeHook();
   }
 
   componentDidUpdate(prevProps) {
     // Update isValid state of entire panel any time the panel data changes
     if (!_.isEqual(prevProps.panelObj.data, this.props.panelObj.data)) {
-      this.isValidOperation(this.props.panelObj.data, () => {
-        const defaultObj = _.cloneDeep(this.props.panelObj.data);
-        this.props.onChangeHook(Object.assign({}, defaultObj, { isValid: this.state.isValid }));
-      });
+      this.publishIsValidToOnChangeHook();
     }
+  }
+
+  // Determine validation state of entire panel and publish to onChangeHook
+  publishIsValidToOnChangeHook() {
+    const isValid = this.isValidOperation(this.props.panelObj.data);
+    const defaultObj = _.cloneDeep(this.props.panelObj.data);
+    this.props.onChangeHook(Object.assign({}, defaultObj, { isValid }));
   }
 
   // updateValidationStatus(tag, validStatus) {
@@ -142,14 +132,15 @@ class FlowbokopOperationBuilder extends React.Component {
   /**
    * Determine if all input options are valid
    */
-  isValidOperation(panelDataObj, callbackFn = () => {}) {
+  isValidOperation(panelDataObj) {
     const { input, output, label, service, options } = panelDataObj; // eslint-disable-line object-curly-newline
     const isValid = (
       this.isValidInput(input) && this.isValidOutput(output) &&
       this.isValidLabel(label) && this.isValidService(service) &&
       this.isValidOptions(options));
     // console.log('isValidOperation - ', isValid);
-    this.setState({ isValid }, callbackFn);
+    // this.setState({ isValid }, callbackFn);
+    return isValid;
   }
 
   /**
@@ -193,12 +184,14 @@ class FlowbokopOperationBuilder extends React.Component {
       } else {
         defaultObj[tag] = event.target.value;
       }
-      // Set isValid state first, then call onChangeHook with updated panel and isValid state
-      this.isValidOperation(defaultObj, () => {
-        defaultObj.isValid = this.state.isValid;
-        // console.log('in onChangeFactory:', defaultObj, this.state.isValid);
-        this.props.onChangeHook(defaultObj);
-      });
+      defaultObj.isValid = this.isValidOperation(defaultObj);
+      this.props.onChangeHook(defaultObj);
+      // // Set isValid state first, then call onChangeHook with updated panel and isValid state
+      // this.isValidOperation(defaultObj, () => {
+      //   defaultObj.isValid = this.state.isValid;
+      //   // console.log('in onChangeFactory:', defaultObj, this.state.isValid);
+      //   this.props.onChangeHook(defaultObj);
+      // });
     };
   }
 

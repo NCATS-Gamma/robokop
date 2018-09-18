@@ -48,7 +48,6 @@ class FlowbokopInputBuilder extends React.Component {
     this.state = {
       dataReady: false,
       concepts: [],
-      isValid: false,
       submittedJSON: [],
     };
 
@@ -125,13 +124,10 @@ class FlowbokopInputBuilder extends React.Component {
       const curieList = this.curieListFromSubmittedJSON();
       const inputLabel = tag === 'inputLabel' ? val.target.value : this.props.panelObj.inputLabel;
       const panelObj = { data: curieList, inputLabel };
-      this.isValidInput(panelObj, () => {
-        panelObj.isValid = this.state.isValid;
-        panelObj.curieList = panelObj.data;
-        delete panelObj.data;
-        // console.log('in onChangeFactory:', defaultObj, this.state.isValid);
-        this.props.onChangeHook(panelObj);
-      });
+      panelObj.isValid = this.isValidInput(panelObj);
+      panelObj.curieList = panelObj.data;
+      delete panelObj.data;
+      this.props.onChangeHook(panelObj);
     };
   }
 
@@ -158,10 +154,9 @@ class FlowbokopInputBuilder extends React.Component {
     }
     return isValid;
   }
-  isValidInput(panelObj, callbackFn) {
+  isValidInput(panelObj) {
     const { inputLabel, data } = panelObj;
-    const isValid = this.isValidLabel(inputLabel) && this.isValidCurieList(data);
-    this.setState({ isValid }, callbackFn);
+    return this.isValidLabel(inputLabel) && this.isValidCurieList(data);
   }
   /**
    * Return if the specific form element is valid. If val is supplied, then uses

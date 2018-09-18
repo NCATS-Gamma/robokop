@@ -925,7 +925,7 @@ class Flowbokop extends React.Component {
                         <Button
                           onClick={this.revertActivePanel}
                           disabled={!unsavedChanges}
-                          title="Undo unsaved changes"
+                          title={unsavedChanges ? 'Undo unsaved changes' : 'No changes to undo'}
                         >
                           <FaUndo style={{ verticalAlign: 'text-top' }} />
                           {' Undo'}
