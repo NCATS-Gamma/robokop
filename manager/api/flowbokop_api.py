@@ -331,6 +331,22 @@ class FlowbokopRobokop(Resource):
         Use robokop as a flowbokop service
         ---
         tags: [flowbokop]
+        parameters:
+          - in: body
+            name: Flowbokop service input
+            description: An object that specifes input curies and options
+            schema:
+                $ref: '#/definitions/FlowbokopServiceInput'
+            required: true
+        responses:
+            200:
+                description: A curie list
+                type: object
+                properties:
+                    curies:
+                        type: array
+                        items:
+                            type: string
         """
 
         data = request.json
