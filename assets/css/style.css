@@ -225,6 +225,17 @@ div.vis-tooltip .invalid-node {
   border-color: #a94442;
 }
 
+/* Custom tweak to Bootstrap tabs */
+.nav-tabs > li > a {
+  border: 1px solid #ededed;
+  border-bottom-color: transparent;
+}
+
+.nav > li.disabled > a {
+  color: #999;
+  background-color: #eee;
+}
+
 /* Custom "icon-spin" class that spins the icon 360 degrees */
 .icon-spin {
   -webkit-animation: icon-spin 2s infinite linear;
