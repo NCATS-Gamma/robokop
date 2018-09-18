@@ -179,8 +179,8 @@ class Flowbokop extends React.Component {
     this.revertActivePanel = this.revertActivePanel.bind(this);
     this.onChangeTab = this.onChangeTab.bind(this);
     this.onDownloadResults = this.onDownloadResults.bind(this);
-    // this.onSubmitWorkflow = this.onSubmitWorkflow.bind(this);
-    this.onSubmitWorkflow = this.onSubmitWorkflowFake.bind(this);
+    this.onSubmitWorkflow = this.onSubmitWorkflow.bind(this);
+    // this.onSubmitWorkflow = this.onSubmitWorkflowFake.bind(this);
 
     // Update internal state
     this.state.panelState = this.workflowInputsToPanelState(props.workflowInputs);
