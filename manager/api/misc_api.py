@@ -97,7 +97,6 @@ class WF1MOD3(Resource):
             }
         }
 
-        logger.debug(qspec)
         response = requests.post(
             f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/?max_results={max_results}",
             json=qspec)
@@ -127,6 +126,105 @@ class WF1MOD3(Resource):
         return answerset, 200
 
 api.add_resource(WF1MOD3, '/wf1mod3/<disease_curie>/')
+
+class WF1MOD3a(Resource):
+    def get(self, disease_curie):
+        """
+        Apply WF1.MOD3a to the provided disease.
+        ---
+        tags: [workflow]
+        parameters:
+          - in: path
+            name: disease_curie
+            description: Disease curie to which module 3a should be applied
+            schema:
+                type: string
+            required: true
+          - in: query
+            name: max_results
+            description: Maximum number of results to return. Provide -1 to indicate no maximum.
+            schema:
+                type: integer
+            default: 250
+        responses:
+            200:
+                description: Answer set
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/definitions/Response'
+        """
+        max_results = request.args.get('max_results', default=250)
+        qspec = {
+            "machine_question": {
+                "edges": [
+                    {
+                        "source_id": 0,
+                        "target_id": 1,
+                        "type": "contributes_to"
+                    },
+                    {
+                        "source_id": 2,
+                        "target_id": 1,
+                        "type": "negatively_regulates__entity_to_entity"
+                    },
+                    {
+                        "source_id": 3,
+                        "target_id": 2,
+                        "type": "increases_activity_of"
+                    }
+                ],
+                "nodes": [
+                    {
+                        "curie": disease_curie,
+                        "id": 0,
+                        "type": "disease"
+                    },
+                    {
+                        "id": 1,
+                        "type": "chemical_substance"
+                    },
+                    {
+                        "id": 2,
+                        "type": "gene"
+                    },
+                    {
+                        "id": 3,
+                        "type": "chemical_substance"
+                    }
+                ]
+            }
+        }
+
+        response = requests.post(
+            f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/?max_results={max_results}",
+            json=qspec)
+        polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
+
+        for _ in range(60 * 60):  # wait up to 1 hour
+            logger.debug(f'polling {polling_url}...')
+            time.sleep(1)
+            response = requests.get(polling_url)
+            if response.status_code == 200:
+                if response.json()['status'] == 'FAILURE':
+                    return 'ROBOKOP failed. See the logs.', 500
+                if response.json()['status'] == 'REVOKED':
+                    return 'ROBOKOP task terminated by admin.', 500
+                if response.json()['status'] == 'SUCCESS':
+                    break
+        else:
+            return "ROBOKOP has not completed after 1 hour. It's still working.", 202
+
+        response = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{response.json()['task_id']}?standardize=true")
+
+        answerset = response.json()
+        # strip out support edges for now
+        for result in answerset['result_list']:
+            result['result_graph']['edge_list'] = [edge for edge in result['result_graph']['edge_list'] if edge['type'] != 'literature_co-occurrence']
+
+        return answerset, 200
+
+api.add_resource(WF1MOD3a, '/wf1mod3a/<disease_curie>/')
 
 class Tasks(Resource):
     def get(self):
