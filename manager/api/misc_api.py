@@ -83,11 +83,13 @@ class WF1MOD3(Resource):
                     },
                     {
                         "id": 1,
-                        "type": "chemical_substance"
+                        "type": "chemical_substance",
+                        "set": True
                     },
                     {
                         "id": 2,
-                        "type": "gene"
+                        "type": "gene",
+                        "set": True
                     },
                     {
                         "id": 3,
@@ -182,11 +184,13 @@ class WF1MOD3a(Resource):
                     },
                     {
                         "id": 1,
-                        "type": "chemical_substance"
+                        "type": "chemical_substance",
+                        "set": True
                     },
                     {
                         "id": 2,
-                        "type": "gene"
+                        "type": "gene",
+                        "set": True
                     },
                     {
                         "id": 3,
