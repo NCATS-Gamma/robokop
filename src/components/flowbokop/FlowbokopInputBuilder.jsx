@@ -186,7 +186,7 @@ class FlowbokopInputBuilder extends React.Component {
     const submittedJSON = _.cloneDeep(this.state.submittedJSON);
     const keys = _.cloneDeep(this.state.keys);
     submittedJSON.splice(i, 1);
-    keys.splice(i, i);
+    keys.splice(i, 1);
     this.setState(
       { submittedJSON, keys },
       this.onChangeFactory('curieList'),

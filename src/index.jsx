@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import store from './stores/flowbokopStore';
+
 // Import static css, image, and font assets so that they can be found by webpack.
 import 'bootstrap/dist/css/bootstrap.css'; // path search within node_modules
 import 'ag-grid/dist/styles/ag-grid.css';
@@ -150,6 +152,7 @@ const robokop = {
   flowbokop: () => {
     ReactDOM.render(
       <Flowbokop
+        store={store}
         config={config}
       />,
       document.getElementById('reactEntry'),

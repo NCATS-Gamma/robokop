@@ -8,6 +8,7 @@ const graphStates = {
   fetching: 'fetching',
   empty: 'empty',
   display: 'display',
+  error: 'error',
 };
 
 const propTypes = {

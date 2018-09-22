@@ -11,6 +11,7 @@ import FaUpload from 'react-icons/lib/fa/upload';
 import FaInfoCircle from 'react-icons/lib/fa/info-circle';
 import FaUndo from 'react-icons/lib/fa/rotate-left';
 import FaPaperPlaneO from 'react-icons/lib/fa/paper-plane-o';
+import { inject } from 'mobx-react';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
@@ -140,6 +141,7 @@ const defaultProps = {
   workflowInputs: {}, // workflowInputs can be seeded externally if desired
 };
 
+@inject(({ store }) => ({ store }))
 class Flowbokop extends React.Component {
   constructor(props) {
     super(props);
@@ -191,6 +193,7 @@ class Flowbokop extends React.Component {
   }
 
   componentDidMount() {
+    console.log('Mobx Store:', this.props.store);
     this.appConfig.user(data => this.setState({
       user: this.appConfig.ensureUser(data),
       userReady: true,
