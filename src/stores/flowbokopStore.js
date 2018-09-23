@@ -23,22 +23,34 @@ const panelTypes = {
 class InputPanel {
   inputType = panelTypes.input;
   @observable inputLabel = '';
-  @observable result = [];
   @observable data = [{ type: 'disease', curie: '', label: '' }];
-  @observable concepts = [];
 
-  constructor(concepts, userObj = {}) { // User can optionally supply { inputLabel, result, data }
-    this.concepts = concepts;
-    const { inputLabel, result, data } = userObj;
+  constructor(flowbokopStore, userObj = {}) { // User can optionally supply { inputLabel, result, data }
+    this.store = flowbokopStore;
+    const { inputLabel, data } = userObj;
     if (inputLabel) {
       this.inputLabel = inputLabel;
-    }
-    if (result) {
-      this.result = result;
     }
     if (data) {
       this.data = data;
     }
+  }
+
+  @computed get concepts() {
+    return this.store.concepts;
+  }
+
+  // Return results curie list for this panel
+  @computed get result() {
+    if (_.isEmpty(this.store.workflowResult) || !this.store.workflowResult[this.varName]) {
+      return [];
+    }
+    return this.store.workflowResult[this.varName];
+  }
+
+  // Does this panel have any results
+  @computed get hasResult() {
+    return this.result.length > 0;
   }
 
   defaultCurie() {
@@ -59,6 +71,16 @@ class InputPanel {
     }
     return _.isEqual(this.inputLabel, other.inputLabel) &&
       _.isEqual(this.data, other.data);
+  }
+
+  // Convert to JSON object representation
+  toJsonObj() {
+    const {
+      inputType, isValid, inputLabel, data,
+    } = this;
+    return {
+      inputType, isValid, inputLabel, data: toJS(data),
+    };
   }
 
   @computed get isValidLabel() {
@@ -121,7 +143,7 @@ class InputPanel {
 
 class OperationPanel {
   inputType = panelTypes.operation;
-  @observable result = [];
+  // @observable result = [];
   @observable data = {
     input: '',
     output: '',
@@ -129,11 +151,9 @@ class OperationPanel {
     options: '',
   };
 
-  constructor(userObj = {}) { // User can optionally supply { result, data }
-    const { result, data } = userObj;
-    if (result) {
-      this.result = result;
-    }
+  constructor(flowbokopStore, userObj = {}) { // User can optionally supply { result, data }
+    this.store = flowbokopStore;
+    const { data } = userObj;
     if (data) {
       this.data = data;
     }
@@ -141,6 +161,19 @@ class OperationPanel {
 
   @computed get varName() {
     return this.data.output;
+  }
+
+  // Return results curie list for this panel
+  @computed get result() {
+    if (_.isEmpty(this.store.workflowResult) || !this.store.workflowResult[this.varName]) {
+      return [];
+    }
+    return this.store.workflowResult[this.varName];
+  }
+
+  // Does this panel have any results
+  @computed get hasResult() {
+    return this.result.length > 0;
   }
 
   /**
@@ -152,6 +185,16 @@ class OperationPanel {
       return false;
     }
     return _.isEqual(this.data, other.data);
+  }
+
+  // Convert to JSON object representation
+  toJsonObj() {
+    const {
+      inputType, isValid, data,
+    } = this;
+    return {
+      inputType, isValid, data: toJS(data),
+    };
   }
 
   @computed get isValidInput() {
@@ -214,7 +257,7 @@ class FlowbokopStore {
 
   @observable inputLabelList = [];
 
-  concepts = [];
+  @observable concepts = [];
 
   disposeReactionGetGraph = null;
 
@@ -245,11 +288,11 @@ class FlowbokopStore {
       this.concepts = concepts;
       this.dataReady = true;
       this.panelState = [
-        new InputPanel(this.concepts, {
+        new InputPanel(this, {
           inputLabel: 'usher1',
           data: [{ type: 'disease', curie: 'MONDO:0010168', label: 'Usher syndrome type 1' }],
         }),
-        new OperationPanel({
+        new OperationPanel(this, {
           data: {
             input: 'usher1',
             output: 'usher1_genes',
@@ -314,10 +357,10 @@ class FlowbokopStore {
   @action.bound newActivePanel(panelType) {
     this.activePanelInd = this.panelState.length;
     if (panelType === panelTypes.input) {
-      this.activePanelState = new InputPanel(this.concepts);
+      this.activePanelState = new InputPanel(this);
     }
     if (panelType === panelTypes.operation) {
-      this.activePanelState = new OperationPanel();
+      this.activePanelState = new OperationPanel(this);
     }
   }
 
