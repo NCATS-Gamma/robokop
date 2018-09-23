@@ -13,7 +13,7 @@ const config = {
             cacheDirectory: true,
             babelrc: false,
             presets: ['babel-preset-env', 'babel-preset-react'].map(require.resolve),
-            plugins: ['transform-decorators-legacy', 'transform-object-rest-spread', 'transform-export-extensions'],
+            plugins: ['transform-decorators-legacy', 'transform-class-properties', 'transform-object-rest-spread', 'transform-export-extensions'],
           },
         },
       },

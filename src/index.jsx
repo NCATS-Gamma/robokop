@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-
-import store from './stores/flowbokopStore';
+import { Provider } from 'mobx-react';
 
 // Import static css, image, and font assets so that they can be found by webpack.
 import 'bootstrap/dist/css/bootstrap.css'; // path search within node_modules
@@ -27,6 +26,7 @@ import Search from './Search';
 import MultiSearch from './MultiSearch';
 import Simple from './Simple';
 import Flowbokop from './Flowbokop';
+import store from './stores/flowbokopStore';
 
 // Our actual CSS and other images etc.
 import '../assets/css/style.css';
@@ -151,10 +151,11 @@ const robokop = {
   },
   flowbokop: () => {
     ReactDOM.render(
-      <Flowbokop
-        store={store}
-        config={config}
-      />,
+      <Provider store={store}>
+        <Flowbokop
+          config={config}
+        />
+      </Provider>,
       document.getElementById('reactEntry'),
     );
   },
