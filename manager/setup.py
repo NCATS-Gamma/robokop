@@ -45,8 +45,7 @@ api = Api(api_blueprint)
 app.register_blueprint(api_blueprint)
 
 template = {
-    "swagger": "2.0",
-    # "openapi": "3.0.1",
+    "openapi": "3.0.1",
     "info": {
         "title": "ROBOKOP Manager",
         "description": "An API for management of biomedical questions and answers",

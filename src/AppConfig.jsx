@@ -63,7 +63,7 @@ class AppConfig {
     this.tasksData = this.tasksData.bind(this);
 
     this.flowbokopGraph = this.flowbokopGraph.bind(this);
-    this.flowbokopExectue = this.flowbokopExectue.bind(this);
+    this.flowbokopExecute = this.flowbokopExecute.bind(this);
 
     // Question and Answer Manipulation
     this.questionCreate = this.questionCreate.bind(this);
@@ -263,7 +263,7 @@ class AppConfig {
       failureFun,
     );
   }
-  flowbokopExectue(postData, successFun, failureFun) {
+  flowbokopExecute(postData, successFun, failureFun) {
     this.postRequest(
       this.apis.flowbokop.execute,
       postData,

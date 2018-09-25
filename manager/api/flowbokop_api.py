@@ -26,20 +26,26 @@ class FlowbokopUnion(Resource):
         A flowbokop service to union multiple curie lists
         ---
         tags: [flowbokop]
-        parameters:
-          - in: body
+        requestBody:
             name: Flowbokop service input
             description: An object that specifes input curies and options
-            schema:
-                $ref: '#/definitions/FlowbokopServiceInput'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/definitions/FlowbokopServiceInput'
             required: true
         responses:
             200:
                 description: A curie list
-                type: object
-                properties:
-                    curies:
-                        type: array
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                curies:
+                                    type: array
+                                    items:
+                                        type: string
         """
 
         data = request.json
@@ -56,20 +62,26 @@ class FlowbokopIntersect(Resource):
         A flowbokop service to intersect multiple curie lists
         ---
         tags: [flowbokop]
-        parameters:
-          - in: body
+        requestBody:
             name: Flowbokop service input
             description: An object that specifes input curies and options
-            schema:
-                $ref: '#/definitions/FlowbokopServiceInput'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/definitions/FlowbokopServiceInput'
             required: true
         responses:
             200:
                 description: A curie list
-                type: object
-                properties:
-                    curies:
-                        type: array
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                curies:
+                                    type: array
+                                    items:
+                                        type: string
         """
 
         data = request.json
@@ -90,28 +102,37 @@ class FlowbokopExpand(Resource):
           - in: path
             name: type1
             description: "type of first node"
-            type: string
+            schema:
+                type: string
             required: true
             default: "disease"
           - in: path
             name: type2
             description: "type of second node"
-            type: string
+            schema:
+                type: string
             required: true
             default: "gene"
-          - in: body
+        requestBody:
             name: Flowbokop service input
             description: An object that specifes input curies and options
-            schema:
-                $ref: '#/definitions/FlowbokopServiceInput'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/definitions/FlowbokopServiceInput'
             required: true
         responses:
             200:
                 description: A curie list
-                type: object
-                properties:
-                    curies:
-                        type: array
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                curies:
+                                    type: array
+                                    items:
+                                        type: string
         """
 
         data = request.json
@@ -174,40 +195,48 @@ class FlowbokopSimilarity(Resource):
         Use robokop as a flowbokop service
         ---
         tags: [flowbokop]
-        parameters:
-          - in: body
+        requestBody:
             name: Flowbokop service input
             description: An object that specifes input curies and options
-            schema:
-                $ref: '#/definitions/FlowbokopServiceInput'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/definitions/FlowbokopServiceInput'
             required: true
+        parameters:
           - in: path
             name: type1
             description: "type of query node"
-            type: string
+            schema:
+                type: string
             required: true
             default: "disease"
           - in: path
             name: type2
             description: "type of return nodes"
-            type: string
+            schema:
+                type: string
             required: true
             default: "disease"
           - in: path
             name: by_type
             description: "type used to evaluate similarity"
-            type: string
+            schema:
+                type: string
             required: true
             default: "phenotypic_feature"
         responses:
             200:
                 description: A curie list
-                type: object
-                properties:
-                    curies:
-                        type: array
-                        items:
-                            type: string
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                curies:
+                                    type: array
+                                    items:
+                                        type: string
         """
 
         data = request.json
@@ -257,34 +286,41 @@ class FlowbokopEnrichment(Resource):
         Use robokop as a flowbokop service
         ---
         tags: [flowbokop]
-        parameters:
-          - in: body
+        requestBody:
             name: Flowbokop service input
             description: An object that specifes input curies and options
-            schema:
-                $ref: '#/definitions/FlowbokopServiceInput'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/definitions/FlowbokopServiceInput'
             required: true
+        parameters:
           - in: path
             name: type1
             description: "type of query node"
-            type: string
+            schema:
+                type: string
             required: true
             default: "disease"
           - in: path
             name: type2
             description: "type of return nodes"
-            type: string
+            schema:
+                type: string
             required: true
             default: "phenotypic_feature"
         responses:
             200:
                 description: A curie list
-                type: object
-                properties:
-                    curies:
-                        type: array
-                        items:
-                            type: string
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                curies:
+                                    type: array
+                                    items:
+                                        type: string
         """
 
         data = request.json
@@ -331,6 +367,26 @@ class FlowbokopRobokop(Resource):
         Use robokop as a flowbokop service
         ---
         tags: [flowbokop]
+        requestBody:
+            name: Flowbokop service input
+            description: An object that specifes input curies and options
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/definitions/FlowbokopServiceInput'
+            required: true
+        responses:
+            200:
+                description: A curie list
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                curies:
+                                    type: array
+                                    items:
+                                        type: string
         """
 
         data = request.json
@@ -376,20 +432,26 @@ class Flowbokop(Resource):
         The Flowbokop service
         ---
         tags: [flowbokop]
-        parameters:
-          - in: body
+        requestBody:
             name: Flowbokop service input
             description: An object that specifes input curies and options
-            schema:
-                $ref: '#/definitions/FlowbokopServiceInput'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/definitions/FlowbokopServiceInput'
             required: true
         responses:
             200:
                 description: A curie list
-                type: object
-                properties:
-                    curies:
-                        type: array
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                curies:
+                                    type: array
+                                    items:
+                                        type: string
         """
 
         data = request.json
@@ -408,20 +470,26 @@ class FlowbokopGraph(Resource):
         The Computation Graph of the Flowbokop service
         ---
         tags: [flowbokop]
-        parameters:
-          - in: body
+        requestBody:
             name: Flowbokop service input
             description: An object that specifes input curies and options
-            schema:
-                $ref: '#/definitions/FlowbokopServiceInput'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/definitions/FlowbokopServiceInput'
             required: true
         responses:
             200:
                 description: A graph representation of the operations to be conducted
-                type: object
-                properties:
-                    curies:
-                        type: array
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                curies:
+                                    type: array
+                                    items:
+                                        type: string
         """
 
         data = request.json

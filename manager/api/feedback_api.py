@@ -19,16 +19,20 @@ class FeedbackAPI(Resource):
         """Create new feedback
         ---
         tags: [feedback]
-        parameters:
-          - in: body
+        requestBody:
             name: feedback
             description: "new feedback"
-            schema:
-                $ref: '#/definitions/Feedback'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/definitions/Feedback'
         responses:
             201:
                 description: "confirmation"
-                type: string
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
 
         auth = request.authorization
