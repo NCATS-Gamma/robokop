@@ -11,7 +11,8 @@ import FaUpload from 'react-icons/lib/fa/upload';
 import FaInfoCircle from 'react-icons/lib/fa/info-circle';
 import FaUndo from 'react-icons/lib/fa/rotate-left';
 import FaPaperPlaneO from 'react-icons/lib/fa/paper-plane-o';
-import { inject } from 'mobx-react';
+import { toJS } from 'mobx';
+import { inject, observer } from 'mobx-react';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
@@ -29,27 +30,6 @@ const _ = require('lodash');
 const activeTabKeys = {
   configure: 1,
   results: 2,
-};
-
-// Convert internal panel state representation to Flowbokop workflow input
-// representation that is required to be POSTed to the Flowbokop endpoint
-const panelStateToWorkflowInputs = (panelSt) => {
-  const panelState = _.cloneDeep(panelSt);
-  const workflowInputs = { input: {}, options: { output: 'all', operations: [] } };
-  panelState.forEach((panelData) => {
-    if (panelData.inputType === 'input') {
-      workflowInputs.input[panelData.inputLabel] = panelData.data;
-    }
-    if (panelData.inputType === 'operation') {
-      if (Object.hasOwnProperty.call(panelData.data, 'options')) {
-        if (panelData.data.options === '') {
-          delete panelData.data.options; // Remove options if it is empty string
-        }
-      }
-      workflowInputs.options.operations.push(panelData.data);
-    }
-  });
-  return workflowInputs;
 };
 
 // Buttons displayed in title-bar of Graph Viewer
@@ -142,6 +122,7 @@ const defaultProps = {
 };
 
 @inject(({ store }) => ({ store }))
+@observer
 class Flowbokop extends React.Component {
   constructor(props) {
     super(props);
@@ -151,45 +132,16 @@ class Flowbokop extends React.Component {
     this.state = {
       user: {},
       userReady: false,
-      dataReady: false,
-
-      queryGraph: this.getEmptyGraph(),
-      graphState: graphStates.empty,
-      workflowResult: {},
-      panelState: [],
-
-      activePanelInd: 0,
-      activePanelState: {},
-      activeTab: activeTabKeys.configure,
-
-      inputLabelList: [],
     };
 
-    this.getGraph = this.getGraph.bind(this);
     this.nodeSelectCallback = this.nodeSelectCallback.bind(this);
-    this.getPanelIndFromNodeId = this.getPanelIndFromNodeId.bind(this);
-    this.onChangeInputLabel = this.onChangeInputLabel.bind(this);
-    this.onOperationBuilderChange = this.onOperationBuilderChange.bind(this);
     this.getInputOperationPanel = this.getInputOperationPanel.bind(this);
-    this.updatePanelState = this.updatePanelState.bind(this);
-    this.saveActivePanel = this.saveActivePanel.bind(this);
-    this.deleteActivePanel = this.deleteActivePanel.bind(this);
-    this.newActivePanel = this.newActivePanel.bind(this);
     this.onDownloadWorkflow = this.onDownloadWorkflow.bind(this);
     this.onDropFile = this.onDropFile.bind(this);
     this.onResetGraph = this.onResetGraph.bind(this);
-    this.revertActivePanel = this.revertActivePanel.bind(this);
     this.onChangeTab = this.onChangeTab.bind(this);
     this.onDownloadResults = this.onDownloadResults.bind(this);
     this.onSubmitWorkflow = this.onSubmitWorkflow.bind(this);
-    // this.onSubmitWorkflow = this.onSubmitWorkflowFake.bind(this);
-
-    // Update internal state
-    this.state.panelState = this.workflowInputsToPanelState(props.workflowInputs);
-    // Set activePanelState appropriately
-    if (this.state.panelState.length >= (this.state.activePanelInd + 1)) {
-      this.state.activePanelState = _.cloneDeep(this.state.panelState[this.state.activePanelInd]);
-    }
   }
 
   componentDidMount() {
@@ -198,184 +150,19 @@ class Flowbokop extends React.Component {
       user: this.appConfig.ensureUser(data),
       userReady: true,
     }));
-    this.appConfig.concepts(() => {
-      this.setState({
-        // concepts: data,
-        dataReady: true,
-      });
-    });
-    this.updateInputList();
-    this.getGraph();
-  }
-
-  componentDidUpdate() {
-    // Update this.state.activePanelState if the current entry's result differs from the corresponding
-    // entry in this.state.panelState (for example when the latter gets updated with results)
-    if (this.state.panelState.length >= (this.state.activePanelInd + 1)) {
-      // if (!_.isEqual(this.state.activePanelState, this.state.panelState[this.state.activePanelInd])) {
-      if (!_.isEqual(this.state.activePanelState.result, this.state.panelState[this.state.activePanelInd].result)) {
-        this.setState({ activePanelState: _.cloneDeep(this.state.panelState[this.state.activePanelInd]) });
-      }
-    }
-  }
-
-  /**
-   * Convert JSON workflow input format to internal Panel State representation.
-   * If any workflow results stored in this.state.workflowResult, then these are
-   * merged into the returned panel state objects under the `result` param.
-   * @param {JSON Object} workflowInp - Flowbokop Workflow input specification
-   * @returns {Array} Array in internal Panel state representation of form:
-   * [
-   *   {
-   *     inputType: 'input',
-   *     locked: true,
-   *     inputLabel: 'usher2',
-   *     result: [],
-   *     data: [{'type': 'disease', 'curie': 'MONDO:0016484', 'label': 'Usher syndrome type 2'}],
-   *   },
-   *   {
-   *     inputType: 'operation',
-   *     locked: true,
-   *     result: [],
-   *     data: {
-   *       input: 'usher1',
-   *       output: 'usher1_genes',
-   *       service: 'http://127.0.0.1/api/flowbokop/expand/disease/gene/',
-   *       options: '',
-   *     },
-   *   }
-   * ]
-   */
-  workflowInputsToPanelState(workflowInp) {
-    let panelState = [];
-    const outputLabels = []; // List of output variable names for each node/panel item
-    const workflowInput = _.cloneDeep(workflowInp);
-    if (Object.hasOwnProperty.call(workflowInput, 'input')) {
-      const inputLabels = Object.keys(workflowInput.input);
-      inputLabels.forEach((inputLabel) => {
-        const isCurieListArray = Array.isArray(workflowInput.input[inputLabel]);
-        // Ensure data is always an array
-        panelState.push({
-          inputType: 'input',
-          isValid: true,
-          inputLabel,
-          result: [],
-          data: isCurieListArray ? workflowInput.input[inputLabel] : [workflowInput.input[inputLabel]],
-        });
-        outputLabels.push(inputLabel);
-      });
-    }
-    if (Object.hasOwnProperty.call(workflowInput, 'options')) {
-      if (Object.hasOwnProperty.call(workflowInput.options, 'operations')) {
-        workflowInput.options.operations.forEach((operationData) => {
-          let options = '';
-          // Always convert input(s) into a list of string(s)
-          if (typeof operationData.input === 'string' || operationData.input instanceof String) {
-            operationData.input = [operationData.input];
-          }
-          if (Object.hasOwnProperty.call(operationData, 'options')) {
-            if (typeof operationData.options === 'string' || operationData.options instanceof String) {
-              // options = { operationData };
-              ({ options } = operationData);
-            }
-          }
-          panelState.push({
-            inputType: 'operation',
-            isValid: true,
-            result: [],
-            data: Object.assign({}, operationData, { options }),
-          });
-          outputLabels.push(operationData.output);
-        });
-      }
-    }
-    // Merge in `results` value to each panel if this.state.workflowResult is non-empty
-    panelState = this.updatePanelStateWithResults(panelState);
-    return panelState;
-  }
-
-  /**
-   * Mutates provided panelState array with updates to the `result` field for each node
-   * based on current value of this.state.workflowResult
-   * @param {Array} panelState - Panel state array representation (Will be mutated!)
-   */
-  updatePanelStateWithResults(panelState) {
-    if (arguments.length === 0) {
-      panelState = _.cloneDeep(this.state.panelState); // eslint-disable-line no-param-reassign
-    }
-    const outputLabels = []; // output variable names for each node in panelState
-    panelState.forEach((panelObj) => {
-      if (panelObj.inputType === 'input') {
-        outputLabels.push(panelObj.inputLabel);
-      }
-      if (panelObj.inputType === 'operation') {
-        outputLabels.push(panelObj.data.output);
-      }
-    });
-    if (!_.isEmpty(this.state.workflowResult)) {
-      const workflowResult = _.cloneDeep(this.state.workflowResult);
-      const outputVarNames = Object.keys(workflowResult);
-      outputVarNames.forEach((outputVarName) => {
-        const outputLabelInd = outputLabels.indexOf(outputVarName);
-        // Update panelState array entry with corresponding workflow result curieList
-        if (outputLabelInd > -1) {
-          panelState[outputLabelInd].result = workflowResult[outputVarName]; // eslint-disable-line no-param-reassign
-        }
-      });
-    } else {
-      // Reset the `result` param to [] for all panels if this.state.workflowResult is empty
-      panelState.forEach(panelObj => (panelObj.result = [])); // eslint-disable-line
-    }
-    return panelState;
-  }
-
-  /**
-   * Returns panelInd from Node id in returned queryGraph from the flowbokop /graph
-   * endpoint. If Node-id corresponds to the output node, -1 is returned.
-   * @param {Int} id - Id of the node in the queryGraph data structure
-   * @returns {Int} panel index corresponding to the node with id: `id`. -1 for output node.
-   */
-  getPanelIndFromNodeId(id) {
-    const nodeOfInterest = this.state.queryGraph.nodes.filter(n => (n.id === id));
-    if (nodeOfInterest[0].is_output) {
-      return -1;
-    }
-    const nodeOutputLabel = nodeOfInterest[0].is_input ? nodeOfInterest[0].name : nodeOfInterest[0].operation.output;
-    let panelInd;
-    this.state.panelState.forEach((panelObj, i) => {
-      if (panelObj.inputType === 'input') {
-        if (panelObj.inputLabel === nodeOutputLabel) {
-          panelInd = i;
-        }
-      }
-      if (panelObj.inputType === 'operation') {
-        if (panelObj.data.output === nodeOutputLabel) {
-          panelInd = i;
-        }
-      }
-    });
-    return panelInd;
   }
 
   getInputOperationPanel() {
-    const { activePanelState } = this.state;
+    const { activePanelState } = this.props.store;
     if (_.isEmpty(activePanelState)) {
       return null;
     }
-    const panelObj = _.cloneDeep(activePanelState);
-    const { inputType } = panelObj;
-    if (inputType === 'input') {
-      const onCurieListChange = ({ curieList, inputLabel, isValid }) => {
-        panelObj.data = curieList;
-        panelObj.inputLabel = inputLabel;
-        panelObj.isValid = isValid;
-        this.updatePanelState(panelObj);
-      };
+    if (activePanelState.inputType === 'input') {
       return (
         <Panel style={{ marginBottom: '5px' }}>
           <Panel.Heading>
             <Panel.Title>
-              Input - {`${panelObj.inputLabel} `}
+              Input - {`${activePanelState.inputLabel} `}
               <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={inputHelpPopover}>
                 <FaInfoCircle size={12} />
               </OverlayTrigger>
@@ -383,12 +170,7 @@ class Flowbokop extends React.Component {
           </Panel.Heading>
           <Panel.Body>
             <FlowbokopInputBuilder
-              config={this.props.config}
-              onChangeHook={onCurieListChange}
-              panelObj={panelObj}
-              // inputCurieList={panelObj.data}
-              // inputLabel={panelObj.inputLabel}
-              // onChangeLabel={e => this.onChangeInputLabel(e.target.value)}
+              activePanel={activePanelState}
             />
           </Panel.Body>
         </Panel>
@@ -398,153 +180,17 @@ class Flowbokop extends React.Component {
       <Panel style={{ marginBottom: '5px' }}>
         <Panel.Heading>
           <Panel.Title>
-            {`Operation [ ${panelObj.data.input} → ${panelObj.data.output} ]`}
+            {`Operation [ ${activePanelState.data.input} → ${activePanelState.data.output} ]`}
           </Panel.Title>
         </Panel.Heading>
         <Panel.Body>
           <FlowbokopOperationBuilder
-            onChangeHook={this.onOperationBuilderChange}
-            onInputSelect={this.onOperationPanelInputSelect}
-            panelObj={panelObj}
-            inputLabelList={this.state.inputLabelList}
+            activePanel={activePanelState}
+            inputLabelList={this.props.store.outputVarNameList}
           />
         </Panel.Body>
       </Panel>
     );
-  }
-
-  updatePanelState(newPanelObj) {
-    this.setState({ activePanelState: _.cloneDeep(newPanelObj) });
-  }
-
-  saveActivePanel() {
-    const panelState = _.cloneDeep(this.state.panelState);
-    const activePanelState = _.cloneDeep(this.state.activePanelState);
-    const { activePanelInd } = this.state;
-    // Set list of input labels to JSON array instead of a string
-    if (Object.hasOwnProperty.call(activePanelState.data, 'input')) {
-      if (activePanelState.data.input.includes('[')) {
-        activePanelState.data.input = JSON.parse(activePanelState.data.input);
-      }
-    }
-    if (activePanelInd < panelState.length) {
-      // Check if "output" name for block changed and rename
-      // the matching input in all other blocks (only if editing existing block)
-      let outputLabelSelector;
-      if (activePanelState.inputType === 'input') {
-        outputLabelSelector = x => x.inputLabel;
-      }
-      if (activePanelState.inputType === 'operation') {
-        outputLabelSelector = x => x.data.output;
-      }
-      const newOutputLabel = outputLabelSelector(activePanelState);
-      const oldOutputLabel = outputLabelSelector(panelState[activePanelInd]);
-      if (newOutputLabel !== oldOutputLabel) {
-        // Rename input term in all other operation blocks that references renamed output
-        panelState.forEach((panelObj) => {
-          if (panelObj.data.input) {
-            // Handle when input is a simple string of a single input variable
-            if (typeof panelObj.data.input === 'string' || panelObj.data.input instanceof String) {
-              if (panelObj.data.input === oldOutputLabel) {
-                panelObj.data.input = newOutputLabel;
-              }
-            }
-            // Handle when input is a list of input variables
-            if (Array.isArray(panelObj.data.input)) {
-              const oldLabelInd = panelObj.data.input.indexOf(oldOutputLabel);
-              if (oldLabelInd >= 0) {
-                panelObj.data.input[oldLabelInd] = newOutputLabel;
-              }
-            }
-          }
-        });
-      }
-    }
-    panelState[this.state.activePanelInd] = activePanelState;
-    this.updateInputList(panelState);
-    this.setState({ panelState }, this.getGraph);
-  }
-
-  deleteActivePanel() {
-    const panelState = _.cloneDeep(this.state.panelState);
-    let activePanelState = _.cloneDeep(this.state.activePanelState);
-    let { activePanelInd } = this.state;
-    // Handle if deleting an existing node in graph
-    if (activePanelInd < panelState.length) {
-      panelState.splice(activePanelInd, 1); // Delete the panel
-      activePanelInd = activePanelInd > 0 ? activePanelInd - 1 : 0;
-      if (panelState.length >= activePanelInd + 1) {
-        activePanelState = _.cloneDeep(panelState[activePanelInd]);
-      } else {
-        activePanelState = {};
-      }
-    } else {
-      // Handle when deleting new node panel (that was not patched into panelState)
-      activePanelInd = 0;
-      activePanelState = panelState.length > 0 ? _.cloneDeep(panelState[activePanelInd]) : {};
-    }
-    this.updateInputList(panelState);
-    this.setState({ activePanelInd, activePanelState, panelState }, this.getGraph);
-  }
-
-  // Revert any unsaved changes in a panel for an existing node
-  revertActivePanel() {
-    const panelState = _.cloneDeep(this.state.panelState);
-    // let activePanelState = _.cloneDeep(this.state.activePanelState);
-    const { activePanelInd } = this.state;
-    this.setState({ activePanelState: panelState[activePanelInd] });
-  }
-
-  newActivePanel(panelType) {
-    const activePanelInd = this.state.panelState.length;
-    const activePanelState = (panelType.toLowerCase() === 'input') ? this.defaultInputPanelState() : this.defaultOperationPanelState();
-    this.setState({ activePanelInd, activePanelState });
-  }
-
-  defaultInputPanelState() {
-    return (
-      {
-        inputType: 'input',
-        isValid: false,
-        inputLabel: '',
-        data: [{ type: 'disease', curie: '', label: '' }],
-      }
-    );
-  }
-
-  defaultOperationPanelState() {
-    return (
-      {
-        inputType: 'operation',
-        isValid: false,
-        data: {
-          input: [],
-          output: '',
-          label: '',
-          service: '',
-          options: '',
-        },
-      }
-    );
-  }
-
-  onChangeInputLabel(newLabel) {
-    const activePanelState = _.cloneDeep(this.state.activePanelState);
-    activePanelState.inputLabel = newLabel;
-    this.setState({ activePanelState });
-  }
-
-  onOperationBuilderChange(operationDataObj) {
-    // console.log('onOperationBuilderChange:', operationDataObj);
-    const {
-      input, output, label, service, options, isValid,
-    } = operationDataObj;
-    const activePanelState = _.cloneDeep(this.state.activePanelState);
-    activePanelState.data = {
-      input, output, label, service, options,
-    };
-    activePanelState.isValid = isValid;
-    this.setState({ activePanelState });
   }
 
   nodeSelectCallback(data) {
@@ -552,62 +198,18 @@ class Flowbokop extends React.Component {
     if (data.nodes.length > 0) {
       nodeId = data.nodes[0]; // eslint-disable-line prefer-destructuring
     }
-    const panelInd = this.getPanelIndFromNodeId(nodeId);
-    // Don't change UI state if Output node is clicked
-    if (panelInd > -1) {
-      this.setState({ activePanelInd: panelInd, activePanelState: this.state.panelState[panelInd] });
+    if (nodeId > -1) {
+      this.props.store.updateActivePanelFromNodeId(nodeId);
     }
   }
 
   // Handle clicks on Configure/Results tab
   onChangeTab(key) {
-    this.setState({ activeTab: key });
-  }
-
-  getEmptyGraph() {
-    // return demoGraph;
-    return {
-      nodes: [],
-      edges: [],
-    };
-  }
-
-  /**
-   * Fetch query graph from Flowbokop /graph endpoint in async manner
-   * and display status accordingly in UI. Any existing results will
-   * be invalidated and deleted.
-   */
-  getGraph() {
-    console.log('Input to graph endpoint:', panelStateToWorkflowInputs(this.state.panelState));
-    // Don't query /graph endpoint if we don't have any data
-    if (_.isEmpty(this.state.panelState)) {
-      this.setState({ graphState: graphStates.empty });
-      return;
-    }
-    this.setState({ graphState: graphStates.fetching }, () => {
-      this.appConfig.flowbokopGraph(
-        panelStateToWorkflowInputs(this.state.panelState),
-        (data) => {
-          const validGraph = this.isValidGraph(data);
-          const graphState = validGraph ? graphStates.display : graphStates.empty;
-          this.setState({
-            queryGraph: data,
-            graphState,
-            workflowResult: {},
-            activeTab: activeTabKeys.configure,
-          }, () => this.setState({ panelState: this.updatePanelStateWithResults() }));
-        },
-        err => console.log('Error fetching query graph', err),
-      );
-    });
-  }
-
-  isValidGraph(graph) {
-    return 'nodes' in graph && Array.isArray(graph.nodes) && graph.nodes.length > 0;
+    this.props.store.onChangeTab(key);
   }
 
   onDownloadResults() {
-    const results = this.state.workflowResult;
+    const results = this.props.store.workflowResult;
 
     // Transform the data into a json blob and give it a url
     const json = JSON.stringify(results, null, 2);
@@ -626,7 +228,7 @@ class Flowbokop extends React.Component {
   }
 
   onDownloadWorkflow() {
-    const data = panelStateToWorkflowInputs(this.state.panelState);
+    const data = this.props.store.panelStateToWorkflowInputs();
 
     // Transform the data into a json blob and give it a url
     const json = JSON.stringify(data, null, 2);
@@ -644,50 +246,32 @@ class Flowbokop extends React.Component {
     a.remove();
   }
 
-  onDropFile(acceptedFiles, rejectedFiles) {
+  onDropFile(acceptedFiles, rejectedFiles) { // eslint-disable-line no-unused-vars
     acceptedFiles.forEach((file) => {
       const fr = new window.FileReader();
-      fr.onloadstart = () => this.setState({ graphState: graphStates.fetching });
+      fr.onloadstart = () => this.props.store.setGraphState(graphStates.fetching);
       // fr.onloadend = () => this.setState({ graphState: graphStates.fetching });
       fr.onload = (e) => {
         const fileContents = e.target.result;
         try {
           const fileContentObj = JSON.parse(fileContents);
-          const panelState = this.workflowInputsToPanelState(fileContentObj);
-          const activePanelState = panelState.length > 0 ? panelState[0] : {};
-          const activePanelInd = 0;
-          this.updateInputList(panelState);
-          this.setState({ panelState, activePanelInd, activePanelState }, this.getGraph);
+          this.props.store.workflowInputsToPanelState(fileContentObj);
         } catch (err) {
-          console.log(err);
+          console.error(err);
           window.alert('Failed to read this workflow template. Are you sure this is valid?');
-          this.setState({ graphState: graphStates.empty });
+          this.props.store.setGraphState(graphStates.error);
         }
       };
       fr.onerror = () => {
         window.alert('Sorry but there was a problem uploading the file. The file may be invalid JSON.');
-        this.setState({ graphState: graphStates.empty });
+        this.props.store.setGraphState(graphStates.error);
       };
       fr.readAsText(file);
     });
   }
 
   onSubmitWorkflow() {
-    this.setState({ graphState: graphStates.fetching }, () => {
-      this.appConfig.flowbokopExecute(
-        panelStateToWorkflowInputs(this.state.panelState),
-        (data) => {
-          // const validGraph = this.isValidGraph(data);
-          // const graphState = validGraph ? graphStates.display : graphStates.empty;
-          console.log('Flowbokop Execute output:', data);
-          this.setState({
-            graphState: graphStates.display,
-            workflowResult: data,
-          }, () => this.setState({ panelState: this.updatePanelStateWithResults(), activeTab: activeTabKeys.results }));
-        },
-        err => console.log('Error fetching query graph', err),
-      );
-    });
+    this.props.store.onSubmitWorkflow();
   }
 
   // TODO: Delete - Test function for no-internet situations
@@ -811,53 +395,8 @@ class Flowbokop extends React.Component {
   }
 
   onResetGraph() {
-    this.setState({
-      queryGraph: this.getEmptyGraph(),
-      activePanelState: {},
-      activePanelInd: 0,
-      graphState: graphStates.empty,
-      panelState: [],
-      inputLabelList: [],
-      workflowResult: {},
-      activeTab: activeTabKeys.configure,
-    });
+    this.props.store.resetGraph();
   }
-
-  // Report if current panel has unsaved changes
-  isUnsavedChanges() {
-    const { activePanelState, activePanelInd, panelState } = this.state;
-    if (panelState.length === 0) {
-      if (!_.isEmpty(activePanelState)) {
-        return true;
-      }
-      return false;
-    }
-    if (_.isEqual(activePanelState, panelState[activePanelInd])) {
-      return false;
-    }
-    return true;
-  }
-
-  updateInputList(panelSt) {
-    if (arguments.length === 0) {
-      panelSt = this.state.panelState; // eslint-disable-line no-param-reassign
-    }
-    let inputList = [];
-    const panelState = _.cloneDeep(panelSt);
-    panelState.forEach((panelObj) => {
-      const input = panelObj.inputType === 'input' ? panelObj.inputLabel : panelObj.data.output;
-      inputList.push(input);
-    });
-    inputList = Array.from(new Set(inputList)).sort();
-    this.setState({ inputLabelList: inputList });
-  }
-
-  // // Callback sent to MultiSelect component for input list specification in OperationBuilder
-  // onOperationPanelInputSelect(value) {
-  //   const activePanelState = _.cloneDeep(this.state.activePanelState);
-  //   activePanelState.data.output = value;
-  //   this.setState({ activePanelState });
-  // }
 
   renderLoading() {
     return (
@@ -866,11 +405,12 @@ class Flowbokop extends React.Component {
   }
 
   renderLoaded() {
-    const unsavedChanges = this.isUnsavedChanges();
-    const { isValid: isValidPanel } = this.state.activePanelState;
-    const atleastOneInput = this.state.panelState.some(panelObj => panelObj.inputType === 'input');
-    const isNewPanel = this.state.activePanelInd === this.state.panelState.length;
-    const hasResults = !isNewPanel && this.state.activePanelState.result && this.state.activePanelState.result.length > 0;
+    const { store } = this.props;
+    const unsavedChanges = store.isUnsavedChanges;
+    const { isValid: isValidPanel } = store.activePanelState;
+    const atleastOneInput = store.panelState.some(panelObj => panelObj.inputType === 'input');
+    const isNewPanel = store.activePanelInd === store.panelState.length;
+    const hasResults = !isNewPanel && store.activePanelState.hasResult;
     return (
       <div>
         <Header
@@ -897,8 +437,8 @@ class Flowbokop extends React.Component {
                 </Panel.Heading>
                 <Panel.Body style={{ padding: '0px' }}>
                   <FlowbokopGraphFetchAndView
-                    graph={this.state.queryGraph}
-                    graphState={this.state.graphState}
+                    graph={store.queryGraph}
+                    graphState={store.graphState}
                     height="350px"
                     nodeSelectCallback={this.nodeSelectCallback}
                     // width={700}
@@ -906,16 +446,16 @@ class Flowbokop extends React.Component {
                 </Panel.Body>
               </Panel>
               <Tabs
-                activeKey={this.state.activeTab}
+                activeKey={store.activeTab}
                 onSelect={this.onChangeTab}
                 id="node-display-tabs"
               >
                 <Tab eventKey={activeTabKeys.configure} title="Configure">
                   <div style={{ marginTop: '10px', marginBottom: '6px' }}>
                     <ButtonGroup>
-                      {!_.isEmpty(this.state.activePanelState) &&
+                      {!_.isEmpty(store.activePanelState) &&
                         <Button
-                          onClick={this.saveActivePanel}
+                          onClick={store.saveActivePanel}
                           disabled={!unsavedChanges || !isValidPanel}
                           bsStyle={isValidPanel ? (unsavedChanges ? 'primary' : 'default') : 'danger'} // eslint-disable-line no-nested-ternary
                           title={isValidPanel ? (unsavedChanges ? 'Save changes' : 'No changes to save') : 'Fix invalid panel entries first'} // eslint-disable-line no-nested-ternary
@@ -926,7 +466,7 @@ class Flowbokop extends React.Component {
                       }
                       {!isNewPanel &&
                         <Button
-                          onClick={this.revertActivePanel}
+                          onClick={store.revertActivePanel}
                           disabled={!unsavedChanges}
                           title={unsavedChanges ? 'Undo unsaved changes' : 'No changes to undo'}
                         >
@@ -934,16 +474,16 @@ class Flowbokop extends React.Component {
                           {' Undo'}
                         </Button>
                       }
-                      {(this.state.panelState.length > 1) &&
-                        <Button onClick={this.deleteActivePanel} title={`${isNewPanel ? 'Discard' : 'Delete'} current node`}>
+                      {(store.panelState.length > 1) &&
+                        <Button onClick={store.deleteActivePanel} title={`${isNewPanel ? 'Discard' : 'Delete'} current node`}>
                           <FaTrash style={{ verticalAlign: 'text-top' }} />{` ${isNewPanel ? 'Discard' : 'Delete'}`}
                         </Button>
                       }
-                      <Button onClick={() => this.newActivePanel('input')}>
+                      <Button onClick={() => store.newActivePanel('input')}>
                         <FaPlus style={{ verticalAlign: 'text-top' }} />{' New Input'}
                       </Button>
                       {atleastOneInput &&
-                        <Button onClick={() => this.newActivePanel('operation')}>
+                        <Button onClick={() => store.newActivePanel('operation')}>
                           <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{' New Operation'}
                         </Button>
                       }
@@ -956,7 +496,7 @@ class Flowbokop extends React.Component {
                     <div>
                       <div style={{ marginTop: '10px', marginBottom: '6px' }}>
                         <ButtonGroup>
-                          {!_.isEmpty(this.state.activePanelState) &&
+                          {!_.isEmpty(store.activePanelState) &&
                             <Button
                               onClick={this.onDownloadResults}
                               bsStyle="primary"
@@ -969,14 +509,13 @@ class Flowbokop extends React.Component {
                         </ButtonGroup>
                       </div>
                       <CurieBrowser
-                        curieList={this.state.activePanelState.result}
+                        curieList={toJS(store.activePanelState.result)}
                         defaults={{ type: '', label: '<N/A>' }}
                       />
                     </div>
                   }
                 </Tab>
               </Tabs>
-              {/* </PanelGroup> */}
             </Col>
           </Row>
         </Grid>
@@ -986,7 +525,7 @@ class Flowbokop extends React.Component {
   }
 
   render() {
-    const ready = this.state.dataReady && this.state.userReady;
+    const ready = this.props.store.dataReady && this.state.userReady;
     return (
       <div>
         {!ready && this.renderLoading()}

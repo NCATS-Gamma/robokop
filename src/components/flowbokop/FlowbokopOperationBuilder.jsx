@@ -3,13 +3,14 @@ import PropTypes from 'prop-types';
 import { Form, FormControl, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import FaInfoCircle from 'react-icons/lib/fa/info-circle';
 import Multiselect from 'react-widgets/lib/Multiselect';
+import { toJS } from 'mobx';
+import { observer } from 'mobx-react';
 
 import LabeledFormGroup from './../shared/LabeledFormGroup';
 
-const _ = require('lodash');
 
 const propTypes = {
-  panelObj: PropTypes.shape({
+  activePanel: PropTypes.shape({
     inputType: PropTypes.string.isRequired,
     data: PropTypes.shape({
       input: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]).isRequired,
@@ -18,14 +19,7 @@ const propTypes = {
       options: PropTypes.string.isRequired,
     }).isRequired,
   }).isRequired,
-  onChangeHook: PropTypes.func, // Form of ({input, output, label, service, options, isValid}) => {}
-  // onInputSelect: PropTypes.func, // Callback when input(s) selection changes (value) => {}
   inputLabelList: PropTypes.arrayOf(PropTypes.string).isRequired,
-};
-
-const defaultProps = {
-  onChangeHook: () => {},
-  // onInputSelect: () => {},
 };
 
 const classNames = {
@@ -63,84 +57,12 @@ const optionsTooltip = (
   </Tooltip>
 );
 
+// @inject(({ store }) => ({ store }))
+@observer
 class FlowbokopOperationBuilder extends React.Component {
   constructor(props) {
     super(props);
-
-    this.isValidInput = this.isValidInput.bind(this);
-    this.isValidLabel = this.isValidLabel.bind(this);
-    this.isValidOptions = this.isValidOptions.bind(this);
-    this.isValidOutput = this.isValidOutput.bind(this);
-    this.isValidService = this.isValidService.bind(this);
     this.validateFormElement = this.validateFormElement.bind(this);
-  }
-
-  componentDidMount() {
-    this.publishIsValidToOnChangeHook();
-  }
-
-  componentDidUpdate(prevProps) {
-    // Update isValid state of entire panel any time the panel data changes
-    if (!_.isEqual(prevProps.panelObj.data, this.props.panelObj.data)) {
-      this.publishIsValidToOnChangeHook();
-    }
-  }
-
-  // Determine validation state of entire panel and publish to onChangeHook
-  publishIsValidToOnChangeHook() {
-    const isValid = this.isValidOperation(this.props.panelObj.data);
-    const defaultObj = _.cloneDeep(this.props.panelObj.data);
-    this.props.onChangeHook(Object.assign({}, defaultObj, { isValid }));
-  }
-
-  // updateValidationStatus(tag, validStatus) {
-  //   const validationStatus = _.cloneDeep(this.state.validationStatus);
-  //   validationStatus[tag] = validStatus;
-  //   const isValid = _.every(_.values(validationStatus), validationState => (validationState === 'success'));
-  //   this.setState({ validationStatus, isValid });
-  // }
-
-  isValidInput(val) {
-    return val.length > 0;
-  }
-
-  isValidOutput(val) {
-    return /^[a-z0-9_]+$/i.test(val);
-  }
-
-  isValidLabel(val) {
-    return /^[a-z0-9_ ]+$/i.test(val);
-  }
-
-  isValidService(val) {
-    const urlRegexp = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=/]*$/i;
-    return urlRegexp.test(val);
-  }
-
-  isValidOptions(val) {
-    if (val === '') {
-      return true;
-    }
-    try {
-      JSON.parse(val);
-      return true;
-    } catch (err) {
-      return false;
-    }
-  }
-
-  /**
-   * Determine if all input options are valid
-   */
-  isValidOperation(panelDataObj) {
-    const { input, output, label, service, options } = panelDataObj; // eslint-disable-line object-curly-newline
-    const isValid = (
-      this.isValidInput(input) && this.isValidOutput(output) &&
-      this.isValidLabel(label) && this.isValidService(service) &&
-      this.isValidOptions(options));
-    // console.log('isValidOperation - ', isValid);
-    // this.setState({ isValid }, callbackFn);
-    return isValid;
   }
 
   /**
@@ -148,23 +70,23 @@ class FlowbokopOperationBuilder extends React.Component {
    * its value for validation. If not supplied, looks up corresponding prop and
    * returns associated validation flag
    */
-  validateFormElement(field, val) {
+  validateFormElement(field) {
     let isValid = false;
     switch (field.toLowerCase()) {
       case 'input':
-        isValid = this.isValidInput(val);
+        isValid = this.props.activePanel.isValidInput;
         break;
       case 'output':
-        isValid = this.isValidOutput(val);
+        isValid = this.props.activePanel.isValidOutput;
         break;
       case 'label':
-        isValid = this.isValidLabel(val);
+        isValid = this.props.activePanel.isValidLabel;
         break;
       case 'service':
-        isValid = this.isValidService(val);
+        isValid = this.props.activePanel.isValidService;
         break;
       case 'options':
-        isValid = this.isValidOptions(val);
+        isValid = this.props.activePanel.isValidOptions;
         break;
       default:
         break;
@@ -177,28 +99,22 @@ class FlowbokopOperationBuilder extends React.Component {
     // an up to data object of form { input, output, label, service, options, isValid }
     // to the supplied onChangeHook method in props
     return (event) => {
-      const defaultObj = _.cloneDeep(this.props.panelObj.data);
       if (tag === 'input') {
         // This is a callback from MultiSelect input selector component
-        defaultObj.input = event;
+        this.props.activePanel.updateField(tag, event);
       } else {
-        defaultObj[tag] = event.target.value;
+        this.props.activePanel.updateField(tag, event.target.value);
       }
-      defaultObj.isValid = this.isValidOperation(defaultObj);
-      this.props.onChangeHook(defaultObj);
-      // // Set isValid state first, then call onChangeHook with updated panel and isValid state
-      // this.isValidOperation(defaultObj, () => {
-      //   defaultObj.isValid = this.state.isValid;
-      //   // console.log('in onChangeFactory:', defaultObj, this.state.isValid);
-      //   this.props.onChangeHook(defaultObj);
-      // });
     };
   }
 
   render() {
-    const { input: inp, output, label, service, options } = this.props.panelObj.data;
-    const isInputArray = Array.isArray(inp);
-    const input = isInputArray ? inp : [inp];
+    const {
+      input: inp, output, label, service, options,
+    } = this.props.activePanel.data;
+
+    const isInputArray = Array.isArray(toJS(inp));
+    const input = isInputArray ? toJS(inp) : [toJS(inp)];
     return (
       <div>
         <Form horizontal>
@@ -211,11 +127,11 @@ class FlowbokopOperationBuilder extends React.Component {
               </span>
             }
             value={JSON.stringify(input)}
-            validateForm={val => this.validateFormElement('input', val)}
+            validateForm={() => this.validateFormElement('input')}
             classNames={classNames}
           >
             <Multiselect
-              data={this.props.inputLabelList}
+              data={toJS(this.props.inputLabelList)}
               value={input}
               filter="contains"
               onChange={this.onChangeFactory('input')}
@@ -231,7 +147,7 @@ class FlowbokopOperationBuilder extends React.Component {
               </span>
             }
             value={output}
-            validateForm={val => this.validateFormElement('output', val)}
+            validateForm={() => this.validateFormElement('output')}
             classNames={classNames}
           >
             <FormControl
@@ -249,7 +165,7 @@ class FlowbokopOperationBuilder extends React.Component {
               </span>
             }
             value={label}
-            validateForm={val => this.validateFormElement('label', val)}
+            validateForm={() => this.validateFormElement('label')}
             classNames={classNames}
           >
             <FormControl
@@ -267,7 +183,7 @@ class FlowbokopOperationBuilder extends React.Component {
               </span>
             }
             value={service}
-            validateForm={val => this.validateFormElement('service', val)}
+            validateForm={() => this.validateFormElement('service')}
             classNames={classNames}
           >
             <FormControl
@@ -285,7 +201,7 @@ class FlowbokopOperationBuilder extends React.Component {
               </span>
             }
             value={options}
-            validateForm={val => this.validateFormElement('options', val)}
+            validateForm={() => this.validateFormElement('options')}
             classNames={classNames}
           >
             <FormControl
@@ -301,6 +217,6 @@ class FlowbokopOperationBuilder extends React.Component {
 }
 
 FlowbokopOperationBuilder.propTypes = propTypes;
-FlowbokopOperationBuilder.defaultProps = defaultProps;
+// FlowbokopOperationBuilder.defaultProps = defaultProps;
 
 export default FlowbokopOperationBuilder;
