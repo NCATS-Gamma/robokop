@@ -36,16 +36,23 @@ class QuestionAPI(Resource):
           - in: path
             name: question_id
             description: "question id"
-            type: string
+            schema:
+                type: string
             required: true
             example: A2T8TK8uxaEy
         responses:
             200:
                 description: question
-                schema:
-                    $ref: '#/definitions/Question'
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/definitions/Question'
             404:
                 description: "invalid question key"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
 
         try:
@@ -69,27 +76,51 @@ class QuestionAPI(Resource):
           - in: path
             name: question_id
             description: "question id"
-            type: string
+            schema:
+                type: string
             required: true
-          - in: body
-            name: name
-            description: "name of question"
-            required: true
-          - in: body
-            name: natural_question
-            description: "natural-language question"
-            required: true
-          - in: body
-            name: notes
-            description: "notes"
-            required: true
+        requestBody:
+            description: request body
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                          - name
+                          - natural_question
+                          - notes
+                        properties:
+                            name:
+                                description: "name of question"
+                                schema:
+                                    type: string
+                            natural_question:
+                                description: "natural-language question"
+                                schema:
+                                    type: string
+                            notes:
+                                description: "notes"
+                                schema:
+                                    type: string
         responses:
             200:
                 description: "question edited"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
             401:
                 description: "unauthorized"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
             404:
                 description: "invalid question key"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
         auth = request.authorization
         if auth:
@@ -119,15 +150,28 @@ class QuestionAPI(Resource):
           - in: path
             name: question_id
             description: "question id"
-            type: string
+            schema:
+                type: string
             required: true
         responses:
             200:
                 description: "question deleted"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
             401:
                 description: "unauthorized"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
             404:
                 description: "invalid question key"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
         auth = request.authorization
         if auth:
@@ -159,13 +203,22 @@ class GetFeedbackByQuestion(Resource):
           - in: path
             name: question_id
             description: "question id"
-            type: string
+            schema:
+                type: string
             required: true
         responses:
             200:
                 description: success
+                content:
+                    text/plain:
+                        schema:
+                            type: string
             404:
                 description: "invalid question key"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
         try:
             question = get_question_by_id(question_id, session=db.session)
@@ -188,15 +241,22 @@ class AnswerQuestion(Resource):
           - in: path
             name: question_id
             description: "question id"
-            type: string
+            schema:
+                type: string
             required: true
         responses:
             202:
                 description: "answering in progress"
-                type: string
+                content:
+                    text/plain:
+                        schema:
+                            type: string
             404:
                 description: "invalid question key"
-                type: string
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
         auth = request.authorization
         if auth:
@@ -227,15 +287,22 @@ class RefreshKG(Resource):
           - in: path
             name: question_id
             description: "question id"
-            type: string
+            schema:
+                type: string
             required: true
         responses:
             202:
                 description: "refreshing in progress"
-                type: string
+                content:
+                    text/plain:
+                        schema:
+                            type: string
             404:
                 description: "invalid question key"
-                type: string
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
         auth = request.authorization
         if auth:
@@ -265,24 +332,31 @@ class QuestionTasks(Resource):
           - in: path
             name: question_id
             description: "question id"
-            type: string
+            schema:
+                type: string
             required: true
         responses:
             200:
                 description: tasks
-                type: object
-                properties:
-                    answerers:
-                        type: array
-                        items:
-                            $ref: '#/definitions/Task'
-                    updaters:
-                        type: array
-                        items:
-                            $ref: '#/definitions/Task'
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                answerers:
+                                    type: array
+                                    items:
+                                        $ref: '#/definitions/Task'
+                                updaters:
+                                    type: array
+                                    items:
+                                        $ref: '#/definitions/Task'
             404:
                 description: "invalid question key"
-                type: string
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
 
         try:
@@ -316,16 +390,22 @@ class QuestionSubgraph(Resource):
           - in: path
             name: question_id
             description: "question id"
-            type: string
+            schema:
+                type: string
             required: true
         responses:
             200:
-                description: xxx
-                schema:
-                    $ref: '#/definitions/Graph'
+                description: question subgraph
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/definitions/Graph'
             404:
                 description: "invalid question key"
-                type: string
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
 
         try:

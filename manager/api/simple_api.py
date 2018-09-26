@@ -29,42 +29,51 @@ class Expand(Resource):
           - in: path
             name: type1
             description: "type of first node"
-            type: string
+            schema:
+                type: string
             required: true
             default: "disease"
           - in: path
             name: id1
             description: "curie of first node"
-            type: string
+            schema:
+                type: string
             required: true
             default: "MONDO:0005737"
           - in: path
             name: type2
             description: "type of second node"
-            type: string
+            schema:
+                type: string
             required: true
             default: "gene"
           - in: query
             name: predicate
-            type: string
+            schema:
+                type: string
             default: "disease_to_gene_association"
           - in: query
             name: csv
-            type: boolean
+            schema:
+                type: boolean
             default: false
           - in: query
             name: rebuild
-            type: boolean
+            schema:
+                type: boolean
             default: false
         responses:
             200:
                 description: answers
-                type: object
-                properties:
-                    answers:
-                        type: array
-                        items:
-                            $ref: '#/definitions/Answer'
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                answers:
+                                    type: array
+                                    items:
+                                        $ref: '#/definitions/Answer'
         """
         question = {
             'machine_question': {
@@ -87,13 +96,14 @@ class Expand(Resource):
                 ]
             }
         }
+        logger.info('expand')
         predicate = request.args.get('predicate')
         if predicate is not None:
             question['machine_question']['edges'][0]['type'] = predicate
         csv = request.args.get('csv', default='false')
         question['rebuild'] = request.args.get('rebuild', default='false')
         response = requests.post(
-            f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/simple/quick/?max_results=-1',
+            f'http://manager:{os.environ["MANAGER_PORT"]}/api/simple/quick/?max_results=-1',
             json=question)
         answerset = response.json()
         if csv.upper() == 'TRUE':
@@ -109,13 +119,15 @@ class Quick(Resource):
         Get answers to a question without caching
         ---
         tags: [simple]
-        parameters:
-          - in: body
+        requestBody:
             name: question
             description: The machine-readable question graph.
-            schema:
-                $ref: '#/definitions/Question'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/definitions/Question'
             required: true
+        parameters:
           - in: query
             name: max_results
             description: Maximum number of results to return. Provide -1 to indicate no maximum.
@@ -124,16 +136,13 @@ class Quick(Resource):
             default: 250
         responses:
             200:
-                description: Answer
-                schema:
-                    type: object
-                    required:
-                      - thingsandstuff
-                    properties:
-                        thingsandstuff:
-                            type: string
-                            description: all the things and stuff
+                description: Answer set
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/definitions/Response'
         """
+        logger.info('quick')
         question = request.json
         logger.info("quack")
         if ('rebuild' in question) and (str(question['rebuild']).upper() == 'TRUE'):
@@ -193,55 +202,66 @@ class SimilaritySearch(Resource):
           - in: path
             name: type1
             description: "type of query node"
-            type: string
+            schema:
+                type: string
             required: true
             default: "disease"
           - in: path
             name: id1
             description: "curie of query node"
-            type: string
+            schema:
+                type: string
             required: true
             default: "MONDO:0005737"
           - in: path
             name: type2
             description: "type of return nodes"
-            type: string
+            schema:
+                type: string
             required: true
             default: "disease"
           - in: path
             name: by_type
             description: "type used to evaluate similarity"
-            type: string
+            schema:
+                type: string
             required: true
             default: "phenotypic_feature"
           - in: query
             name: threshhold
             description: "Number between 0 and 1 indicating the minimum similarity to return"
-            type: float
+            schema:
+                type: float
             default: 0.5
           - in: query
             name: maxresults
             description: "The maximum number of results to return. Set to 0 to return all results."
-            type: integer
+            schema:
+                type: integer
             default: 100
           - in: query
             name: csv
-            type: boolean
+            schema:
+                type: boolean
             default: true
           - in: query
             name: rebuild
             description: "Rebuild local knowledge graph for this similarity search"
-            type: boolean
+            schema:
+                type: boolean
             default: false
         responses:
             200:
                 description: answers
-                type: object
-                properties:
-                    answers:
-                        type: array
-                        items:
-                            $ref: '#/definitions/Answer'
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                answers:
+                                    type: array
+                                    items:
+                                        $ref: '#/definitions/Answer'
         """
         #TODO:Add another argument:
         #- in: query
@@ -318,7 +338,6 @@ class SimilaritySearch(Resource):
         sim_params = {'threshhold':request.args.get('threshhold', default = None),
                       'maxresults':request.args.get('maxresults', default = None)}
         sim_params = {k:v for k,v in sim_params.items() if v is not None}
-        logger.info("Going into ranker:sim")
         response = requests.get( f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/similarity/{type1}/{sid1}/{type2}/{by_type}', params=sim_params)
 
         return response.json()
@@ -335,61 +354,68 @@ class EnrichedExpansion(Resource):
           - in: path
             name: type1
             description: "type of query node"
-            type: string
+            schema:
+                type: string
             required: true
             default: "disease"
           - in: path
             name: type2
             description: "type of return nodes"
-            type: string
+            schema:
+                type: string
             required: true
             default: "disease"
-          - in: body
+        requestBody:
             name: all_the_things
             description: "This should probably be a schema object"
-            schema:
-                type: object
-                properties:
-                    threshhold:
-                        description: "Number between 0 and 1 indicating the minimum similarity to return"
-                        type: number
-                        default: 0.5
-                    maxresults:
-                        description: "The maximum number of results to return. Set to 0 to return all results."
-                        type: integer
-                        default: 100
-                    identifiers:
-                        description: "The entities being enriched"
-                        type: array
-                        items:
-                            type: string
-                        required: true
-                    include_descendants:
-                        description: "Extend the starting entities to use all of their descendants as well"
-                        type: boolean
-                        default: false
-                    numtype1:
-                        type: integer
-                        description: "The total number of entities of type 1 that exist. By default uses a value based on querying the cache"
-                    rebuild:
-                        description: "Rebuild local knowledge graph for this similarity search"
-                        type: boolean
-                        default: false
-                example:
-                    threshhold: 0.5
-                    maxresults: 100
-                    identifiers: ["MONDO:0014683", "MONDO:0005737"]
-                    include_descendants: false
-                    rebuild: false
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        properties:
+                            threshhold:
+                                description: "Number between 0 and 1 indicating the minimum similarity to return"
+                                type: number
+                                default: 0.5
+                            maxresults:
+                                description: "The maximum number of results to return. Set to 0 to return all results."
+                                type: integer
+                                default: 100
+                            identifiers:
+                                description: "The entities being enriched"
+                                type: array
+                                items:
+                                    type: string
+                                required: true
+                            include_descendants:
+                                description: "Extend the starting entities to use all of their descendants as well"
+                                type: boolean
+                                default: false
+                            numtype1:
+                                type: integer
+                                description: "The total number of entities of type 1 that exist. By default uses a value based on querying the cache"
+                            rebuild:
+                                description: "Rebuild local knowledge graph for this similarity search"
+                                type: boolean
+                                default: false
+                        example:
+                            threshhold: 0.5
+                            maxresults: 100
+                            identifiers: ["MONDO:0014683", "MONDO:0005737"]
+                            include_descendants: false
+                            rebuild: false
         responses:
             200:
                 description: answers
-                type: object
-                properties:
-                    answers:
-                        type: array
-                        items:
-                            $ref: '#/definitions/Answer'
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                answers:
+                                    type: array
+                                    items:
+                                        $ref: '#/definitions/Answer'
         """
         parameters = request.json
         identifiers = parameters['identifiers']

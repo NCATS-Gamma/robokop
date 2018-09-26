@@ -6,7 +6,7 @@ import { FormGroup } from 'react-bootstrap';
 const propTypes = {
   styles: PropTypes.shape({ formLabel: PropTypes.object, formControl: PropTypes.object }),
   classNames: PropTypes.shape({ formLabel: PropTypes.string, formControl: PropTypes.string }),
-  formLabel: PropTypes.string.isRequired,
+  formLabel: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
   validateForm: PropTypes.func,
   validationHookFn: PropTypes.func, // This provides validation string as input arg when values change in field
   children: PropTypes.element.isRequired,
