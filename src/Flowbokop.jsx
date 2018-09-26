@@ -24,8 +24,7 @@ import FlowbokopOperationBuilder from './components/flowbokop/FlowbokopOperation
 import CurieBrowser from './components/shared/CurieBrowser';
 import { activeTabKeys, panelTypes } from './stores/flowbokopStore';
 
-const _ = require('lodash');
-
+const isEmpty = require('lodash/isEmpty');
 
 // Buttons displayed in title-bar of Graph Viewer
 const GraphTitleButtons = ({
@@ -149,7 +148,7 @@ class Flowbokop extends React.Component {
 
   getInputOperationPanel() {
     const { activePanelState } = this.props.store;
-    if (_.isEmpty(activePanelState)) {
+    if (isEmpty(activePanelState)) {
       return null;
     }
     if (activePanelState.inputType === panelTypes.input) {
@@ -440,7 +439,7 @@ class Flowbokop extends React.Component {
                 <Tab eventKey={activeTabKeys.configure} title="Configure">
                   <div style={{ marginTop: '10px', marginBottom: '6px' }}>
                     <ButtonGroup>
-                      {!_.isEmpty(store.activePanelState) &&
+                      {!isEmpty(store.activePanelState) &&
                         <Button
                           onClick={store.saveActivePanel}
                           disabled={!unsavedChanges || !isValidPanel}
@@ -483,7 +482,7 @@ class Flowbokop extends React.Component {
                     <div>
                       <div style={{ marginTop: '10px', marginBottom: '6px' }}>
                         <ButtonGroup>
-                          {!_.isEmpty(store.activePanelState) &&
+                          {!isEmpty(store.activePanelState) &&
                             <Button
                               onClick={this.onDownloadResults}
                               bsStyle="primary"
