@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Form, FormControl, Button, Glyphicon } from 'react-bootstrap';
 import FaPlus from 'react-icons/lib/fa/plus';
 import { toJS } from 'mobx';
-import { inject, observer } from 'mobx-react';
+import { inject, observer, PropTypes as mobxPropTypes } from 'mobx-react';
 
 // import AppConfig from './../../AppConfig';
 import Loading from './../Loading';
@@ -15,7 +15,7 @@ const propTypes = {
   activePanel: PropTypes.shape({
     inputType: PropTypes.string.isRequired,
     inputLabel: PropTypes.string.isRequired,
-    data: PropTypes.arrayOf(PropTypes.shape({
+    data: mobxPropTypes.observableArrayOf(PropTypes.shape({
       type: PropTypes.string.isRequired,
       label: PropTypes.string.isRequired,
       curie: PropTypes.string.isRequired,
@@ -64,8 +64,10 @@ class FlowbokopInputBuilder extends React.Component {
     );
   }
   renderLoaded() {
-    const curieSelectorElements = this.props.activePanel.data.map((singleCurie, i) => {
+    const curieSelectorElements = this.props.activePanel.data.map((aCurie, i) => {
+      const singleCurie = toJS(aCurie);
       singleCurie.term = singleCurie.label; // TODO: Maybe refactor CurieSelectorContainer to not use `term`
+      delete singleCurie.label;
       const curieSelectorElement = (
         <div
           style={{ display: 'table-row' }}
@@ -78,7 +80,7 @@ class FlowbokopInputBuilder extends React.Component {
               concepts={toJS(this.props.store.concepts)}
               search={this.onSearch}
               disableType={i !== 0} // Only enable for 1st CurieSelector element
-              initialInputs={toJS(singleCurie)}
+              initialInputs={singleCurie}
               onChangeHook={(ty, te, cu) => this.props.activePanel.updateCurie(i, ty, te, cu)}
             />
           </div>

@@ -216,7 +216,7 @@ class OperationPanel {
     if (!(other instanceof OperationPanel)) {
       return false;
     }
-    return _.isEqual(this.data, other.data);
+    return _.isEqual(toJS(this.data), toJS(other.data));
   }
 
   // Make a deep clone of this instance

@@ -437,7 +437,7 @@ class Flowbokop extends React.Component {
                 </Panel.Heading>
                 <Panel.Body style={{ padding: '0px' }}>
                   <FlowbokopGraphFetchAndView
-                    graph={store.queryGraph}
+                    graph={toJS(store.queryGraph)}
                     graphState={store.graphState}
                     height="350px"
                     nodeSelectCallback={this.nodeSelectCallback}

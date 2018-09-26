@@ -4,7 +4,7 @@ import { Form, FormControl, Tooltip, OverlayTrigger } from 'react-bootstrap';
 import FaInfoCircle from 'react-icons/lib/fa/info-circle';
 import Multiselect from 'react-widgets/lib/Multiselect';
 import { toJS } from 'mobx';
-import { observer } from 'mobx-react';
+import { observer, PropTypes as mobxPropTypes } from 'mobx-react';
 
 import LabeledFormGroup from './../shared/LabeledFormGroup';
 
@@ -13,7 +13,7 @@ const propTypes = {
   activePanel: PropTypes.shape({
     inputType: PropTypes.string.isRequired,
     data: PropTypes.shape({
-      input: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]).isRequired,
+      input: PropTypes.oneOfType([PropTypes.string, mobxPropTypes.observableArrayOf(PropTypes.string)]).isRequired,
       output: PropTypes.string.isRequired,
       service: PropTypes.string.isRequired,
       options: PropTypes.string.isRequired,
