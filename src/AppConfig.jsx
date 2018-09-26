@@ -103,7 +103,7 @@ class AppConfig {
     return `${this.config.protocol}://${this.config.host}:${this.config.port}/${ext}`;
   }
 
-  concepts(fun) { this.getRequest(`${this.apis.concepts}`, fun); }
+  concepts(fun, fail = () => {}) { this.getRequest(`${this.apis.concepts}`, fun, fail); }
   operations(fun) { this.getRequest(`${this.apis.operations}`, fun); }
   user(successFun, failureFun) { this.getRequest(`${this.apis.user}`, successFun, failureFun); }
   questionListData(fun) { this.getRequest(`${this.apis.questions}`, fun); }
