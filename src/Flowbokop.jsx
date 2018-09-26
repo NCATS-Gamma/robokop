@@ -22,15 +22,10 @@ import FlowbokopGraphFetchAndView, { graphStates } from './components/flowbokop/
 import FlowbokopInputBuilder from './components/flowbokop/FlowbokopInputBuilder';
 import FlowbokopOperationBuilder from './components/flowbokop/FlowbokopOperationBuilder';
 import CurieBrowser from './components/shared/CurieBrowser';
-
+import { activeTabKeys, panelTypes } from './stores/flowbokopStore';
 
 const _ = require('lodash');
 
-// ENUM for active tab to display for a panel
-const activeTabKeys = {
-  configure: 1,
-  results: 2,
-};
 
 // Buttons displayed in title-bar of Graph Viewer
 const GraphTitleButtons = ({
@@ -157,7 +152,7 @@ class Flowbokop extends React.Component {
     if (_.isEmpty(activePanelState)) {
       return null;
     }
-    if (activePanelState.inputType === 'input') {
+    if (activePanelState.inputType === panelTypes.input) {
       return (
         <Panel style={{ marginBottom: '5px' }}>
           <Panel.Heading>
@@ -208,42 +203,34 @@ class Flowbokop extends React.Component {
     this.props.store.onChangeTab(key);
   }
 
-  onDownloadResults() {
-    const results = this.props.store.workflowResult;
-
-    // Transform the data into a json blob and give it a url
-    const json = JSON.stringify(results, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-
-    // This doesn't use Blob() might also work
-    // var url = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
-
-    // Create a link with that URL and click it.
-    const a = document.createElement('a');
-    a.download = 'flowbokopWorkflowResults.json';
-    a.href = url;
-    a.click();
-    a.remove();
-  }
-
-  onDownloadWorkflow() {
-    const data = this.props.store.panelStateToWorkflowInputs();
-
+  /**
+   * Converts provided JSON serializable data into a .json file that is downloaded
+   * to the user's machine via file-save dialog
+   * @param {JSON serializable object} data - JSON data to be provided as download
+   * @param {*} filename - Default filename for the provided .json file
+   */
+  provideJsonDownload(data, filename) {
     // Transform the data into a json blob and give it a url
     const json = JSON.stringify(data, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
 
-    // This doesn't use Blob() might also work
-    // var url = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
-
     // Create a link with that URL and click it.
     const a = document.createElement('a');
-    a.download = 'flowbokopWorkflow.json';
+    a.download = filename;
     a.href = url;
     a.click();
     a.remove();
+  }
+
+  onDownloadResults() {
+    const results = this.props.store.workflowResult;
+    this.provideJsonDownload(results, 'flowbokopWorkflowResults.json');
+  }
+
+  onDownloadWorkflow() {
+    const data = this.props.store.panelStateToWorkflowInputs();
+    this.provideJsonDownload(data, 'flowbokopWorkflow.json');
   }
 
   onDropFile(acceptedFiles, rejectedFiles) { // eslint-disable-line no-unused-vars
@@ -408,7 +395,7 @@ class Flowbokop extends React.Component {
     const { store } = this.props;
     const unsavedChanges = store.isUnsavedChanges;
     const { isValid: isValidPanel } = store.activePanelState;
-    const atleastOneInput = store.panelState.some(panelObj => panelObj.inputType === 'input');
+    const atleastOneInput = store.panelState.some(panelObj => panelObj.inputType === panelTypes.input);
     const isNewPanel = store.activePanelInd === store.panelState.length;
     const hasResults = !isNewPanel && store.activePanelState.hasResult;
     return (
@@ -479,11 +466,11 @@ class Flowbokop extends React.Component {
                           <FaTrash style={{ verticalAlign: 'text-top' }} />{` ${isNewPanel ? 'Discard' : 'Delete'}`}
                         </Button>
                       }
-                      <Button onClick={() => store.newActivePanel('input')}>
+                      <Button onClick={() => store.newActivePanel(panelTypes.input)}>
                         <FaPlus style={{ verticalAlign: 'text-top' }} />{' New Input'}
                       </Button>
                       {atleastOneInput &&
-                        <Button onClick={() => store.newActivePanel('operation')}>
+                        <Button onClick={() => store.newActivePanel(panelTypes.operation)}>
                           <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{' New Operation'}
                         </Button>
                       }

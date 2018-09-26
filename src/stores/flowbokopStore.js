@@ -603,3 +603,4 @@ class FlowbokopStore {
 
 
 export default new FlowbokopStore(); // Export singleton store instance
+export { activeTabKeys, panelTypes };
