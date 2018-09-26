@@ -28,6 +28,208 @@ except Exception as e:
         'misc_api.py:: Could not '
         f'find/read concept_map.json - {e}')
 
+class WF1MOD3(Resource):
+    def get(self, disease_curie):
+        """
+        Apply WF1.MOD3 to the provided disease.
+        ---
+        tags: [workflow]
+        parameters:
+          - in: path
+            name: disease_curie
+            description: Disease curie to which module 3 should be applied
+            schema:
+                type: string
+            required: true
+          - in: query
+            name: max_results
+            description: Maximum number of results to return. Provide -1 to indicate no maximum.
+            schema:
+                type: integer
+            default: 250
+        responses:
+            200:
+                description: Answer set
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/definitions/Response'
+        """
+        max_results = request.args.get('max_results', default=250)
+        qspec = {
+            "machine_question": {
+                "edges": [
+                    {
+                        "source_id": 0,
+                        "target_id": 1,
+                        "type": "contributes_to"
+                    },
+                    {
+                        "source_id": 2,
+                        "target_id": 1,
+                        "type": "positively_regulates__entity_to_entity"
+                    },
+                    {
+                        "source_id": 3,
+                        "target_id": 2,
+                        "type": "decreases_activity_of"
+                    }
+                ],
+                "nodes": [
+                    {
+                        "curie": disease_curie,
+                        "id": 0,
+                        "type": "disease"
+                    },
+                    {
+                        "id": 1,
+                        "type": "chemical_substance",
+                        "set": True
+                    },
+                    {
+                        "id": 2,
+                        "type": "gene",
+                        "set": True
+                    },
+                    {
+                        "id": 3,
+                        "type": "chemical_substance"
+                    }
+                ]
+            }
+        }
+
+        response = requests.post(
+            f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/?max_results={max_results}",
+            json=qspec)
+        polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
+
+        for _ in range(60 * 60):  # wait up to 1 hour
+            logger.debug(f'polling {polling_url}...')
+            time.sleep(1)
+            response = requests.get(polling_url)
+            if response.status_code == 200:
+                if response.json()['status'] == 'FAILURE':
+                    return 'ROBOKOP failed. See the logs.', 500
+                if response.json()['status'] == 'REVOKED':
+                    return 'ROBOKOP task terminated by admin.', 500
+                if response.json()['status'] == 'SUCCESS':
+                    break
+        else:
+            return "ROBOKOP has not completed after 1 hour. It's still working.", 202
+
+        response = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{response.json()['task_id']}?standardize=true")
+
+        answerset = response.json()
+        # strip out support edges for now
+        for result in answerset['result_list']:
+            result['result_graph']['edge_list'] = [edge for edge in result['result_graph']['edge_list'] if edge['type'] != 'literature_co-occurrence']
+
+        return answerset, 200
+
+api.add_resource(WF1MOD3, '/wf1mod3/<disease_curie>/')
+
+class WF1MOD3a(Resource):
+    def get(self, disease_curie):
+        """
+        Apply WF1.MOD3a to the provided disease.
+        ---
+        tags: [workflow]
+        parameters:
+          - in: path
+            name: disease_curie
+            description: Disease curie to which module 3a should be applied
+            schema:
+                type: string
+            required: true
+          - in: query
+            name: max_results
+            description: Maximum number of results to return. Provide -1 to indicate no maximum.
+            schema:
+                type: integer
+            default: 250
+        responses:
+            200:
+                description: Answer set
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/definitions/Response'
+        """
+        max_results = request.args.get('max_results', default=250)
+        qspec = {
+            "machine_question": {
+                "edges": [
+                    {
+                        "source_id": 0,
+                        "target_id": 1,
+                        "type": "contributes_to"
+                    },
+                    {
+                        "source_id": 2,
+                        "target_id": 1,
+                        "type": "negatively_regulates__entity_to_entity"
+                    },
+                    {
+                        "source_id": 3,
+                        "target_id": 2,
+                        "type": "increases_activity_of"
+                    }
+                ],
+                "nodes": [
+                    {
+                        "curie": disease_curie,
+                        "id": 0,
+                        "type": "disease"
+                    },
+                    {
+                        "id": 1,
+                        "type": "chemical_substance",
+                        "set": True
+                    },
+                    {
+                        "id": 2,
+                        "type": "gene",
+                        "set": True
+                    },
+                    {
+                        "id": 3,
+                        "type": "chemical_substance"
+                    }
+                ]
+            }
+        }
+
+        response = requests.post(
+            f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/?max_results={max_results}",
+            json=qspec)
+        polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
+
+        for _ in range(60 * 60):  # wait up to 1 hour
+            logger.debug(f'polling {polling_url}...')
+            time.sleep(1)
+            response = requests.get(polling_url)
+            if response.status_code == 200:
+                if response.json()['status'] == 'FAILURE':
+                    return 'ROBOKOP failed. See the logs.', 500
+                if response.json()['status'] == 'REVOKED':
+                    return 'ROBOKOP task terminated by admin.', 500
+                if response.json()['status'] == 'SUCCESS':
+                    break
+        else:
+            return "ROBOKOP has not completed after 1 hour. It's still working.", 202
+
+        response = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{response.json()['task_id']}?standardize=true")
+
+        answerset = response.json()
+        # strip out support edges for now
+        for result in answerset['result_list']:
+            result['result_graph']['edge_list'] = [edge for edge in result['result_graph']['edge_list'] if edge['type'] != 'literature_co-occurrence']
+
+        return answerset, 200
+
+api.add_resource(WF1MOD3a, '/wf1mod3a/<disease_curie>/')
+
 class Tasks(Resource):
     def get(self):
         """
@@ -37,9 +239,12 @@ class Tasks(Resource):
         responses:
             200:
                 description: tasks
-                type: array
-                items:
-                    $ref: '#/definitions/Task'
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                $ref: '#/definitions/Task'
         """
         tasks = list_tasks(session=db.session)
         return [t.to_json() for t in tasks]
@@ -55,13 +260,16 @@ class TaskStatus(Resource):
           - in: path
             name: task_id
             description: "task id"
-            type: string
+            schema:
+                type: string
             required: true
         responses:
             200:
                 description: task
-                schema:
-                    $ref: '#/definitions/Task'
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/definitions/Task'
         """
         
         return get_task_by_id(task_id).to_json()
@@ -74,11 +282,16 @@ class TaskStatus(Resource):
           - in: path
             name: task_id
             description: "task id"
-            type: string
+            schema:
+                type: string
             required: true
         responses:
             204:
                 description: task revoked
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
         
         celery.control.revoke(task_id, terminate=True)
@@ -96,21 +309,28 @@ class NLP(Resource):
         summary: "Convert a natural-language question into machine-readable form."
         consumes:
           - text/plain
-        parameters:
-          - in: "body"
+        requestBody:
             name: "question"
             description: "Natural-language question"
             required: true
-            schema:
-                type: string
-                example: "What genes affect Ebola?"
+            content:
+                text/plain:
+                    schema:
+                        type: string
+                        example: "What genes affect Ebola?"
         responses:
             200:
                 description: "Here's your graph"
-                schema:
-                    $ref: "#/definitions/Graph"
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/definitions/Graph"
             400:
                 description: "Something went wrong"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
         response = requests.post(f"http://{os.environ['NLP_HOST']}:{os.environ['NLP_PORT']}/api/parse/", data=request.get_data())
         return Response(response.content, response.status_code)
@@ -126,9 +346,12 @@ class Concepts(Resource):
         responses:
             200:
                 description: concepts
-                type: array
-                items:
-                    type: string
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: string
         """
         r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/concepts")
         concepts = r.json()
@@ -148,9 +371,12 @@ class Connections(Resource):
         responses:
             200:
                 description: concepts
-                type: array
-                items:
-                    type: string
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: string
         """
         r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/connections")
         connections = r.json()
@@ -168,9 +394,12 @@ class Operations(Resource):
         responses:
             200:
                 description: concepts
-                type: array
-                items:
-                    type: string
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: string
         """
         r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/operations")
         operations = r.json()
@@ -189,21 +418,26 @@ class Search(Resource):
           - in: path
             name: term
             description: "biomedical term"
-            type: string
+            schema:
+                type: string
             required: true
             example: ebola
           - in: path
             name: category
             description: "biomedical concept category"
-            type: string
+            schema:
+                type: string
             required: true
             example: disease
         responses:
             200:
                 description: "biomedical identifiers"
-                type: array
-                items:
-                    type: string
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: string
         """
         if category not in concept_map:
             abort(400, error_message=f'Unsupported category: {category} provided')
@@ -252,23 +486,26 @@ class User(Resource):
         responses:
             200:
                 description: user
-                type: object
-                properties:
-                    is_authenticated:
-                        type: string
-                        example: true
-                    is_active:
-                        type: string
-                        example: true
-                    is_anonymous:
-                        type: string
-                        example: false
-                    is_admin:
-                        type: string
-                        example: false
-                    username:
-                        type: string
-                        example: patrick@covar.com
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                is_authenticated:
+                                    type: string
+                                    example: true
+                                is_active:
+                                    type: string
+                                    example: true
+                                is_anonymous:
+                                    type: string
+                                    example: false
+                                is_admin:
+                                    type: string
+                                    example: false
+                                username:
+                                    type: string
+                                    example: me@mydomain.edu
         """
         user = getAuthData()
         return user

@@ -23,35 +23,41 @@ class AnswersetAPI(Resource):
           - in: path
             name: qa_id
             description: "<question_id>_<answerset_id>"
-            type: string
+            schema:
+                type: string
             required: true
         responses:
             200:
                 description: "answerset data"
-                type: object
-                properties:
-                    answerset:
+                content:
+                    application/json:
                         schema:
-                            $ref: '#/definitions/Response'
-                    user:
-                        type: object
-                    question:
-                        type: object
-                    other_questions:
-                        type: array
-                        items:
                             type: object
-                    other_answersets:
-                        type: array
-                        items:
-                            type: object
-                    feedback:
-                        type: array
-                        items:
-                            type: object
+                            properties:
+                                answerset:
+                                    schema:
+                                        $ref: '#/definitions/Response'
+                                user:
+                                    type: object
+                                question:
+                                    type: object
+                                other_questions:
+                                    type: array
+                                    items:
+                                        type: object
+                                other_answersets:
+                                    type: array
+                                    items:
+                                        type: object
+                                feedback:
+                                    type: array
+                                    items:
+                                        type: object
             404:
                 description: "invalid answerset id"
-                type: string
+                content:
+                    text/plain:
+                        type: string
         """
         try:
             question_id, answerset_id = qa_id.split('_')
@@ -85,43 +91,50 @@ class AnswerAPI(Resource):
           - in: path
             name: qa_id
             description: "<question_id>_<answerset_id>"
-            type: string
+            schema:
+                type: string
             required: true
           - in: path
             name: answer_id
             description: "answer/result id"
-            type: string
+            schema:
+                type: string
             required: true
         responses:
             200:
                 description: "answer data"
-                type: object
-                properties:
-                    answer:
+                content:
+                    application/json:
                         schema:
-                            $ref: '#/definitions/Result'
-                    answerset:
-                        schema:
-                            $ref: '#/definitions/Response'
-                    user:
-                        type: object
-                    question:
-                        type: object
-                    other_questions:
-                        type: array
-                        items:
                             type: object
-                    other_answersets:
-                        type: array
-                        items:
-                            type: object
-                    feedback:
-                        type: array
-                        items:
-                            type: object
+                            properties:
+                                answer:
+                                    schema:
+                                        $ref: '#/definitions/Result'
+                                answerset:
+                                    schema:
+                                        $ref: '#/definitions/Response'
+                                user:
+                                    type: object
+                                question:
+                                    type: object
+                                other_questions:
+                                    type: array
+                                    items:
+                                        type: object
+                                other_answersets:
+                                    type: array
+                                    items:
+                                        type: object
+                                feedback:
+                                    type: array
+                                    items:
+                                        type: object
             404:
                 description: "invalid answerset/answer id"
-                type: string
+                content:
+                    text/plain:
+                        type: string
         """
 
         try:
@@ -162,22 +175,30 @@ class GetFeedbackByAnswer(Resource):
           - in: path
             name: qa_id
             description: "<question_id>_<answerset_id>"
-            type: string
+            schema:
+                type: string
             required: true
           - in: path
             name: answer_id
             description: "answer/result id"
-            type: string
+            schema:
+                type: string
             required: true
         responses:
             200:
                 description: "answer feedback"
-                type: array
-                items:
-                    $ref: '#/definitions/Feedback'
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                $ref: '#/definitions/Feedback'
             404:
                 description: "invalid answerset/answer id"
-                type: string
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
         try:
             question_id, answerset_id = qa_id.split('_')
@@ -203,17 +224,24 @@ class GetFeedbackByAnswerset(Resource):
           - in: path
             name: qa_id
             description: "<question_id>_<answerset_id>"
-            type: string
+            schema:
+                type: string
             required: true
         responses:
             200:
                 description: "answer feedback"
-                type: array
-                items:
-                    $ref: '#/definitions/Feedback'
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                $ref: '#/definitions/Feedback'
             404:
                 description: "invalid answerset/answer id"
-                type: string
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
         try:
             question_id, answerset_id = qa_id.split('_')
