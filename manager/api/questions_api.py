@@ -29,28 +29,35 @@ class QuestionsAPI(Resource):
         Create new question
         ---
         tags: [question]
-        parameters:
-          - in: body
+        requestBody:
             name: question
-            schema:
-                $ref: '#/definitions/Question'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/definitions/Question'
             required: true
+        parameters:
           - name: RebuildCache
             in: header
             description: flag indicating whether to update the cached knowledge graph
             required: false
             default: true
-            type: string
+            schema:
+                type: string
           - name: AnswerNow
             in: header
             description: flag indicating whether to find answers for the question
             required: false
             default: true
-            type: string
+            schema:
+                type: string
         responses:
             201:
                 description: "question id"
-                type: string
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
         auth = request.authorization
         if auth:
@@ -89,10 +96,12 @@ class QuestionsAPI(Resource):
         responses:
             200:
                 description: list of questions
-                schema:
-                    type: "array"
-                    items:
-                        $ref: '#/definitions/Question'
+                content:
+                    application/json:
+                        schema:
+                            type: "array"
+                            items:
+                                $ref: '#/definitions/Question'
         """
         user = getAuthData()
         question_list = list_questions(session=db.session)
