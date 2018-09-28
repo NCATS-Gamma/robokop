@@ -1,5 +1,5 @@
 import React from 'react';
-
+import PropTypes from 'prop-types';
 import CardTypes from '../util/questionNewCardTypes';
 import getNodeTypeColorMap from '../util/colorUtils';
 import entityNameDisplay from '../util/entityNameDisplay';
@@ -8,6 +8,28 @@ const Graph = require('react-graph-vis').default;
 
 const shortid = require('shortid');
 const _ = require('lodash');
+
+const propTypes = {
+  concepts: PropTypes.arrayOf(PropTypes.string).isRequired,
+  question: PropTypes.shape({
+    nodes: PropTypes.array,
+    edges: PropTypes.array,
+  }),
+  width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  selectable: PropTypes.bool, // Whether node and edge can be selected
+  nodeSelectCallback: PropTypes.func,
+  edgeSelectCallback: PropTypes.func,
+}
+
+const defaultProps = {
+  height: 250,
+  width: '100%',
+  question: { nodes: [], edges: [] },
+  selectable: false,
+  nodeSelectCallback: () => {},
+  edgeSelectCallback: () => {},
+};
 
 class MachineQuestionView extends React.Component {
   constructor(props) {
@@ -77,13 +99,17 @@ class MachineQuestionView extends React.Component {
       };
 
       n.isSet = ('set' in n) && (((typeof n.set === typeof true) && n.set) || ((typeof n.set === 'string') && n.set === 'true'));
-      n.chosen = false;
-      n.borderWidthSelected = 1;
+      n.chosen = false; // Not needed since borderWidth manually set below
+      n.borderWidth = 1;
+      n.borderWidthSelected = 2;
       if (n.isSet) {
         n.borderWidth = 3;
-        n.borderWidthSelected = 3;
+        n.borderWidthSelected = 5;
       } else {
         n.borderWidth = 1;
+      }
+      if (n.isSelected) { // Override borderwidth when isSelected set by user thru props
+        n.borderWidth = n.borderWidthSelected;
       }
 
       if ('label' in n) {
@@ -119,6 +145,12 @@ class MachineQuestionView extends React.Component {
 
       e.from = e.source_id;
       e.to = e.target_id;
+      e.chosen = false;
+      if (e.isSelected) {
+        e.width = 2;
+      } else {
+        e.width = 1;
+      }
       const defaultParams = {
         label,
         labelHighlightBold: false,
@@ -205,7 +237,7 @@ class MachineQuestionView extends React.Component {
         dragView: true,
         hoverConnectedEdges: false,
         selectConnectedEdges: false,
-        selectable: false,
+        selectable: this.props.selectable,
         tooltipDelay: 50,
       },
     });
@@ -221,7 +253,7 @@ class MachineQuestionView extends React.Component {
             key={shortid.generate()}
             graph={displayGraph}
             options={this.state.displayOptions}
-            events={{}}
+            events={{ selectNode: this.props.nodeSelectCallback, selectEdge: this.props.edgeSelectCallback }}
             getNetwork={(network) => { this.network = network; }} // Store network reference in the component
             style={{ width: this.props.width }}
           />
@@ -231,10 +263,7 @@ class MachineQuestionView extends React.Component {
   }
 }
 
-MachineQuestionView.defaultProps = {
-  height: 250,
-  width: '100%',
-  question: { nodes: [], edges: [] },
-};
+MachineQuestionView.propTypes = propTypes;
+MachineQuestionView.defaultProps = defaultProps;
 
 export default MachineQuestionView;
