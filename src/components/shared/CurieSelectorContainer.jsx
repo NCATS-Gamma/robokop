@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react';
 
 import CurieSelector from './CurieSelector';
 
@@ -30,6 +31,7 @@ const defaultProps = {
   onChangeHook: () => {},
 };
 
+@observer
 class CurieSelectorContainter extends React.Component {
   constructor(props) {
     super(props);

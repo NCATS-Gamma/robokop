@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FaSpinner } from 'react-icons/lib/fa';
+import { toJS } from 'mobx';
+import { observer } from 'mobx-react';
 
 import FlowbokopGraphViewer from './FlowbokopGraphViewer';
 
@@ -8,6 +10,7 @@ const graphStates = {
   fetching: 'fetching',
   empty: 'empty',
   display: 'display',
+  error: 'error',
 };
 
 const propTypes = {
@@ -35,6 +38,7 @@ const defaultProps = {
   edgeSelectCallback: () => {},
 };
 
+@observer
 class FlowbokopGraphFetchAndView extends React.Component {
   constructor(props) {
     super(props);
@@ -68,6 +72,7 @@ class FlowbokopGraphFetchAndView extends React.Component {
   render() {
     const fetching = this.props.graphState === graphStates.fetching;
     const notInitialized = this.props.graphState === graphStates.empty;
+    const error = this.props.graphState === graphStates.error;
 
     const showGraph = (!(this.props.graph === null) && (this.props.graphState === graphStates.display));
     const showFetching = fetching;
@@ -83,7 +88,7 @@ class FlowbokopGraphFetchAndView extends React.Component {
           <FlowbokopGraphViewer
             height={height}
             width={width}
-            graph={this.props.graph}
+            graph={toJS(this.props.graph)}
             nodeSelectCallback={this.props.nodeSelectCallback}
             edgeSelectCallback={this.props.edgeSelectCallback}
           />
@@ -100,6 +105,13 @@ class FlowbokopGraphFetchAndView extends React.Component {
           <div style={{ margin: '15px', height, display: 'table', width: '100%' }}>
             <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
               Please setup input(s) to generate query graph.
+            </div>
+          </div>
+        }
+        {error &&
+          <div style={{ margin: '15px', height, display: 'table', width: '100%' }}>
+            <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+              There was an error displaying/querying the graph
             </div>
           </div>
         }
