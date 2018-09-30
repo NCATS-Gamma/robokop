@@ -225,6 +225,11 @@ div.vis-tooltip .invalid-node {
   border-color: #a94442;
 }
 
+/* Remove bold control labels */
+.form-horizontal label {
+  font-weight: normal;
+}
+
 /* Custom tweak to Bootstrap tabs */
 .nav-tabs > li > a {
   border: 1px solid #ededed;
