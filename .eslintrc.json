@@ -14,7 +14,7 @@
       "react/prop-types": "off",
       "class-methods-use-this": "off",
       "max-len": "off",
-      "no-underscore-dangle": "off",
+      "no-return-assign": ["error", "except-parens"],
       "react/sort-comp": ["error", {
         "order": [
           "static-methods",
