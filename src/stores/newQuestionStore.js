@@ -20,7 +20,12 @@ class EdgePanel {
   @observable source_id = null;
   @observable target_id = null;
   @observable predicate = [];
+
   @observable broken = false; // If source_id or target_id refer to a deleted node
+
+  @observable awaitingPredicateList = false; // True when requesting end-point for predicates for source/target pairing
+  @observable predicateList = [];
+
   panelType = panelTypes.edge;
 
   _publicFields = ['id', 'source_id', 'target_id', 'predicate'];
@@ -53,6 +58,22 @@ class EdgePanel {
     }
   }
 
+  @computed get sourceNode() {
+    const sourceNode = this.store.nodePanels.filter(panel => panel.id === this.source_id);
+    if (sourceNode.length > 0) {
+      return sourceNode[0];
+    }
+    return null;
+  }
+
+  @computed get targetNode() {
+    const targetNode = this.store.nodePanels.filter(panel => panel.id === this.target_id);
+    if (targetNode.length > 0) {
+      return targetNode[0];
+    }
+    return null;
+  }
+
   @computed get isValidSource() {
     return this.store.isValidNode(this.source_id);
   }
@@ -78,8 +99,8 @@ class EdgePanel {
         .filter(panel => panel.id === this.target_id)[0].panelName;
     }
     let predicateLabel = this.predicate.join(', ');
-    predicateLabel = predicateLabel ? `[${predicateLabel}]` : '';
-    return `${sourceLabel} ⤚${predicateLabel}→ ${targetLabel}`;
+    predicateLabel = predicateLabel ? `—[${predicateLabel}]` : '';
+    return `${sourceLabel} ${predicateLabel}→ ${targetLabel}`;
   }
 
   /**
@@ -284,6 +305,9 @@ class NewQuestionStore {
   @observable activePanelInd = 0;
   @observable activePanelState = {};
 
+  @observable predicateList = [];
+  @observable awaitingPredicateList = false;
+
   constructor() {
     this.appConfig = new AppConfig(config);
     this.updateConcepts();
@@ -310,6 +334,19 @@ class NewQuestionStore {
           this.setGraphState(graphStates.empty);
         }
       },
+    );
+
+    // Fetch and store list of predicates that are available for the source-target
+    // type pairing any time the pairing changes.
+    this.disposeAutoFetchPredicateList = reaction(
+      () => ({ source: this.activePanelState.sourceNode ? this.activePanelState.sourceNode.type : '', target: this.activePanelState.targetNode ? this.activePanelState.targetNode.type : '' }),
+      (types) => {
+        if ((types.source === '') || (types.target === '')) {
+          return;
+        }
+        this.getPredicateListFAKE(types.source, types.target);
+      },
+      { compareStructural: true },
     );
 
     runInAction(() => {
@@ -376,6 +413,18 @@ class NewQuestionStore {
       });
     }
   }
+
+  // Async action to mimic request to determine list of predicates
+  // that can be selected for the source-target type pairing
+  getPredicateListFAKE = flow(function* (sourceType, targetType) { // eslint-disable-line func-names
+    console.log('in getPredicateListFake reaction', sourceType, targetType);
+    this.awaitingPredicateList = true;
+    const fakePredicateList = ['increases', 'decreases', 'cures', 'other'];
+    const predicateList = yield new Promise((resolve, reject) => setTimeout(() => resolve(fakePredicateList), 5000));
+    this.predicateList = predicateList;
+    this.awaitingPredicateList = false;
+    console.log('getPredicateListFake returned', predicateList);
+  });
 
   // Get list of panels of specific type from panelState
   getPanelsByType(panelType) {
