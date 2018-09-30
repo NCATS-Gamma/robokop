@@ -257,7 +257,7 @@ class QuestionNew extends React.Component {
         <Panel style={{ marginBottom: '5px' }}>
           <Panel.Heading>
             <Panel.Title>
-              {`Node - ${activePanelState.panelLabel} `}
+              {`Node ${activePanelState.panelName} `}
               <OverlayTrigger
                 trigger={['hover', 'focus']}
                 overlay={questionGraphPopover} // TODO: Make custom popover
@@ -278,7 +278,7 @@ class QuestionNew extends React.Component {
       <Panel style={{ marginBottom: '5px' }}>
         <Panel.Heading>
           <Panel.Title>
-            {`Edge: ${activePanelState.panelName} `}
+            {`Edge ${activePanelState.panelName} `}
             <OverlayTrigger
               trigger={['hover', 'focus']}
               overlay={questionGraphPopover} // TODO: Make custom popover
