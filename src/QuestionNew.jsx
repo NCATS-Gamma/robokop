@@ -19,11 +19,13 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Loading from './components/Loading';
 import QuestionDesign from './components/shared/QuestionDesign';
+import EdgePanel from './components/shared/EdgePanel';
 import NodePanel from './components/shared/NodePanel';
 import MachineQuestionViewContainer from './components/shared/MachineQuestionViewContainer';
 import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { panelTypes } from './stores/newQuestionStore';
+import entityNameDisplay from './components/util/entityNameDisplay';
 
 const shortid = require('shortid');
 const _ = require('lodash');
@@ -100,6 +102,53 @@ const GraphTitleButtons = ({
     </div>
   );
 };
+
+const ButtonGroupPanel = observer(({ store }) => {
+  const unsavedChanges = store.isUnsavedChanges;
+  const { isValid: isValidPanel } = store.activePanelState;
+  const atleastTwoNodes = store.panelState.some(panel => panel.panelType === panelTypes.node);
+  const isNewPanel = store.activePanelInd === store.panelState.length;
+  return (
+    <div style={{ marginTop: '10px', marginBottom: '6px' }}>
+      <ButtonGroup>
+        {!_.isEmpty(store.activePanelState) &&
+          <Button
+            onClick={store.saveActivePanel}
+            disabled={!unsavedChanges || !isValidPanel}
+            bsStyle={isValidPanel ? (unsavedChanges ? 'primary' : 'default') : 'danger'} // eslint-disable-line no-nested-ternary
+            title={isValidPanel ? (unsavedChanges ? 'Save changes' : 'No changes to save') : 'Fix invalid panel entries first'} // eslint-disable-line no-nested-ternary
+          >
+            <FaFloppyO style={{ verticalAlign: 'text-top' }} />
+            {' Save'}
+          </Button>
+        }
+        {!isNewPanel &&
+          <Button
+            onClick={store.revertActivePanel}
+            disabled={!unsavedChanges}
+            title={unsavedChanges ? 'Undo unsaved changes' : 'No changes to undo'}
+          >
+            <FaUndo style={{ verticalAlign: 'text-top' }} />
+            {' Undo'}
+          </Button>
+        }
+        {(store.panelState.length > 0) &&
+          <Button onClick={store.deleteActivePanel} title={`${isNewPanel ? 'Discard' : 'Delete'} current node`}>
+            <FaTrash style={{ verticalAlign: 'text-top' }} />{` ${isNewPanel ? 'Discard' : 'Delete'}`}
+          </Button>
+        }
+        <Button onClick={() => store.newActivePanel(panelTypes.node)}>
+          <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{' New Node'}
+        </Button>
+        {atleastTwoNodes &&
+          <Button onClick={() => store.newActivePanel(panelTypes.edge)}>
+            <FaPlus style={{ verticalAlign: 'text-top' }} />{' New Edge'}
+          </Button>
+        }
+      </ButtonGroup>
+    </div>
+  );
+});
 
 @inject(({ store }) => ({ store }))
 @observer
@@ -204,12 +253,11 @@ class QuestionNew extends React.Component {
       return null;
     }
     if (activePanelState.panelType === panelTypes.node) {
-      const panelLabel = `${activePanelState.id}: ${activePanelState.name === '' ? activePanelState.type : activePanelState.name}`;
       return (
         <Panel style={{ marginBottom: '5px' }}>
           <Panel.Heading>
             <Panel.Title>
-              {`Node - ${panelLabel} `}
+              {`Node - ${activePanelState.panelLabel} `}
               <OverlayTrigger
                 trigger={['hover', 'focus']}
                 overlay={questionGraphPopover} // TODO: Make custom popover
@@ -225,6 +273,26 @@ class QuestionNew extends React.Component {
         </Panel>
       );
     }
+    // Edge Panel
+    return (
+      <Panel style={{ marginBottom: '5px' }}>
+        <Panel.Heading>
+          <Panel.Title>
+            {`Edge: ${activePanelState.panelName} `}
+            <OverlayTrigger
+              trigger={['hover', 'focus']}
+              overlay={questionGraphPopover} // TODO: Make custom popover
+              placement="right"
+            >
+              <FaInfoCircle size={12} />
+            </OverlayTrigger>
+          </Panel.Title>
+        </Panel.Heading>
+        <Panel.Body>
+          <EdgePanel activePanel={activePanelState} />
+        </Panel.Body>
+      </Panel>
+    );
   }
 
   renderLoading() {
@@ -275,6 +343,7 @@ class QuestionNew extends React.Component {
                   />
                 </Panel.Body>
               </Panel>
+              <ButtonGroupPanel store={store} />
               {this.getActivePanel()}
 
               {/* <div style={{ paddingLeft: 15, paddingRight: 15 }}>

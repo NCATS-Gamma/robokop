@@ -4,7 +4,7 @@ import { FaSpinner } from 'react-icons/lib/fa';
 import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
 
-import MachineQuestionView from './MachineQuestionView';
+import MachineQuestionView2 from './MachineQuestionView2';
 
 const graphStates = {
   fetching: 'fetching',
@@ -89,7 +89,7 @@ class MachineQuestionViewContainer extends React.Component {
     return (
       <div id={this.divId}>
         {showGraph &&
-          <MachineQuestionView
+          <MachineQuestionView2
             height={height}
             width={width}
             question={toJS(store.machineQuestion)}

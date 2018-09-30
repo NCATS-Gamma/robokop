@@ -1,13 +1,14 @@
 import { observable, action, computed, flow, toJS, configure, autorun, reaction, runInAction } from 'mobx';
 
 import { graphStates } from '../components/flowbokop/FlowbokopGraphFetchAndView';
+import entityNameDisplay from '../components/util/entityNameDisplay';
 import AppConfig from '../AppConfig';
 
 const config = require('../../config.json');
 const _ = require('lodash');
 
 configure({ enforceActions: 'always' }); // Prevent observable mutations in MobX outside of actions
-
+/* eslint-disable no-underscore-dangle, camelcase */
 // ENUM for panel type
 const panelTypes = {
   edge: 'edge',
@@ -19,16 +20,17 @@ class EdgePanel {
   @observable source_id = null;
   @observable target_id = null;
   @observable predicate = [];
+  @observable broken = false; // If source_id or target_id refer to a deleted node
   panelType = panelTypes.edge;
 
   _publicFields = ['id', 'source_id', 'target_id', 'predicate'];
 
-  constructor(store, userObj) {
+  constructor(store, userObj = {}) {
     this.store = store;
     runInAction(() => {
       this.id = this.getUniqueId();
       // Assign any supplied params to this instance
-      this._publicFields.forEach((field) => { // eslint-disable-line no-underscore-dangle
+      this._publicFields.forEach((field) => {
         if (Object.prototype.hasOwnProperty.call(userObj, field)) {
           this[field] = userObj[field];
         }
@@ -51,14 +53,50 @@ class EdgePanel {
     }
   }
 
-  @computed get isValid() { // TODO: Check against store to ensure source_id and target_id are valid
-    return (this.source_id && this.source_id > -1) && (this.target_id && this.target_id > -1);
+  @computed get isValidSource() {
+    return this.store.isValidNode(this.source_id);
+  }
+
+  @computed get isValidTarget() {
+    return this.store.isValidNode(this.target_id);
+  }
+
+  @computed get isValid() {
+    return this.isValidSource && this.isValidTarget && !this.broken;
+  }
+
+  // Prettified label for the panel
+  @computed get panelName() {
+    let sourceLabel = '';
+    let targetLabel = '';
+    if (this.source_id !== null) {
+      sourceLabel = this.store.getPanelsByType(panelTypes.node)
+        .filter(panel => panel.id === this.source_id)[0].panelName;
+    }
+    if (this.target_id !== null) {
+      targetLabel = this.store.getPanelsByType(panelTypes.node)
+        .filter(panel => panel.id === this.target_id)[0].panelName;
+    }
+    let predicateLabel = this.predicate.join(', ');
+    predicateLabel = predicateLabel ? `[${predicateLabel}]` : '';
+    return `${sourceLabel} ⤚${predicateLabel}→ ${targetLabel}`;
+  }
+
+  /**
+   * Determines if contents of this instance matches another
+   * @param {Object} other - Other Panel like object
+   */
+  isEqual(other) {
+    if (!(other instanceof EdgePanel)) {
+      return false;
+    }
+    return _.isEqual(this.toJsonObj(), other.toJsonObj());
   }
 
   // Make a deep clone of this instance
   clone() {
     const userObj = {};
-    this._publicFields.forEach(field => userObj[field] = toJS(this[field])); // eslint-disable-line no-underscore-dangle
+    this._publicFields.forEach(field => (userObj[field] = toJS(this[field]))); // eslint-disable-line no-underscore-dangle
     return new EdgePanel(this.store, userObj);
   }
 
@@ -80,12 +118,14 @@ class NodePanel {
   @observable type = '';
   @observable name = '';
   @observable curie = [];
+  @observable curieEnabled = false;
   @observable set = false;
+  @observable deleted = false;
   panelType = panelTypes.node;
 
   _publicFields = ['id', 'name', 'type', 'curie', 'set'];
 
-  constructor(store, userObj) {
+  constructor(store, userObj = {}) {
     this.store = store;
     runInAction(() => {
       this.id = this.getUniqueId();
@@ -99,7 +139,19 @@ class NodePanel {
       if ((typeof this.curie === 'string') || (this.curie instanceof String)) {
         this.curie = [this.curie];
       }
+      if (this.curie.length !== 0) {
+        this.curieEnabled = true;
+      }
     });
+  }
+
+  @action.bound toggleCurieEnable() {
+    if (this.curieEnabled) {
+      this.curieEnabled = false;
+      this.curie = [];
+    } else {
+      this.curieEnabled = true;
+    }
   }
 
   // Returns lowest non-zero integer id not already used
@@ -123,10 +175,6 @@ class NodePanel {
         if ((typeof curieVal === 'string') || (curieVal instanceof String)) {
           curieVal = [curieVal];
         }
-        // const isValidCurie = curieVal.reduce((isValid, curie) => isValid && this.isValidCurie(curie), true);
-        // if (isValidCurie) {
-        //   this[field] = curieVal;
-        // }
         this[field] = curieVal;
       } else {
         this[field] = value;
@@ -160,23 +208,15 @@ class NodePanel {
     return /^[a-z0-9_\+\-]+:[a-z0-9_\+\-]+/i.test(val); // eslint-disable-line no-useless-escape
   }
 
-  // Curie selection disabled if this.curie is an empty array
-  @computed get isCurieEnabled() {
-    return this.curie.length !== 0;
-  }
-
   @computed get isValidCurieList() {
-    if (!this.isCurieEnabled) {
+    if (!this.curieEnabled) {
       return true; // If curie not enabled, this should return true
     }
     let curieList = toJS(this.curie);
     if (_.isPlainObject(curieList)) {
       curieList = [curieList];
     }
-    let isValid = true;
-    curieList.forEach((curie) => {
-      isValid = isValid && this.isValidCurie(curie);
-    });
+    const isValid = curieList.reduce((isVal, curie) => isVal && this.isValidCurie(curie), true);
     return isValid;
   }
 
@@ -184,16 +224,38 @@ class NodePanel {
     return this.isValidType && this.isValidCurieList;
   }
 
+  // Prettified label for the panel
+  @computed get panelName() {
+    return `${this.id}: ${this.name === '' ? entityNameDisplay(this.type) : this.name}`;
+  }
+
+  /**
+   * Determines if contents of this instance matches another
+   * @param {Object} other - Other Panel like object
+   */
+  isEqual(other) {
+    if (!(other instanceof NodePanel)) {
+      return false;
+    }
+    return _.isEqual(this.toJsonObj(), other.toJsonObj());
+  }
+
   // Make a deep clone of this instance
   clone() {
     const userObj = {};
-    this._publicFields.forEach(field => userObj[field] = toJS(this[field]));
+    this._publicFields.forEach(field => (userObj[field] = toJS(this[field])));
     return new NodePanel(this.store, userObj);
   }
 
   // Convert to JSON object representation. Only return "non-empty" field
   toJsonObj() {
-    const jsonObj = { id: toJS(this.id), type: toJS(this.type), set: toJS(this.set) };
+    const jsonObj = {
+      id: toJS(this.id),
+      type: toJS(this.type),
+      set: toJS(this.set),
+      curieEnabled: toJS(this.curieEnabled),
+      deleted: toJS(this.deleted),
+    };
     if (this.name !== '') {
       jsonObj.name = toJS(this.name);
     }
@@ -216,7 +278,6 @@ class NewQuestionStore {
   @observable naturalQuestion = '';
   @observable questionName = '';
   @observable notes = '';
-  // @observable machineQuestion = null;
   @observable graphState = graphStates.empty;
 
   @observable panelState = [];
@@ -227,6 +288,29 @@ class NewQuestionStore {
     this.appConfig = new AppConfig(config);
     this.updateConcepts();
     this.updateUser();
+
+    // Reaction to auto remove any nodes flagged for deletion if no edges link to it
+    this.disposeDeleteUnlinkedNodes = reaction(
+      () => this.panelState.map((panel) => {
+        if (this.isNode(panel)) {
+          return panel.deleted ? 'deleted' : 'valid';
+        }
+        return `${panel.source_id}-${panel.target_id}`;
+      }),
+      () => this.deleteUnlinkedNodes(),
+      { compareStructural: true },
+    );
+
+    // Ensure graphState is set to 'empty' any time panelState is empty
+    this.disposeGraphStateEmpty = reaction(
+      () => this.panelState.length === 0,
+      (isGraphEmpty) => {
+        console.log('Running reaction - Check Empty Graph');
+        if (isGraphEmpty) {
+          this.setGraphState(graphStates.empty);
+        }
+      },
+    );
 
     runInAction(() => {
       this.panelState = [
@@ -243,25 +327,124 @@ class NewQuestionStore {
     });
   }
 
-  // panelType is from panelTypes ENUM
-  getIdListByType(panelType) {
-    const ids = [];
+  /**
+   * Deletes any NodePanel instances in store.panelState that are not referenced by any edges.
+   * This also flags any edges linked to a node flagged for deletion as broken=true
+   * Also remaps activePanelInd since the panelInds change due to deletion of nodePanels so
+   * that the activePanelState still corresponds to the correct panelState entry
+   */
+  @action deleteUnlinkedNodes() {
+    console.log('Running action - deleteUnlinkedNodes');
+    let linkedNodeIds = [];
     this.panelState.forEach((panel) => {
-      if (panel.panelType === panelType) {
-        ids.push(panel.id);
+      if (panel.panelType === panelTypes.edge) {
+        linkedNodeIds.push(panel.source_id);
+        linkedNodeIds.push(panel.target_id);
       }
     });
-    return ids;
+    linkedNodeIds = _.uniq(linkedNodeIds);
+    // Loop through each node panel and check if deleted ones are referenced in linkedNodeIds
+    let panelIndsToDelete = [];
+    this.panelState.forEach((panel, i) => {
+      if ((panel.panelType === panelTypes.node) && (panel.deleted)) {
+        if (linkedNodeIds.indexOf(panel.id) === -1) {
+          panelIndsToDelete.push(i);
+        }
+      }
+    });
+    panelIndsToDelete = panelIndsToDelete.sort((a, b) => b - a); // Highest inds first so we can delete in this order
+
+    let resetActivePanelAfterDeletion = false;
+    if (this.activePanelInd !== this.panelState.length) {
+      if (panelIndsToDelete.indexOf(this.activePanelInd) !== -1) {
+        resetActivePanelAfterDeletion = true; // Active panel corresponds to a node being deleted (should never happen)
+      }
+    }
+    // Delete the nodes cleared for deletion
+    panelIndsToDelete.forEach(indToDelete => this.panelState.splice(indToDelete, 1));
+    // Reset the activePanelState and ind if necessary
+    if (resetActivePanelAfterDeletion) {
+      this.syncActivePanelToClosestNonDeletedPanelInd();
+    }
+    // Since panels may have been deleted, need to remap old activePanelInd to new one
+    if (!_.isEmpty(this.activePanelState)) {
+      const activePanelInfo = { type: this.activePanelState.panelType, id: this.activePanelState.id };
+      this.panelState.forEach((panel, i) => {
+        if ((panel.panelType === activePanelInfo.type) && (panel.id === activePanelInfo.id)) {
+          this.activePanelInd = i;
+        }
+      });
+    }
+  }
+
+  // Get list of panels of specific type from panelState
+  getPanelsByType(panelType) {
+    const panels = [];
+    this.panelState.forEach((panel) => {
+      if (panel.panelType === panelType) {
+        panels.push(panel);
+      }
+    });
+    return panels;
+  }
+
+  @computed get nodePanels() {
+    return this.getPanelsByType(panelTypes.node);
+  }
+
+  @computed get edgePanels() {
+    return this.getPanelsByType(panelTypes.edge);
+  }
+
+  // Return list of ids for nodes that are not flagged with deleted = true
+  @computed get visibleNodePanels() {
+    return this.nodePanels.filter(panel => !panel.deleted);
+  }
+
+  // panelType is from panelTypes ENUM
+  getIdListByType(panelType) {
+    return this.getPanelsByType(panelType).map(panel => panel.id);
   }
 
   // Returns a list of all the node ids in this.panelState
+  // This includes any "hidden" nodes with deleted = true
   nodeIdList() {
     return this.getIdListByType(panelTypes.node);
   }
 
-  // Returns a list of all the node ids in this.panelState
+  // Return list of ids for nodes that are not flagged with deleted = true
+  visibleNodeIdList() {
+    return this.nodePanels.filter(panel => !panel.deleted).map(panel => panel.id);
+  }
+
+  // Closest ind (for panelState) corresponding to all EdgePanels and
+  // any NodePanel that has not been flagged for deletion. Returns -1 if no valid panels exist
+  closestNonDeletedPanelInd(ind) {
+    const panelInds = [];
+    this.panelState.forEach((panel, i) => {
+      if ((panel.panelType === panelTypes.edge) || (!panel.deleted)) {
+        panelInds.push(i);
+      }
+    });
+    if (panelInds.length === 0) {
+      return -1;
+    }
+    const closestInd = panelInds.reduce((prev, curr) => (Math.abs(curr - ind) < Math.abs(prev - ind) ? curr : prev));
+    return closestInd;
+  }
+
+  // Returns a list of all the edge ids in this.panelState
   edgeIdList() {
     return this.getIdListByType(panelTypes.edge);
+  }
+
+  // Returns if specific node id is valid (exists in panelState)
+  isValidNode(id) {
+    if (id === null) {
+      return false;
+    }
+    const nodeIds = this.nodeIdList();
+    return nodeIds.indexOf(id) !== -1;
   }
 
   // Returns null if no active element or editing a new panel
@@ -271,6 +454,18 @@ class NewQuestionStore {
       return null;
     }
     return { type: this.activePanelState.panelType, id: this.activePanelState.id };
+  }
+
+  // Determine if activePanelState is different from the corresponding
+  // saved panel state
+  @computed get isUnsavedChanges() {
+    if (!this.isActivePanel) {
+      return false; // Nothing to save if no active panel
+    }
+    if (this.activePanelInd === this.panelState.length) {
+      return true; // This is an unsaved panel
+    }
+    return !this.panelState[this.activePanelInd].isEqual(this.activePanelState); // Uses Panel isEqual class method
   }
 
   // Is a panel (input or output currently selected / being edited)
@@ -293,16 +488,6 @@ class NewQuestionStore {
   // graphState should be a value from graphStates Enum
   @action.bound setGraphState(graphState) {
     this.graphState = graphState;
-  }
-
-  @action.bound newActivePanel(panelType) {
-    this.activePanelInd = this.panelState.length;
-    if (panelType === panelTypes.node) {
-      this.activePanelState = new NodePanel(this);
-    }
-    if (panelType === panelTypes.edge) {
-      this.activePanelState = new EdgePanel(this);
-    }
   }
 
   // Compute machineQuestion representation of graph from internal PanelState
@@ -339,16 +524,89 @@ class NewQuestionStore {
     };
   }
 
+  isNode(panel) {
+    return panel.panelType === panelTypes.node;
+  }
+
+  isEdge(panel) {
+    return panel.panelType === panelTypes.edge;
+  }
+
   @action.bound resetQuestion() {
     this.naturalQuestion = '';
     this.questionName = null;
     this.machineQuestion = null;
   }
 
+  @action.bound newActivePanel(panelType) {
+    if (panelType === panelTypes.node) {
+      this.activePanelState = new NodePanel(this);
+    }
+    if (panelType === panelTypes.edge) {
+      // If a node was previously selected when clicking "New Edge", the source-id
+      // for the new edge is pre-populated with a reference to the initially selected node
+      if (this.isNode(this.panelState[this.activePanelInd])) {
+        this.activePanelState = new EdgePanel(this, { source_id: this.panelState[this.activePanelInd].id });
+      } else {
+        this.activePanelState = new EdgePanel(this);
+      }
+    }
+    this.activePanelInd = this.panelState.length;
+  }
+
+  // Revert any unsaved changes in a panel for an existing node
+  @action.bound revertActivePanel() {
+    this.activePanelState = this.panelState[this.activePanelInd].clone();
+  }
+
+  @action.bound deleteActivePanel() {
+    // Handle if deleting an existing node in graph
+    if (this.activePanelInd < this.panelState.length) {
+      // Remove if edge panel
+      if (this.activePanelState.panelType === panelTypes.edge) {
+        this.panelState.splice(this.activePanelInd, 1); // Delete the edgePanel
+      } else {
+        // Flag nodePanel as 'deleted'
+        this.panelState[this.activePanelInd].deleted = true;
+        // Flag any broken edges with a `broken` field for graph display
+        const deletedNodeId = this.panelState[this.activePanelInd].id;
+        this.edgePanels.forEach((edgePanel) => {
+          if ((edgePanel.source_id === deletedNodeId) || (edgePanel.target_id === deletedNodeId)) {
+            edgePanel.broken = true; // eslint-disable-line no-param-reassign
+          }
+        });
+      }
+    }
+    // Update activePanelInd and activePanelState accordingly
+    this.syncActivePanelToClosestNonDeletedPanelInd();
+  }
+
+  // Sets this.activePanelInd to closest ind that is not deleted or an edge. Also
+  // updates activePanelState accordingly.
+  @action syncActivePanelToClosestNonDeletedPanelInd() {
+    // Update activePanelInd and activePanelState accordingly
+    const activePanelInd = this.closestNonDeletedPanelInd(this.activePanelInd);
+    if (activePanelInd === -1) {
+      this.activePanelInd = this.panelState.length;
+      this.activePanelState = {};
+    } else {
+      this.activePanelInd = activePanelInd;
+      this.activePanelState = this.panelState[this.activePanelInd].clone();
+    }
+  }
+
+  @action.bound saveActivePanel() {
+    this.panelState[this.activePanelInd] = this.activePanelState.clone();
+    if (this.isEdge(this.panelState[this.activePanelInd])) {
+      // Saving an edge means it has to be valid, so `broken` param must be false
+      this.panelState[this.activePanelInd].broken = false;
+    }
+  }
+
   @action.bound updateActivePanelFromNodeId(id) {
     let nodePanelInd = null;
     this.panelState.forEach((p, i) => {
-      if ((p.panelType === panelTypes.node) && (p.id === id)) {
+      if ((p.panelType === panelTypes.node) && (p.id === id) && (!p.deleted)) {
         nodePanelInd = i;
       }
     });

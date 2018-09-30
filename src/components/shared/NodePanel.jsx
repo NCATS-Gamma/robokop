@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Form, FormControl, Checkbox ,Button, Glyphicon } from 'react-bootstrap';
+import { Form, FormControl, FormGroup, Col, Checkbox, Button, Glyphicon, ControlLabel } from 'react-bootstrap';
 import FaPlus from 'react-icons/lib/fa/plus';
 import { toJS } from 'mobx';
 import { inject, observer, PropTypes as mobxPropTypes } from 'mobx-react';
@@ -10,6 +10,7 @@ import { Multiselect, DropdownList } from 'react-widgets';
 import Loading from './../Loading';
 import LabeledFormGroup from './../shared/LabeledFormGroup';
 import CurieSelectorContainer from './../shared/CurieSelectorContainer';
+import entityNameDisplay from '../util/entityNameDisplay';
 
 const classNames = {
   formLabel: 'col-md-2 form-label',
@@ -115,36 +116,50 @@ class NodePanel extends React.Component {
     return curieSelectorElements;
   }
 
+  renderLoading() {
+    return (
+      <Loading />
+    );
+  }
+
   renderLoaded() {
     const { activePanel } = this.props;
+    const { isValidType, curieEnabled } = activePanel;
+    const dropDownObjList = activePanel.store.concepts.map(c => ({ text: entityNameDisplay(c), value: c }));
     return (
       <div>
         <Form horizontal>
-          <LabeledFormGroup
-            formLabel={
-              <span>{'Node id  '}
-                {/* <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={inputTooltip}>
-                  <FaInfoCircle size={10} />
-                </OverlayTrigger> */}
-              </span>
-            }
-            value={activePanel.id}
-            validateForm={() => 'success'}
-            classNames={{ ...classNames, ...{ formControl: 'col-md-2' } }}
-          >
-            <FormControl
-              type="text"
-              value={activePanel.id}
-              disabled
-            />
-            {/* <Multiselect
-              data={toJS(this.props.inputLabelList)}
-              value={input}
-              filter="contains"
-              onChange={this.onChangeFactory('input')}
-              containerClassName={input.length > 0 ? 'valid' : 'invalid'}
-            /> */}
-          </LabeledFormGroup>
+          <FormGroup controlId="formHorizontalNodeIdName">
+            <Col componentClass={ControlLabel} sm={2}>
+              Node Id
+            </Col>
+            <Col sm={1}>
+              <FormControl
+                type="text"
+                value={activePanel.id}
+                disabled
+              />
+            </Col>
+            <Col componentClass={ControlLabel} sm={2}>
+              Node Name
+            </Col>
+            <Col sm={4}>
+              <FormControl
+                type="text"
+                value={activePanel.name}
+                onChange={e => activePanel.updateField('name', e.target.value)}
+              />
+            </Col>
+            <Col componentClass={ControlLabel} sm={2}>
+              Is Node a Set?
+            </Col>
+            <Col sm={1}>
+              <Checkbox
+                checked={activePanel.set}
+                onChange={e => activePanel.updateField('set', e.target.checked)}
+              />
+            </Col>
+          </FormGroup>
           <LabeledFormGroup
             formLabel={
               <span>{'Node Type  '}
@@ -159,57 +174,36 @@ class NodePanel extends React.Component {
               // dropUp
               // disabled={disableType}
               // style={{ display: 'table-cell', verticalAlign: 'middle', width: '200px' }}
-              data={toJS(activePanel.store.concepts)}
-              // textField="text"
-              // valueField="value"
+              data={dropDownObjList}
+              textField="text"
+              valueField="value"
               value={activePanel.type}
-              onChange={value => activePanel.updateField('type', value)}
+              onChange={value => activePanel.updateField('type', value.value)}
             />
           </LabeledFormGroup>
           <LabeledFormGroup
-            formLabel={
-              <span>{'Is Node a set?  '}
-                {/* <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={outputTooltip}>
-                  <FaInfoCircle size={10} />
-                </OverlayTrigger> */}
-              </span>
-            }
-            value=""
-            validateForm={() => 'success'}
-            classNames={{ ...classNames, ...{ formControl: 'col-md-2' } }}
-          >
-            <Checkbox
-              checked={activePanel.set}
-              onClick={e => activePanel.updateField('set', e.target.checked)}
-            />
-          </LabeledFormGroup>
-          <LabeledFormGroup
-            formLabel={
-              <span>{'Name  '}
-                {/* <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={inputTooltip}>
-                  <FaInfoCircle size={10} />
-                </OverlayTrigger> */}
-              </span>
-            }
-            value={activePanel.name}
-            validateForm={() => 'success'}
+            formLabel={<span>{'Enable Curies  '}</span>}
+            value={activePanel.type}
+            validateForm={() => this.validateFormElement('type')}
             classNames={classNames}
           >
-            <FormControl
-              type="text"
-              value={activePanel.name}
-              onChange={e => activePanel.updateField('name', e.target.value)}
+            <Checkbox
+              checked={curieEnabled}
+              disabled={!isValidType}
+              onChange={() => activePanel.toggleCurieEnable()}
             />
           </LabeledFormGroup>
         </Form>
-        <div style={{ display: 'table', width: '100%' }}>
-          {this.getCurieSelectorElements()}
-          <div style={{ display: 'table-row', textAlign: 'center' }}>
-            <Button style={{ marginTop: '10px' }} onClick={activePanel.addCurie}>
-              <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Curie'}
-            </Button>
+        {isValidType && curieEnabled &&
+          <div style={{ display: 'table', width: '100%' }}>
+            {this.getCurieSelectorElements()}
+            <div style={{ display: 'table-row', textAlign: 'center' }}>
+              <Button style={{ marginTop: '10px' }} onClick={activePanel.addCurie}>
+                <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Curie'}
+              </Button>
+            </div>
           </div>
-        </div>
+        }
       </div>
     );
   }
