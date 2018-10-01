@@ -75,15 +75,21 @@ class EdgePanel {
   }
 
   @computed get isValidSource() {
-    return this.store.isValidNode(this.source_id);
+    return this.store.isValidNode(this.source_id) && !this.sourceNode.deleted;
   }
 
   @computed get isValidTarget() {
-    return this.store.isValidNode(this.target_id);
+    return this.store.isValidNode(this.target_id) && !this.targetNode.deleted;
+  }
+
+  @computed get isValidPredicate() {
+    return !this.store.awaitingPredicateList &&
+      !this.store.predicateFetchError &&
+      (_.difference(this.predicate, this.store.predicateList).length === 0);
   }
 
   @computed get isValid() {
-    return this.isValidSource && this.isValidTarget && !this.broken;
+    return this.isValidSource && this.isValidTarget && !this.broken && this.isValidPredicate;
   }
 
   // Prettified label for the panel
@@ -307,6 +313,9 @@ class NewQuestionStore {
 
   @observable predicateList = [];
   @observable awaitingPredicateList = false;
+  @observable predicateFetchError = null;
+  predicateCache = new Map();
+  predicateFetchPromise = null;
 
   constructor() {
     this.appConfig = new AppConfig(config);
@@ -340,11 +349,25 @@ class NewQuestionStore {
     // type pairing any time the pairing changes.
     this.disposeAutoFetchPredicateList = reaction(
       () => ({ source: this.activePanelState.sourceNode ? this.activePanelState.sourceNode.type : '', target: this.activePanelState.targetNode ? this.activePanelState.targetNode.type : '' }),
-      (types) => {
-        if ((types.source === '') || (types.target === '')) {
-          return;
+      async (types) => {
+        // Cancel old request if it is still pending
+        if (this.predicateFetchPromise) {
+          await this.predicateFetchPromise.cancel();
         }
-        this.getPredicateListFAKE(types.source, types.target);
+        // Make a new async request to get predicate list
+        this.predicateFetchPromise = this.getPredicateListFAKE(types.source, types.target);
+        this.predicateFetchPromise.catch((err) => { // Need this since this promise is rejected with FLOW_CANCELLED error
+          if (err.message === 'FLOW_CANCELLED') {
+            console.log('Successfully cancelled stale predicateFetchPromise');
+          } else {
+            console.error('Error in predicateFetchPromise', err);
+            runInAction(() => {
+              this.predicateList = [];
+              this.awaitingPredicateList = false;
+              this.predicateFetchError = 'Error retrieving predicate options!';
+            });
+          }
+        });
       },
       { compareStructural: true },
     );
@@ -416,14 +439,28 @@ class NewQuestionStore {
 
   // Async action to mimic request to determine list of predicates
   // that can be selected for the source-target type pairing
-  getPredicateListFAKE = flow(function* (sourceType, targetType) { // eslint-disable-line func-names
+  // Predicate lists are memoized and stored in predicateCache
+  getPredicateListFAKE = flow(function* getPredicateList(sourceType, targetType) {
     console.log('in getPredicateListFake reaction', sourceType, targetType);
-    this.awaitingPredicateList = true;
-    const fakePredicateList = ['increases', 'decreases', 'cures', 'other'];
-    const predicateList = yield new Promise((resolve, reject) => setTimeout(() => resolve(fakePredicateList), 5000));
-    this.predicateList = predicateList;
+    if ((sourceType === '') || (targetType === '')) {
+      this.predicateList = [];
+      this.predicateFetchError = 'Source/Target Node type needs to be specified...';
+      this.awaitingPredicateList = false;
+      return;
+    }
+    const key = `${sourceType}:${targetType}`;
+    if (this.predicateCache.has(key)) {
+      this.predicateList = this.predicateCache.get(key);
+    } else {
+      this.awaitingPredicateList = true;
+      const fakePredicateList = ['increases', 'decreases', 'cures', 'other'];
+      const predicateList = yield new Promise((resolve, reject) => setTimeout(() => resolve(fakePredicateList), 5000));
+      this.predicateCache.set(key, predicateList);
+      this.predicateList = predicateList;
+    }
+    this.predicateFetchError = null;
     this.awaitingPredicateList = false;
-    console.log('getPredicateListFake returned', predicateList);
+    console.log(`getPredicateListFake returned for (${sourceType}, ${targetType}):`, this.predicateList);
   });
 
   // Get list of panels of specific type from panelState

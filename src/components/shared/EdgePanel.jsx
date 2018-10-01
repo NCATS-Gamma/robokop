@@ -1,16 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Form, FormControl, FormGroup, Col, Checkbox, Button, Glyphicon, ControlLabel } from 'react-bootstrap';
-import FaPlus from 'react-icons/lib/fa/plus';
+import { Form, FormControl, FormGroup, Col, ControlLabel } from 'react-bootstrap';
+import FaSpinner from 'react-icons/lib/fa/spinner';
 import { toJS } from 'mobx';
-import { inject, observer, PropTypes as mobxPropTypes } from 'mobx-react';
+import { observer, PropTypes as mobxPropTypes } from 'mobx-react';
 import { Multiselect, DropdownList } from 'react-widgets';
 
 // import AppConfig from './../../AppConfig';
 import Loading from './../Loading';
 import LabeledFormGroup from './../shared/LabeledFormGroup';
-import CurieSelectorContainer from './../shared/CurieSelectorContainer';
-import entityNameDisplay from '../util/entityNameDisplay';
 
 const classNames = {
   formLabel: 'col-md-2 form-label',
@@ -49,6 +47,9 @@ class EdgePanel extends React.Component {
       case 'target_id':
         isValid = activePanel.isValidTarget;
         break;
+      case 'predicate':
+        isValid = activePanel.isValidPredicate;
+        break;
       default:
         break;
     }
@@ -68,6 +69,14 @@ class EdgePanel extends React.Component {
   renderLoaded() {
     const { activePanel } = this.props;
     const validNodeSelectionList = activePanel.store.visibleNodePanels.map(panel => ({ id: panel.id, label: panel.panelName }));
+    const { predicateList, awaitingPredicateList, predicateFetchError } = activePanel.store;
+    // Determine default message for predicate selection component
+    let predicateInputMsg = 'Select optional predicate(s)...';
+    if (predicateFetchError) {
+      predicateInputMsg = predicateFetchError;
+    } else if (awaitingPredicateList) {
+      predicateInputMsg = 'Fetching possible predicates for edge...';
+    }
     return (
       <div>
         <Form horizontal>
@@ -82,25 +91,6 @@ class EdgePanel extends React.Component {
                 disabled
               />
             </Col>
-            {/* <Col componentClass={ControlLabel} sm={2}>
-              Node Name
-            </Col>
-            <Col sm={4}>
-              <FormControl
-                type="text"
-                value={activePanel.name}
-                onChange={e => activePanel.updateField('name', e.target.value)}
-              />
-            </Col>
-            <Col componentClass={ControlLabel} sm={2}>
-              Is Node a Set?
-            </Col>
-            <Col sm={1}>
-              <Checkbox
-                checked={activePanel.set}
-                onClick={e => activePanel.updateField('set', e.target.checked)}
-              />
-            </Col> */}
           </FormGroup>
           <LabeledFormGroup
             formLabel={<span>Edge Source </span>}
@@ -118,6 +108,7 @@ class EdgePanel extends React.Component {
               valueField="id"
               value={activePanel.source_id}
               onChange={value => activePanel.updateField('source_id', value.id)}
+              containerClassName={activePanel.isValidSource ? 'valid' : 'invalid'}
             />
           </LabeledFormGroup>
           <LabeledFormGroup
@@ -128,16 +119,33 @@ class EdgePanel extends React.Component {
           >
             <DropdownList
               filter="contains"
-              // dropUp
-              // disabled={disableType}
-              // style={{ display: 'table-cell', verticalAlign: 'middle', width: '200px' }}
               data={validNodeSelectionList}
               textField="label"
               valueField="id"
               value={activePanel.target_id}
               onChange={value => activePanel.updateField('target_id', value.id)}
+              containerClassName={activePanel.isValidTarget ? 'valid' : 'invalid'}
             />
           </LabeledFormGroup>
+          <FormGroup controlId="formHorizontalNodeIdName">
+            <Col componentClass={ControlLabel} sm={2}>
+              Predicates
+            </Col>
+            <Col sm={6}>
+              <Multiselect
+                allowCreate={false}
+                data={awaitingPredicateList ? [] : toJS(predicateList)}
+                busy={awaitingPredicateList}
+                busySpinner={<FaSpinner className="icon-spin" />}
+                disabled={awaitingPredicateList || !!predicateFetchError}
+                placeholder={predicateInputMsg}
+                value={toJS(activePanel.predicate)}
+                filter="contains"
+                onChange={value => activePanel.updateField('predicate', value)}
+                containerClassName={activePanel.isValidPredicate ? 'valid' : 'invalid'}
+              />
+            </Col>
+          </FormGroup>
         </Form>
       </div>
     );
@@ -156,6 +164,5 @@ class EdgePanel extends React.Component {
 }
 
 EdgePanel.propTypes = propTypes;
-// FlowbokopOperationBuilder.defaultProps = defaultProps;
 
 export default EdgePanel;
