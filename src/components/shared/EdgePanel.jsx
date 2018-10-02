@@ -71,11 +71,11 @@ class EdgePanel extends React.Component {
     const validNodeSelectionList = activePanel.store.visibleNodePanels.map(panel => ({ id: panel.id, label: panel.panelName }));
     const { predicateList, awaitingPredicateList, predicateFetchError } = activePanel.store;
     // Determine default message for predicate selection component
-    let predicateInputMsg = 'Select optional predicate(s)...';
-    if (predicateFetchError) {
-      predicateInputMsg = predicateFetchError;
-    } else if (awaitingPredicateList) {
+    let predicateInputMsg = 'Enter optional predicate(s)...';
+    if (awaitingPredicateList) { // awaiting status overrides error status which may be stale
       predicateInputMsg = 'Fetching possible predicates for edge...';
+    } else if (predicateFetchError) {
+      predicateInputMsg = predicateFetchError;
     }
     return (
       <div>
@@ -133,7 +133,8 @@ class EdgePanel extends React.Component {
             </Col>
             <Col sm={6}>
               <Multiselect
-                allowCreate={false}
+                allowCreate="onFilter"
+                onCreate={name => activePanel.updatePredicate(name)}
                 data={awaitingPredicateList ? [] : toJS(predicateList)}
                 busy={awaitingPredicateList}
                 busySpinner={<FaSpinner className="icon-spin" />}
@@ -143,6 +144,10 @@ class EdgePanel extends React.Component {
                 filter="contains"
                 onChange={value => activePanel.updateField('predicate', value)}
                 containerClassName={activePanel.isValidPredicate ? 'valid' : 'invalid'}
+                messages={{
+                  emptyList: 'Enter predicate tag',
+                  createOption: props => <span>{'Create new predicate tag '}<strong>{`"${props.searchTerm}"`}</strong></span>,
+                }}
               />
             </Col>
           </FormGroup>

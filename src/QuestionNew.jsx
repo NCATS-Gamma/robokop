@@ -1,7 +1,7 @@
 import React from 'react';
 import Dialog from 'react-bootstrap-dialog';
-
-import { Grid, Row, Col, Button, ButtonGroup, Panel, Popover, OverlayTrigger, Tabs, Tab } from 'react-bootstrap';
+import { Grid, Row, Col, Button, ButtonGroup, Panel, Popover, OverlayTrigger,
+  Form, FormControl, FormGroup, ControlLabel, Tooltip, Modal } from 'react-bootstrap';
 import Dropzone from 'react-dropzone';
 import FaFloppyO from 'react-icons/lib/fa/floppy-o';
 import FaTrash from 'react-icons/lib/fa/trash';
@@ -19,13 +19,14 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Loading from './components/Loading';
 import QuestionDesign from './components/shared/QuestionDesign';
+import MachineQuestionEditor from './components/shared/MachineQuestionEditor';
 import EdgePanel from './components/shared/EdgePanel';
 import NodePanel from './components/shared/NodePanel';
-import MachineQuestionViewContainer from './components/shared/MachineQuestionViewContainer';
+import MachineQuestionViewContainer, { graphStates } from './components/shared/MachineQuestionViewContainer';
 import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { panelTypes } from './stores/newQuestionStore';
-import entityNameDisplay from './components/util/entityNameDisplay';
+import LabeledFormGroup from './components/shared/LabeledFormGroup';
 
 const shortid = require('shortid');
 const _ = require('lodash');
@@ -33,7 +34,7 @@ const _ = require('lodash');
 const questionGraphPopover = (
   <Popover id="popover-positioned-right-2" title="Machine Question Editor Overview">
     <p>
-      This graph provides an update view of the Machine question as it is construted by the user.
+      This graph provides an update view of the Machine question as it is constructed by the user.
     </p>
     <p>
       Each node and edge in the graph can be clicked on to display and edit the relevant node/edge details in
@@ -50,22 +51,32 @@ const questionGraphPopover = (
   </Popover>
 );
 
+const questionNameTooltip = (
+  <Tooltip placement="top" className="in" id="tooltip-top-1">
+    Label to associate with the question being constructed
+  </Tooltip>
+);
+
 // Buttons displayed in title-bar of Graph Viewer
 const GraphTitleButtons = ({
-  onDropFile, onDownloadWorkflow, onResetGraph, onSubmitWorkflow,
+  onDropFile, onDownloadQuestion, onResetQuestion, onSubmitQuestion, graphValidationState,
 }) => {
   const buttonStyles = { padding: '2px', marginLeft: '5px' };
+  const isValidGraph = graphValidationState.isValid;
+  const errorMsg = 'Error: '.concat(graphValidationState.errorList.join(',\n '));
   return (
     <div style={{ position: 'relative', float: 'right', top: '-3px' }}>
-      <div
+      <button
         style={buttonStyles}
         className="btn btn-default"
+        disabled={!isValidGraph}
+        title={isValidGraph ? 'Submit question' : errorMsg}
       >
-        <span style={{ fontSize: '22px' }} title="Submit Question">
-          <FaPaperPlaneO style={{ cursor: 'pointer' }} onClick={onSubmitWorkflow} />
+        <span style={{ fontSize: '22px' }}>
+          <FaPaperPlaneO style={{ cursor: 'pointer' }} onClick={onSubmitQuestion} />
         </span>
-      </div>
-      <div
+      </button>
+      <button
         style={buttonStyles}
         className="btn btn-default"
       >
@@ -81,24 +92,26 @@ const GraphTitleButtons = ({
             <FaUpload style={{ cursor: 'pointer' }} onClick={() => {}} />
           </Dropzone>
         </span>
-      </div>
-      <div
+      </button>
+      <button
         style={buttonStyles}
         className="btn btn-default"
+        disabled={!isValidGraph}
+        title={isValidGraph ? 'Download Machine Question as JSON' : errorMsg}
       >
-        <span style={{ fontSize: '22px' }} title="Download Machine Question as JSON">
-          <FaDownload style={{ cursor: 'pointer' }} onClick={onDownloadWorkflow} />
+        <span style={{ fontSize: '22px' }}>
+          <FaDownload style={{ cursor: 'pointer' }} onClick={onDownloadQuestion} />
         </span>
-      </div>
+      </button>
       {/* Delete/ Reset Graph Button */}
-      <div
+      <button
         style={buttonStyles}
         className="btn btn-default"
       >
         <span style={{ fontSize: '22px' }} title="Reset Machine Question editor">
-          <FaTrash style={{ cursor: 'pointer' }} onClick={onResetGraph} />
+          <FaTrash style={{ cursor: 'pointer' }} onClick={onResetQuestion} />
         </span>
-      </div>
+      </button>
     </div>
   );
 };
@@ -106,11 +119,20 @@ const GraphTitleButtons = ({
 const ButtonGroupPanel = observer(({ store }) => {
   const unsavedChanges = store.isUnsavedChanges;
   const { isValid: isValidPanel } = store.activePanelState;
-  const atleastTwoNodes = store.panelState.some(panel => panel.panelType === panelTypes.node);
+  const atleastTwoNodes = store.panelState.filter(panel => store.isNode(panel) && !panel.deleted).length > 1;
   const isNewPanel = store.activePanelInd === store.panelState.length;
   return (
     <div style={{ marginTop: '10px', marginBottom: '6px' }}>
       <ButtonGroup>
+        <Button
+          onClick={this.openJsonEditor}
+          // disabled={!unsavedChanges || !isValidPanel}
+          // bsStyle={isValidPanel ? (unsavedChanges ? 'primary' : 'default') : 'danger'} // eslint-disable-line no-nested-ternary
+          title="Manually edit JSON for machine question"
+        >
+          <FaFloppyO style={{ verticalAlign: 'text-top' }} />
+          {' Save'}
+        </Button>
         {!_.isEmpty(store.activePanelState) &&
           <Button
             onClick={store.saveActivePanel}
@@ -158,11 +180,79 @@ class QuestionNew extends React.Component {
     // We only read the communications config on creation
     this.appConfig = new AppConfig(props.config);
     this.onCreate = this.onCreate.bind(this);
+    this.onResetQuestion = this.onResetQuestion.bind(this);
+    this.onDownloadQuestion = this.onDownloadQuestion.bind(this);
+    this.onDropFile = this.onDropFile.bind(this);
+    this.onSubmitQuestion = this.onSubmitQuestion.bind(this);
+    this.saveJsonEditor = this.saveJsonEditor.bind(this);
+    this.closeJsonEditor = this.closeJsonEditor.bind(this);
+    this.openJsonEditor = this.openJsonEditor.bind(this);
+
+    this.state = { showJsonEditor: false };
   }
 
   componentDidMount() {
     this.props.store.getQuestionData(this.props.initializationId);
     console.log('Mobx Store:', this.props.store);
+  }
+
+  /**
+   * Converts provided JSON serializable data into a .json file that is downloaded
+   * to the user's machine via file-save dialog
+   * @param {JSON serializable object} data - JSON data to be provided as download
+   * @param {*} filename - Default filename for the provided .json file
+   */
+  provideJsonDownload(data, filename) {
+    // Transform the data into a json blob and give it a url
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    // Create a link with that URL and click it.
+    const a = document.createElement('a');
+    a.download = filename;
+    a.href = url;
+    a.click();
+    a.remove();
+  }
+
+  onDownloadQuestion() {
+    const data = this.props.store.getMachineQuestionSpecJson;
+    this.provideJsonDownload(data, 'robokopMachineQuestion.json');
+  }
+
+  onDropFile(acceptedFiles, rejectedFiles) { // eslint-disable-line no-unused-vars
+    acceptedFiles.forEach((file) => {
+      const fr = new window.FileReader();
+      fr.onloadstart = () => this.props.store.setGraphState(graphStates.fetching);
+      // fr.onloadend = () => this.setState({ graphState: graphStates.fetching });
+      fr.onload = (e) => {
+        const fileContents = e.target.result;
+        try {
+          const fileContentObj = JSON.parse(fileContents);
+          this.props.store.machineQuestionSpecToPanelState(fileContentObj);
+        } catch (err) {
+          console.error(err);
+          window.alert('Failed to read this Question template. Are you sure this is valid?');
+          this.props.store.setGraphState(graphStates.error);
+        }
+      };
+      fr.onerror = () => {
+        window.alert('Sorry but there was a problem uploading the file. The file may be invalid JSON.');
+        this.props.store.resetQuestion();
+        this.props.store.setGraphState(graphStates.error);
+      };
+      fr.readAsText(file);
+    });
+  }
+
+  onSubmitQuestion() {
+    const { store } = this.props;
+    this.onCreate({ questionText: store.questionName, machineQuestion: store.getMachineQuestionSpecJson });
+  }
+
+  onResetQuestion() {
+    this.props.store.resetQuestion();
   }
 
   onCreate({ questionText, machineQuestion }) {
@@ -191,6 +281,32 @@ class QuestionNew extends React.Component {
         });
       },
     );
+  }
+
+  saveJsonEditor({ data, isValid }) { // { data: this.state.data, isValid: this.state.isValid }
+    const { store } = this.props;
+    try {
+      store.machineQuestionSpecToPanelState(data);
+      this.closeJsonEditor();
+    } catch (err) {
+      console.error(err);
+      this.dialogMessage({
+        title: 'Trouble Parsing Manually edited JSON',
+        text: 'We ran in to problems parsing the user provided JSON. Please ensure that it is a valid MachineQuestion spec JSON file',
+        buttonText: 'OK',
+        buttonAction: () => {},
+      });
+      // window.alert('Failed to load m Question template. Are you sure this is valid?');
+      store.setGraphState(graphStates.error);
+    }
+  }
+
+  closeJsonEditor() {
+    this.setState({ showJsonEditor: false });
+  }
+
+  openJsonEditor() {
+    this.setState({ showJsonEditor: true });
   }
 
   dialogWait(inputOptions) {
@@ -302,15 +418,6 @@ class QuestionNew extends React.Component {
   }
   renderLoaded() {
     const { store } = this.props;
-    // const questionHelp = (
-    //   <Popover id="queryTooltip" key={shortid.generate()} title="Question Help" style={{ minWidth: '500px' }}>
-    //     <div style={{ textAlign: 'left' }}>
-    //       <p>
-    //         Questions are asked in plain English with some domain specific parsing. We can link together a variety of biomedical concepts using several predicts.
-    //       </p>
-    //     </div>
-    //   </Popover>
-    // );
 
     return (
       <div>
@@ -321,6 +428,30 @@ class QuestionNew extends React.Component {
         <Grid>
           <Row>
             <Col md={12}>
+              <Form horizontal>
+                <FormGroup
+                  bsSize="large"
+                  controlId="formHorizontalNodeIdName"
+                  validationState={store.questionName.length > 0 ? 'success' : 'error'}
+                >
+                  <Col componentClass={ControlLabel} md={2}>
+                    <span>{'Question '}
+                      <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={questionNameTooltip}>
+                        <FaInfoCircle size={10} />
+                      </OverlayTrigger>
+                    </span>
+                  </Col>
+                  <Col md={10}>
+                    <FormControl
+                      type="text"
+                      value={store.questionName}
+                      onChange={e => store.updateQuestionName(e.target.value)}
+                    />
+                  </Col>
+                </FormGroup>
+              </Form>
+            </Col>
+            <Col md={12}>
               <Panel>
                 <Panel.Heading>
                   <Panel.Title>
@@ -329,10 +460,11 @@ class QuestionNew extends React.Component {
                       <FaInfoCircle size={12} />
                     </OverlayTrigger>
                     <GraphTitleButtons
-                      onDownloadWorkflow={this.onDownloadWorkflow}
+                      onDownloadQuestion={this.onDownloadQuestion}
                       onDropFile={this.onDropFile}
-                      onResetGraph={this.onResetGraph}
-                      onSubmitWorkflow={this.onSubmitWorkflow}
+                      onResetQuestion={this.onResetQuestion}
+                      onSubmitQuestion={this.onSubmitQuestion}
+                      graphValidationState={store.graphValidationState}
                     />
                   </Panel.Title>
                 </Panel.Heading>
@@ -363,6 +495,30 @@ class QuestionNew extends React.Component {
                 nextCallback={this.onCreate}
                 nlpParse={this.appConfig.questionNewTranslate}
               /> */}
+
+              <Modal
+                bsSize="large"
+                aria-labelledby="contained-modal-title-lg"
+                show={this.state.showJsonEditor}
+              >
+                <Modal.Header closeButton>
+                  <Modal.Title id="contained-modal-title-lg">Modal heading</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  <MachineQuestionEditor
+                    // height={fullHeight}
+                    concepts={store.concepts}
+                    question={store.questionName}
+                    machineQuestion={store.getMachineQuestionSpecJson}
+                    // onUpdate={this.editorUpdate}
+                    callbackSave={this.saveJsonEditor}
+                    callbackCancel={this.toMain}
+                  />
+                </Modal.Body>
+              </Modal>
+              {/* <Modal.Footer>
+                <Button onClick={this.props.onHide}>Close</Button>
+              </Modal.Footer> */}
             </Col>
           </Row>
         </Grid>

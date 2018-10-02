@@ -51,18 +51,6 @@ class MachineQuestionView2 extends React.Component {
     this.syncStateAndProps(nextProps);
   }
 
-  syncStateAndProps(newProps) {
-    let graph = newProps.question;
-
-    const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'nodes')) && (Object.prototype.hasOwnProperty.call(graph, 'edges'));
-    if (isValid) {
-      graph = this.getDisplayGraph(graph);
-    }
-    const graphOptions = this.getDisplayOptions(graph);
-
-    this.setState({ displayGraph: graph, displayOptions: graphOptions })
-  }
-
   shouldComponentUpdate(nextProps) {
     // Only redraw/remount component if graph components change
     if (_.isEqual(this.props.question, nextProps.question) && this.network) {
@@ -75,6 +63,18 @@ class MachineQuestionView2 extends React.Component {
     this.setNetworkCallbacks();
   }
 
+  syncStateAndProps(newProps) {
+    let graph = newProps.question;
+
+    const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'nodes')) && (Object.prototype.hasOwnProperty.call(graph, 'edges'));
+    if (isValid) {
+      graph = this.getDisplayGraph(graph);
+    }
+    const graphOptions = this.getDisplayOptions(graph);
+
+    this.setState({ displayGraph: graph, displayOptions: graphOptions });
+  }
+
   // Bind network fit callbacks to resize graph and cancel fit callbacks on start of zoom/pan
   setNetworkCallbacks() {
     this.network.once('afterDrawing', () => this.network.fit());
@@ -83,6 +83,7 @@ class MachineQuestionView2 extends React.Component {
     this.network.on('dragStart', () => this.network.off('afterDrawing'));
   }
 
+  /* eslint-disable no-param-reassign */
   getDisplayGraph(rawGraph) {
     const graph = _.cloneDeep(rawGraph);
 
@@ -147,10 +148,13 @@ class MachineQuestionView2 extends React.Component {
         n.label = '';
       }
       return n;
-    });
+    }); /* eslint-enable no-param-reassign */
 
     graph.edges = graph.edges.map((e) => {
-      const label = ('predicate' in e) ? e.predicate : '';
+      let label = ('predicate' in e) ? e.predicate : '';
+      if (Array.isArray(label)) {
+        label = label.join(', ');
+      }
       const smooth = { forceDirection: 'none' };
 
       e.from = e.source_id;

@@ -81,7 +81,7 @@ class NodePanel extends React.Component {
       const curieSelectorElement = (
         <div
           style={{ display: 'table-row' }}
-          // key={this.state.keys[i]}
+          key={i}
         >
           <div
             style={{ display: 'table-cell', padding: '5px 0px' }}

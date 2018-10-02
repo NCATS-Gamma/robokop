@@ -1,6 +1,6 @@
 import { observable, action, computed, flow, toJS, configure, autorun, reaction, runInAction } from 'mobx';
 
-import { graphStates } from '../components/flowbokop/FlowbokopGraphFetchAndView';
+import { graphStates } from '../components/shared/MachineQuestionViewContainer';
 import entityNameDisplay from '../components/util/entityNameDisplay';
 import AppConfig from '../AppConfig';
 
@@ -58,6 +58,11 @@ class EdgePanel {
     }
   }
 
+  // If user creates a predicate, it is provided as a string and should be appended
+  @action.bound updatePredicate(name) {
+    this.predicate.push(name);
+  }
+
   @computed get sourceNode() {
     const sourceNode = this.store.nodePanels.filter(panel => panel.id === this.source_id);
     if (sourceNode.length > 0) {
@@ -83,9 +88,10 @@ class EdgePanel {
   }
 
   @computed get isValidPredicate() {
-    return !this.store.awaitingPredicateList &&
-      !this.store.predicateFetchError &&
-      (_.difference(this.predicate, this.store.predicateList).length === 0);
+    return true; // TODO: Replace with code below when predicate endpoint is implemented
+    // return !this.store.awaitingPredicateList &&
+    //   !this.store.predicateFetchError &&
+    //   (_.difference(this.predicate, this.store.predicateList).length === 0);
   }
 
   @computed get isValid() {
@@ -248,12 +254,12 @@ class NodePanel {
   }
 
   @computed get isValid() {
-    return this.isValidType && this.isValidCurieList;
+    return this.isValidType && this.isValidCurieList && !this.deleted;
   }
 
   // Prettified label for the panel
   @computed get panelName() {
-    return `${this.id}: ${this.name === '' ? entityNameDisplay(this.type) : this.name}`;
+    return `${this.id}: ${this.name === '' ? entityNameDisplay(this.type) : this.name}${this.curieEnabled ? '*' : ''}`;
   }
 
   /**
@@ -348,14 +354,23 @@ class NewQuestionStore {
     // Fetch and store list of predicates that are available for the source-target
     // type pairing any time the pairing changes.
     this.disposeAutoFetchPredicateList = reaction(
-      () => ({ source: this.activePanelState.sourceNode ? this.activePanelState.sourceNode.type : '', target: this.activePanelState.targetNode ? this.activePanelState.targetNode.type : '' }),
-      async (types) => {
+      () => ({
+        source: {
+          type: this.activePanelState.sourceNode ? this.activePanelState.sourceNode.type : '',
+          deleted: this.activePanelState.sourceNode ? this.activePanelState.sourceNode.deleted : false,
+        },
+        target: {
+          type: this.activePanelState.targetNode ? this.activePanelState.targetNode.type : '',
+          deleted: this.activePanelState.targetNode ? this.activePanelState.targetNode.deleted : false,
+        },
+      }),
+      async (nodeInfo) => {
         // Cancel old request if it is still pending
         if (this.predicateFetchPromise) {
           await this.predicateFetchPromise.cancel();
         }
         // Make a new async request to get predicate list
-        this.predicateFetchPromise = this.getPredicateListFAKE(types.source, types.target);
+        this.predicateFetchPromise = this.getPredicateListFAKE(nodeInfo);
         this.predicateFetchPromise.catch((err) => { // Need this since this promise is rejected with FLOW_CANCELLED error
           if (err.message === 'FLOW_CANCELLED') {
             console.log('Successfully cancelled stale predicateFetchPromise');
@@ -440,27 +455,35 @@ class NewQuestionStore {
   // Async action to mimic request to determine list of predicates
   // that can be selected for the source-target type pairing
   // Predicate lists are memoized and stored in predicateCache
-  getPredicateListFAKE = flow(function* getPredicateList(sourceType, targetType) {
-    console.log('in getPredicateListFake reaction', sourceType, targetType);
-    if ((sourceType === '') || (targetType === '')) {
+  getPredicateListFAKE = flow(function* getPredicateList(nodeInfo) {
+    console.log('in getPredicateListFake reaction', nodeInfo.source.type, nodeInfo.target.type);
+    let errorMsg = null;
+    if ((nodeInfo.source.type === '') || (nodeInfo.target.type === '')) {
+      errorMsg = 'Source and/or Target Node type needs to be specified...';
+    }
+    if (nodeInfo.source.deleted || nodeInfo.target.deleted) {
+      errorMsg = 'Source and/or Target Node references a deleted node...';
+    }
+    if (errorMsg) {
       this.predicateList = [];
-      this.predicateFetchError = 'Source/Target Node type needs to be specified...';
+      this.predicateFetchError = errorMsg;
       this.awaitingPredicateList = false;
       return;
     }
-    const key = `${sourceType}:${targetType}`;
+    const key = `${nodeInfo.source.type}:${nodeInfo.target.type}`;
     if (this.predicateCache.has(key)) {
       this.predicateList = this.predicateCache.get(key);
     } else {
       this.awaitingPredicateList = true;
-      const fakePredicateList = ['increases', 'decreases', 'cures', 'other'];
-      const predicateList = yield new Promise((resolve, reject) => setTimeout(() => resolve(fakePredicateList), 5000));
+      // const fakePredicateList = ['increases', 'decreases', 'cures', 'other'];
+      const fakePredicateList = [];
+      const predicateList = yield new Promise((resolve, reject) => setTimeout(() => resolve(fakePredicateList), 10));
       this.predicateCache.set(key, predicateList);
       this.predicateList = predicateList;
     }
     this.predicateFetchError = null;
     this.awaitingPredicateList = false;
-    console.log(`getPredicateListFake returned for (${sourceType}, ${targetType}):`, this.predicateList);
+    // console.log(`getPredicateListFake returned for (${nodeInfo.source.type}, ${nodeInfo.target.type}):`, this.predicateList);
   });
 
   // Get list of panels of specific type from panelState
@@ -576,8 +599,13 @@ class NewQuestionStore {
     this.graphState = graphState;
   }
 
+  @action.bound updateQuestionName(questionName) {
+    this.questionName = questionName;
+  }
+
   // Compute machineQuestion representation of graph from internal PanelState
   // Binds isSelected = true to the node/edge that is currently active
+  // Used by by vis-js graphing primarily
   @computed get machineQuestion() {
     if (this.panelState.length === 0) {
       return null;
@@ -585,14 +613,15 @@ class NewQuestionStore {
     const machineQuestion = this.getEmptyMachineQuestion();
     const graphElementBlob = this.activePanelToGraphElement();
     this.panelState.forEach((panel) => {
-      if (panel.panelType === panelTypes.node) {
+      if (this.isNode(panel)) {
         const panelAsJson = panel.toJsonObj();
         if ((graphElementBlob !== null) && (graphElementBlob.type === panelTypes.node) && (graphElementBlob.id === panel.id)) {
           panelAsJson.isSelected = true; // Set isSelected = true for selected node/edge
         }
+        panelAsJson.label = panel.panelName;
         machineQuestion.nodes.push(panelAsJson);
       }
-      if (panel.panelType === panelTypes.edge) {
+      if (this.isEdge(panel)) {
         const panelAsJson = panel.toJsonObj();
         if ((graphElementBlob !== null) && (graphElementBlob.type === panelTypes.edge) && (graphElementBlob.id === panel.id)) {
           panelAsJson.isSelected = true; // Set isSelected = true for selected node/edge
@@ -601,6 +630,76 @@ class NewQuestionStore {
       }
     });
     return machineQuestion;
+  }
+
+  /**
+   * Returns the Question in MachineQuestion JSON Spec
+   */
+  @computed get getMachineQuestionSpecJson() {
+    const machineQuestion = this.getEmptyMachineQuestion();
+    this.panelState.forEach((panel) => {
+      if (this.isNode(panel)) {
+        const { deleted, curieEnabled, ...panelJson } = panel.toJsonObj();
+        machineQuestion.nodes.push(panelJson);
+      }
+      if (this.isEdge(panel)) {
+        const { id, predicate, ...panelJson } = panel.toJsonObj();
+        const typeObj = predicate ? { type: predicate[0] } : {}; // NOTE: Enforces only 1st predicate provided
+        machineQuestion.edges.push(Object.assign({}, typeObj, panelJson));
+      }
+    });
+    return { question: this.questionName, machineQuestion };
+  }
+
+  /**
+   * Convert JSON workflow input format to internal Panel State representation.
+   * this.panelState is set to an Array in internal Panel state representation of form:
+   * [ InputPanel instance, OperationPanel instance, ... ]
+   * @param {JSON Object} machineQuestionInp - JSON Object satisfying MachineQuestion spec
+   *  of format { question: string, machineQuestion: { edges: [], nodes: [] }}
+   */
+  @action.bound machineQuestionSpecToPanelState(machineQuestionInp) {
+    try {
+      console.log('Loading machineQuestionJson -', machineQuestionInp);
+      this.resetQuestion();
+      const panelState = [];
+      const machineQuestionInput = _.cloneDeep(machineQuestionInp);
+      this.questionName = machineQuestionInput.question ? machineQuestionInput.question : '';
+
+      machineQuestionInput.machineQuestion.nodes.map(node => panelState.push(new NodePanel(this, node)));
+      machineQuestionInput.machineQuestion.edges.map((edge, i) => panelState.push(new EdgePanel(this, Object.assign({}, { id: i }, edge))));
+
+      this.panelState = panelState;
+      // Reset activePanel to 1st panel/node
+      this.activePanelState = this.panelState.length > 0 ? this.panelState[0].clone() : {};
+      this.activePanelInd = 0;
+      this.setGraphState(graphStates.display);
+    } catch (err) {
+      this.resetQuestion();
+      this.setGraphState(graphStates.error);
+      console.error('Failed to read this Question template', err);
+      window.alert('Failed to read this Question template. Are you sure this is valid?');
+    }
+  }
+
+  // Checks if Graph UI is fully valid and returns object
+  // of form { isValid: bool, errorList: Array of strings }
+  @computed get graphValidationState() {
+    let isValid = true;
+    let errorList = [];
+    if (!this.nodePanels.reduce((prev, panel) => prev && panel.isValid, true)) {
+      isValid = false;
+      errorList.push('One or more invalid nodes');
+    }
+    if (!this.edgePanels.reduce((prev, panel) => prev && panel.isValid, true)) {
+      isValid = false;
+      errorList.push('One or more invalid edges');
+    }
+    if (this.questionName.length === 0) {
+      isValid = false;
+      errorList.push('Please enter a valid question name');
+    }
+    return { isValid, errorList };
   }
 
   getEmptyMachineQuestion() {
@@ -620,8 +719,14 @@ class NewQuestionStore {
 
   @action.bound resetQuestion() {
     this.naturalQuestion = '';
-    this.questionName = null;
-    this.machineQuestion = null;
+    this.questionName = '';
+    this.graphState = graphStates.empty;
+    this.panelState = [];
+    this.activePanelInd = 0;
+    this.activePanelState = {};
+    this.predicateList = [];
+    this.awaitingPredicateList = false;
+    this.predicateFetchError = null;
   }
 
   @action.bound newActivePanel(panelType) {
@@ -687,6 +792,7 @@ class NewQuestionStore {
       // Saving an edge means it has to be valid, so `broken` param must be false
       this.panelState[this.activePanelInd].broken = false;
     }
+    this.graphState = graphStates.display;
   }
 
   @action.bound updateActivePanelFromNodeId(id) {
@@ -699,7 +805,6 @@ class NewQuestionStore {
     if (nodePanelInd !== null) { // TODO: Consider updating only if activePanelInd differs from nodePanelInd
       this.activePanelInd = nodePanelInd;
       this.activePanelState = this.panelState[nodePanelInd].clone();
-      console.log('In updateActivePanelFromNodeId - Updated activePanelState');
     }
   }
 
@@ -760,8 +865,10 @@ class NewQuestionStore {
         this.appConfig.questionData(id, u => resolve(u), err => reject(err));
       }))();
       console.log('Question template returned:', data);
-      this.questionName = data.question.natural_question;
-      this.machineQuestion = data.question.machine_question;
+      this.machineQuestionSpecToPanelState({
+        question: data.question.natural_question,
+        machineQuestion: data.question.machine_question,
+      });
       this.dataReady = true;
     } catch (e) {
       console.error('Failed to retrieve and update MobX store with question template data', e);
