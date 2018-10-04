@@ -161,8 +161,8 @@ class WF1MOD3a(Resource):
             "machine_question": {
                 "edges": [
                     {
-                        "source_id": 0,
-                        "target_id": 1,
+                        "source_id": 1,
+                        "target_id": 0,
                         "type": "contributes_to"
                     },
                     {
