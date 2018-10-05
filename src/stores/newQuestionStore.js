@@ -646,11 +646,11 @@ class NewQuestionStore {
       }
       if (this.isEdge(panel)) {
         const { id, predicate, ...panelJson } = panel.toJsonObj();
-        const typeObj = predicate ? { type: predicate[0] } : {}; // NOTE: Enforces only 1st predicate provided
+        const typeObj = predicate ? { type: predicate[0] } : {}; // NOTE: Enforces only 1st predicate provided as string
         machineQuestion.edges.push(Object.assign({}, typeObj, panelJson));
       }
     });
-    return { question: this.questionName, machineQuestion };
+    return { natural_question: this.questionName, machine_question: machineQuestion };
   }
 
   /**
@@ -666,10 +666,20 @@ class NewQuestionStore {
       this.resetQuestion();
       const panelState = [];
       const machineQuestionInput = _.cloneDeep(machineQuestionInp);
-      this.questionName = machineQuestionInput.question ? machineQuestionInput.question : '';
+      this.questionName = machineQuestionInput.natural_question ? machineQuestionInput.natural_question : '';
 
-      machineQuestionInput.machineQuestion.nodes.map(node => panelState.push(new NodePanel(this, node)));
-      machineQuestionInput.machineQuestion.edges.map((edge, i) => panelState.push(new EdgePanel(this, Object.assign({}, { id: i }, edge))));
+      machineQuestionInput.machine_question.nodes.map(node => panelState.push(new NodePanel(this, node)));
+      machineQuestionInput.machine_question.edges.map((edge, i) => {
+        const edgeObj = Object.assign({}, { id: i }, edge);
+        if (edgeObj.type) { // Convert external `type` representation to internal `predicate` representation
+          edgeObj.predicate = edgeObj.type;
+          delete edgeObj.type;
+        }
+        if (edgeObj.predicate && ((edgeObj.predicate instanceof String) || (typeof edgeObj.predicate === 'string'))) {
+          edgeObj.predicate = [edgeObj.predicate];
+        }
+        panelState.push(new EdgePanel(this, edgeObj));
+      });
 
       this.panelState = panelState;
       // Reset activePanel to 1st panel/node
@@ -872,7 +882,7 @@ class NewQuestionStore {
         this.appConfig.questionNewTranslate(question, mq => resolve(mq), err => reject(err));
       }))();
       console.log('NLP Engine returned:', machineQuestion);
-      this.machineQuestionSpecToPanelState({ question, machineQuestion });
+      this.machineQuestionSpecToPanelState({ natural_question: question, machine_question: machineQuestion });
       this.nlpFetching = false;
     } catch (e) {
       this.resetQuestion();
@@ -896,8 +906,8 @@ class NewQuestionStore {
       }))();
       console.log('Question template returned:', data);
       this.machineQuestionSpecToPanelState({
-        question: data.question.natural_question,
-        machineQuestion: data.question.machine_question,
+        natural_question: data.question.natural_question,
+        machine_question: data.question.machine_question,
       });
       this.dataReady = true;
     } catch (e) {

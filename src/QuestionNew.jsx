@@ -138,7 +138,7 @@ const GraphTitleButtons = ({
         key={1}
         id="dropdown-question-template"
       >
-        {questionList.map((question, i) => <MenuItem key={i} eventKey={i} onSelect={onQuestionTemplate}>{question.question}</MenuItem>)}
+        {questionList.map((question, i) => <MenuItem key={i} eventKey={i} onSelect={onQuestionTemplate}>{question.natural_question}</MenuItem>)}
       </DropdownButton>
       <button
         style={buttonStyles}
@@ -327,7 +327,7 @@ class QuestionNew extends React.Component {
 
   onSubmitQuestion() {
     const { store } = this.props;
-    this.onCreate({ questionText: store.questionName, machineQuestion: store.getMachineQuestionSpecJson.machineQuestion });
+    this.onCreate({ questionText: store.questionName, machineQuestion: store.getMachineQuestionSpecJson.machine_question });
   }
 
   onResetQuestion() {
@@ -498,7 +498,7 @@ class QuestionNew extends React.Component {
         <Grid>
           <Row>
             <Col md={12}>
-              <Form horizontal>
+              <Form horizontal onSubmit={e => e.preventDefault()}>
                 <FormGroup
                   bsSize="large"
                   controlId="formHorizontalNodeIdName"
@@ -512,16 +512,16 @@ class QuestionNew extends React.Component {
                     </span>
                   </Col>
                   <Col md={10}>
-                    <InputGroup>
-                      <FormControl
-                        type="text"
-                        value={store.questionName}
-                        onChange={e => store.updateQuestionName(e.target.value)}
-                      />
-                      <InputGroup.Button>
-                        <Button type="submit" bsSize="large" onClick={this.getNlpParsedQuestion}>Try NLP Engine</Button>
-                      </InputGroup.Button>
-                    </InputGroup>
+                    {/* <InputGroup> */}
+                    <FormControl
+                      type="text"
+                      value={store.questionName}
+                      onChange={e => store.updateQuestionName(e.target.value)}
+                    />
+                    {/* <InputGroup.Button>
+                      <Button type="submit" bsSize="large" onClick={this.getNlpParsedQuestion}>Try NLP Engine</Button>
+                    </InputGroup.Button> */}
+                    {/* </InputGroup> */}
                   </Col>
                 </FormGroup>
               </Form>
@@ -554,51 +554,25 @@ class QuestionNew extends React.Component {
               </Panel>
               <ButtonGroupPanel store={store} openJsonEditor={this.openJsonEditor} />
               {this.getActivePanel()}
-
-              {/* <div style={{ paddingLeft: 15, paddingRight: 15 }}>
-                <h1>Start a New Question</h1>
-                <p>
-                  Type your question in the box below. To get started quickly, explore the examples by clicking on the arrow on the right.
-                  <OverlayTrigger placement="right" overlay={questionHelp}>
-                    <span> {'    '} <GoQuestion /> </span>
-                  </OverlayTrigger>
-                </p>
-              </div> */}
-              {/* <QuestionDesign
-                height={750}
-                initializationData={{ question: store.questionName, machineQuestion: toJS(store.machineQuestion) }}
-                concepts={toJS(store.concepts)}
-                nextText="Create"
-                nextCallback={this.onCreate}
-                nlpParse={this.appConfig.questionNewTranslate}
-              /> */}
-
               <Modal
                 bsSize="large"
                 aria-labelledby="contained-modal-title-lg"
                 show={this.state.showJsonEditor}
                 dialogClassName="question-editor-modal"
               >
-                {/* <Modal.Header closeButton>
-                  <Modal.Title id="contained-modal-title-lg">Modal heading</Modal.Title>
-                </Modal.Header> */}
                 <Modal.Body>
                   {this.state.showJsonEditor &&
                     <MachineQuestionEditor
                       height={700}
                       concepts={toJS(store.concepts)}
                       question={store.questionName}
-                      machineQuestion={toJS(store.getMachineQuestionSpecJson.machineQuestion)}
-                      // onUpdate={this.editorUpdate}
+                      machineQuestion={toJS(store.getMachineQuestionSpecJson.machine_question)}
                       callbackSave={this.saveJsonEditor}
                       callbackCancel={this.closeJsonEditor}
                     />
                   }
                 </Modal.Body>
               </Modal>
-              {/* <Modal.Footer>
-                <Button onClick={this.props.onHide}>Close</Button>
-              </Modal.Footer> */}
             </Col>
           </Row>
         </Grid>

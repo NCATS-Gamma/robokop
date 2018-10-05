@@ -1,13 +1,13 @@
 const questions = [
   {
-    question: 'What genetic conditions protect against ebola hemorrhagic fever?',
-    machineQuestion: {
+    natural_question: 'What genetic conditions protect against ebola hemorrhagic fever?',
+    machine_question: {
       nodes: [
         {
           id: 0,
           name: 'ebola hemorrhagic fever',
           type: 'disease',
-          curie: 'CHEMBL:CHEMBL1201570',
+          curie: 'MONDO:0005737',
         },
         {
           id: 1,
@@ -31,8 +31,8 @@ const questions = [
     },
   },
   {
-    question: 'What is the COP for imatinib and asthma?',
-    machineQuestion: {
+    natural_question: 'What is the COP for imatinib and asthma?',
+    machine_question: {
       nodes: [
         {
           id: 0,
@@ -64,7 +64,7 @@ const questions = [
           id: 6,
           name: 'asthma',
           type: 'disease',
-          curie: 'CHEMBL:CHEMBL714',
+          curie: 'MONDO:0004979',
         },
       ],
       edges: [
@@ -96,32 +96,24 @@ const questions = [
     },
   },
   {
-    question: 'What genetic conditions protect against ebola hemorrhagic fever?',
-    machineQuestion: {
+    natural_question: 'What genes affect ebola hemorrhagic fever?',
+    machine_question: {
       nodes: [
         {
           id: 0,
-          name: 'ebola hemorrhagic fever',
-          type: 'disease',
-          curie: 'CHEMBL:CHEMBL1201570',
-        },
-        {
-          id: 1,
           type: 'gene',
         },
         {
-          id: 2,
-          type: 'genetic_condition',
+          id: 1,
+          name: 'Ebola hemorrhagic fever',
+          curie: 'MONDO:0005737',
         },
       ],
       edges: [
         {
           source_id: 0,
           target_id: 1,
-        },
-        {
-          source_id: 1,
-          target_id: 2,
+          predicate: 'affects',
         },
       ],
     },

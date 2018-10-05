@@ -16,7 +16,7 @@ class MachineQuestionEditor extends React.Component {
     super(props);
 
     this.state = {
-      data: { question: '', machineQuestion: { nodes: [], edges: [] } },
+      data: { natural_question: '', machine_question: { nodes: [], edges: [] } },
       isValid: false,
       thinking: false,
       errorMessage: '',
@@ -43,7 +43,7 @@ class MachineQuestionEditor extends React.Component {
   }
 
   syncStateAndProps(newProps) {
-    this.setState({ data: { question: newProps.question, machineQuestion: newProps.machineQuestion }, isValid: true });
+    this.setState({ data: { natural_question: newProps.question, machine_question: newProps.machineQuestion }, isValid: true });
   }
 
   onEdit(edit) {
@@ -63,34 +63,34 @@ class MachineQuestionEditor extends React.Component {
     let isValid = true;
     let errorMessage = '';
 
-    const iValidHaveQuestion = data && ('question' in data) && (typeof data.question === 'string');
+    const iValidHaveQuestion = data && ('natural_question' in data) && (typeof data.natural_question === 'string');
     isValid = isValid && iValidHaveQuestion;
     if (!iValidHaveQuestion) {
-      errorMessage = `${errorMessage}The graph template must have a "question" field that is a string.`;
+      errorMessage = `${errorMessage}The graph template must have a "natural_question" field that is a string.`;
     }
-    const isValidHaveMachineQuestion = data && ('machineQuestion' in data) && (typeof data.machineQuestion === 'object');
+    const isValidHaveMachineQuestion = data && ('machine_question' in data) && (typeof data.machine_question === 'object');
     isValid = isValid && isValidHaveMachineQuestion;
     if (!isValidHaveMachineQuestion) {
-      errorMessage = `${errorMessage}The graph template must have a "machineQuestion" field that is an object. `;
+      errorMessage = `${errorMessage}The graph template must have a "machine_question" field that is an object. `;
     } else {
       // We have a question
 
-      const { machineQuestion } = data;
+      const { machine_question } = data;
       // Check for nodes
-      const isValidHaveNodes = 'nodes' in machineQuestion && Array.isArray(machineQuestion.nodes);
+      const isValidHaveNodes = 'nodes' in machine_question && Array.isArray(machine_question.nodes);
       isValid = isValid && isValidHaveNodes;
       if (!isValidHaveNodes) {
         errorMessage = `${errorMessage}A graph template requires the field "nodes" that is an array. `;
       } else {
         // question.nodes is an array
-        const isValidNodesHaveIds = machineQuestion.nodes.reduce((val, n) => val && n && (typeof n === 'object') && ('id' in n), true);
+        const isValidNodesHaveIds = machine_question.nodes.reduce((val, n) => val && n && (typeof n === 'object') && ('id' in n), true);
         isValid = isValid && isValidNodesHaveIds;
         if (!isValidNodesHaveIds) {
           errorMessage = `${errorMessage}Each node must have an ID. `;
         } else {
           // Since every node has and id we can check if they are unique
-          const nodeIds = new Set(machineQuestion.nodes.map(n => n.id));
-          const isValidNodeIdsUnique = nodeIds.size === machineQuestion.nodes.length;
+          const nodeIds = new Set(machine_question.nodes.map(n => n.id));
+          const isValidNodeIdsUnique = nodeIds.size === machine_question.nodes.length;
           if (!isValidNodeIdsUnique) {
             errorMessage = `${errorMessage}There are multiple nodes with the same ID. `;
           }
@@ -99,13 +99,13 @@ class MachineQuestionEditor extends React.Component {
       }
 
       // Check for edges
-      const isValidHaveEdges = 'edges' in machineQuestion && Array.isArray(machineQuestion.edges);
+      const isValidHaveEdges = 'edges' in machine_question && Array.isArray(machine_question.edges);
       isValid = isValid && isValidHaveEdges;
       if (!isValidHaveEdges) {
         errorMessage = `${errorMessage}A graph template requires the field "edges" that is an array.`;
       } else {
         // question.edges is an array
-        const isValidEdgesHaveIds = machineQuestion.edges.reduce((val, e) => val && e && (typeof e === 'object') && ('source_id' in e) && ('target_id' in e), true);
+        const isValidEdgesHaveIds = machine_question.edges.reduce((val, e) => val && e && (typeof e === 'object') && ('source_id' in e) && ('target_id' in e), true);
         isValid = isValid && isValidEdgesHaveIds;
         if (!isValidEdgesHaveIds) {
           errorMessage = `${errorMessage}Each edge must have a source_id and a target_id. `;
@@ -134,11 +134,11 @@ class MachineQuestionEditor extends React.Component {
         try {
           const object = JSON.parse(fileContents);
           const { data } = this.state;
-          if ('question' in object) {
-            data.question = object.question;
+          if ('natural_question' in object) {
+            data.natural_question = object.natural_question;
           }
-          if ('machineQuestion' in object) {
-            data.machineQuestion = object.machineQuestion;
+          if ('machine_question' in object) {
+            data.machine_question = object.machine_question;
           }
 
           this.setState({ data });
@@ -227,7 +227,7 @@ class MachineQuestionEditor extends React.Component {
                   <MachineQuestionView
                     height={innerHeight}
                     concepts={this.props.concepts}
-                    question={this.state.data.machineQuestion}
+                    question={this.state.data.machine_question}
                   />
                 }
                 {!isValid &&
