@@ -31,7 +31,7 @@ const defaultProps = {
   edgeSelectCallback: () => {},
 };
 
-class MachineQuestionView extends React.Component {
+class MachineQuestionView2 extends React.Component {
   constructor(props) {
     super(props);
 
@@ -51,18 +51,6 @@ class MachineQuestionView extends React.Component {
     this.syncStateAndProps(nextProps);
   }
 
-  syncStateAndProps(newProps) {
-    let graph = newProps.question;
-
-    const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'nodes')) && (Object.prototype.hasOwnProperty.call(graph, 'edges'));
-    if (isValid) {
-      graph = this.getDisplayGraph(graph);
-    }
-    const graphOptions = this.getDisplayOptions(graph);
-
-    this.setState({ displayGraph: graph, displayOptions: graphOptions })
-  }
-
   shouldComponentUpdate(nextProps) {
     // Only redraw/remount component if graph components change
     if (_.isEqual(this.props.question, nextProps.question) && this.network) {
@@ -75,6 +63,18 @@ class MachineQuestionView extends React.Component {
     this.setNetworkCallbacks();
   }
 
+  syncStateAndProps(newProps) {
+    let graph = newProps.question;
+
+    const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'nodes')) && (Object.prototype.hasOwnProperty.call(graph, 'edges'));
+    if (isValid) {
+      graph = this.getDisplayGraph(graph);
+    }
+    const graphOptions = this.getDisplayOptions(graph);
+
+    this.setState({ displayGraph: graph, displayOptions: graphOptions });
+  }
+
   // Bind network fit callbacks to resize graph and cancel fit callbacks on start of zoom/pan
   setNetworkCallbacks() {
     this.network.once('afterDrawing', () => this.network.fit());
@@ -83,6 +83,7 @@ class MachineQuestionView extends React.Component {
     this.network.on('dragStart', () => this.network.off('afterDrawing'));
   }
 
+  /* eslint-disable no-param-reassign */
   getDisplayGraph(rawGraph) {
     const graph = _.cloneDeep(rawGraph);
 
@@ -111,6 +112,16 @@ class MachineQuestionView extends React.Component {
       if (n.isSelected) { // Override borderwidth when isSelected set by user thru props
         n.borderWidth = n.borderWidthSelected;
       }
+      if (n.deleted) { // Set this node as hidden since it is flagged for deletion
+        n.color = {
+          border: '#aaa',
+          background: '#eee',
+          highlight: { background: '#eee', border: '#aaa' },
+          hover: { background: '#eee', border: '#aaa' },
+        };
+        n.font = { color: '#d38f8f', ital: { color: '#910000', size: 13 } };
+        n.shapeProperties = { borderDashes: [3, 1] };
+      }
 
       if ('label' in n) {
         if (('nodeSpecType' in n) && (n.nodeSpecType === CardTypes.NODETYPE)) {
@@ -137,10 +148,13 @@ class MachineQuestionView extends React.Component {
         n.label = '';
       }
       return n;
-    });
+    }); /* eslint-enable no-param-reassign */
 
     graph.edges = graph.edges.map((e) => {
-      const label = ('predicate' in e) ? e.predicate : '';
+      let label = ('predicate' in e) ? e.predicate : '';
+      if (Array.isArray(label)) {
+        label = label.join(', ');
+      }
       const smooth = { forceDirection: 'none' };
 
       e.from = e.source_id;
@@ -194,24 +208,24 @@ class MachineQuestionView extends React.Component {
       },
     };
 
-    // Switch to a simple quick spring layout without overlap
-    if ((graph.nodes.length > 10) || (graph.edges.length >= graph.nodes.length)) {
-      physics = {
-        minVelocity: 0.75,
-        barnesHut: {
-          gravitationalConstant: -1000,
-          centralGravity: 0.3,
-          springLength: 200,
-          springConstant: 0.05,
-          damping: 0.95,
-          avoidOverlap: 1,
-        },
-      };
-      layout = {
-        randomSeed: 0,
-        improvedLayout: true,
-      };
-    }
+    // // Switch to a simple quick spring layout without overlap
+    // if ((graph.nodes.length > 10) || (graph.edges.length >= graph.nodes.length)) {
+    //   physics = {
+    //     minVelocity: 0.75,
+    //     barnesHut: {
+    //       gravitationalConstant: -1000,
+    //       centralGravity: 0.3,
+    //       springLength: 200,
+    //       springConstant: 0.05,
+    //       damping: 0.95,
+    //       avoidOverlap: 1,
+    //     },
+    //   };
+    //   layout = {
+    //     randomSeed: 0,
+    //     improvedLayout: true,
+    //   };
+    // }
 
     return ({
       height,
@@ -263,7 +277,7 @@ class MachineQuestionView extends React.Component {
   }
 }
 
-MachineQuestionView.propTypes = propTypes;
-MachineQuestionView.defaultProps = defaultProps;
+MachineQuestionView2.propTypes = propTypes;
+MachineQuestionView2.defaultProps = defaultProps;
 
-export default MachineQuestionView;
+export default MachineQuestionView2;

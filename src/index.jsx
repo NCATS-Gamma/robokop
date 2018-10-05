@@ -26,7 +26,8 @@ import Search from './Search';
 import MultiSearch from './MultiSearch';
 import Simple from './Simple';
 import Flowbokop from './Flowbokop';
-import store from './stores/flowbokopStore';
+import FlowbokopStore from './stores/flowbokopStore';
+import NewQuestionStore from './stores/newQuestionStore';
 
 // Our actual CSS and other images etc.
 import '../assets/css/style.css';
@@ -66,10 +67,12 @@ const robokop = {
   },
   questionNew: (id) => {
     ReactDOM.render(
-      <QuestionNew
-        config={config}
-        initializationId={id}
-      />,
+      <Provider store={new NewQuestionStore()}>
+        <QuestionNew
+          config={config}
+          initializationId={id}
+        />
+      </Provider>,
       document.getElementById('reactEntry'),
     );
   },
@@ -151,7 +154,7 @@ const robokop = {
   },
   flowbokop: () => {
     ReactDOM.render(
-      <Provider store={store}>
+      <Provider store={new FlowbokopStore()}>
         <Flowbokop
           config={config}
         />

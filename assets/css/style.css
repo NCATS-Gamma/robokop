@@ -46,7 +46,7 @@ body :focus {
 
 .footer {
   position: absolute;
-  bottom: 0;
+  bottom: 4;
   width: 100%;
   /* Set the fixed height of the footer here */
   height: 25px;
@@ -225,6 +225,11 @@ div.vis-tooltip .invalid-node {
   border-color: #a94442;
 }
 
+/* Remove bold control labels */
+.form-horizontal label {
+  font-weight: normal;
+}
+
 /* Custom tweak to Bootstrap tabs */
 .nav-tabs > li > a {
   border: 1px solid #ededed;
@@ -263,4 +268,17 @@ div.vis-tooltip .invalid-node {
             transform: rotate(359deg);
   }
 }
+
+/* Widen modal for Graph JSON editor */
+.question-editor-modal {
+  width: 80%;
+}
+
+.popover {
+  max-width: 600px;
+}
+
+/* .question-editor-modal .modal-content, .machine-question-editor {
+  height: calc(100vh - 100px);
+} */
 

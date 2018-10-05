@@ -121,7 +121,7 @@ class AppConfig {
     //   notes: ''
     //   query: {}, // Complex object matching current machine question syntax
     // };
-
+    // console.log('questionCreate data is:', data); debugger;
     // To make a new question we post to the questions page with specifications for a question
     this.postRequest(
       this.apis.questions,
