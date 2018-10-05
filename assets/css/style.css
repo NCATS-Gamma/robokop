@@ -269,3 +269,16 @@ div.vis-tooltip .invalid-node {
   }
 }
 
+/* Widen modal for Graph JSON editor */
+.question-editor-modal {
+  width: 80%;
+}
+
+.popover {
+  max-width: 600px;
+}
+
+/* .question-editor-modal .modal-content, .machine-question-editor {
+  height: calc(100vh - 100px);
+} */
+
