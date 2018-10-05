@@ -4,7 +4,7 @@ import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import {
   Grid, Row, Col, Button, ButtonGroup, Panel, Popover, OverlayTrigger, MenuItem,
-  Form, FormControl, FormGroup, ControlLabel, Tooltip, Modal, DropdownButton,
+  Form, FormControl, FormGroup, ControlLabel, Tooltip, Modal, DropdownButton, InputGroup,
 } from 'react-bootstrap';
 import Dropzone from 'react-dropzone';
 import FaFloppyO from 'react-icons/lib/fa/floppy-o';
@@ -100,10 +100,25 @@ const edgePanelPopover = (
   </Popover>
 );
 
-const questionNameTooltip = (
-  <Tooltip placement="top" className="in" id="tooltip-top-1">
-    Text description of the question being constructed
-  </Tooltip>
+const questionNamePopover = (
+  <Popover title="Question help" id="popover-positioned-right">
+    Text description of the question being constructed. Hitting Enter or clicking the {'"Try NLP Engine"'} button
+    submits the question to the Natural Language Processing (NLP) engine that attempts to parse the question and
+    return a matching machine-question specification. This can usually serve as a good starting point for further
+    customizations of the machine-question via this UI.
+  </Popover>
+);
+
+const loadingNlpQuestionModal = (
+  <Modal show bsSize="large">
+    <Modal.Header>
+      <Modal.Title id="loading-nlp-question">Submitting question to NLP Parser</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+      <p>Your natural language question is being parsed by the NLP engine. Please wait...</p>
+      <Loading />
+    </Modal.Body>
+  </Modal>
 );
 
 // Buttons displayed in title-bar of Graph Viewer
@@ -142,7 +157,6 @@ const GraphTitleButtons = ({
         <span style={{ fontSize: '22px' }} title="Import Machine Question from JSON">
           <Dropzone
             onDrop={onDropFile}
-            // onClick={() => this.setState({ graphState: graphStates.fetching })}
             multiple={false}
             style={{
               border: 'none',
@@ -221,7 +235,6 @@ const ButtonGroupPanel = observer(({ store, openJsonEditor }) => {
         <Button
           onClick={openJsonEditor}
           disabled={!isValidGraph}
-          // bsStyle={isValidPanel ? (unsavedChanges ? 'primary' : 'default') : 'danger'} // eslint-disable-line no-nested-ternary
           title={isValidGraph ? 'Manually edit JSON for machine question' : 'Manual JSON Editing disabled due to invalid Graph'}
         >
           <FaWrench style={{ verticalAlign: 'text-top' }} />
@@ -248,6 +261,7 @@ class QuestionNew extends React.Component {
     this.closeJsonEditor = this.closeJsonEditor.bind(this);
     this.openJsonEditor = this.openJsonEditor.bind(this);
     this.onQuestionTemplate = this.onQuestionTemplate.bind(this);
+    this.getNlpParsedQuestion = this.getNlpParsedQuestion.bind(this);
 
     this.state = { showJsonEditor: false };
   }
@@ -255,6 +269,10 @@ class QuestionNew extends React.Component {
   componentDidMount() {
     this.props.store.getQuestionData(this.props.initializationId);
     console.log('Mobx Store:', this.props.store);
+  }
+
+  componentWillUnmount() {
+    this.props.store.cleanup();
   }
 
   /**
@@ -309,7 +327,7 @@ class QuestionNew extends React.Component {
 
   onSubmitQuestion() {
     const { store } = this.props;
-    this.onCreate({ questionText: store.questionName, machineQuestion: store.getMachineQuestionSpecJson });
+    this.onCreate({ questionText: store.questionName, machineQuestion: store.getMachineQuestionSpecJson.machineQuestion });
   }
 
   onResetQuestion() {
@@ -373,6 +391,12 @@ class QuestionNew extends React.Component {
   // Loads the question template and updates the MobX store/UI
   onQuestionTemplate(eventKey) {
     this.props.store.machineQuestionSpecToPanelState(questions[eventKey]);
+  }
+
+  // Prevent default form submit and make call to parse NLP question via store method
+  getNlpParsedQuestion(event) {
+    event.preventDefault();
+    this.props.store.nlpParseQuestion();
   }
 
   dialogWait(inputOptions) {
@@ -482,17 +506,22 @@ class QuestionNew extends React.Component {
                 >
                   <Col componentClass={ControlLabel} md={2}>
                     <span>{'Question '}
-                      <OverlayTrigger trigger={['hover', 'focus']} placement="top" overlay={questionNameTooltip}>
+                      <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={questionNamePopover}>
                         <FaInfoCircle size={10} />
                       </OverlayTrigger>
                     </span>
                   </Col>
                   <Col md={10}>
-                    <FormControl
-                      type="text"
-                      value={store.questionName}
-                      onChange={e => store.updateQuestionName(e.target.value)}
-                    />
+                    <InputGroup>
+                      <FormControl
+                        type="text"
+                        value={store.questionName}
+                        onChange={e => store.updateQuestionName(e.target.value)}
+                      />
+                      <InputGroup.Button>
+                        <Button type="submit" bsSize="large" onClick={this.getNlpParsedQuestion}>Try NLP Engine</Button>
+                      </InputGroup.Button>
+                    </InputGroup>
                   </Col>
                 </FormGroup>
               </Form>
@@ -575,6 +604,7 @@ class QuestionNew extends React.Component {
         </Grid>
         <Footer config={this.props.config} />
         <Dialog ref={(el) => { this.dialog = el; }} />
+        {store.nlpFetching && loadingNlpQuestionModal}
       </div>
     );
   }

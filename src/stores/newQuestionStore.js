@@ -308,7 +308,6 @@ class NewQuestionStore {
   @observable userReady = false;
   @observable dataReady = false;
 
-  @observable naturalQuestion = '';
   @observable questionName = '';
   @observable notes = '';
   @observable graphState = graphStates.empty;
@@ -322,6 +321,8 @@ class NewQuestionStore {
   @observable predicateFetchError = null;
   predicateCache = new Map();
   predicateFetchPromise = null;
+
+  @observable nlpFetching = false;
 
   constructor() {
     this.appConfig = new AppConfig(config);
@@ -387,19 +388,20 @@ class NewQuestionStore {
       { compareStructural: true },
     );
 
-    runInAction(() => {
-      this.panelState = [
-        new NodePanel(this, { id: 0, name: 'imatinib', type: 'chemical_substance', curie: 'CHEMBL:CHEMBL1421' }),
-        new NodePanel(this, { id: 1, type: 'gene' }),
-        new NodePanel(this, { id: 2, type: 'biological_process', set: true }),
-        new NodePanel(this, { id: 3, name: 'asthma', type: 'disease', curie: 'CHEMBL:CHEMBL714' }),
-        new EdgePanel(this, { id: 0, source_id: 0, target_id: 1 }),
-        new EdgePanel(this, { id: 1, source_id: 1, target_id: 2 }),
-        new EdgePanel(this, { id: 2, source_id: 2, target_id: 3 }),
-      ];
-      this.graphState = graphStates.display;
-      this.syncActivePanelToPanelInd();
-    });
+    // Demo code to seed UI with an initial graph
+    // runInAction(() => {
+    //   this.panelState = [
+    //     new NodePanel(this, { id: 0, name: 'imatinib', type: 'chemical_substance', curie: 'CHEMBL:CHEMBL1421' }),
+    //     new NodePanel(this, { id: 1, type: 'gene' }),
+    //     new NodePanel(this, { id: 2, type: 'biological_process', set: true }),
+    //     new NodePanel(this, { id: 3, name: 'asthma', type: 'disease', curie: 'CHEMBL:CHEMBL714' }),
+    //     new EdgePanel(this, { id: 0, source_id: 0, target_id: 1 }),
+    //     new EdgePanel(this, { id: 1, source_id: 1, target_id: 2 }),
+    //     new EdgePanel(this, { id: 2, source_id: 2, target_id: 3 }),
+    //   ];
+    //   this.graphState = graphStates.display;
+    //   this.syncActivePanelToPanelInd();
+    // });
   }
 
   /**
@@ -409,7 +411,7 @@ class NewQuestionStore {
    * that the activePanelState still corresponds to the correct panelState entry
    */
   @action deleteUnlinkedNodes() {
-    console.log('Running action - deleteUnlinkedNodes');
+    // console.log('Running action - deleteUnlinkedNodes');
     let linkedNodeIds = [];
     this.panelState.forEach((panel) => {
       if (panel.panelType === panelTypes.edge) {
@@ -673,7 +675,11 @@ class NewQuestionStore {
       // Reset activePanel to 1st panel/node
       this.activePanelState = this.panelState.length > 0 ? this.panelState[0].clone() : {};
       this.activePanelInd = 0;
-      this.setGraphState(graphStates.display);
+      if (this.panelState.length > 0) {
+        this.setGraphState(graphStates.display);
+      } else {
+        this.setGraphState(graphStates.empty);
+      }
     } catch (err) {
       this.resetQuestion();
       this.setGraphState(graphStates.error);
@@ -724,7 +730,6 @@ class NewQuestionStore {
   }
 
   @action.bound resetQuestion() {
-    this.naturalQuestion = '';
     this.questionName = '';
     this.graphState = graphStates.empty;
     this.panelState = [];
@@ -831,11 +836,10 @@ class NewQuestionStore {
   // Async action to update concepts list and conceptsReady flag in store
   updateConcepts = flow(function* () { // eslint-disable-line func-names
     try {
-      // const concepts = yield this.appConfig.concepts(c => Promise.resolve(c));
       const concepts = yield (() => new Promise((resolve, reject) => {
         this.appConfig.concepts(c => resolve(c), err => reject(err));
       }))();
-      console.log('Concepts returned:', concepts);
+      // console.log('Concepts returned:', concepts);
       this.concepts = concepts;
       this.conceptsReady = true;
     } catch (e) {
@@ -855,6 +859,26 @@ class NewQuestionStore {
       this.userReady = true;
     } catch (e) {
       console.error('Failed to retrieve and update MobX user entry', e);
+    }
+  }).bind(this);
+
+  // Async action to submit natural language question to NLP parser and
+  // obtain the corresponding machine-question from the NLP engine
+  nlpParseQuestion = flow(function* () { // eslint-disable-line func-names
+    try {
+      const question = this.questionName;
+      this.nlpFetching = true;
+      const machineQuestion = yield (() => new Promise((resolve, reject) => {
+        this.appConfig.questionNewTranslate(question, mq => resolve(mq), err => reject(err));
+      }))();
+      console.log('NLP Engine returned:', machineQuestion);
+      this.machineQuestionSpecToPanelState({ question, machineQuestion });
+      this.nlpFetching = false;
+    } catch (e) {
+      this.resetQuestion();
+      this.setGraphState(graphStates.error);
+      this.nlpFetching = false;
+      console.error('Failed to retrieve and update MobX store with NLP parser outputs', e);
     }
   }).bind(this);
 
@@ -880,6 +904,14 @@ class NewQuestionStore {
       console.error('Failed to retrieve and update MobX store with question template data', e);
     }
   }).bind(this);
+
+  // Dispose all reactions so they are garbage collected when store is
+  // destroyed (invoke in componentWillUnmount of root React component)
+  cleanup() {
+    this.disposeAutoFetchPredicateList();
+    this.disposeDeleteUnlinkedNodes();
+    this.disposeGraphStateEmpty();
+  }
 }
 
 export default NewQuestionStore;
