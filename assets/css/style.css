@@ -46,7 +46,7 @@ body :focus {
 
 .footer {
   position: absolute;
-  bottom: 0;
+  bottom: 4;
   width: 100%;
   /* Set the fixed height of the footer here */
   height: 25px;
