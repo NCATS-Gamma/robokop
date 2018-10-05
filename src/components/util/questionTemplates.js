@@ -106,6 +106,7 @@ const questions = [
         {
           id: 1,
           name: 'Ebola hemorrhagic fever',
+          type: 'disease',
           curie: 'MONDO:0005737',
         },
       ],
