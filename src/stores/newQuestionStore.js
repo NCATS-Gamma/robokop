@@ -683,23 +683,29 @@ class NewQuestionStore {
   }
 
   // Checks if Graph UI is fully valid and returns object
-  // of form { isValid: bool, errorList: Array of strings }
+  // of form { isValid: bool, isValidGraph: bool, errorList: Array of strings }
   @computed get graphValidationState() {
     let isValid = true;
+    let isValidGraph = true;
     let errorList = [];
     if (!this.nodePanels.reduce((prev, panel) => prev && panel.isValid, true)) {
-      isValid = false;
+      isValidGraph = false;
       errorList.push('One or more invalid nodes');
     }
     if (!this.edgePanels.reduce((prev, panel) => prev && panel.isValid, true)) {
-      isValid = false;
+      isValidGraph = false;
       errorList.push('One or more invalid edges');
     }
     if (this.questionName.length === 0) {
       isValid = false;
       errorList.push('Please enter a valid question name');
     }
-    return { isValid, errorList };
+    return { isValid: isValid && isValidGraph, isValidGraph, errorList };
+  }
+
+  // Checks only if graph part of the question is valid
+  @computed get isValidGraph() {
+    return this.panelState.reduce((prev, panel) => prev && panel.isValid);
   }
 
   getEmptyMachineQuestion() {

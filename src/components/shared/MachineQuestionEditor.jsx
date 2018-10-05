@@ -17,7 +17,7 @@ class MachineQuestionEditor extends React.Component {
 
     this.state = {
       data: { question: '', machineQuestion: { nodes: [], edges: [] } },
-      isValid: true,
+      isValid: false,
       thinking: false,
       errorMessage: '',
     };
@@ -43,7 +43,7 @@ class MachineQuestionEditor extends React.Component {
   }
 
   syncStateAndProps(newProps) {
-    this.setState({ data: { question: newProps.question, machineQuestion: newProps.machineQuestion } });
+    this.setState({ data: { question: newProps.question, machineQuestion: newProps.machineQuestion }, isValid: true });
   }
 
   onEdit(edit) {
@@ -170,7 +170,10 @@ class MachineQuestionEditor extends React.Component {
     }
 
     return (
-      <div style={{ height: fullHeight }}>
+      <div
+        className="machine-question-editor"
+        style={{ height: fullHeight }}
+      >
         <div className="staticTop" style={{ marginLeft: -15, marginRight: -15, height: topBarHeight, boxShadow: '0px 0px 5px 0px #b3b3b3' }}>
           <div style={{ position: 'relative' }}>
             <div style={{ position: 'absolute', top: 5, left: 15 }}>

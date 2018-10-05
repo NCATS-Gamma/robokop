@@ -1,7 +1,11 @@
 import React from 'react';
 import Dialog from 'react-bootstrap-dialog';
-import { Grid, Row, Col, Button, ButtonGroup, Panel, Popover, OverlayTrigger,
-  Form, FormControl, FormGroup, ControlLabel, Tooltip, Modal } from 'react-bootstrap';
+import { toJS } from 'mobx';
+import { inject, observer } from 'mobx-react';
+import {
+  Grid, Row, Col, Button, ButtonGroup, Panel, Popover, OverlayTrigger, MenuItem,
+  Form, FormControl, FormGroup, ControlLabel, Tooltip, Modal, DropdownButton,
+} from 'react-bootstrap';
 import Dropzone from 'react-dropzone';
 import FaFloppyO from 'react-icons/lib/fa/floppy-o';
 import FaTrash from 'react-icons/lib/fa/trash';
@@ -12,65 +16,120 @@ import FaUpload from 'react-icons/lib/fa/upload';
 import FaInfoCircle from 'react-icons/lib/fa/info-circle';
 import FaUndo from 'react-icons/lib/fa/rotate-left';
 import FaPaperPlaneO from 'react-icons/lib/fa/paper-plane-o';
-import GoQuestion from 'react-icons/lib/go/question';
+import FaWrench from 'react-icons/lib/fa/wrench';
+// import GoQuestion from 'react-icons/lib/go/question';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Loading from './components/Loading';
-import QuestionDesign from './components/shared/QuestionDesign';
 import MachineQuestionEditor from './components/shared/MachineQuestionEditor';
 import EdgePanel from './components/shared/EdgePanel';
 import NodePanel from './components/shared/NodePanel';
 import MachineQuestionViewContainer, { graphStates } from './components/shared/MachineQuestionViewContainer';
-import { toJS } from 'mobx';
-import { inject, observer } from 'mobx-react';
+import questions from './components/util/questionTemplates';
 import { panelTypes } from './stores/newQuestionStore';
-import LabeledFormGroup from './components/shared/LabeledFormGroup';
+// import LabeledFormGroup from './components/shared/LabeledFormGroup';
 
-const shortid = require('shortid');
 const _ = require('lodash');
 
 const questionGraphPopover = (
   <Popover id="popover-positioned-right-2" title="Machine Question Editor Overview">
     <p>
-      This graph provides an update view of the Machine question as it is constructed by the user.
-    </p>
-    <p>
+      This graph provides an updated view of the Machine question as it is constructed by the user.
       Each node and edge in the graph can be clicked on to display and edit the relevant node/edge details in
-      the panel below the graph. Changes must be saved by clicking the &#91;<FaFloppyO size={14} /> Save&#93;
-      button in the toolbar below the graph.
-    </p>
-    <p>New Nodes and Edges can be created by clicking the corresponding buttons in the
-       toolbar below the graph.
+      the panel below the graph. The active Node or Edge is indicated by a thicker edge width. Any node that
+      represents a set is indicated by a thicker border.
     </p>
     <p>
-      The <FaUpload size={14} /> <FaDownload size={14} /> <FaTrash size={14} /> buttons in the title bar
-      of the Graph panel can be clicked to import, export or reset the current workflow.
+      Note: Deleted nodes are still shown in grey with a dashed border until any edges that link to the deleted
+      node are set to point to valid nodes, or themselves deleted.
+    </p>
+    <p><strong>Graph Panel Toolbar</strong><br />
+      The [<FaUpload size={14} />], [<FaDownload size={14} />] and [<FaTrash size={14} />] buttons in the title bar
+      of the Graph panel can be clicked to import, export (as a JSON file) or reset the current question.
+      The [<FaPaperPlaneO size={14} />] button submits the current question to ROBOKOP. The user can also pre-populate
+      the question graph from a list of pre-existing question templates that are available through the drop-down menu
+      in the graph panel toolbar.
+    </p>
+    <p><strong>Edge / Node Panel Toolbar</strong><br />
+      The toolbar above the Node / Edge panel enables the user to [Save <FaFloppyO size={14} />] or [Undo <FaUndo size={14} />]
+      any changes, [Delete <FaTrash size={14} />] the current Node / Edge or create
+      a new Node [<FaPlusSquare size={14} />] or Edge [<FaPlus size={14} />]. Additionally, the user can
+      edit the JSON form of the graph specification in a JSON editor by clicking the [Edit JSON <FaWrench size={14} />] button.
+    </p>
+  </Popover>
+);
+
+const nodePanelPopover = (
+  <Popover id="popover-positioned-right" title="Node Builder Help">
+    <p>
+      Each Node <strong>must</strong> have a valid Node Type specified. If Curies are enabled, then
+      each curie input area must have a valid Curie selected. Nodes with one or more curies associated
+      with them are highlighted with an asterisk [*] at the end of the node name.
+    </p>
+    <p>
+      The Curie selector can be used to specify a curie for the specified Node type.
+      Typing text in the search field will attempt to find matches via Bionames. User can always
+      specify a custom Curie by directly typing it into the field - eg: &quot;MONDO:123456&quot;.
+      A curie must always be selected by clicking the &quot;Select&quot; button for the curie in the search popup box.
+    </p>
+    <p>
+      Providing a Node name is purely optional, but can make navigating the displayed graph easier as nodes in the graph
+      UI are always labeled with the Node name if provided by the user.
+    </p>
+  </Popover>
+);
+
+const edgePanelPopover = (
+  <Popover id="popover-positioned-right" title="Node Builder Help">
+    <p>
+      Each Edge <strong>must</strong> have a valid Source and Target node. If an existing node is deleted,
+      it is still displayed in the graph so the invalid edges referencing the deleted node can be edited
+      and modified to either point to a different node, or be deleted.
+    </p>
+    <p>
+      An edge can optionally have a predicate (if supported by Robokop). Typing in the predicate name in the
+      input field lets the user create a predicate tag for the node. <strong>Note:</strong> Currently, predicates
+      are not validated by the UI. The user must ensure the validity of the predicates entered into the UI.
+    </p>
+    <p>
+      Providing a Node name is purely optional, but can make navigating the displayed graph easier as nodes in the graph
+      UI are always labeled with the Node name if provided by the user.
     </p>
   </Popover>
 );
 
 const questionNameTooltip = (
   <Tooltip placement="top" className="in" id="tooltip-top-1">
-    Label to associate with the question being constructed
+    Text description of the question being constructed
   </Tooltip>
 );
 
 // Buttons displayed in title-bar of Graph Viewer
 const GraphTitleButtons = ({
-  onDropFile, onDownloadQuestion, onResetQuestion, onSubmitQuestion, graphValidationState,
+  onDropFile, onDownloadQuestion, onResetQuestion,
+  onSubmitQuestion, graphValidationState, questionList, onQuestionTemplate,
 }) => {
   const buttonStyles = { padding: '2px', marginLeft: '5px' };
-  const isValidGraph = graphValidationState.isValid;
+  const isValidQuestion = graphValidationState.isValid;
   const errorMsg = 'Error: '.concat(graphValidationState.errorList.join(',\n '));
   return (
     <div style={{ position: 'relative', float: 'right', top: '-3px' }}>
+      <DropdownButton
+        bsStyle="default"
+        bsSize="small"
+        title="Load a question template"
+        key={1}
+        id="dropdown-question-template"
+      >
+        {questionList.map((question, i) => <MenuItem key={i} eventKey={i} onSelect={onQuestionTemplate}>{question.question}</MenuItem>)}
+      </DropdownButton>
       <button
         style={buttonStyles}
         className="btn btn-default"
-        disabled={!isValidGraph}
-        title={isValidGraph ? 'Submit question' : errorMsg}
+        disabled={!isValidQuestion}
+        title={isValidQuestion ? 'Submit question' : errorMsg}
       >
         <span style={{ fontSize: '22px' }}>
           <FaPaperPlaneO style={{ cursor: 'pointer' }} onClick={onSubmitQuestion} />
@@ -96,8 +155,8 @@ const GraphTitleButtons = ({
       <button
         style={buttonStyles}
         className="btn btn-default"
-        disabled={!isValidGraph}
-        title={isValidGraph ? 'Download Machine Question as JSON' : errorMsg}
+        disabled={!isValidQuestion}
+        title={isValidQuestion ? 'Download Machine Question as JSON' : errorMsg}
       >
         <span style={{ fontSize: '22px' }}>
           <FaDownload style={{ cursor: 'pointer' }} onClick={onDownloadQuestion} />
@@ -116,23 +175,15 @@ const GraphTitleButtons = ({
   );
 };
 
-const ButtonGroupPanel = observer(({ store }) => {
+const ButtonGroupPanel = observer(({ store, openJsonEditor }) => {
   const unsavedChanges = store.isUnsavedChanges;
   const { isValid: isValidPanel } = store.activePanelState;
+  const { isValidGraph } = store.graphValidationState;
   const atleastTwoNodes = store.panelState.filter(panel => store.isNode(panel) && !panel.deleted).length > 1;
   const isNewPanel = store.activePanelInd === store.panelState.length;
   return (
     <div style={{ marginTop: '10px', marginBottom: '6px' }}>
       <ButtonGroup>
-        <Button
-          onClick={this.openJsonEditor}
-          // disabled={!unsavedChanges || !isValidPanel}
-          // bsStyle={isValidPanel ? (unsavedChanges ? 'primary' : 'default') : 'danger'} // eslint-disable-line no-nested-ternary
-          title="Manually edit JSON for machine question"
-        >
-          <FaFloppyO style={{ verticalAlign: 'text-top' }} />
-          {' Save'}
-        </Button>
         {!_.isEmpty(store.activePanelState) &&
           <Button
             onClick={store.saveActivePanel}
@@ -167,6 +218,15 @@ const ButtonGroupPanel = observer(({ store }) => {
             <FaPlus style={{ verticalAlign: 'text-top' }} />{' New Edge'}
           </Button>
         }
+        <Button
+          onClick={openJsonEditor}
+          disabled={!isValidGraph}
+          // bsStyle={isValidPanel ? (unsavedChanges ? 'primary' : 'default') : 'danger'} // eslint-disable-line no-nested-ternary
+          title={isValidGraph ? 'Manually edit JSON for machine question' : 'Manual JSON Editing disabled due to invalid Graph'}
+        >
+          <FaWrench style={{ verticalAlign: 'text-top' }} />
+          {' Edit JSON'}
+        </Button>
       </ButtonGroup>
     </div>
   );
@@ -187,6 +247,7 @@ class QuestionNew extends React.Component {
     this.saveJsonEditor = this.saveJsonEditor.bind(this);
     this.closeJsonEditor = this.closeJsonEditor.bind(this);
     this.openJsonEditor = this.openJsonEditor.bind(this);
+    this.onQuestionTemplate = this.onQuestionTemplate.bind(this);
 
     this.state = { showJsonEditor: false };
   }
@@ -283,7 +344,7 @@ class QuestionNew extends React.Component {
     );
   }
 
-  saveJsonEditor({ data, isValid }) { // { data: this.state.data, isValid: this.state.isValid }
+  saveJsonEditor({ data }) { // { data: this.state.data, isValid: this.state.isValid }
     const { store } = this.props;
     try {
       store.machineQuestionSpecToPanelState(data);
@@ -307,6 +368,11 @@ class QuestionNew extends React.Component {
 
   openJsonEditor() {
     this.setState({ showJsonEditor: true });
+  }
+
+  // Loads the question template and updates the MobX store/UI
+  onQuestionTemplate(eventKey) {
+    this.props.store.machineQuestionSpecToPanelState(questions[eventKey]);
   }
 
   dialogWait(inputOptions) {
@@ -368,36 +434,15 @@ class QuestionNew extends React.Component {
     if (_.isEmpty(activePanelState)) {
       return null;
     }
-    if (activePanelState.panelType === panelTypes.node) {
-      return (
-        <Panel style={{ marginBottom: '5px' }}>
-          <Panel.Heading>
-            <Panel.Title>
-              {`Node ${activePanelState.panelName} `}
-              <OverlayTrigger
-                trigger={['hover', 'focus']}
-                overlay={questionGraphPopover} // TODO: Make custom popover
-                placement="right"
-              >
-                <FaInfoCircle size={12} />
-              </OverlayTrigger>
-            </Panel.Title>
-          </Panel.Heading>
-          <Panel.Body>
-            <NodePanel activePanel={activePanelState} />
-          </Panel.Body>
-        </Panel>
-      );
-    }
-    // Edge Panel
+    const isNodePanel = activePanelState.panelType === panelTypes.node;
     return (
       <Panel style={{ marginBottom: '5px' }}>
         <Panel.Heading>
           <Panel.Title>
-            {`Edge ${activePanelState.panelName} `}
+            {`${isNodePanel ? 'Node' : 'Edge'} ${activePanelState.panelName} `}
             <OverlayTrigger
               trigger={['hover', 'focus']}
-              overlay={questionGraphPopover} // TODO: Make custom popover
+              overlay={isNodePanel ? nodePanelPopover : edgePanelPopover}
               placement="right"
             >
               <FaInfoCircle size={12} />
@@ -405,7 +450,8 @@ class QuestionNew extends React.Component {
           </Panel.Title>
         </Panel.Heading>
         <Panel.Body>
-          <EdgePanel activePanel={activePanelState} />
+          {isNodePanel && <NodePanel activePanel={activePanelState} /> }
+          {!isNodePanel && <EdgePanel activePanel={activePanelState} /> }
         </Panel.Body>
       </Panel>
     );
@@ -420,7 +466,7 @@ class QuestionNew extends React.Component {
     const { store } = this.props;
 
     return (
-      <div>
+      <div className="question-new">
         <Header
           config={this.props.config}
           user={toJS(store.user)}
@@ -465,6 +511,8 @@ class QuestionNew extends React.Component {
                       onResetQuestion={this.onResetQuestion}
                       onSubmitQuestion={this.onSubmitQuestion}
                       graphValidationState={store.graphValidationState}
+                      onQuestionTemplate={this.onQuestionTemplate}
+                      questionList={questions}
                     />
                   </Panel.Title>
                 </Panel.Heading>
@@ -475,7 +523,7 @@ class QuestionNew extends React.Component {
                   />
                 </Panel.Body>
               </Panel>
-              <ButtonGroupPanel store={store} />
+              <ButtonGroupPanel store={store} openJsonEditor={this.openJsonEditor} />
               {this.getActivePanel()}
 
               {/* <div style={{ paddingLeft: 15, paddingRight: 15 }}>
@@ -500,20 +548,23 @@ class QuestionNew extends React.Component {
                 bsSize="large"
                 aria-labelledby="contained-modal-title-lg"
                 show={this.state.showJsonEditor}
+                dialogClassName="question-editor-modal"
               >
-                <Modal.Header closeButton>
+                {/* <Modal.Header closeButton>
                   <Modal.Title id="contained-modal-title-lg">Modal heading</Modal.Title>
-                </Modal.Header>
+                </Modal.Header> */}
                 <Modal.Body>
-                  <MachineQuestionEditor
-                    // height={fullHeight}
-                    concepts={store.concepts}
-                    question={store.questionName}
-                    machineQuestion={store.getMachineQuestionSpecJson}
-                    // onUpdate={this.editorUpdate}
-                    callbackSave={this.saveJsonEditor}
-                    callbackCancel={this.toMain}
-                  />
+                  {this.state.showJsonEditor &&
+                    <MachineQuestionEditor
+                      height={700}
+                      concepts={toJS(store.concepts)}
+                      question={store.questionName}
+                      machineQuestion={toJS(store.getMachineQuestionSpecJson.machineQuestion)}
+                      // onUpdate={this.editorUpdate}
+                      callbackSave={this.saveJsonEditor}
+                      callbackCancel={this.closeJsonEditor}
+                    />
+                  }
                 </Modal.Body>
               </Modal>
               {/* <Modal.Footer>
