@@ -191,7 +191,7 @@ class NodePanel {
   getUniqueId() {
     const candidateIds = _.range(this.store.panelState.length + 1);
     const currentIds = this.store.nodeIdList();
-    return _.difference(candidateIds, currentIds).sort()[0];
+    return _.difference(candidateIds, currentIds).sort((a, b) => a - b)[0];
   }
 
   @action.bound updateField(field, value) { // eslint-disable-line consistent-return
