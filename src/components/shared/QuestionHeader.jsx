@@ -9,11 +9,14 @@ import QuestionToolbar from './QuestionToolbar';
 
 const timestampToTimeString = (ts) => {
   let ts2 = ts;
-  if (!ts.endsWith('Z')) {
-    ts2 = `${ts2}Z`;
+  if (ts instanceof String) {
+    if (!ts.endsWith('Z')) {
+      ts2 = `${ts2}Z`;
+    }
+    const d = new Date(ts2);
+    return d.toLocaleString();
   }
-  const d = new Date(ts2);
-  return d.toLocaleString();
+  return '';
 };
 
 const _ = require('lodash');
@@ -144,7 +147,10 @@ class QuestionHeader extends React.Component {
     }
 
     const otherAnswersetMenuItemList = this.props.otherAnswersets.map((a, i) => {
-      const timeString = timestampToTimeString(a.datetime);
+      let timeString = new Date().toLocalString();
+      if ('datetime' in a) {
+        timeString = timestampToTimeString(a.datetime);
+      }
       return (
         <MenuItem
           eventKey={`${i + 2}`}
@@ -156,8 +162,8 @@ class QuestionHeader extends React.Component {
       );
     });
     let answersetTime = new Date().toLocaleString();
-    if (('answerset' in this.props) && ('timestamp' in this.props.answerset)) {
-      answersetTime = timestampToTimeString(this.props.answerset.timestamp);
+    if (('answerset' in this.props) && ('datetime' in this.props.answerset)) {
+      answersetTime = timestampToTimeString(this.props.answerset.datetime);
     }
     let creator = 'Reasoner';
     if (('answerset' in this.props) && ('creator' in this.props.answerset)) {

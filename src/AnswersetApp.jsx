@@ -60,7 +60,7 @@ class Answerset extends React.Component {
           const object = JSON.parse(fileContents);
           const answerset = object;
           answerset.creator = object.tool_version;
-          answerset.timestamp = object.timestamp;
+          answerset.datetime = object.datetime;
 
           const question = { // These are the required fields for our question header
             name: object.original_question_text, // This may seem backwards between name an natural but it looks better
@@ -88,7 +88,7 @@ class Answerset extends React.Component {
             const answerNodeIds = new Set();
             a.result_graph.node_list.forEach((n) => {
               if (answerNodeIds.has(n.id)) {
-                console.log(`Answer ${i+1} has multiple nodes with id ${n.id}. Future errors will result.`);
+                console.log(`Answer ${i + 1} has multiple nodes with id ${n.id}. Future errors will result.`);
               } else {
                 answerNodeIds.add(n.id);
               }
