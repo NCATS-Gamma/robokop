@@ -79,19 +79,19 @@ class Expand(Resource):
             'machine_question': {
                 'nodes': [
                     {
-                        'id': 0,
+                        'id': 'n0',
                         'curie': id1,
                         'type': type1
                     },
                     {
-                        'id': 1,
+                        'id': 'n1',
                         'type': type2
                     }
                 ],
                 'edges': [
                     {
-                        'source_id': 0,
-                        'target_id': 1
+                        'source_id': 'n0',
+                        'target_id': 'n1'
                     }
                 ]
             }
@@ -278,35 +278,35 @@ class SimilaritySearch(Resource):
                     'machine_question': {
                         'nodes': [
                             {
-                                'id': 0,
+                                'id': 'n0',
                                 'curie': sid1,
                                 'type': type1
                             },
                             {
-                                'id': 1,
+                                'id': 'n1',
                                 'type': by_type
                             },
                             {
-                                'id': 2,
+                                'id': 'n2',
                                 'type': type2
                             },
                             {
-                                'id': 3,
+                                'id': 'n3',
                                 'type': by_type
                             }
                         ],
                         'edges': [
                             {
-                                'source_id': 0,
-                                'target_id': 1
+                                'source_id': 'n0',
+                                'target_id': 'n1'
                             },
                             {
-                                'source_id': 1,
-                                'target_id': 2
+                                'source_id': 'n1',
+                                'target_id': 'n2'
                             },
                             {
-                                'source_id': 2,
-                                'target_id': 3
+                                'source_id': 'n2',
+                                'target_id': 'n3'
                             },
                         ]
                     }
@@ -432,27 +432,27 @@ class EnrichedExpansion(Resource):
                         'machine_question': {
                             'nodes': [
                                 {
-                                    'id': 0,
+                                    'id': 'n0',
                                     'curie': normed_id,
                                     'type': type1
                                 },
                                 {
-                                    'id': 1,
+                                    'id': 'n1',
                                     'type': type2
                                 },
                                 {
-                                    'id': 2,
+                                    'id': 'n2',
                                     'type': type1
                                 }
                             ],
                             'edges': [
                                 {
-                                    'source_id': 0,
-                                    'target_id': 1
+                                    'source_id': 'n0',
+                                    'target_id': 'n1'
                                 },
                                 {
-                                    'source_id': 1,
-                                    'target_id': 2
+                                    'source_id': 'n1',
+                                    'target_id': 'n2'
                                 }
                             ]
                         }
