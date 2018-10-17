@@ -141,11 +141,13 @@ class AnswerExplorerInfo extends React.Component {
       return (<div />);
     }
     let origin = 'Unknown';
+    const sourceToOriginString = source => source; // source.substr(0, source.indexOf('.'));
+
     if ('provided_by' in edge) {
       if (Array.isArray(edge.provided_by) && edge.provided_by.length > 0) {
-        origin = edge.provided_by.map(source => <span key={shortid.generate()}>{source.substr(0, source.indexOf('.'))} &nbsp; </span>);
+        origin = edge.provided_by.map(source => <span key={shortid.generate()}>{sourceToOriginString(source)} &nbsp; </span>);
       } else {
-        origin = edge.provided_by.substr(0, edge.provided_by.indexOf('.'));
+        origin = sourceToOriginString(edge.provided_by);
       }
     }
     return (
