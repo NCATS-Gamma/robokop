@@ -220,10 +220,10 @@ class SubGraphViewer extends React.Component {
       n.label = n.name;
     });
 
-    // Combine support and regular edges together if between the same nodes
+    // Separate out support and regular edges to modify things differently
     const edgesRegular = g.edges.filter(e => e.type !== 'literature_co-occurrence');
-
     const edgesSupport = g.edges.filter(e => e.type === 'literature_co-occurrence');
+
     edgesSupport.forEach((e) => {
       // Make sure support edges actually have publications
       e.duplicateEdge = false; // Also by default do not delete support edges unles duplicate
@@ -237,31 +237,35 @@ class SubGraphViewer extends React.Component {
       }
       e.moreThanOneEdge = false; // If we don't remove a support edge it is because it is the only left.
     });
-    edgesRegular.forEach((e) => {
-      // Find support edges between the same two nodes and merge publication lists
 
-      // Find existing publications attached to the edge.
-      let edgePublications = [];
-      if ('publications' in e) {
-        if (Array.isArray(e.publications)) {
-          edgePublications = e.publications;
-        } else if (typeof myVar === 'string') {
-          edgePublications = [e.publications];
+    const mashSupportAndKnolwedgeSourceEdges = false;
+    if (mashSupportAndKnolwedgeSourceEdges) {
+      edgesRegular.forEach((e) => {
+        // Find support edges between the same two nodes and merge publication lists
+
+        // Find existing publications attached to the edge.
+        let edgePublications = [];
+        if ('publications' in e) {
+          if (Array.isArray(e.publications)) {
+            edgePublications = e.publications;
+          } else if (typeof myVar === 'string') {
+            edgePublications = [e.publications];
+          }
         }
-      }
 
-      // Find a corresponding support edge
-      const sameNodesSupportEdge = edgesSupport.find(s => (((e.source_id === s.source_id) && (e.target_id === s.target_id)) || ((e.source_id === s.target_id) && (e.target_id === s.source_id))) );
-      if (sameNodesSupportEdge) {
-        // We have a repeated edge
-        sameNodesSupportEdge.duplicateEdge = true; // Mark for deletion
+        // Find a corresponding support edge
+        const sameNodesSupportEdge = edgesSupport.find(s => (((e.source_id === s.source_id) && (e.target_id === s.target_id)) || ((e.source_id === s.target_id) && (e.target_id === s.source_id))) );
+        if (sameNodesSupportEdge) {
+          // We have a repeated edge
+          sameNodesSupportEdge.duplicateEdge = true; // Mark for deletion
 
-        const supportPublications = sameNodesSupportEdge.publications;
-        edgePublications = edgePublications.concat(supportPublications);
-        edgePublications = edgePublications.filter((p, i, self) => self.indexOf(p) === i); // Unique
-      }
-      e.publications = edgePublications;
-    });
+          const supportPublications = sameNodesSupportEdge.publications;
+          edgePublications = edgePublications.concat(supportPublications);
+          edgePublications = edgePublications.filter((p, i, self) => self.indexOf(p) === i); // Unique
+        }
+        e.publications = edgePublications;
+      });
+    }
 
     edgesRegular.forEach((e) => {
       // Find edges that go between the same two nodes and mark them accordingly
@@ -275,6 +279,8 @@ class SubGraphViewer extends React.Component {
       } else {
         e.moreThanOneEdge = false;
       }
+
+      // e.alsoHasSupportEdge 
     });
 
     // Remove the duplicated support edges
@@ -317,6 +323,15 @@ class SubGraphViewer extends React.Component {
             align: 'middle',
             strokeColor: '#fff',
           },
+          arrows: {
+            to: {
+              enabled: false,
+            },
+          },
+          smooth: {
+            enabled: true,
+            type: 'dynamic',
+          },
         };
       }
 
@@ -346,6 +361,7 @@ class SubGraphViewer extends React.Component {
           label: false,
           customScalingFunction: (min, max, total, val) => Math.max(val, 0),
         },
+
         arrowStrikethrough: false,
       };
 
