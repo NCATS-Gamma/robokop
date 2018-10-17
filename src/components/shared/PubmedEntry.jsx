@@ -85,11 +85,10 @@ class PubmedEntry extends React.Component {
   }
 
   getPubmedInformation(pmid) {
-    const pmidNum = pmid.substr(pmid.indexOf(':') + 1);
     const postUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi';
     const postData = {
       db: 'pubmed',
-      id: pmidNum.toString(),
+      id: pmid,
       version: '2.0',
       retmode: 'json',
     };
@@ -99,21 +98,26 @@ class PubmedEntry extends React.Component {
   updateInformation(newProps) {
     const { pmid } = newProps;
 
-    return makeCancelable(this.getPubmedInformation(pmid)
+    let pmidStr = pmid.toString();
+    if ((typeof pmid === 'string' || pmid instanceof String) && (pmidStr.indexOf(':') !== -1)) {
+      // pmidStr has a colon, and therefore probably a curie, remove it.
+      pmidStr = pmidStr.substr(pmidStr.indexOf(':') + 1);
+    }
+
+    return makeCancelable(this.getPubmedInformation(pmidStr)
       .then((response) => {
         const data = response.result;
-        const pmidNum = pmid.substr(pmid.indexOf(':') + 1);
-        if (pmidNum in data) {
-          const paperInfo = data[pmidNum];
+        if (pmidStr in data) {
+          const paperInfo = data[pmidStr];
           let info = Object.assign({}, this.defaultFailureInfo);
           info = {
-            id: pmid,
+            id: pmidStr,
             title: paperInfo.title,
             authors: paperInfo.authors,
             journal: paperInfo.fulljournalname,
             source: paperInfo.source,
             pubdate: paperInfo.pubdate,
-            url: `https://www.ncbi.nlm.nih.gov/pubmed/${pmidNum}/`,
+            url: `https://www.ncbi.nlm.nih.gov/pubmed/${pmidStr}/`,
             doid: paperInfo.elocationid,
           };
           return { info, ready: true, isFailure: false };
@@ -149,7 +153,7 @@ class PubmedEntry extends React.Component {
       linkDisable = false;
       linkUrl = this.state.info.url;
     }
-    let authors = this.state.info.authors;
+    let { authors } = this.state.info;
     if (authors == null) {
       authors = [];
     }
