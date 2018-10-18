@@ -199,13 +199,12 @@ class SubGraphViewer extends React.Component {
   addTagsToGraph(graph) {
     // Adds vis.js specific tags primarily to style graph as desired
     const g = _.cloneDeep(graph);
-
     // nodes -> node_list
     g.edges = g.edge_list;
     delete g.edge_list;
     g.nodes = g.node_list;
     delete g.node_list;
-  
+
     const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts); // We could put standardized concepts here
 
     g.nodes.forEach((n) => {
@@ -236,6 +235,11 @@ class SubGraphViewer extends React.Component {
         e.publications = []; // How did this happen?
       }
       e.moreThanOneEdge = false; // If we don't remove a support edge it is because it is the only left.
+
+      // Check if this is a self support edge
+      // These are not particularly informative in display
+      e.selfEdge = e.source_id === e.target_id;
+      // e.selfEdge = false;
     });
 
     const mashSupportAndKnolwedgeSourceEdges = false;
@@ -279,13 +283,39 @@ class SubGraphViewer extends React.Component {
       } else {
         e.moreThanOneEdge = false;
       }
-
-      // e.alsoHasSupportEdge 
     });
 
     // Remove the duplicated support edges
-    g.edges = [].concat(edgesSupport.filter(s => !s.duplicateEdge), edgesRegular);
+    g.edges = [].concat(edgesSupport.filter(s => !s.duplicateEdge && !s.selfEdge), edgesRegular);
 
+    if (this.props.varyEdgeSmoothRoundness) {
+      // For each node pair
+      // Find any edges between those nodes (in either direction)
+      // Loop through those edges and set smooth
+      const types = ['curvedCCW', 'curvedCW'];
+      for (let iNode = 0; iNode < g.nodes.length; iNode += 1) {
+        const n1 = g.nodes[iNode];
+        for (let jNode = iNode; jNode < g.nodes.length; jNode += 1) {
+          const n2 = g.nodes[jNode];
+          const theseNodeEdges = g.edges.filter(e => (((e.source_id === n1.id) && (e.target_id === n2.id)) || ((e.target_id === n1.id) && (e.source_id === n2.id))));
+
+          let roundnessStep = 0.15;
+          if (theseNodeEdges.length > 13) {
+            // Roundness must be between 0 and 1. In general for less than 13 edges steps of 0.15 looks good
+            // If we have more than 13 we need to decrease this to squeeze them all in the 0 to 1 range
+            // We divide by two beceause we alternate top and bottom
+            roundnessStep = 1 / (Math.ceil(theseNodeEdges.length) / 2);
+          }
+          theseNodeEdges.forEach((e, i) => {
+            e.smooth = {
+              enabled: true,
+              type: types[i % 2],
+              roundness: Math.floor((i + 1) / 2) * roundnessStep,
+            };
+          });
+        }
+      }
+    }
     // Remove any straggler duplicate edges (Fix me)
     // const fromTo = [];
     // const deleteMe = g.edges.map((e) => {
@@ -314,6 +344,14 @@ class SubGraphViewer extends React.Component {
       if (e.type === 'literature_co-occurrence') {
         // Publication Edge
         label = `${nPublications}`; // Remove the type labeled to keep it small
+
+        let smoothLit = {
+          enabled: true,
+          type: 'dynamic',
+        };
+        if (this.props.varyEdgeSmoothRoundness) {
+          smoothLit = e.smooth;
+        }
         typeDependentParams = {
           color: this.styles.supportEdgeColors,
           // dashes: [2, 4],
@@ -328,10 +366,7 @@ class SubGraphViewer extends React.Component {
               enabled: false,
             },
           },
-          smooth: {
-            enabled: true,
-            type: 'dynamic',
-          },
+          smooth: smoothLit,
         };
       }
 
@@ -342,7 +377,9 @@ class SubGraphViewer extends React.Component {
       if (e.moreThanOneEdge) {
         smooth = { enabled: true, type: 'dynamic' };
       }
-
+      if (this.props.varyEdgeSmoothRoundness) {
+        smooth = e.smooth;
+      }
       e.from = e.source_id;
       e.to = e.target_id;
       const defaultParams = {
@@ -399,6 +436,7 @@ class SubGraphViewer extends React.Component {
 SubGraphViewer.defaultProps = {
   layoutRandomSeed: 0,
   layoutStyle: 'auto',
+  varyEdgeSmoothRoundness: false,
   height: 500,
   showSupport: false,
   omitEdgeLabel: false,

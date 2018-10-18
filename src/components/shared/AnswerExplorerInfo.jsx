@@ -259,10 +259,11 @@ class AnswerExplorerInfo extends React.Component {
             <Col md={12}>
               <SubGraphViewer
                 height={200}
-                subgraph={this.state.subgraph}
+                subgraph={{ node_list: this.state.subgraph.nodes, edge_list: this.state.subgraph.edges }}
                 layoutStyle="auto"
                 layoutRandomSeed={1}
                 showSupport
+                varyEdgeSmoothRoundness
                 callbackOnGraphClick={this.onGraphClick}
                 concepts={this.props.concepts}
               />
