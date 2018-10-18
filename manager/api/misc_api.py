@@ -60,39 +60,39 @@ class WF1MOD3(Resource):
             "machine_question": {
                 "edges": [
                     {
-                        "source_id": 1,
-                        "target_id": 0,
+                        "source_id": 'n1',
+                        "target_id": 'n0',
                         "type": "contributes_to"
                     },
                     {
-                        "source_id": 2,
-                        "target_id": 1,
+                        "source_id": 'n2',
+                        "target_id": 'n1',
                         "type": "positively_regulates__entity_to_entity"
                     },
                     {
-                        "source_id": 3,
-                        "target_id": 2,
+                        "source_id": 'n3',
+                        "target_id": 'n2',
                         "type": "decreases_activity_of"
                     }
                 ],
                 "nodes": [
                     {
                         "curie": disease_curie,
-                        "id": 0,
+                        "id": 'n0',
                         "type": "disease"
                     },
                     {
-                        "id": 1,
+                        "id": 'n1',
                         "type": "chemical_substance",
                         "set": True
                     },
                     {
-                        "id": 2,
+                        "id": 'n2',
                         "type": "gene",
                         "set": True
                     },
                     {
-                        "id": 3,
+                        "id": 'n3',
                         "type": "chemical_substance"
                     }
                 ]
@@ -161,39 +161,39 @@ class WF1MOD3a(Resource):
             "machine_question": {
                 "edges": [
                     {
-                        "source_id": 1,
-                        "target_id": 0,
+                        "source_id": 'n1',
+                        "target_id": 'n0',
                         "type": "contributes_to"
                     },
                     {
-                        "source_id": 2,
-                        "target_id": 1,
+                        "source_id": 'n2',
+                        "target_id": 'n1',
                         "type": "negatively_regulates__entity_to_entity"
                     },
                     {
-                        "source_id": 3,
-                        "target_id": 2,
+                        "source_id": 'n3',
+                        "target_id": 'n2',
                         "type": "increases_activity_of"
                     }
                 ],
                 "nodes": [
                     {
                         "curie": disease_curie,
-                        "id": 0,
+                        "id": 'n0',
                         "type": "disease"
                     },
                     {
-                        "id": 1,
+                        "id": 'n1',
                         "type": "chemical_substance",
                         "set": True
                     },
                     {
-                        "id": 2,
+                        "id": 'n2',
                         "type": "gene",
                         "set": True
                     },
                     {
-                        "id": 3,
+                        "id": 'n3',
                         "type": "chemical_substance"
                     }
                 ]

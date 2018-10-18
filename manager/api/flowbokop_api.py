@@ -148,20 +148,20 @@ class FlowbokopExpand(Resource):
             'machine_question': {
                 'nodes': [
                     {
-                        'id': 0,
+                        'id': 'n0',
                         'curie': "input",
                         'set': True,
                         'type': type1
                     },
                     {
-                        'id': 1,
+                        'id': 'n1',
                         'type': type2
                     }
                 ],
                 'edges': [
                     {
-                        'source_id': 0,
-                        'target_id': 1
+                        'source_id': 'n0',
+                        'target_id': 'n1'
                     }
                 ]
             }
