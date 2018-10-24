@@ -90,7 +90,7 @@ class AnswerExplorer extends React.Component {
         </Panel.Heading>
         <Panel.Body style={{ padding: 0 }}>
           <SubGraphViewer
-            subgraph={this.props.answer.result_graph}
+            subgraph={this.props.answer.result_graph ? this.props.answer.result_graph : {}}
             layoutRandomSeed={this.props.answerIndex}
             callbackOnGraphClick={this.onGraphClick}
             showSupport

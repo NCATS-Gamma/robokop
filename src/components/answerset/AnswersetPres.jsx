@@ -151,7 +151,7 @@ class AnswersetPres extends React.Component {
         {!hasAnswers && this.renderNoAnswers()}
         {hasAnswers && this.renderAnswers()}
       </div>
-    )
+    );
   }
 }
 

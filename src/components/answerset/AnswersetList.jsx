@@ -1,11 +1,78 @@
 import React from 'react';
-import { Row, Col, Panel } from 'react-bootstrap';
+import { Row, Col, Panel, FormControl } from 'react-bootstrap';
 import { AutoSizer, List } from 'react-virtualized';
+import Fuse from 'fuse-js-latest';
+import { toJS, observable, action, runInAction, computed } from 'mobx';
+import { observer } from 'mobx-react';
+
 import AnswerExplorer from '../shared/AnswerExplorer';
 
 const _ = require('lodash');
 
+@observer
 class AnswersetList extends React.Component {
+  fuseOptions = {
+    // shouldSort: true,
+    tokenize: true,
+    matchAllTokens: false,
+    findAllMatches: true,
+    threshold: 0,
+    location: 0,
+    distance: 100,
+    maxPatternLength: 32,
+    minMatchCharLength: 1,
+    keys: ['names'],
+  };
+  @observable filterText = '';
+  @observable selectedSubGraphIndex = 0;
+  @computed get answersWithInds() { // eslint-disable-line react/sort-comp
+    const answers = _.cloneDeep(this.props.answers);
+    answers.forEach((ans, i) => (ans.ans_ind = i));
+    return answers;
+  }
+  @computed get answersAsFuseList() {
+    return this.answersWithInds.map(ans => ({ ans_ind: ans.ans_ind, names: ans.result_graph.node_list.map(n => n.name) }));
+  }
+  @computed get fuse() {
+    return new Fuse(this.answersAsFuseList, this.fuseOptions);
+  }
+  @computed get filteredAnswers() { // eslint-disable-line react/sort-comp
+    if (this.filterText === '') { // Return all answers if filterText is blank
+      return this.answersWithInds;
+    }
+    const filtFuseResultInds = this.fuse.search(this.filterText).map(res => res.ans_ind);
+    // // Return filtered answers in sort order as provided by Fuse
+    // const filtAnswers = [];
+    // filtFuseResultInds.forEach((ind) => {
+    //   filtAnswers.push(this.answersWithInds.filter(ans => ans.ans_ind === ind)[0]);
+    // });
+    const filtAnswers = this.answersWithInds.filter(ans => filtFuseResultInds.includes(ans.ans_ind));
+    return filtAnswers;
+  }
+
+  @action.bound updateSelectedSubGraphIndex(ind) {
+    this.props.callbackAnswerSelected(toJS(this.filteredAnswers[ind]));
+    this.list.scrollToRow(ind);
+
+    this.list.forceUpdateGrid();
+    this.selectedSubGraphIndex = ind;
+  }
+  // Called when answerId from props changes... force reset of params
+  @action.bound updateSelectedSubGraphIndexById(id) {
+    let idIndex = this.filteredAnswers.findIndex(a => a.id === id);
+    // Reset filter if supplied answerId not found in current filteredList
+    // If Interactive selector results in an answerId being supplied, this
+    // will ensure that the filter is reset if the answerId is not present
+    // in the current filtered list
+    if (idIndex === -1) {
+      this.filterText = '';
+      idIndex = this.filteredAnswers.findIndex(a => a.id === id);
+    }
+    if (idIndex > -1 && idIndex < this.answersWithInds.length) {
+      this.updateSelectedSubGraphIndex(idIndex);
+    }
+  }
+
   constructor(props) {
     super(props);
 
@@ -50,19 +117,13 @@ class AnswersetList extends React.Component {
       },
     };
 
-    this.state = {
-      selectedSubGraphIndex: 0,
-    };
-
     this.noRowsRenderer = this.noRowsRenderer.bind(this);
     this.rowRenderer = this.rowRenderer.bind(this);
 
-    this.updateSelectedSubGraphIndex = this.updateSelectedSubGraphIndex.bind(this);
-    this.updateSelectedSubGraphIndexById = this.updateSelectedSubGraphIndexById.bind(this);
+    this.onChangeFilterText = this.onChangeFilterText.bind(this);
   }
 
   componentDidMount() {
-    // this.updateSelectedSubGraphIndex(0);
     if (this.props.answerId && Number.isSafeInteger(this.props.answerId)) {
       this.updateSelectedSubGraphIndexById(this.props.answerId);
     }
@@ -73,6 +134,13 @@ class AnswersetList extends React.Component {
       this.updateSelectedSubGraphIndexById(newProps.answerId);
     }
   }
+  onChangeFilterText(event) {
+    const filterText = event.target.value;
+    runInAction(() => {
+      this.filterText = filterText;
+      this.updateSelectedSubGraphIndex(0);
+    });
+  }
 
   rowRenderer({
     index,
@@ -80,8 +148,8 @@ class AnswersetList extends React.Component {
     key,
     style,
   }) {
-    const answer = this.props.answers[index];
-    const isActive = index === this.state.selectedSubGraphIndex;
+    const answer = this.filteredAnswers[index];
+    const isActive = index === this.selectedSubGraphIndex;
     const cScore = answer.confidence.toFixed(3);
     const cText = answer.text;
 
@@ -97,7 +165,7 @@ class AnswersetList extends React.Component {
         onClick={() => this.updateSelectedSubGraphIndex(index)}
       >
         <div style={this.styles.letter}>
-          {`${index + 1}`}
+          {`${answer.ans_ind + 1}`}
         </div>
         <div>
           <div style={this.styles.name}>
@@ -122,30 +190,22 @@ class AnswersetList extends React.Component {
     );
   }
 
-  updateSelectedSubGraphIndex(ind) {
-    this.props.callbackAnswerSelected(this.props.answers[ind]);
-    this.list.scrollToRow(ind);
-
-    this.list.forceUpdateGrid();
-    this.setState({ selectedSubGraphIndex: ind });
-  }
-  updateSelectedSubGraphIndexById(id) {
-    const idIndex = this.props.answers.findIndex(a => a.id === id);
-    if (idIndex > -1 && idIndex < this.props.answers.length) {
-      this.updateSelectedSubGraphIndex(idIndex);
-    }
-  }
-
   render() {
     const listHeight = 500;
-    const rowCount = this.props.answers.length;
+    const rowCount = this.filteredAnswers.length;
 
-    const answer = this.props.answers[this.state.selectedSubGraphIndex];
+    const answer = this.filteredAnswers[this.selectedSubGraphIndex];
     const answerFeedback = this.props.answersetFeedback.filter(f => f.answer_id === answer.id);
 
     return (
       <Row>
         <Col md={3} style={{ paddingRight: '5px', marginTop: '10px' }}>
+          <FormControl
+            type="text"
+            value={this.filterText}
+            placeholder="Start typing to filter answers..."
+            onChange={this.onChangeFilterText}
+          />
           <Panel>
             <Panel.Heading>
               <Panel.Title componentClass="h3">Ranked Answers</Panel.Title>
@@ -172,8 +232,8 @@ class AnswersetList extends React.Component {
         <Col md={9} style={{ paddingLeft: '5px', marginTop: '10px' }}>
           <AnswerExplorer
             user={this.props.user}
-            answer={answer}
-            answerIndex={this.state.selectedSubGraphIndex}
+            answer={toJS(answer)}
+            answerIndex={this.selectedSubGraphIndex}
             answerFeedback={answerFeedback}
             concepts={this.props.concepts}
 
@@ -191,6 +251,7 @@ class AnswersetList extends React.Component {
 
 AnswersetList.defaultProps = {
   answersetFeedback: [],
+  answers: [],
 };
 
 
