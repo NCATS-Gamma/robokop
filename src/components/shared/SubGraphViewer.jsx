@@ -329,7 +329,7 @@ class SubGraphViewer extends React.Component {
     // g.edges = g.edges.filter((e, i) => !deleteMe[i]);
 
     // Add parameters to edges like curvature and labels and such
-    g.edges = g.edges.map((e) => {
+    g.edges = g.edges.map((e, i) => {
       let typeDependentParams = {};
       let label = e.type;
       const nPublications = e.publications.length;
@@ -382,6 +382,12 @@ class SubGraphViewer extends React.Component {
       }
       e.from = e.source_id;
       e.to = e.target_id;
+      // Assign a unique id to the edge
+      if (e.id) {
+        e.edgeIdFromKG = e.id;
+      }
+      e.id = i;
+
       const defaultParams = {
         label,
         labelHighlightBold: false,
