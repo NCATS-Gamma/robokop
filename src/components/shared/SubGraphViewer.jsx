@@ -121,7 +121,7 @@ class SubGraphViewer extends React.Component {
       setTimeout(() => { stopLayout(); }, 1000);
     };
     const startLayout = () => {
-      this.network.on('afterDrawing', afterDraw);
+      this.network.once('afterDrawing', afterDraw);
       this.network.physics.physicsEnabled = true;
       this.network.startSimulation();
     };
@@ -134,7 +134,7 @@ class SubGraphViewer extends React.Component {
     };
 
     try {
-      this.network.on('afterDrawing', afterDraw);
+      this.network.once('afterDrawing', afterDraw);
       this.network.on('doubleClick', () => { this.network.off('afterDrawing'); this.network.fit(); toggleLayout(); });
       this.network.on('zoom', () => this.network.off('afterDrawing'));
       this.network.on('dragStart', () => this.network.off('afterDrawing'));

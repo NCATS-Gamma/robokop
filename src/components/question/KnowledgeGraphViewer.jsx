@@ -88,7 +88,7 @@ class KnowledgeGraphViewer extends React.Component {
   // Bind network fit callbacks to resize graph and cancel fit callbacks on start of zoom/pan
   setNetworkCallbacks() {
     if (!(this.network == null)) {
-      this.network.on('afterDrawing', () => this.network.fit());
+      this.network.once('afterDrawing', () => this.network.fit());
       this.network.on('doubleClick', () => this.network.fit());
       this.network.on('zoom', () => this.network.off('afterDrawing'));
       this.network.on('dragStart', () => this.network.off('afterDrawing'));
