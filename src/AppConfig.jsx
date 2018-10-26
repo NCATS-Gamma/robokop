@@ -282,7 +282,7 @@ class AppConfig {
     window.history.back();
   }
   replaceUrl(title, url) {
-    history.replaceState({}, title, url);
+    window.history.replaceState({}, title, url);
   }
   // setUrl(title, url) {
   //   history.pushState({}, title, url);
