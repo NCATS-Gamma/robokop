@@ -143,11 +143,11 @@ class Answerset extends React.Component {
   handleAnswerSelect(answer) {
     // This creates subtle oddities between list and interactive view so it has been disabled.
     this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, answer.id));
-    this.setState({ answerId: answer.id });
+    // this.setState({ answerId: answer.id });
   }
   handleNoAnswerSelect() {
     this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answerset(this.state.question.id, this.state.answerset.id));
-    this.setState({ answerId: [] });
+    // this.setState({ answerId: [] });
   }
   renderLoading() {
     return (
