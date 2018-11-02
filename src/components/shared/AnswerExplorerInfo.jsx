@@ -44,7 +44,7 @@ class AnswerExplorerInfo extends React.Component {
   }
   getPublicationsFrag() {
     const somethingSelected = this.state.selectedEdgeId || this.state.selectedNodeId;
-    let publicationListFrag = <div>Publication list... </div>;
+    let publicationListFrag = <div><p>Click on edge above to see a list of publications.</p></div>;
     let publicationsTitle = 'Publications';
 
     let publications = [];
