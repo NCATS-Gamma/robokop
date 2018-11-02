@@ -1,0 +1,76 @@
+{
+  "natural_question": "What is the COP for $drug$ ($drugId$) and $condition$ ($diseaseId$)?",
+  "machine_question": {
+    "nodes": [
+      {
+        "id": 0,
+        "type": "chemical_substance",
+        "set": false,
+        "name": "$drug$",
+        "curie": [
+          "$drugId$"
+        ]
+      },
+      {
+        "id": 1,
+        "type": "gene",
+        "set": false
+      },
+      {
+        "id": 2,
+        "type": "biological_process",
+        "set": true
+      },
+      {
+        "id": 3,
+        "type": "cell",
+        "set": false
+      },
+      {
+        "id": 4,
+        "type": "anatomical_entity",
+        "set": false
+      },
+      {
+        "id": 5,
+        "type": "phenotypic_feature",
+        "set": true
+      },
+      {
+        "id": 6,
+        "type": "disease",
+        "set": false,
+        "name": "$condition$",
+        "curie": [
+          "$diseaseId$"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "source_id": 0,
+        "target_id": 1
+      },
+      {
+        "source_id": 1,
+        "target_id": 2
+      },
+      {
+        "source_id": 2,
+        "target_id": 3
+      },
+      {
+        "source_id": 3,
+        "target_id": 4
+      },
+      {
+        "source_id": 4,
+        "target_id": 5
+      },
+      {
+        "source_id": 5,
+        "target_id": 6
+      }
+    ]
+  }
+}

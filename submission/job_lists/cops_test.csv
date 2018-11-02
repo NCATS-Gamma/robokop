@@ -1,0 +1,3 @@
+name,drug,drugId,condition,diseaseId,phenotypeId,drugAlternate
+"COP(SORAFENIB, renal cell carcinoma)",SORAFENIB,PUBCHEM:216239,renal cell carcinoma,MONDO:0005086,,
+"COP(CPI203, Multiple myeloma)",CPI203,PUBCHEM:71291068,Multiple myeloma,,HP:0006775,
