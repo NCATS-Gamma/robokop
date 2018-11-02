@@ -21,3 +21,4 @@ neo4j_plugins
 *.tsv
 *.tsv.gz
 deploy/src
+submission/jobs/*
