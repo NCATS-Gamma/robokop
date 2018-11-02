@@ -121,7 +121,7 @@ class SubGraphViewer extends React.Component {
       setTimeout(() => { stopLayout(); }, 1000);
     };
     const startLayout = () => {
-      this.network.on('afterDrawing', afterDraw);
+      this.network.once('afterDrawing', afterDraw);
       this.network.physics.physicsEnabled = true;
       this.network.startSimulation();
     };
@@ -134,7 +134,7 @@ class SubGraphViewer extends React.Component {
     };
 
     try {
-      this.network.on('afterDrawing', afterDraw);
+      this.network.once('afterDrawing', afterDraw);
       this.network.on('doubleClick', () => { this.network.off('afterDrawing'); this.network.fit(); toggleLayout(); });
       this.network.on('zoom', () => this.network.off('afterDrawing'));
       this.network.on('dragStart', () => this.network.off('afterDrawing'));
@@ -329,7 +329,7 @@ class SubGraphViewer extends React.Component {
     // g.edges = g.edges.filter((e, i) => !deleteMe[i]);
 
     // Add parameters to edges like curvature and labels and such
-    g.edges = g.edges.map((e) => {
+    g.edges = g.edges.map((e, i) => {
       let typeDependentParams = {};
       let label = e.type;
       const nPublications = e.publications.length;
@@ -382,6 +382,12 @@ class SubGraphViewer extends React.Component {
       }
       e.from = e.source_id;
       e.to = e.target_id;
+      // Assign a unique id to the edge
+      if (e.id) {
+        e.edgeIdFromKG = e.id;
+      }
+      e.id = i;
+
       const defaultParams = {
         label,
         labelHighlightBold: false,
