@@ -639,14 +639,24 @@ class NewQuestionStore {
    */
   @computed get getMachineQuestionSpecJson() {
     const machineQuestion = this.getEmptyMachineQuestion();
+    const nodeIdMap = new Map(); // Mapping between internal integer ids to string ids for external consumption
+    this.panelState.forEach((panel) => {
+      if (this.isNode(panel)) {
+        nodeIdMap.set(panel.id, `n${panel.id}`); // Convert integer id back to string for export
+      }
+    });
     this.panelState.forEach((panel) => {
       if (this.isNode(panel)) {
         const { deleted, curieEnabled, ...panelJson } = panel.toJsonObj();
+        panelJson.id = nodeIdMap.get(panelJson.id);
         machineQuestion.nodes.push(panelJson);
       }
       if (this.isEdge(panel)) {
-        const { id, predicate, ...panelJson } = panel.toJsonObj();
-        const typeObj = predicate ? { type: predicate[0] } : {}; // NOTE: Enforces only 1st predicate provided as string
+        const { predicate, ...panelJson } = panel.toJsonObj();
+        const typeObj = predicate ? { type: predicate } : {}; // Remap internal `predicate` field to `type` field
+        panelJson.id = `e${panelJson.id}`; // Convert integer id back to string for export
+        panelJson.source_id = nodeIdMap.get(panelJson.source_id);
+        panelJson.target_id = nodeIdMap.get(panelJson.target_id);
         machineQuestion.edges.push(Object.assign({}, typeObj, panelJson));
       }
     });
@@ -657,6 +667,8 @@ class NewQuestionStore {
    * Convert JSON workflow input format to internal Panel State representation.
    * this.panelState is set to an Array in internal Panel state representation of form:
    * [ InputPanel instance, OperationPanel instance, ... ]
+   * Note: This method overwrites all supplied node/edge ids to internal integer representation
+   *
    * @param {JSON Object} machineQuestionInp - JSON Object satisfying MachineQuestion spec
    *  of format { question: string, machineQuestion: { edges: [], nodes: [] }}
    */
@@ -664,13 +676,20 @@ class NewQuestionStore {
     try {
       console.log('Loading machineQuestionJson -', machineQuestionInp);
       this.resetQuestion();
-      const panelState = [];
       const machineQuestionInput = _.cloneDeep(machineQuestionInp);
       this.questionName = machineQuestionInput.natural_question ? machineQuestionInput.natural_question : '';
 
-      machineQuestionInput.machine_question.nodes.map(node => panelState.push(new NodePanel(this, node)));
-      machineQuestionInput.machine_question.edges.map((edge, i) => {
-        const edgeObj = Object.assign({}, { id: i }, edge);
+      // Store mapping of original node/edge ids to internal representation and update panelState
+      // with NodePanel and EdgePanel objects
+      const nodeIdMap = new Map();
+      machineQuestionInput.machine_question.nodes.forEach((node) => {
+        const { id, ...nodeContents } = node;
+        const newNodePanel = new NodePanel(this, nodeContents);
+        nodeIdMap.set(id, newNodePanel.id);
+        this.panelState.push(newNodePanel);
+      });
+      machineQuestionInput.machine_question.edges.forEach((edge, i) => {
+        const edgeObj = Object.assign({}, edge, { id: i });
         if (edgeObj.type) { // Convert external `type` representation to internal `predicate` representation
           edgeObj.predicate = edgeObj.type;
           delete edgeObj.type;
@@ -678,10 +697,12 @@ class NewQuestionStore {
         if (edgeObj.predicate && ((edgeObj.predicate instanceof String) || (typeof edgeObj.predicate === 'string'))) {
           edgeObj.predicate = [edgeObj.predicate];
         }
-        panelState.push(new EdgePanel(this, edgeObj));
+        // Change references to node ids to internal nodeid representation
+        edgeObj.source_id = nodeIdMap.get(edgeObj.source_id);
+        edgeObj.target_id = nodeIdMap.get(edgeObj.target_id);
+        this.panelState.push(new EdgePanel(this, edgeObj));
       });
 
-      this.panelState = panelState;
       // Reset activePanel to 1st panel/node
       this.activePanelState = this.panelState.length > 0 ? this.panelState[0].clone() : {};
       this.activePanelInd = 0;
