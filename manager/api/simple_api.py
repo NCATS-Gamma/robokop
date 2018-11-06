@@ -90,6 +90,7 @@ class Expand(Resource):
                 ],
                 'edges': [
                     {
+                        'id': 'e0',
                         'source_id': 'n0',
                         'target_id': 'n1'
                     }
