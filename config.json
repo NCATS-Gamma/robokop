@@ -1,6 +1,6 @@
 {
   "protocol": "http",
-  "host": "robokop.renci.org",
+  "host": "127.0.0.1",
   "port": 80,
   "ui": {
     "enableNewAnswersets": true,
