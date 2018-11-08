@@ -6,6 +6,7 @@ import QuestionHeader from '../shared/QuestionHeader';
 import AnswersetList from './AnswersetList';
 import AnswersetInteractive from './AnswersetInteractive';
 import AnswersetGraph from './AnswersetGraph';
+import AnswersetTable from './AnswerSetTable';
 
 class AnswersetPres extends React.Component {
   constructor(props) {
@@ -138,6 +139,17 @@ class AnswersetPres extends React.Component {
             <AnswersetGraph
               answersetGraph={this.props.answersetGraph}
               concepts={this.props.concepts}
+            />
+          </Tab>
+          <Tab
+            eventKey={4}
+            title="Answers Table"
+          >
+            <AnswersetTable
+              answersetGraph={this.props.answersetGraph}
+              answers={this.props.answers}
+              concepts={this.props.concepts}
+              callbackAnswerSelected={this.props.callbackAnswerSelected}
             />
           </Tab>
         </Tabs>
