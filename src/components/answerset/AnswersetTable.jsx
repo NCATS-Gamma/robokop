@@ -1,13 +1,16 @@
 import React from 'react';
 import { Row, Col } from 'react-bootstrap';
-// import Select from 'react-select/lib/Select';
+import { observer } from 'mobx-react';
+import FaExternalLink from 'react-icons/lib/fa/external-link';
 import ReactTable from 'react-table';
+import ReactJson from 'react-json-view';
 import 'react-table/react-table.css';
 
 import entityNameDisplay from './../util/entityNameDisplay';
 import { initializeStructureGroup } from './AnswersetInteractive';
+import { answerSetTabEnum } from './AnswersetPres';
 
-// const _ = require('lodash');
+const _ = require('lodash');
 
 // Filter method for table columns that is case-insensitive, and matches all rows that contain
 // provided sub-string
@@ -16,6 +19,28 @@ const defaultFilterMethod = (filter, row, column) => {
   return row[id] !== undefined ? String(row[id].toLowerCase()).includes(filter.value.toLowerCase()) : true;
 };
 
+// Subcomponent for custom detailed view for each answer in the table row
+const subComponent = (rowInfo) => {
+  const rowData = _.cloneDeep(rowInfo.original);
+  // delete rowData.result_graph.edge_list;
+  return (
+    <div style={{ margin: '20px', border: '1px solid #ededed', padding: '20px', boxShadow: '0px 0px 5px 0px #ececec' }}>
+      <ReactJson
+        name={false}
+        theme="rjv-default"
+        collapseStringsAfterLength={110}
+        indentWidth={2}
+        iconStyle="triangle"
+        src={rowData}
+        displayDataTypes={false}
+        collapsed={4}
+      />
+    </div>
+  );
+};
+
+
+@observer
 class AnswersetTable extends React.Component {
   constructor(props) {
     super(props);
@@ -78,6 +103,7 @@ class AnswersetTable extends React.Component {
     );
   }
   renderValid() {
+    const { store } = this.props;
     const answerTables = this.state.groups.map((group, groupInd) => {
       if (group.isValid) {
         const tempAnswer = group.answers[0];
@@ -90,15 +116,26 @@ class AnswersetTable extends React.Component {
         innerColumns.push({
           Header: 'Rank',
           id: 'confidence',
-          accessor: d => parseFloat(Math.round(d.confidence * 1000) / 1000).toFixed(3),
+          width: 75,
+          filterable: false,
+          accessor: 'confidence',
+          Cell: d => <span className='number'>{parseFloat(Math.round(d.value * 1000) / 1000).toFixed(3)}</span>,
           className: 'center',
+        });
+        innerColumns.push({
+          Header: 'Link',
+          width: 60,
+          filterable: false,
+          Cell: () => <FaExternalLink />,
+          className: 'center',
+          style: { alignSelf: 'center', cursor: 'pointer' },
         });
         const columns = [{
           Header: `Answer Group ${groupInd + 1}`,
           columns: innerColumns,
         }];
         return (
-          <div key={group.connectivityHash}>
+          <div key={group.connectivityHash} style={{ marginBottom: '10px' }}>
             <ReactTable
               data={group.answers}
               columns={columns}
@@ -107,14 +144,16 @@ class AnswersetTable extends React.Component {
               pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
               minRows={5}
               filterable
+              className="-striped -highlight"
+              SubComponent={subComponent}
               getTdProps={(state, rowInfo, column, instance) => {
                 return {
                   onClick: (e, handleOriginal) => {
-                    console.log('A Td Element was clicked!');
-                    console.log('it produced this event:', e);
-                    console.log('It was in this column:', column);
-                    console.log('It was in this row:', rowInfo);
-                    console.log('It was in this table instance:', instance);
+                    // console.log('A Td Element was clicked!');
+                    // console.log('it produced this event:', e);
+                    // console.log('It was in this column:', column);
+                    // console.log('It was in this row:', rowInfo);
+                    // console.log('It was in this table instance:', instance);
                     // IMPORTANT! React-Table uses onClick internally to trigger
                     // events like expanding SubComponents and pivots.
                     // By default a custom 'onClick' handler will override this functionality.
@@ -123,8 +162,13 @@ class AnswersetTable extends React.Component {
                     if (handleOriginal) {
                       handleOriginal();
                     }
-                    const answerId = rowInfo.original.id;
-                    this.props.callbackAnswerSelected({ id: answerId });
+                    // Only trigger view of answer if clicking in the "Link" column
+                    if (column.Header === 'Link') {
+                      const answerId = rowInfo.original.id;
+                      store.updateSelectedByAnswerId(answerId);
+                      this.props.callbackAnswerSelected({ id: answerId });
+                      this.props.handleTabSelect(answerSetTabEnum.answerList);
+                    }
                   },
                 };
               }}
