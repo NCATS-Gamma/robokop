@@ -6,19 +6,30 @@ import QuestionHeader from '../shared/QuestionHeader';
 import AnswersetList from './AnswersetList';
 import AnswersetInteractive from './AnswersetInteractive';
 import AnswersetGraph from './AnswersetGraph';
+import AnswersetTable from './AnswersetTable';
+import AnswersetStore from './../../stores/answersetStore';
+
+export const answerSetTabEnum = {
+  answerList: 1,
+  interactive: 2,
+  aggregate: 3,
+  answerTable: 4,
+};
 
 class AnswersetPres extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      tabKey: 1,
+      tabKey: answerSetTabEnum.answerList,
     };
 
     this.handleTabSelect = this.handleTabSelect.bind(this);
     this.onDownload = this.onDownload.bind(this);
     this.renderNoAnswers = this.renderNoAnswers.bind(this);
     this.renderAnswers = this.renderAnswers.bind(this);
+
+    this.answersetStore = new AnswersetStore(this.props.answers);
   }
   onDownload() {
     const data = this.props.answerset;
@@ -89,7 +100,7 @@ class AnswersetPres extends React.Component {
           mountOnEnter
         >
           <Tab
-            eventKey={1}
+            eventKey={answerSetTabEnum.answerList}
             title="Answers List"
           >
             <AnswersetList
@@ -108,10 +119,25 @@ class AnswersetPres extends React.Component {
               callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
               enabledAnswerLink={this.props.enabledAnswerLink}
               getAnswerUrl={this.props.getAnswerUrl}
+
+              store={this.answersetStore}
             />
           </Tab>
           <Tab
-            eventKey={2}
+            eventKey={answerSetTabEnum.answerTable}
+            title="Answers Table"
+          >
+            <AnswersetTable
+              answersetGraph={this.props.answersetGraph}
+              answers={this.props.answers}
+              concepts={this.props.concepts}
+              callbackAnswerSelected={this.props.callbackAnswerSelected}
+              store={this.answersetStore}
+              handleTabSelect={this.handleTabSelect}
+            />
+          </Tab>
+          <Tab
+            eventKey={answerSetTabEnum.interactive}
             title="Interactive Selector"
           >
             <AnswersetInteractive
@@ -132,7 +158,7 @@ class AnswersetPres extends React.Component {
             />
           </Tab>
           <Tab
-            eventKey={3}
+            eventKey={answerSetTabEnum.aggregate}
             title="Aggregate Graph"
           >
             <AnswersetGraph

@@ -7,6 +7,171 @@ import AnswerExplorer from '../shared/AnswerExplorer';
 
 const _ = require('lodash');
 
+function initializeStructureGroup(ans) {
+  try {
+    // We have answers and we need to assign each answer to a structural group based on its graph
+
+    // Find all unique node types
+    const nodeTypes = new Set();
+    const answers = _.cloneDeep(ans);
+    ans.forEach((a) => {
+      const g = a.result_graph;
+      g.node_list.forEach(n => nodeTypes.add(n.type));
+    });
+    const nodeTypesArray = Array.from(nodeTypes);
+
+    const someNullTypes = nodeTypesArray.some(nt => (nt == null || nt === undefined));
+    if (someNullTypes) {
+      throw new Error('The interactive answer browser requires types on all nodes.');
+    }
+    // We will keep a track of the unique connectivities
+    const nodeTypeCountsArray = [];
+    const connectivityArray = [];
+    const connectivityHashArray = [];
+    // For each answer we need to figure out which group its in.
+    const answerGroup = answers.map((a) => {
+      // Initialize connectivity matrix (as a vector) to all 0s
+      const connectivity = [];
+      for (let ij = 0; ij < (nodeTypesArray.length * nodeTypesArray.length); ij += 1) {
+        connectivity.push(0);
+      }
+
+      // Form a connectivity matrix between concepts
+      const edges = a.result_graph.edge_list;
+      const nodes = a.result_graph.node_list;
+      edges.forEach((e) => {
+        if (e.type !== 'literature_co-occurrence') {
+          const sourceNode = nodes.find(n => n.id === e.source_id);
+          const targetNode = nodes.find(n => n.id === e.target_id);
+
+          const i = nodeTypesArray.findIndex(nt => nt === sourceNode.type);
+          const j = nodeTypesArray.findIndex(nt => nt === targetNode.type);
+
+          connectivity[(i * nodeTypesArray.length) + j] = 1;
+          connectivity[(j * nodeTypesArray.length) + i] = 1; // Undirected
+        }
+      });
+
+      // Count the types of each node
+      const nodeTypeCount = nodeTypesArray.map(() => 0);
+      nodes.forEach((n) => {
+        const ind = nodeTypesArray.findIndex(t => t === n.type);
+        if (ind > -1) {
+          nodeTypeCount[ind] += 1;
+        }
+      });
+
+      // Hash connectivity to a string
+      let connectivityChar = '';
+      connectivity.forEach((c) => {
+        connectivityChar += c;
+      });
+      let nodeCountChar = '';
+      nodeTypeCount.forEach((c, i) => {
+        nodeCountChar += c;
+        if (i < (nodeTypeCount.length - 1)) {
+          nodeCountChar += '-';
+        }
+      });
+      connectivityChar += `_${nodes.length}_${nodeCountChar}`; // Tack number nodes on to the end
+
+      const groupIndex = connectivityHashArray.indexOf(connectivityChar);
+      if (groupIndex < 0) {
+        // It's new!
+        connectivityHashArray.push(connectivityChar);
+        connectivityArray.push(connectivity);
+        nodeTypeCountsArray.push(nodeTypeCount);
+        return connectivityHashArray.length - 1; // The newest one
+      }
+      return groupIndex;
+    });
+    const nGroups = connectivityArray.length;
+    const groups = [];
+    for (let iGroup = 0; iGroup < nGroups; iGroup += 1) {
+      const groupAnswers = [];
+      let maxConf = -Infinity;
+      for (let iAnswer = 0; iAnswer < answers.length; iAnswer += 1) {
+        if (answerGroup[iAnswer] === iGroup) {
+          groupAnswers.push(_.cloneDeep(answers[iAnswer]));
+          if (maxConf < answers[iAnswer].confidence) {
+            maxConf = answers[iAnswer].confidence;
+          }
+        }
+      }
+
+      // Get the order of types for the first answer in this group
+      const typeOrder = groupAnswers[0].result_graph.node_list.map(n => n.type);
+
+      // Resort all answers in this group so that the types go in the same order
+      groupAnswers.forEach((a) => {
+        const newNodeList = [];
+        typeOrder.forEach((t) => {
+          a.result_graph.node_list.forEach((n) => {
+            if (n.type === t) {
+              newNodeList.push(n);
+            }
+          });
+        });
+        a.result_graph.node_list = newNodeList;
+      });
+
+      const nNodes = groupAnswers[0].result_graph.node_list.length;
+
+      // Figure out if each of the answers in this group satisfies possible structure criteria
+      // For now we only allow simple paths
+      // This means that each edge is only used as a source or target up to twice
+      // And (to cover cases with only two nodes), the set of (up to 2) edges used by node have different end points
+      // All this should ignore literature-coaccurance edges
+      const answerValidity = groupAnswers.map((a) => {
+        // For each answer
+
+        // Look at each node
+        const nodeValidity = a.result_graph.node_list.map((n) => {
+          let nTimesSource = 0;
+          let nTimesTarget = 0;
+          const attachedNodeIds = [];
+          // Look at all the edges and find the number of times it is the source or the target
+          // Also find other node_ids attached to it by those edges
+          a.result_graph.edge_list.forEach((e) => {
+            if (e.type !== 'literature_co-occurrence') {
+              nTimesSource += (n.id === e.source_id);
+              nTimesTarget += (n.id === e.target_id);
+
+              if (n.id === e.source_id) {
+                attachedNodeIds.push(e.target_id);
+              }
+              if (n.id === e.target_id) {
+                attachedNodeIds.push(e.source_id);
+              }
+            }
+          });
+
+          const nEdges = (nTimesSource + nTimesTarget);
+          const nUniqueAttachedNodes = new Set(attachedNodeIds).size;
+          return (nEdges < 3) && (nEdges === nUniqueAttachedNodes);
+        });
+
+        return nodeValidity.every(i => i);
+      });
+
+      const isValid = answerValidity.every(i => i);
+
+      groups.push({
+        isValid,
+        nNodes,
+        connectivity: connectivityArray[iGroup],
+        connectivityHash: connectivityHashArray[iGroup],
+        maxConfidence: maxConf,
+        answers: groupAnswers,
+      });
+    }
+
+    return { groups, isError: false };
+  } catch (err) {
+    return { groups: [], isError: true, error: err };
+  }
+}
+
 class AnswersetInteractive extends React.Component {
   constructor(props) {
     super(props);
@@ -25,7 +190,7 @@ class AnswersetInteractive extends React.Component {
     this.renderValid = this.renderValid.bind(this);
 
     this.initializeNodeSelection = this.initializeNodeSelection.bind(this);
-    this.initializeStructureGroup = this.initializeStructureGroup.bind(this);
+    this.initStructureGroup = this.initStructureGroup.bind(this);
     this.getAnswerIndexById = this.getAnswerIndexById.bind(this);
 
     this.handleNodeSelectionChange = this.handleNodeSelectionChange.bind(this);
@@ -38,13 +203,13 @@ class AnswersetInteractive extends React.Component {
     if (this.props.answerId && Number.isSafeInteger(this.props.answerId)) {
       afterInitializationSelection = this.props.answerId;
     }
-    this.initializeStructureGroup(afterInitializationSelection);
+    this.initStructureGroup(afterInitializationSelection);
   }
   componentWillReceiveProps(newProps) {
     const answerIdEqual = _.isEqual(this.props.answerId, newProps.answerId); // Monitored for select by parameter or page load
 
     if (!answerIdEqual && newProps.answerId && Number.isSafeInteger(newProps.answerId)) {
-      this.initializeStructureGroup(newProps.answerId);
+      this.initStructureGroup(newProps.answerId);
     }
   }
   onGroupSelectionChange(selection) {
@@ -77,174 +242,18 @@ class AnswersetInteractive extends React.Component {
     return [selectedGroupIndex, selectedGroupWithinIndex];
   }
 
-  initializeStructureGroup(afterSelection = null) {
-    try {
-      // We have answers and we need to assign each answer to a structural group based on its graph
-
-      // Find all unique node types
-      const nodeTypes = new Set();
-      const answers = _.cloneDeep(this.props.answers);
-      this.props.answers.forEach((a) => {
-        const g = a.result_graph;
-        g.node_list.forEach(n => nodeTypes.add(n.type));
-      });
-      const nodeTypesArray = Array.from(nodeTypes);
-
-      const someNullTypes = nodeTypesArray.some(nt => (nt == null || nt === undefined));
-      if (someNullTypes) {
-        throw new Error('The interactive answer browser requires types on all nodes.');
-      }
-      // We will keep a track of the unique connectivities
-      const nodeTypeCountsArray = [];
-      const connectivityArray = [];
-      const connectivityHashArray = [];
-      // For each answer we need to figure out which group its in.
-      const answerGroup = answers.map((a) => {
-        // Initialize connectivity matrix (as a vector) to all 0s
-        const connectivity = [];
-        for (let ij = 0; ij < (nodeTypesArray.length * nodeTypesArray.length); ij += 1) {
-          connectivity.push(0);
-        }
-
-        // Form a connectivity matrix between concepts
-        const edges = a.result_graph.edge_list;
-        const nodes = a.result_graph.node_list;
-        edges.forEach((e) => {
-          if (e.type !== 'literature_co-occurrence') {
-            const sourceNode = nodes.find(n => n.id === e.source_id);
-            const targetNode = nodes.find(n => n.id === e.target_id);
-
-            const i = nodeTypesArray.findIndex(nt => nt === sourceNode.type);
-            const j = nodeTypesArray.findIndex(nt => nt === targetNode.type);
-
-            connectivity[(i * nodeTypesArray.length) + j] = 1;
-            connectivity[(j * nodeTypesArray.length) + i] = 1; // Undirected
-          }
-        });
-
-        // Count the types of each node
-        const nodeTypeCount = nodeTypesArray.map(() => 0);
-        nodes.forEach((n) => {
-          const ind = nodeTypesArray.findIndex(t => t === n.type);
-          if (ind > -1) {
-            nodeTypeCount[ind] += 1;
-          }
-        });
-
-        // Hash connectivity to a string
-        let connectivityChar = '';
-        connectivity.forEach((c) => {
-          connectivityChar += c;
-        });
-        let nodeCountChar = '';
-        nodeTypeCount.forEach((c, i) => {
-          nodeCountChar += c;
-          if (i < (nodeTypeCount.length - 1)) {
-            nodeCountChar += '-';
-          }
-        });
-        connectivityChar += `_${nodes.length}_${nodeCountChar}`; // Tack number nodes on to the end
-
-        const groupIndex = connectivityHashArray.indexOf(connectivityChar);
-        if (groupIndex < 0) {
-          // It's new!
-          connectivityHashArray.push(connectivityChar);
-          connectivityArray.push(connectivity);
-          nodeTypeCountsArray.push(nodeTypeCount);
-          return connectivityHashArray.length - 1; // The newest one
-        }
-        return groupIndex;
-      });
-      const nGroups = connectivityArray.length;
-      const groups = [];
-      for (let iGroup = 0; iGroup < nGroups; iGroup += 1) {
-        const groupAnswers = [];
-        let maxConf = -Infinity;
-        for (let iAnswer = 0; iAnswer < answers.length; iAnswer += 1) {
-          if (answerGroup[iAnswer] === iGroup) {
-            groupAnswers.push(_.cloneDeep(answers[iAnswer]));
-            if (maxConf < answers[iAnswer].confidence) {
-              maxConf = answers[iAnswer].confidence;
-            }
-          }
-        }
-
-        // Get the order of types for the first answer in this group
-        const typeOrder = groupAnswers[0].result_graph.node_list.map(n => n.type);
-
-        // Resort all answers in this group so that the types go in the same order
-        groupAnswers.forEach((a) => {
-          const newNodeList = [];
-          typeOrder.forEach((t) => {
-            a.result_graph.node_list.forEach((n) => {
-              if (n.type === t) {
-                newNodeList.push(n);
-              }
-            });
-          });
-          a.result_graph.node_list = newNodeList;
-        });
-
-        const nNodes = groupAnswers[0].result_graph.node_list.length;
-
-        // Figure out if each of the answers in this group satisfies possible structure criteria
-        // For now we only allow simple paths
-        // This means that each edge is only used as a source or target up to twice
-        // And (to cover cases with only two nodes), the set of (up to 2) edges used by node have different end points
-        // All this should ignore literature-coaccurance edges
-        const answerValidity = groupAnswers.map((a) => {
-          // For each answer
-
-          // Look at each node
-          const nodeValidity = a.result_graph.node_list.map((n) => {
-            let nTimesSource = 0;
-            let nTimesTarget = 0;
-            const attachedNodeIds = [];
-            // Look at all the edges and find the number of times it is the source or the target
-            // Also find other node_ids attached to it by those edges
-            a.result_graph.edge_list.forEach((e) => {
-              if (e.type !== 'literature_co-occurrence') {
-                nTimesSource += (n.id === e.source_id);
-                nTimesTarget += (n.id === e.target_id);
-
-                if (n.id === e.source_id) {
-                  attachedNodeIds.push(e.target_id);
-                }
-                if (n.id === e.target_id) {
-                  attachedNodeIds.push(e.source_id);
-                }
-              }
-            });
-
-            const nEdges = (nTimesSource + nTimesTarget);
-            const nUniqueAttachedNodes = new Set(attachedNodeIds).size;
-            return (nEdges < 3) && (nEdges === nUniqueAttachedNodes);
-          });
-
-          return nodeValidity.every(i => i);
-        });
-
-        const isValid = answerValidity.every(i => i);
-
-        groups.push({
-          isValid,
-          nNodes,
-          connectivity: connectivityArray[iGroup],
-          connectivityHash: connectivityHashArray[iGroup],
-          maxConfidence: maxConf,
-          answers: groupAnswers,
-        });
-      }
-
-      this.setState({ groups }, () => {
+  initStructureGroup(afterSelection = null) {
+    const groupsObj = initializeStructureGroup(this.props.answers);
+    if (groupsObj.isError) {
+      this.setState(groupsObj);
+    } else {
+      this.setState(groupsObj, () => {
         let inds = [0, null];
         if (afterSelection) {
           inds = this.getAnswerIndexById(afterSelection);
         }
         this.initializeNodeSelection(inds[0], inds[1]);
       });
-    } catch (err) {
-      this.setState({ groups: [], isError: true, error: err });
     }
   }
 
@@ -446,3 +455,4 @@ AnswersetInteractive.defaultProps = {
 };
 
 export default AnswersetInteractive;
+export { initializeStructureGroup };

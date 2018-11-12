@@ -282,3 +282,26 @@ div.vis-tooltip .invalid-node {
   height: calc(100vh - 100px);
 } */
 
+/* React-table custom styling */
+.ReactTable .-pagination .-btn {
+  height: auto; /* Default of 100% makes buttons in footer really large */
+}
+/* Fix header alignment with body when scrollbar enabled
+.ReactTable .rt-thead {
+  overflow-y: scroll;
+}
+.ReactTable .rt-thead::-webkit-scrollbar {
+ background: transparent; 
+}
+*/
+/* Style column alignment in table by specifying class: 'center', etc */
+.rt-td.center {
+  text-align: center;
+}
+.rt-td.left {
+  text-align: left;
+}
+.rt-td.right {
+  text-align: right;
+}
+
