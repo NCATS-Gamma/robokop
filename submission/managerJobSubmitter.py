@@ -7,6 +7,8 @@ from requests.auth import HTTPBasicAuth
 
 class ManagerJobSubmitter:
     manager_url = 'http://robokop.renci.org'
+    username = os.environ['ADMIN_EMAIL']
+    password = os.environ['ADMIN_PASSWORD']
     
     def submit_from_template(self, jobs_csv, template_file, working_dir):
         self.fill_template(jobs_csv, template_file, working_dir)
@@ -14,7 +16,8 @@ class ManagerJobSubmitter:
         job_jsons = [os.path.join(working_dir, f) for f in os.listdir(working_dir) if os.path.isfile(os.path.join(working_dir, f)) and '.json' in f]
 
         for job_json in job_jsons:
-            self.new_question(job_json)
+            r = self.new_question(job_json)
+            print(f'{r.status_code} - {r.text}')
 
     def fill_template(self, jobs_csv, template_file, output_location):
         jobs = []
@@ -49,5 +52,5 @@ class ManagerJobSubmitter:
             job = json.load(job_fid)
         
         # print(f'Making request {job}')
-        r = requests.post(f'{self.manager_url}/api/questions/?RebuildCache=true', json=job, auth=HTTPBasicAuth(os.environ['ADMIN_EMAIL'], os.environ['ADMIN_PASSWORD']))
+        r = requests.post(f'{self.manager_url}/api/questions/?RebuildCache=true', json=job, auth=HTTPBasicAuth(self.username, self.password))
         return r

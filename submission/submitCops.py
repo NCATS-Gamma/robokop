@@ -4,7 +4,7 @@ import os
 from managerJobSubmitter import ManagerJobSubmitter 
 
 job_submitter = ManagerJobSubmitter()
-job_submitter.manager_url = 'http://127.0.0.1'
+job_submitter.manager_url = 'http://robokop.renci.org'
 
 init_dir = os.path.dirname(os.path.realpath(__file__))
 

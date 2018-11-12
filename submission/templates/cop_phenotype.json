@@ -18,7 +18,7 @@
       },
       {
         "id": "node2",
-        "type": "biological_process",
+        "type": "biological_process_or_activity",
         "set": true
       },
       {
