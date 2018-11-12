@@ -14,6 +14,7 @@ const undefinedColor = '#cccccc';
 const conceptColorMap = {
   anatomical_entity: '#e5d8bd', // Brown
   biological_process: '#b3cde3', // Blue
+  biological_process_or_activity: '#b3cde3', // same as biological_process
   gene: '#ccebc5', // Green
   genetic_condition: '#ffffcc', // Yellow
   cell: '#fddaec', // Pink
@@ -21,7 +22,7 @@ const conceptColorMap = {
   disease: '#fbb4ae', // Red
   molecular_function: '#fed9a6', // Orange
   pathway: '#decbe4', // Purple
-  phenotypic_feature: '#fccde5', // Light grayish pink'
+  phenotypic_feature: '#00c4e6', // Light teal'
   extra: '#f2f2f2', // Silver, extra?
 };
 
