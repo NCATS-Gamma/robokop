@@ -105,6 +105,7 @@ class SubGraphViewer extends React.Component {
 
   clickCallback(event) {
     // Add edge objects not just ids
+    
     event.edgeObjects = event.edges.map(eId => this.state.displayGraph.edges.find(displayEdge => displayEdge.id === eId));
     event.graph = this.state.displayGraph;
     this.props.callbackOnGraphClick(event);

@@ -34,13 +34,16 @@ class AnswerExplorerInfo extends React.Component {
       return;
     }
 
+    // console.log(event)
+
+    const newState = { selectedEdgeId: null, selectedNodeId: null };
     if (event.edges.length !== 0) { // Clicked on an Edge
-      this.setState({ selectedEdgeId: event.edges[0], selectedNodeId: null });
-    } else if (event.nodes.length !== 0) { // Clicked on an Edge
-      this.setState({ selectedEdgeId: null, selectedNodeId: event.nodes[0] });
-    } else { // Reset things since something else was clicked
-      this.setState({ selectedEdgeId: null, selectedNodeId: null });
+      // console.log('Updated the edge', event.edgeObjects)
+      newState.selectedEdgeId = event.edgeObjects[0].edgeIdFromKG;
+    } else if (event.nodes.length !== 0) { // Clicked on a node
+      newState.selectedNodeId = event.nodes[0];
     }
+    this.setState(newState);
   }
   getPublicationsFrag() {
     const somethingSelected = this.state.selectedEdgeId || this.state.selectedNodeId;
@@ -50,7 +53,21 @@ class AnswerExplorerInfo extends React.Component {
     let publications = [];
     if (somethingSelected && this.state.selectedEdgeId) {
       // Edge is selected
-      const edge = this.state.subgraph.edges.find(e => e.id === this.state.selectedEdgeId);
+      let edge = this.state.subgraph.edges.find(e => e.id === this.state.selectedEdgeId);
+      if (typeof edge === 'undefined') {
+        edge = this.state.subgraph.edges.find(e => e.edgeIdFromKG === this.state.selectedEdgeId);
+      }
+      if (typeof edge === 'undefined') {
+        console.log('Couldnt find this edge', this.state.selectedEdgeId, this.state.subgraph.edges);
+        return (
+          <div>
+            <h4 style={{ marginTop: '15px' }}>
+              An error was encountered fetching publication information.
+            </h4>
+          </div>
+        );
+      }
+
       const sourceNode = this.state.subgraph.nodes.find(n => n.id === edge.source_id);
       const targetNode = this.state.subgraph.nodes.find(n => n.id === edge.target_id);
       if ('publications' in edge && Array.isArray(edge.publications)) {
@@ -251,7 +268,14 @@ class AnswerExplorerInfo extends React.Component {
 
 
   render() {
-    const clickedEdge = this.state.subgraph.edges.find(e => e.id === this.state.selectedEdgeId);
+    let clickedEdge = this.state.subgraph.edges.find(e => e.id === this.state.selectedEdgeId);
+    if (typeof clickedEdge === 'undefined') {
+      clickedEdge = this.state.subgraph.edges.find(e => e.edgeIdFromKG === this.state.selectedEdgeId);
+    }
+    if (typeof clickedEdge === 'undefined') {
+      console.log('the render process clicked edge could not be found', this.state.selectedEdgeId, this.state.subgraph)
+    }
+
     return (
       <Row>
         <Col md={12}>
