@@ -20,6 +20,7 @@ import QuestionList from './QuestionList';
 import Answerset from './Answerset';
 import Workflow from './Workflow';
 import AnswersetApp from './AnswersetApp';
+import MessageAnswersetApp from './MessageAnswersetApp';
 import Comparison from './Comparison';
 import Activity from './Activity';
 import Search from './Search';
@@ -131,6 +132,14 @@ const robokop = {
   app_answerset: () => {
     ReactDOM.render(
       <AnswersetApp
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  app_msg_answerset: () => {
+    ReactDOM.render(
+      <MessageAnswersetApp
         config={config}
       />,
       document.getElementById('reactEntry'),

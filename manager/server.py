@@ -81,6 +81,11 @@ def app_answerset():
     """Answerset Browser with upload"""
     return render_template('app_answerset.html')
 
+@app.route('/app/answerset-message/')
+def app_answerset_msg():
+    """Answerset Browser with upload for new message format"""
+    return render_template('app_msg_answerset.html')
+
 @app.route('/app/comparison/')
 def app_comparison():
     """Template COP Comparison"""
