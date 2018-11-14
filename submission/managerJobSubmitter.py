@@ -7,8 +7,8 @@ from requests.auth import HTTPBasicAuth
 
 class ManagerJobSubmitter:
     manager_url = 'http://robokop.renci.org'
-    username = os.environ['ADMIN_EMAIL']
-    password = os.environ['ADMIN_PASSWORD']
+    username = ''
+    password = ''
     
     def submit_from_template(self, jobs_csv, template_file, working_dir):
         self.fill_template(jobs_csv, template_file, working_dir)
@@ -54,3 +54,27 @@ class ManagerJobSubmitter:
         # print(f'Making request {job}')
         r = requests.post(f'{self.manager_url}/api/questions/?RebuildCache=true', json=job, auth=HTTPBasicAuth(self.username, self.password))
         return r
+
+    def get_questions(self):
+        r = requests.get(f'{self.manager_url}/api/questions/')
+        return r.json()
+    
+    def get_question_ids(self):
+        questions = self.get_questions()
+        return [q['id'] for q in questions]
+    
+    def refresh_question(self, question_id):
+        r = requests.post(f'{self.manager_url}/api/q/{question_id}/refresh_kg/', auth=HTTPBasicAuth(self.username, self.password))
+        return r
+
+    def refresh_all(self):
+        q_ids = self.get_question_ids()
+        return [self.refresh_question(q_id) for q_id in q_ids]
+
+    def answer_question(self, question_id):
+        r = requests.post(f'{self.manager_url}/api/q/{question_id}/answer/', auth=HTTPBasicAuth(self.username, self.password))
+        return r
+    
+    def answer_all(self):
+        q_ids = self.get_question_ids()
+        return [self.answer_question(q_id) for q_id in q_ids]

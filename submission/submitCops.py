@@ -5,6 +5,8 @@ from managerJobSubmitter import ManagerJobSubmitter
 
 job_submitter = ManagerJobSubmitter()
 job_submitter.manager_url = 'http://robokop.renci.org'
+job_submitter.username = os.environ['ADMIN_EMAIL']
+job_submitter.password = os.environ['ADMIN_PASSWORD']
 
 init_dir = os.path.dirname(os.path.realpath(__file__))
 
