@@ -152,14 +152,14 @@ class MessageAnswersetPres extends React.Component {
             eventKey={answerSetTabEnum.answerTable}
             title="Answers Table"
           >
-            <div style={{ height: '300px', border: '1px solid #ddd' }}>Placeholder!</div>
-            {/* <MessageAnswersetTable
-              message={message}
+            {/* <div style={{ height: '300px', border: '1px solid #ddd' }}>Placeholder!</div> */}
+            <MessageAnswersetTable
+              // message={message}
               concepts={this.props.concepts}
               // callbackAnswerSelected={this.props.callbackAnswerSelected}
               store={this.answersetStore}
               handleTabSelect={this.handleTabSelect}
-            /> */}
+            />
           </Tab>
           {/* <Tab
             eventKey={answerSetTabEnum.interactive}
@@ -196,7 +196,8 @@ class MessageAnswersetPres extends React.Component {
     );
   }
   render() {
-    const hasAnswers = Array.isArray(this.props.answers) && this.props.answers.length > 0;
+    const { message } = this.props;
+    const hasAnswers = message.answers && Array.isArray(message.answers) && message.answers.length > 0;
     return (
       <div>
         {!hasAnswers && this.renderNoAnswers()}

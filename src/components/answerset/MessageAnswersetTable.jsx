@@ -2,13 +2,12 @@ import React from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { observer } from 'mobx-react';
 import FaExternalLink from 'react-icons/lib/fa/external-link';
+import { DropdownList } from 'react-widgets';
 import ReactTable from 'react-table';
 import ReactJson from 'react-json-view';
 import 'react-table/react-table.css';
 
 import entityNameDisplay from './../util/entityNameDisplay';
-import { initializeStructureGroup } from './AnswersetInteractive';
-import { answerSetTabEnum } from './AnswersetPres';
 
 const _ = require('lodash');
 
@@ -50,29 +49,39 @@ class MessageAnswersetTable extends React.Component {
       isError: false,
       error: null,
     };
-    this.initStructureGroup = this.initStructureGroup.bind(this);
-  }
-  componentDidMount() {
-    this.initStructureGroup();
+    this.getReactTableColumnSpec = this.getReactTableColumnSpec.bind(this);
   }
 
-  getAnswerIndexById(answerId) {
-    let selectedGroupIndex = null;
-    let selectedGroupWithinIndex = null;
-    this.state.groups.forEach((g, groupIndex) => {
-      const thisSubGroupAnswerIndex = g.answers.findIndex(a => a.id === answerId);
-      if (thisSubGroupAnswerIndex >= 0) {
-        selectedGroupWithinIndex = thisSubGroupAnswerIndex;
-        selectedGroupIndex = groupIndex;
+  getReactTableColumnSpec(columnHeaders) {
+    // Take columnHeaders from store and update it as needed
+    columnHeaders = columnHeaders.map((col) => {
+      const colSpecObj = _.cloneDeep(col);
+      const nodeId = colSpecObj.id;
+      if (colSpecObj.isSet) {
+        colSpecObj.accessor = d => d.nodes[nodeId].setNodes;
+        colSpecObj.Cell = props => (
+          <DropdownList
+            data={props.value}
+            placeholder={`Set: ${entityNameDisplay(colSpecObj.type)}`}
+            textField={item => (item.name ? item.name : item.id)}
+          />
+        );
+      } else {
+        colSpecObj.accessor = d => (d.nodes[nodeId].name ? d.nodes[nodeId].name : d.nodes[nodeId].id);
       }
+      return colSpecObj;
     });
-
-    return [selectedGroupIndex, selectedGroupWithinIndex];
-  }
-
-  initStructureGroup() {
-    const groupsObj = initializeStructureGroup(this.props.answers);
-    this.setState(groupsObj);
+    // Add Score column at the end
+    columnHeaders.push({
+      Header: 'Rank',
+      id: 'score',
+      width: 75,
+      filterable: false,
+      accessor: 'score',
+      Cell: d => <span className="number">{parseFloat(Math.round(d.value * 1000) / 1000).toFixed(3)}</span>,
+      className: 'center',
+    });
+    return columnHeaders;
   }
 
   renderError() {
@@ -104,134 +113,65 @@ class MessageAnswersetTable extends React.Component {
   }
   renderValid() {
     const { store } = this.props;
-    const answerTables = this.state.groups.map((group, groupInd) => {
-      if (group.isValid) {
-        const tempAnswer = group.answers[0];
-        const innerColumns = tempAnswer.result_graph.node_list.map((n, i) => (
-          {
-            Header: entityNameDisplay(n.type),
-            accessor: `result_graph.node_list[${i}].name`,
-          }
-        ));
-        innerColumns.push({
-          Header: 'Rank',
-          id: 'confidence',
-          width: 75,
-          filterable: false,
-          accessor: 'confidence',
-          Cell: d => <span className='number'>{parseFloat(Math.round(d.value * 1000) / 1000).toFixed(3)}</span>,
-          className: 'center',
-        });
-        innerColumns.push({
-          Header: 'Link',
-          width: 60,
-          filterable: false,
-          Cell: () => <FaExternalLink />,
-          className: 'center',
-          style: { alignSelf: 'center', cursor: 'pointer' },
-        });
-        const columns = [{
-          Header: `Answer Group ${groupInd + 1}`,
-          columns: innerColumns,
-        }];
-        return (
-          <div key={group.connectivityHash} style={{ marginBottom: '10px' }}>
-            <ReactTable
-              data={group.answers}
-              columns={columns}
-              defaultPageSize={10}
-              defaultFilterMethod={defaultFilterMethod}
-              pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
-              minRows={5}
-              filterable
-              className="-striped -highlight"
-              SubComponent={subComponent}
-              getTdProps={(state, rowInfo, column, instance) => {
-                return {
-                  onClick: (e, handleOriginal) => {
-                    // console.log('A Td Element was clicked!');
-                    // console.log('it produced this event:', e);
-                    // console.log('It was in this column:', column);
-                    // console.log('It was in this row:', rowInfo);
-                    // console.log('It was in this table instance:', instance);
-                    // IMPORTANT! React-Table uses onClick internally to trigger
-                    // events like expanding SubComponents and pivots.
-                    // By default a custom 'onClick' handler will override this functionality.
-                    // If you want to fire the original onClick handler, call the
-                    // 'handleOriginal' function.
-                    if (handleOriginal) {
-                      handleOriginal();
-                    }
-                    // Only trigger view of answer if clicking in the "Link" column
-                    if (column.Header === 'Link') {
-                      const answerId = rowInfo.original.id;
-                      store.updateSelectedByAnswerId(answerId);
-                      this.props.callbackAnswerSelected({ id: answerId });
-                      this.props.handleTabSelect(answerSetTabEnum.answerList);
-                    }
-                  },
-                };
-              }}
-              // style={{ height: '480px' }}
-            />
-          </div>
-        );
-      }
-    });
+    const answerTables = store.answerSetTableData;
+    const { headerInfo: columnHeaders, answers } = answerTables;
+    
+    const columns = [{
+      Header: 'Answer Set',
+      columns: this.getReactTableColumnSpec(columnHeaders),
+    }];
     return (
-      <div>
-        {answerTables}
+      <div style={{ marginBottom: '10px' }}>
+        <ReactTable
+          data={answers}
+          columns={columns}
+          defaultPageSize={10}
+          defaultFilterMethod={defaultFilterMethod}
+          pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
+          minRows={5}
+          filterable
+          className="-striped -highlight"
+          SubComponent={subComponent}
+          // getTdProps={(state, rowInfo, column, instance) => {
+          //   return {
+          //     onClick: (e, handleOriginal) => {
+          //       // console.log('A Td Element was clicked!');
+          //       // console.log('it produced this event:', e);
+          //       // console.log('It was in this column:', column);
+          //       // console.log('It was in this row:', rowInfo);
+          //       // console.log('It was in this table instance:', instance);
+          //       // IMPORTANT! React-Table uses onClick internally to trigger
+          //       // events like expanding SubComponents and pivots.
+          //       // By default a custom 'onClick' handler will override this functionality.
+          //       // If you want to fire the original onClick handler, call the
+          //       // 'handleOriginal' function.
+          //       if (handleOriginal) {
+          //         handleOriginal();
+          //       }
+          //       // Only trigger view of answer if clicking in the "Link" column
+          //       if (column.Header === 'Link') {
+          //         const answerId = rowInfo.original.id;
+          //         store.updateSelectedByAnswerId(answerId);
+          //         this.props.callbackAnswerSelected({ id: answerId });
+          //         this.props.handleTabSelect(answerSetTabEnum.answerList);
+          //       }
+          //     },
+          //   };
+          // }}
+          // style={{ height: '480px' }}
+        />
       </div>
     );
   }
-  renderInvalid() {
-    return (
-      <Col md={12}>
-        <p>
-          Due to the complexity of the answer graphs, the interactive browser is unavailable.
-        </p>
-      </Col>
-    );
-  }
   renderGroup() {
-    const isValid = this.state.groups.reduce((acc, c) => acc || c, false); // Valid if any valid answergroup exists
-
+    // const isValid = this.state.groups.reduce((acc, c) => acc || c, false); // Valid if any valid answergroup exists
     // const selectOptions = this.state.groups.map((g, i) => ({ value: i, label: `${i + 1} - ${g.answers.length} answers each with ${g.nNodes} nodes.` }));
     // const oneGroup = selectOptions.length === 1;
-
     return (
       <Row>
         <Col md={12}>
-          {/* {!oneGroup &&
-            <Row>
-              <Col md={12}>
-                <Panel style={{ margin: '10px 0 0px 0' }}>
-                  <Panel.Heading>
-                    <Panel.Title componentClass="h3">Multiple Answer Structures Found</Panel.Title>
-                  </Panel.Heading>
-                  <Panel.Body>
-                    <Col md={6}>
-                      <p>
-                        The interactive viewer supports a single structure at a time. Please select a structure group to explore.
-                      </p>
-                    </Col>
-                    <Col md={6}>
-                      <Select
-                        name="structure_select"
-                        value={selectOptions[this.state.groupSelection].value}
-                        onChange={this.onGroupSelectionChange}
-                        options={selectOptions}
-                        clearable={false}
-                      />
-                    </Col>
-                  </Panel.Body>
-                </Panel>
-              </Col>
-            </Row>
-          } */}
           <Row style={{ marginTop: '10px' }}>
-            {isValid && this.renderValid()}
-            {!isValid && this.renderInvalid()}
+            {this.renderValid()}
           </Row>
         </Col>
       </Row>
@@ -239,8 +179,8 @@ class MessageAnswersetTable extends React.Component {
   }
   render() {
     const { isError } = this.state;
-    const hasAnswers = (this.state.groups.length > 0 && this.state.groups[0] && this.state.groups[0].answers.length > 0);
-
+    const { store } = this.props;
+    const hasAnswers = (store.message.answers && store.message.answers.length > 0);
     return (
       <div>
         {isError && this.renderError()}
