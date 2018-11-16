@@ -12,12 +12,6 @@ configure({ enforceActions: 'always' }); // Prevent observable mutations in MobX
 
 class AnswersetStore {
   @observable message = {}; // Message object supplied to store on init
-  // qNodeIdToIndMap = new Map();
-  // qEdgeIdToIndMap = new Map();
-  // kgNodeIdToIndMap = new Map();
-  // kgEdgeIdToIndMap = new Map();
-  // ansIdToIndMap = new Map();
-
   @observable activeAnswerId = null; // Currently 'selected' answer
   @observable setSquashThresh = 5; // If more than these many nodes in a set, squash it in activeAnswerGraph
 
@@ -27,21 +21,11 @@ class AnswersetStore {
       // Assign id to each answer if not present in supplied message
       this.message.answers.forEach((a, i) => {
         if (!a.id) {
-          a.id = i;
+          a.id = i; // eslint-disable-line no-param-reassign
         }
       });
       this.activeAnswerId = this.message.answers[0].id;
     });
-    // this.setupMaps();
-  }
-
-  // Setup Maps from ids to indices for efficient referencing of nodes and edges during processing
-  setupMaps() {
-    this.message.question_graph.nodes.forEach((n, i) => this.qNodeIdToIndMap.set(n.id, i));
-    this.message.question_graph.edges.forEach((e, i) => this.qEdgeIdToIndMap.set(e.id, i));
-    this.message.knowledge_graph.nodes.forEach((n, i) => this.kgNodeIdToIndMap.set(n.id, i));
-    this.message.knowledge_graph.edges.forEach((e, i) => this.kgEdgeIdToIndMap.set(e.id, i));
-    this.message.answers.forEach((ans, i) => this.ansIdToIndMap.set(ans.id, i));
   }
 
   @computed get qNodeIdToIndMap() {
@@ -105,14 +89,14 @@ class AnswersetStore {
       headerInfo.push({
         Header: `${n.id}: ${entityNameDisplay(n.type)}`,
         id: n.id, // `nodes.${n.id}.name`,
-        isSet: n.set ? true : false,
+        isSet: n.set ? true : false, // eslint-disable-line no-unneeded-ternary
         type: n.type,
       });
       qNodeIds.push(n.id);
     });
     const answers = [];
     this.message.answers.forEach((ans) => {
-      const ansObj = { score: ans.score, nodes: {} };
+      const ansObj = { score: ans.score, nodes: {}, id: ans.id };
       qNodeIds.forEach((qNodeId) => {
         let nodeListObj = { isSet: false };
         if (!isObservableArray(ans.bindings[qNodeId])) { // This is not a set node
@@ -176,7 +160,7 @@ class AnswersetStore {
         const qEdge = this.getQEdge(keyId);
         // Force kgEdgeIds in answer to always be a list of kgEdgeId(s)
         if (!isObservableArray(val)) {
-          val = [val];
+          val = [val]; // eslint-disable-line no-param-reassign
         }
         let edgeObj = {};
         if ((qNodeIdsToSquash.indexOf(qEdge.source_id) !== -1) || (qNodeIdsToSquash.indexOf(qEdge.target_id) !== -1)) {
