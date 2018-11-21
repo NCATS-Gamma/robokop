@@ -18,14 +18,12 @@ services:
     environment:
       - DEPLOY=docker
       - ROBOKOP_HOME=/home/murphy
-      - NEO4J_HOST=neo4j
       - BROKER_HOST=broker
       - RESULTS_HOST=results
       - POSTGRES_HOST=postgres
       - BUILDER_HOST=interfaces
       - RANKER_HOST=rank
       - NLP_HOST=nlp
-      - NLP_PORT=9475
     ports:
       - "${MANAGER_PORT}:${MANAGER_PORT}"
       - "${MANAGER_SUPERVISOR_PORT}:${MANAGER_SUPERVISOR_PORT}"
