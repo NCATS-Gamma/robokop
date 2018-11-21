@@ -17,6 +17,7 @@ from manager.task import Task
 from manager.tasks import update_kg, answer_question
 from manager.setup import api, db
 from manager.user import User, get_user_by_email
+from manager.celery_monitor import get_messages
 import manager.logging_config
 
 logger = logging.getLogger(__name__)
@@ -104,6 +105,7 @@ class QuestionsAPI(Resource):
                                 $ref: '#/definitions/Question'
         """
         user = getAuthData()
+        get_messages() # Flush the most recent log of questions and activity
         question_list = list_questions(session=db.session)
 
         def augment_info(question):
