@@ -43,7 +43,7 @@ class NoAnswersException(Exception):
     pass
 
 
-@celery.task(bind=True, exchange='manager', routing_key='manager.answer')
+@celery.task(bind=True, exchange='manager', routing_key='manager.answer', task_acks_late=True, track_started=True, worker_prefetch_multiplier=1)
 def answer_question(self, question_id, user_email=None):
     """Generate answerset for a question."""
     self.update_state(state='ANSWERING')
@@ -97,7 +97,7 @@ def answer_question(self, question_id, user_email=None):
         return answerset.id
 
 
-@celery.task(bind=True, exchange='manager', routing_key='manager.update')
+@celery.task(bind=True, exchange='manager', routing_key='manager.update', task_acks_late=True, track_started=True, worker_prefetch_multiplier=1)
 def update_kg(self, question_id, user_email=None):
     """Update the shared knowledge graph with respect to a question."""
     self.update_state(state='UPDATING KG')
