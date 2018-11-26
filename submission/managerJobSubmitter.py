@@ -52,7 +52,7 @@ class ManagerJobSubmitter:
             job = json.load(job_fid)
         
         # print(f'Making request {job}')
-        r = requests.post(f'{self.manager_url}/api/questions/?RebuildCache=true', json=job, auth=HTTPBasicAuth(self.username, self.password))
+        r = requests.post(f'{self.manager_url}/api/questions/?RebuildCache=false', json=job, auth=HTTPBasicAuth(self.username, self.password))
         return r
 
     def get_questions(self):

@@ -11,16 +11,16 @@ job_submitter.password = os.environ['ADMIN_PASSWORD']
 init_dir = os.path.dirname(os.path.realpath(__file__))
 
 try:
-    os.makedirs(f'{init_dir}/jobs/cop_disease')
+    os.makedirs(f'{init_dir}/jobs/cop_disease_2')
 except:
     pass
 
-job_submitter.submit_from_template(f'{init_dir}/job_lists/cops.csv', f'{init_dir}/templates/cop_disease.json', f'{init_dir}/jobs/cop_disease')
+job_submitter.submit_from_template(f'{init_dir}/job_lists/cops_new.csv', f'{init_dir}/templates/cop_disease.json', f'{init_dir}/jobs/cop_disease_2')
 
 try:
-    os.makedirs(f'{init_dir}/jobs/cop_phenotype')
+    os.makedirs(f'{init_dir}/jobs/cop_phenotype_2')
 except:
     pass
 
 
-job_submitter.submit_from_template(f'{init_dir}/job_lists/cops.csv', f'{init_dir}/templates/cop_phenotype.json', f'{init_dir}/jobs/cop_phenotype')
+job_submitter.submit_from_template(f'{init_dir}/job_lists/cops_new.csv', f'{init_dir}/templates/cop_phenotype.json', f'{init_dir}/jobs/cop_phenotype_2')
