@@ -8,6 +8,7 @@ import ReactJson from 'react-json-view';
 import 'react-table/react-table.css';
 
 import entityNameDisplay from './../util/entityNameDisplay';
+import SubGraphViewer from '../shared/SubGraphViewer';
 
 const _ = require('lodash');
 
@@ -45,8 +46,6 @@ const rowSubComponent = (rowInfo) => {
     </div>
   );
 };
-
-// const graphSubComponent = 
 
 // SubComponent displayed when expanding a Node column in table that represents a Set
 const setSubComponentFactory = (setData, column) => (rowInf) => { // eslint-disable-line
@@ -103,6 +102,23 @@ class MessageAnswersetTable extends React.Component {
     };
     this.getReactTableColumnSpec = this.getReactTableColumnSpec.bind(this);
     this.updateTableSubComponent = this.updateTableSubComponent.bind(this);
+    this.graphSubComponent = this.graphSubComponent.bind(this);
+  }
+
+  graphSubComponent = (rowInfo) => {
+    const rowData = _.cloneDeep(rowInfo.original);
+    const ansId = rowData.id;
+    this.props.store.updateActiveAnswerId(ansId);
+    const graph = this.props.store.activeAnswerGraph;
+    console.log('graph', graph);
+    return (
+      <SubGraphViewer
+        subgraph={graph}
+        concepts={this.props.concepts}
+        layoutRandomSeed={Math.floor(Math.random() * 100)}
+        callbackOnGraphClick={() => {}}
+      />
+    );
   }
 
   getReactTableColumnSpec(columnHeaders, data) {
@@ -232,7 +248,7 @@ class MessageAnswersetTable extends React.Component {
                   const newSubComponent = setSubComponentFactory(column.accessor(rowInfo.original), column);
                   this.updateTableSubComponent(rowInfo.viewIndex, column.id, newSubComponent);
                 } else if (column.expander) { // Handle user clicking on the row Expander element (1st column)
-                  this.updateTableSubComponent(rowInfo.viewIndex, 'row', rowSubComponent);
+                  this.updateTableSubComponent(rowInfo.viewIndex, 'row', this.graphSubComponent);
                 }
               },
             };

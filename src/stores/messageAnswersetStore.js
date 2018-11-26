@@ -119,10 +119,11 @@ class AnswersetStore {
     const graph = { node_list: [], edge_list: [] };
     const bindingsMap = new Map(Object.entries(answer.bindings));
     const qNodeIdsToSquash = [];
+    const squashedKgNodeIdToQnodeId = new Map(); // Store mapping from kgNodeId to qNodeId for all squashed nodes
     // Process all Nodes in answer first. NOTE: nodeId is always kgNodeId except if it is squashed
     // in which case it is set to qNodeId for the squashed node
     bindingsMap.forEach((val, keyId) => {
-      if (this.qNodeIdToIndMap.has(keyId)) {
+      if (this.qNodeIdToIndMap.has(keyId)) { // This is a node
         const qNode = this.getQNode(keyId);
         let nodeObj = { type: qNode.type, id: val, qNodeId: keyId };
         if (!isObservableArray(val)) { // This node is not a Set
@@ -132,6 +133,7 @@ class AnswersetStore {
           // Handle multiple nodes for sets
           if (val.length > this.setSquashThresh) { // eslint-disable-line no-lonely-if
             qNodeIdsToSquash.push(keyId);
+            val.forEach(kgNodeId => squashedKgNodeIdToQnodeId.set(kgNodeId, keyId)); // Update map of kgNodeId -> qNodeId
             nodeObj.name = nodeObj.type;
             nodeObj.id = keyId; // Map node for a squashed set to the corresponding questionGraph node id
             nodeObj.isSquashed = true;
@@ -147,7 +149,7 @@ class AnswersetStore {
           }
         }
         // Update node_list in the graph datastructure
-        if (!isObservableArray(nodeObj)) {
+        if (!isObservableArray(nodeObj) && !Array.isArray(nodeObj)) {
           nodeObj = [nodeObj];
         }
         nodeObj.forEach(nObj => graph.node_list.push(_.cloneDeep(nObj)));
@@ -164,11 +166,14 @@ class AnswersetStore {
         }
         let edgeObj = {};
         if ((qNodeIdsToSquash.indexOf(qEdge.source_id) !== -1) || (qNodeIdsToSquash.indexOf(qEdge.target_id) !== -1)) {
-          // Squash to single edge
+          // This edge should be squashed. Need to examine underlying source/target ids at kgNodeId
+          // level since bi-directional answers possible so source/target from question_graph may not
+          // map with directionality of the edges in the answers
+          const firstEdge = this.getKgEdge(val[0]); // Only need to examine one of the edges in the group
           edgeObj = {
             id: qEdge.id,
-            source_id: (qNodeIdsToSquash.indexOf(qEdge.source_id) !== -1) ? qEdge.source_id : this.getKgEdge(val[0]).source_id,
-            target_id: (qNodeIdsToSquash.indexOf(qEdge.target_id) !== -1) ? qEdge.target_id : this.getKgEdge(val[0]).target_id,
+            source_id: squashedKgNodeIdToQnodeId.has(firstEdge.source_id) ? squashedKgNodeIdToQnodeId.get(firstEdge.source_id) : firstEdge.source_id,
+            target_id: squashedKgNodeIdToQnodeId.has(firstEdge.target_id) ? squashedKgNodeIdToQnodeId.get(firstEdge.target_id) : firstEdge.target_id,
             isSquashed: true,
             unsquashedEdges: val.map(kgEdgeId => this.getKgEdge(kgEdgeId)),
           };
@@ -181,7 +186,7 @@ class AnswersetStore {
           edgeObj = val.map(kgEdgeId => this.getKgEdge(kgEdgeId));
         }
         // Update edge_list in the graph datastructure
-        if (!isObservableArray(edgeObj)) {
+        if (!isObservableArray(edgeObj) && !Array.isArray(edgeObj)) {
           edgeObj = [edgeObj];
         }
         edgeObj.forEach(eObj => graph.edge_list.push(_.cloneDeep(eObj)));
