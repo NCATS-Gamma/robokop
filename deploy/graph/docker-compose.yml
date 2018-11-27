@@ -2,6 +2,7 @@ version: "3"
 services:
   neo4j:
     image: patrickkwang/robokop-neo4j
+    container_name: neo4j
     environment:
       - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
       - NEO4J_dbms_connectors_default__listen__address=0.0.0.0
@@ -12,28 +13,7 @@ services:
     ports:
       - "${NEO4J_HTTP_PORT}:${NEO4J_HTTP_PORT}"
       - "${NEO4J_BOLT_PORT}:${NEO4J_BOLT_PORT}"
-
-  results:
-    image: redis
-    ports:
-      - "${RESULTS_PORT}:${RESULTS_PORT}"
-    command: --port ${RESULTS_PORT}
-
-  broker:
-    image: patrickkwang/robokop-rabbitmq
-    environment:
-      - ADMIN_PASSWORD
-      - BROKER_PASSWORD
-      - BROKER_USER
-    ports:
-      - "${BROKER_PORT}:${BROKER_PORT}"
-      - "${BROKER_MONITOR_PORT}:${BROKER_MONITOR_PORT}"
-    command: "/init.sh manager builder ranker"
-    hostname: robokop
-
-  nlp:
-    image: patrickkwang/robokop-nlp
-    # build:
-    #   context: .
-    ports:
-      - "${NLP_PORT}:${NLP_PORT}"
+    volumes:
+      - ../../../neo4j_data:/data
+      - ../../../neo4j_logs:/logs
+      - ../../../neo4j_ssl:/ssl

@@ -1,0 +1,27 @@
+version: "3"
+services:
+  results:
+    image: redis
+    container_name: celery_results
+    ports:
+      - "${RESULTS_PORT}:${RESULTS_PORT}"
+    command: --port ${RESULTS_PORT} --requirepass ${RESULTS_PASSWORD}
+
+  broker:
+    image: patrickkwang/robokop-rabbitmq
+    container_name: broker
+    environment:
+      - ADMIN_PASSWORD
+      - BROKER_PASSWORD
+      - BROKER_USER
+    ports:
+      - "${BROKER_PORT}:5672"
+      - "${BROKER_MONITOR_PORT}:15672"
+    command: "/init.sh manager builder ranker"
+    hostname: robokop
+
+  nlp:
+    image: patrickkwang/robokop-nlp
+    container_name: nlp
+    ports:
+      - "${NLP_PORT}:${NLP_PORT}"

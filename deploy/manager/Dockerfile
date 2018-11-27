@@ -47,5 +47,5 @@ RUN rm -r /home/murphy/robokop
 ENV HOME=/home/murphy
 ENV USER=murphy
 
-ENTRYPOINT ["./robokop/deploy/startup.sh"]
-CMD ["supervisord", "-c", "./robokop/deploy/supervisord.conf"]
+ENTRYPOINT ["./robokop/deploy/manager/startup.sh"]
+CMD ["supervisord", "-c", "./robokop/deploy/manager/supervisord.conf"]
