@@ -9,7 +9,6 @@ from celery import Celery, signals
 from kombu import Queue, Exchange
 from flask_mail import Message
 
-# import deploy.initialize_manager
 from manager.setup import app, mail, session_scope
 from manager.answer import Answerset
 from manager.question import get_question_by_id
