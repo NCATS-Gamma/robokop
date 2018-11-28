@@ -362,6 +362,45 @@ class Concepts(Resource):
 
 api.add_resource(Concepts, '/concepts/')
 
+
+class Omnicorp(Resource):
+    def get(self, id1, id2):
+        """
+        Get publications for one identifier or a pair of identifiers
+        ---
+        tags: [util]
+        parameters:
+          - in: path
+            name: id1
+            description: "curie of first term"
+            schema:
+                type: string
+            required: true
+            default: "MONDO:0005737"
+          - in: path
+            name: id2
+            description: "curie of second term"
+            schema:
+                type: string
+            required: true
+            default: "HGNC:7897"
+        responses:
+            200:
+                description: publications
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: string
+        """
+
+        r = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/omnicorp/{id1}/{id2}")
+        return r.json()
+
+api.add_resource(Omnicorp, '/omnicorp/<id1>/<id2>')
+
+
 class Connections(Resource):
     def get(self):
         """
