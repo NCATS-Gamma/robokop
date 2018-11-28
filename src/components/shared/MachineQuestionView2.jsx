@@ -20,7 +20,7 @@ const propTypes = {
   selectable: PropTypes.bool, // Whether node and edge can be selected
   nodeSelectCallback: PropTypes.func,
   edgeSelectCallback: PropTypes.func,
-}
+};
 
 const defaultProps = {
   height: 250,
@@ -130,7 +130,7 @@ class MachineQuestionView2 extends React.Component {
         // else just keep your label
       } else if ('name' in n) {
         n.label = n.name;
-      } else if ('curie' in n) {
+      } else if (n.curie) {
         if (Array.isArray(n.curie)) {
           if (n.curie.length > 0) {
             n.label = n.curie[0];
