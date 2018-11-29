@@ -1,13 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { FormControl, Row, Col, Grid, Tabs, Tab } from 'react-bootstrap';
+import { FormControl, Row, Col, Grid, Tabs, Tab, Panel } from 'react-bootstrap';
+import { toJS } from 'mobx';
+import FaEye from 'react-icons/lib/fa/eye';
+import FaEyeSlash from 'react-icons/lib/fa/eye-slash';
+
 // import QuestionHeader from '../shared/QuestionHeader';
 // import AnswersetList from './AnswersetList';
 // import AnswersetInteractive from './AnswersetInteractive';
 // import AnswersetGraph from './AnswersetGraph';
+import MachineQuestionView2 from './../shared/MachineQuestionView2';
 import MessageAnswersetTable from './MessageAnswersetTable';
 import AnswersetStore from './../../stores/messageAnswersetStore';
+import entityNameDisplay from './../util/entityNameDisplay';
 
 export const answerSetTabEnum = {
   // answerList: 1,
@@ -16,18 +22,59 @@ export const answerSetTabEnum = {
   answerTable: 1,
 };
 
+/* eslint-disable no-param-reassign */
+const nodePreProcFn = (n) => {
+  n.isSet = ('set' in n) && (((typeof n.set === typeof true) && n.set) || ((typeof n.set === 'string') && n.set === 'true'));
+  n.chosen = false; // Not needed since borderWidth manually set below
+  n.borderWidth = 1;
+  n.borderWidthSelected = 2;
+  if (n.isSet) {
+    n.borderWidth = 3;
+    n.borderWidthSelected = 5;
+  } else {
+    n.borderWidth = 1;
+  }
+  if (n.isSelected) { // Override borderwidth when isSelected set by user thru props
+    n.borderWidth = n.borderWidthSelected;
+  }
+  if (!('label' in n)) {
+    if ('name' in n) {
+      n.label = n.name;
+    } else if (n.curie) {
+      if (Array.isArray(n.curie)) {
+        if (n.curie.length > 0) {
+          n.label = n.curie[0]; // eslint-disable-line prefer-destructuring
+        } else {
+          n.label = '';
+        }
+      } else {
+        n.label = n.curie;
+      }
+    } else if ('type' in n) {
+      n.label = entityNameDisplay(n.type);
+    } else {
+      n.label = '';
+    }
+  }
+  n.label = `${n.id}: ${n.label}`;
+  return n;
+};
+/* eslint-enable no-param-reassign */
+
 class MessageAnswersetPres extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
       tabKey: answerSetTabEnum.answerTable,
+      graphVisible: true,
     };
 
     this.handleTabSelect = this.handleTabSelect.bind(this);
     this.onDownload = this.onDownload.bind(this);
     this.renderNoAnswers = this.renderNoAnswers.bind(this);
     this.renderAnswers = this.renderAnswers.bind(this);
+    this.toggleGraphVisibility = this.toggleGraphVisibility.bind(this);
 
     this.answersetStore = new AnswersetStore(this.props.message);
     console.log('MobX Answerset Store:', this.answersetStore);
@@ -55,6 +102,10 @@ class MessageAnswersetPres extends React.Component {
     this.setState({ tabKey });
   }
 
+  toggleGraphVisibility() {
+    this.setState(state => ({ graphVisible: !state.graphVisible }));
+  }
+
   renderNoAnswers() {
     return (
       <Grid>
@@ -76,15 +127,15 @@ class MessageAnswersetPres extends React.Component {
       <div style={this.props.style}>
         {!this.props.omitHeader &&
         <div>
-          <Row>
+          {/* <Row>
             <Col md={12}>
               <h1 style={{ paddingRight: '50px' }}>
                 Question: {message.natural_question ? message.natural_question : ''}
               </h1>
             </Col>
-          </Row>
+          </Row> */}
           <Row>
-            <Col id="questionNotes" md={12}>
+            {/* <Col id="questionNotes" md={12}>
               <FormControl
                 disabled
                 componentClass="textarea"
@@ -94,6 +145,44 @@ class MessageAnswersetPres extends React.Component {
                 value={`${message.answers.length} potential answers found`}
                 // onChange={this.onEditNotes}
               />
+            </Col> */}
+            <div className="col-md-12" style={{ height: '20px' }} />
+            <Col md={12}>
+              <Panel>
+                <Panel.Heading>
+                  <Panel.Title>
+                    {'Question Graph '}
+                    <div style={{ position: 'relative', float: 'right', top: '-3px' }}>
+                      <button
+                        style={{ padding: '2px', marginLeft: '5px' }}
+                        className="btn btn-default"
+                        title="Toggle visibility of Question graph"
+                        onClick={this.toggleGraphVisibility}
+                      >
+                        <span style={{ fontSize: '22px' }}>
+                          {!this.state.graphVisible && <FaEye style={{ cursor: 'pointer' }} />}
+                          {this.state.graphVisible && <FaEyeSlash style={{ cursor: 'pointer' }} />}
+                        </span>
+                      </button>
+                    </div>
+                  </Panel.Title>
+                </Panel.Heading>
+                <Panel.Body style={{ padding: '0px' }}>
+                  {this.state.graphVisible &&
+                    <MachineQuestionView2
+                      height={200}
+                      // width={width}
+                      question={toJS(this.answersetStore.message.question_graph)}
+                      concepts={this.props.concepts}
+                      graphState="display"
+                      selectable
+                      nodePreProcFn={nodePreProcFn}
+                      // nodeSelectCallback={this.nodeSelectCallback}
+                      // edgeSelectCallback={this.edgeSelectCallback}
+                    />
+                  }
+                </Panel.Body>
+              </Panel>
             </Col>
           </Row>
           {/* <QuestionHeader
@@ -114,7 +203,6 @@ class MessageAnswersetPres extends React.Component {
             showDownload
             callbackDownload={this.onDownload}
           /> */}
-          <br />
         </div>
         }
         <Tabs

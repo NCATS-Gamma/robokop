@@ -2,13 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col } from 'react-bootstrap';
 import { observer } from 'mobx-react';
-// import FaExternalLink from 'react-icons/lib/fa/external-link';
 import ReactTable from 'react-table';
-import ReactJson from 'react-json-view';
 import 'react-table/react-table.css';
 
+import AnswersetTableSubComponent, { answersetSubComponentEnum } from './AnswersetTableSubComponent';
 import entityNameDisplay from './../util/entityNameDisplay';
-import SubGraphViewer from '../shared/SubGraphViewer';
 
 const _ = require('lodash');
 
@@ -24,54 +22,6 @@ const setFilterMethod = (filter, row, column) => { // eslint-disable-line no-unu
   const id = filter.pivotId || filter.id;
   const combined = row[id].map(subNode => (subNode.name ? subNode.name : subNode.id)).join(' ');
   return String(combined.toLowerCase()).includes(filter.value.toLowerCase());
-};
-
-// Subcomponent for custom detailed view for each answer in the table row
-const rowSubComponent = (rowInfo) => {
-  const rowData = _.cloneDeep(rowInfo.original);
-  console.log('rowInfo', rowInfo);
-  // delete rowData.result_graph.edge_list;
-  return (
-    <div style={{ margin: '20px', border: '1px solid #ededed', padding: '20px', boxShadow: '0px 0px 5px 0px #ececec' }}>
-      <ReactJson
-        name={false}
-        theme="rjv-default"
-        collapseStringsAfterLength={110}
-        indentWidth={2}
-        iconStyle="triangle"
-        src={rowData}
-        displayDataTypes={false}
-        collapsed={4}
-      />
-    </div>
-  );
-};
-
-// SubComponent displayed when expanding a Node column in table that represents a Set
-const setSubComponentFactory = (setData, column) => (rowInf) => { // eslint-disable-line
-  // console.log('rowInfo', rowInf);
-  return (
-    <div style={{ padding: '20px 125px' }}>
-      <ReactTable
-        data={setData}
-        columns={[{
-          Header: `Nodes for the ${column.id} - ${entityNameDisplay(column.type)} Set`,
-          columns: [
-            { Header: 'Id', accessor: 'id' },
-            { Header: 'Name', id: 'name', accessor: d => (d.name ? d.name : '') },
-            { Header: 'Type', id: 'type', accessor: d => entityNameDisplay(d.type) },
-          ],
-        }]}
-        defaultPageSize={5}
-        defaultFilterMethod={defaultFilterMethod}
-        pageSizeOptions={[5, 10, 15, 20]}
-        minRows={1}
-        filterable={setData.length > 5}
-        showPagination={setData.length > 5}
-        className="-striped -highlight"
-      />
-    </div>
-  );
 };
 
 // Function to calculate sane column widths
@@ -94,32 +44,29 @@ class MessageAnswersetTable extends React.Component {
     super(props);
 
     this.state = {
-      tableSubComponent: rowSubComponent,
+      tableSubComponent: this.subComponentFactory(),
       expanded: {},
-      subComponentId: '',
       isError: false,
       error: null,
     };
     this.getReactTableColumnSpec = this.getReactTableColumnSpec.bind(this);
     this.updateTableSubComponent = this.updateTableSubComponent.bind(this);
-    this.graphSubComponent = this.graphSubComponent.bind(this);
+    this.subComponentFactory = this.subComponentFactory.bind(this);
   }
 
-  graphSubComponent = (rowInfo) => {
-    const rowData = _.cloneDeep(rowInfo.original);
-    const ansId = rowData.id;
-    this.props.store.updateActiveAnswerId(ansId);
-    const graph = this.props.store.activeAnswerGraph;
-    console.log('graph', graph);
+  // SubComponent displayed when expanding a Node column in table that represents a Set
+  subComponentFactory = ({nodeId = null, activeButtonKey = answersetSubComponentEnum.graph} = {}) => (rowInfo) => { // eslint-disable-line
+    // console.log('rowInfo', rowInfo, 'nodeId / activeButtonKey', nodeId, activeButtonKey);
     return (
-      <SubGraphViewer
-        subgraph={graph}
+      <AnswersetTableSubComponent
+        rowInfo={rowInfo}
+        store={this.props.store}
+        activeButtonKey={activeButtonKey}
+        nodeId={nodeId}
         concepts={this.props.concepts}
-        layoutRandomSeed={Math.floor(Math.random() * 100)}
-        callbackOnGraphClick={() => {}}
       />
     );
-  }
+  };
 
   getReactTableColumnSpec(columnHeaders, data) {
     // Take columnHeaders from store and update it as needed
@@ -161,21 +108,12 @@ class MessageAnswersetTable extends React.Component {
    * This method works around react-table limitations to enable multiple sub-components on
    * a per-column basis
    * @param {Int} rowIndex Index of the row clicked by the user
-   * @param {String} newSubComponentId Subcomponent id (typically should be identical to the column.id of column clicked.
-   *    'row' is a special id meant for the rowExpander column)
-   * @param {JSX} newSubComponent 
+   * @param {JSX} newSubComponent
    */
-  updateTableSubComponent(rowIndex, newSubComponentId, newSubComponent) {
-    const newExpanded = {};
-    if (this.state.subComponentId === newSubComponentId) {
-      // Toggle visibility if same subcomponent was currently active
-      newExpanded[rowIndex] = this.state.expanded[rowIndex] ? false : true; // eslint-disable-line no-unneeded-ternary
-    } else {
-      // Keep visibility if different subComponent needs to be loaded
-      newExpanded[rowIndex] = true;
-    }
-    const expanded = Object.assign({}, newExpanded);
-    this.setState({ tableSubComponent: newSubComponent, expanded, subComponentId: newSubComponentId });
+  updateTableSubComponent(rowIndex, newSubComponent) {
+    const expanded = {};
+    expanded[rowIndex] = this.state.expanded[rowIndex] ? false : true; // eslint-disable-line no-unneeded-ternary
+    this.setState({ tableSubComponent: newSubComponent, expanded });
   }
 
   renderError() {
@@ -214,7 +152,7 @@ class MessageAnswersetTable extends React.Component {
       columns: this.getReactTableColumnSpec(columnHeaders, answers),
     }];
     return (
-      <div style={{ marginBottom: '10px' }}>
+      <div style={{ marginBottom: '10px', padding: '0 15px' }}>
         <ReactTable
           data={answers}
           columns={columns}
@@ -245,10 +183,13 @@ class MessageAnswersetTable extends React.Component {
                 }
                 // Trigger appropriate subcomponent depending on where user clicked
                 if (column.isSet) { // Handle user clicking on a "Set" element in a row
-                  const newSubComponent = setSubComponentFactory(column.accessor(rowInfo.original), column);
-                  this.updateTableSubComponent(rowInfo.viewIndex, column.id, newSubComponent);
+                  const newSubComponent = this.subComponentFactory({
+                    nodeId: column.id,
+                    activeButtonKey: answersetSubComponentEnum.metadata,
+                  });
+                  this.updateTableSubComponent(rowInfo.viewIndex, newSubComponent);
                 } else if (column.expander) { // Handle user clicking on the row Expander element (1st column)
-                  this.updateTableSubComponent(rowInfo.viewIndex, 'row', this.graphSubComponent);
+                  this.updateTableSubComponent(rowInfo.viewIndex, this.subComponentFactory());
                 }
               },
             };
@@ -260,9 +201,6 @@ class MessageAnswersetTable extends React.Component {
   }
 
   renderGroup() {
-    // const isValid = this.state.groups.reduce((acc, c) => acc || c, false); // Valid if any valid answergroup exists
-    // const selectOptions = this.state.groups.map((g, i) => ({ value: i, label: `${i + 1} - ${g.answers.length} answers each with ${g.nNodes} nodes.` }));
-    // const oneGroup = selectOptions.length === 1;
     return (
       <Row>
         <Col md={12}>
