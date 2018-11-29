@@ -78,6 +78,14 @@ class SubGraphViewer extends React.Component {
     this.syncStateAndProps(nextProps);
   }
 
+  shouldComponentUpdate(nextProps) {
+    // Only redraw/remount component if subgraph components change
+    if (_.isEqual(this.props.subgraph, nextProps.subgraph) && this.network) {
+      return false;
+    }
+    return true;
+  }
+
   syncStateAndProps(newProps) {
     let graph = newProps.subgraph;
 
@@ -87,25 +95,11 @@ class SubGraphViewer extends React.Component {
     }
     const graphOptions = this.getGraphOptions(graph);
 
-    this.setState({ displayGraph: graph, displayGraphOptions: graphOptions })
-  }
-
-
-  shouldComponentUpdate(nextProps) {
-    // Only redraw/remount component if subgraph components change
-    if (_.isEqual(this.props.subgraph, nextProps.subgraph) && this.network) {
-      return false;
-    }
-    return true;
-  }
-
-  componentDidUpdate() {
-    this.setNetworkCallbacks();
+    this.setState({ displayGraph: graph, displayGraphOptions: graphOptions }, this.setNetworkCallbacks);
   }
 
   clickCallback(event) {
     // Add edge objects not just ids
-    
     event.edgeObjects = event.edges.map(eId => this.state.displayGraph.edges.find(displayEdge => displayEdge.id === eId));
     event.graph = this.state.displayGraph;
     this.props.callbackOnGraphClick(event);
@@ -118,8 +112,7 @@ class SubGraphViewer extends React.Component {
       this.network.physics.physicsEnabled = false;
     };
     const afterDraw = () => {
-      this.network.fit();
-      setTimeout(() => { stopLayout(); }, 1000);
+      setTimeout(() => { stopLayout(); this.network.fit(); }, 1000);
     };
     const startLayout = () => {
       this.network.once('afterDrawing', afterDraw);
