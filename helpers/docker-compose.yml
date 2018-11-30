@@ -16,7 +16,7 @@ services:
     image: redis
     ports:
       - "${RESULTS_PORT}:${RESULTS_PORT}"
-    command: --port ${RESULTS_PORT}
+    command: --port ${RESULTS_PORT} --requirepass ${RESULTS_PASSWORD}
 
   broker:
     image: patrickkwang/robokop-rabbitmq
