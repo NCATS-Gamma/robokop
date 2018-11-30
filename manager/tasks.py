@@ -53,11 +53,16 @@ def answer_question(self, question_id, user_email=None):
         question = get_question_by_id(question_id, session=session)
 
         response = requests.post(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/', json=question.to_json())
+        if not response.ok():
+            logger.error(response.text())
+            return None
         polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
 
         for _ in range(60 * 60 * 24):  # wait up to 1 day
             time.sleep(1)
             response = requests.get(polling_url)
+            if response.status_code >= 300:
+                raise RuntimeError(response.text)
             if response.json()['status'] == 'FAILURE':
                 raise RuntimeError('Question answering failed.')
             if response.json()['status'] == 'REVOKED':
@@ -112,6 +117,8 @@ def update_kg(self, question_id, user_email=None):
         for _ in range(60 * 60 * 24):  # wait up to 1 day
             time.sleep(1)
             response = requests.get(polling_url)
+            if response.status_code >= 300:
+                raise RuntimeError(response.text)
             if response.json()['status'] == 'FAILURE':
                 raise RuntimeError('Builder failed.')
             if response.json()['status'] == 'REVOKED':
