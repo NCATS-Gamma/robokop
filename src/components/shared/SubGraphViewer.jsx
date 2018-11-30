@@ -333,7 +333,10 @@ class SubGraphViewer extends React.Component {
     g.edges = g.edges.map((e, i) => {
       let typeDependentParams = {};
       let label = e.type;
-      const nPublications = e.publications.length;
+      let nPublications = e.publications.length;
+      if (nPublications === 0 && 'num_publications' in e) {
+        nPublications = e.num_publications;
+      }
       if (nPublications > 0) {
         label = `${e.type} (${nPublications})`;
       }

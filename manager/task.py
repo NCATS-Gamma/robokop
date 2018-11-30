@@ -77,7 +77,8 @@ class Task(db.Model):
         r = redis.Redis(
             host=os.environ['RESULTS_HOST'],
             port=os.environ['RESULTS_PORT'],
-            db=os.environ['MANAGER_RESULTS_DB'])
+            db=os.environ['MANAGER_RESULTS_DB'],
+            password=os.environ['RESULTS_PASSWORD'])
         value = r.get(f'celery-task-meta-{self.id}')
         if value is None:
             return None

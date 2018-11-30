@@ -67,3 +67,4 @@ name,drug,drugId,condition,diseaseId,phenotypeId,drugAlternate
 "COP(MEFLOQUINE, Malaria) 5",MEFLOQUINE,PUBCHEM:3000506,Malaria,MONDO:0005136,,
 "COP(MEFLOQUINE, Malaria) 6",MEFLOQUINE,PUBCHEM:3000516,Malaria,MONDO:0005136,,
 "COP(MEFLOQUINE, Malaria) 7",MEFLOQUINE,PUBCHEM:12986439,Malaria,MONDO:0005136,,
+"COP(Celastrol, Brain Injury)",Celastrol,PUBCHEM:122724,Brain Injury,MONDO:0043510,,
