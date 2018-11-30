@@ -9,7 +9,7 @@ import FaEyeSlash from 'react-icons/lib/fa/eye-slash';
 // import QuestionHeader from '../shared/QuestionHeader';
 // import AnswersetList from './AnswersetList';
 // import AnswersetInteractive from './AnswersetInteractive';
-// import AnswersetGraph from './AnswersetGraph';
+import AnswersetGraph from './AnswersetGraph';
 import MachineQuestionView2 from './../shared/MachineQuestionView2';
 import MessageAnswersetTable from './MessageAnswersetTable';
 import AnswersetStore from './../../stores/messageAnswersetStore';
@@ -18,8 +18,8 @@ import entityNameDisplay from './../util/entityNameDisplay';
 export const answerSetTabEnum = {
   // answerList: 1,
   // interactive: 2,
-  // aggregate: 3,
   answerTable: 1,
+  aggregate: 2,
 };
 
 /* eslint-disable no-param-reassign */
@@ -123,6 +123,9 @@ class MessageAnswersetPres extends React.Component {
       minHeight: '50px',
       resize: 'vertical',
     };
+    const answersetGraph = toJS(this.answersetStore.message.knowledge_graph);
+    answersetGraph.node_list = answersetGraph.nodes;
+    answersetGraph.edge_list = answersetGraph.edges;
     return (
       <div style={this.props.style}>
         {!this.props.omitHeader &&
@@ -148,7 +151,7 @@ class MessageAnswersetPres extends React.Component {
             </Col> */}
             <div className="col-md-12" style={{ height: '20px' }} />
             <Col md={12}>
-              <Panel>
+              <Panel expanded={this.state.graphVisible} onToggle={() => {}} >
                 <Panel.Heading>
                   <Panel.Title>
                     {'Question Graph '}
@@ -167,8 +170,8 @@ class MessageAnswersetPres extends React.Component {
                     </div>
                   </Panel.Title>
                 </Panel.Heading>
-                <Panel.Body style={{ padding: '0px' }}>
-                  {this.state.graphVisible &&
+                <Panel.Collapse>
+                  <Panel.Body style={{ padding: '0px' }}>
                     <MachineQuestionView2
                       height={200}
                       // width={width}
@@ -180,8 +183,8 @@ class MessageAnswersetPres extends React.Component {
                       // nodeSelectCallback={this.nodeSelectCallback}
                       // edgeSelectCallback={this.edgeSelectCallback}
                     />
-                  }
-                </Panel.Body>
+                  </Panel.Body>
+                </Panel.Collapse>
               </Panel>
             </Col>
           </Row>
@@ -269,16 +272,16 @@ class MessageAnswersetPres extends React.Component {
               enabledAnswerLink={this.props.enabledAnswerLink}
               getAnswerUrl={this.props.getAnswerUrl}
             />
-          </Tab>
+          </Tab> */}
           <Tab
             eventKey={answerSetTabEnum.aggregate}
             title="Aggregate Graph"
           >
             <AnswersetGraph
-              answersetGraph={this.props.answersetGraph}
+              answersetGraph={answersetGraph}
               concepts={this.props.concepts}
             />
-          </Tab> */}
+          </Tab>
         </Tabs>
       </div>
     );
