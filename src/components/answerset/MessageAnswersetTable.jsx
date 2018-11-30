@@ -7,6 +7,7 @@ import 'react-table/react-table.css';
 
 import AnswersetTableSubComponent, { answersetSubComponentEnum } from './AnswersetTableSubComponent';
 import entityNameDisplay from './../util/entityNameDisplay';
+import getNodeTypeColorMap from './../util/colorUtils';
 
 const _ = require('lodash');
 
@@ -68,7 +69,8 @@ class MessageAnswersetTable extends React.Component {
     );
   };
 
-  getReactTableColumnSpec(columnHeaders, data) {
+  getReactTableColumnSpec(columnHeaders, data, concepts) {
+    const bgColorMap = getNodeTypeColorMap(concepts);
     // Take columnHeaders from store and update it as needed
     columnHeaders = columnHeaders.map((col) => { // eslint-disable-line no-param-reassign
       const colSpecObj = _.cloneDeep(col);
@@ -88,6 +90,12 @@ class MessageAnswersetTable extends React.Component {
         colSpecObj.accessor = d => (d.nodes[nodeId].name ? d.nodes[nodeId].name : d.nodes[nodeId].id);
         colSpecObj.width = getColumnWidth(data, colSpecObj.accessor, colSpecObj.Header);
       }
+      const backgroundColor = bgColorMap(colSpecObj.type);
+      const columnHeader = colSpecObj.Header;
+      colSpecObj.Header = () => (
+        <div style={{ backgroundColor }}>{columnHeader}</div>
+      );
+      console.log('Header:', colSpecObj.Header(), backgroundColor);
       return colSpecObj;
     });
     // Add Score column at the end
@@ -149,7 +157,7 @@ class MessageAnswersetTable extends React.Component {
     const { headerInfo: columnHeaders, answers } = answerTables;
     const columns = [{
       Header: 'Answer Set',
-      columns: this.getReactTableColumnSpec(columnHeaders, answers),
+      columns: this.getReactTableColumnSpec(columnHeaders, answers, this.props.concepts),
     }];
     return (
       <div style={{ marginBottom: '10px', padding: '0 15px' }}>
@@ -165,6 +173,12 @@ class MessageAnswersetTable extends React.Component {
           collapseOnDataChange={false}
           SubComponent={this.state.tableSubComponent}
           expanded={this.state.expanded}
+          defaultSorted={[
+            {
+              id: 'score',
+              desc: true,
+            },
+          ]}
           getTdProps={(state, rowInfo, column, instance) => { // eslint-disable-line
             return {
               onClick: (e, handleOriginal) => {
