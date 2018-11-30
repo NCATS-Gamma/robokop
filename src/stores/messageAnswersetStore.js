@@ -80,7 +80,7 @@ class AnswersetStore {
   // Returns formatted answerset data for tabular display
   // {
   //   answers: [{ nodes: {n0: {name: , id: , type: , isSet, setNodes?: }, n1: {}, ...}, score: -1 }, {}, ...],
-  //   headerInfo: [{ Header: 'x', accessor: 'y'}, {}, ...],
+  //   headerInfo: [{ Header: 'n01: Gene', id: 'n01', isSet: false, type: 'gene'}, {}, ...],
   // }
   @computed get answerSetTableData() {
     const qNodeIds = [];
