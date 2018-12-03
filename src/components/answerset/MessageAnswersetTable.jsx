@@ -69,6 +69,8 @@ class MessageAnswersetTable extends React.Component {
     );
   };
 
+  isSelected = rowInfo => Boolean(this.state.expanded[rowInfo.viewIndex]);
+
   getReactTableColumnSpec(columnHeaders, data, concepts) {
     const bgColorMap = getNodeTypeColorMap(concepts);
     // Take columnHeaders from store and update it as needed
@@ -186,6 +188,7 @@ class MessageAnswersetTable extends React.Component {
                 // console.log('It was in this column:', column);
                 // console.log('It was in this row:', rowInfo);
                 // console.log('It was in this table instance:', instance);
+                // console.log('It has the following state:', state);
                 // IMPORTANT! React-Table uses onClick internally to trigger
                 // events like expanding SubComponents and pivots.
                 // By default a custom 'onClick' handler will override this functionality.
@@ -207,6 +210,10 @@ class MessageAnswersetTable extends React.Component {
               },
             };
           }}
+          getTrProps={(state, rowInfo) => ({
+              className: this.isSelected(rowInfo) ? 'selected-row' : '',
+            })
+          }
           // style={{ height: '480px' }}
         />
       </div>

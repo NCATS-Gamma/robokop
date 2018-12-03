@@ -282,7 +282,7 @@ div.vis-tooltip .invalid-node {
   height: calc(100vh - 100px);
 } */
 
-/* React-table custom styling */
+/* ##### START: React-table custom styling ##### */
 .ReactTable .-pagination .-btn {
   height: auto; /* Default of 100% makes buttons in footer really large */
 }
@@ -304,6 +304,10 @@ div.vis-tooltip .invalid-node {
 .rt-td.right {
   text-align: right;
 }
+.rt-tr.selected-row { /* Highlight selected row */
+  background-color: #ebebeb;
+}
+/* ##### END: React-table custom styling ##### */
 
 /* Vertically align icons and text in buttons */
 .valign-center {

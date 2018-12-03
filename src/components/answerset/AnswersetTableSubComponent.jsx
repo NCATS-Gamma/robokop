@@ -172,7 +172,7 @@ class AnswersetTableSubComponent extends React.Component {
           minRows={1}
           filterable={setData.length > 5}
           showPagination={setData.length > 5}
-          className="-striped -highlight"
+          className="-highlight"
         />
       );
     } else {
@@ -192,6 +192,7 @@ class AnswersetTableSubComponent extends React.Component {
           filterable={false}
           showPagination={false}
           sortable={false}
+          className="-highlight"
         />
       );
     }
@@ -211,45 +212,52 @@ class AnswersetTableSubComponent extends React.Component {
     return (
       <div
         style={{
-          margin: '20px',
-          border: '1px solid #ededed',
           padding: '20px',
-          boxShadow: '0px 0px 5px 0px #ececec',
-          minHeight: '200px',
+          backgroundColor: '#fafafa',
         }}
       >
-        <Row>
-          <Col md={2}>
-            <ButtonGroup vertical style={{ float: 'left' }}>
-              <Button
-                active={isJsonActive}
-                style={{ textAlign: 'left' }}
-                onClick={() => this.updateActiveButton(answersetSubComponentEnum.json)}
-              >
-                <span className="valign-center"><FaFileText /><span style={{ paddingLeft: '5px' }}>JSON</span></span>
-              </Button>
-              <Button
-                active={isGraphActive}
-                style={{ textAlign: 'left' }}
-                onClick={() => this.updateActiveButton(answersetSubComponentEnum.graph)}
-              >
-                <div className="valign-center"><IoNetwork /><span style={{ paddingLeft: '5px' }}>Graph</span></div>
-              </Button>
-              <Button
-                active={isMetadataActive}
-                style={{ textAlign: 'left' }}
-                onClick={() => this.updateActiveButton(answersetSubComponentEnum.metadata)}
-              >
-                <span className="valign-center"><FaThList /><span style={{ paddingLeft: '5px' }}>Metadata</span></span>
-              </Button>
-            </ButtonGroup>
-          </Col>
-          <Col md={10}>
-            {isJsonActive && this.renderJsonView()}
-            {isGraphActive && this.renderSubGraph()}
-            {isMetadataActive && this.renderMetadataView()}
-          </Col>
-        </Row>
+        <div
+          style={{
+            backgroundColor: '#fff',
+            border: '1px solid #ededed',
+            padding: '20px',
+            boxShadow: '0px 0px 5px 0px #ececec',
+            minHeight: '200px',
+          }}
+        >
+          <Row>
+            <Col md={2}>
+              <ButtonGroup vertical style={{ float: 'left' }}>
+                <Button
+                  active={isJsonActive}
+                  style={{ textAlign: 'left' }}
+                  onClick={() => this.updateActiveButton(answersetSubComponentEnum.json)}
+                >
+                  <span className="valign-center"><FaFileText /><span style={{ paddingLeft: '5px' }}>JSON</span></span>
+                </Button>
+                <Button
+                  active={isGraphActive}
+                  style={{ textAlign: 'left' }}
+                  onClick={() => this.updateActiveButton(answersetSubComponentEnum.graph)}
+                >
+                  <div className="valign-center"><IoNetwork /><span style={{ paddingLeft: '5px' }}>Graph</span></div>
+                </Button>
+                <Button
+                  active={isMetadataActive}
+                  style={{ textAlign: 'left' }}
+                  onClick={() => this.updateActiveButton(answersetSubComponentEnum.metadata)}
+                >
+                  <span className="valign-center"><FaThList /><span style={{ paddingLeft: '5px' }}>Metadata</span></span>
+                </Button>
+              </ButtonGroup>
+            </Col>
+            <Col md={10}>
+              {isJsonActive && this.renderJsonView()}
+              {isGraphActive && this.renderSubGraph()}
+              {isMetadataActive && this.renderMetadataView()}
+            </Col>
+          </Row>
+        </div>
       </div>
     );
   }
