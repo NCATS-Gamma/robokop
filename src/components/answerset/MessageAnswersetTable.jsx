@@ -95,7 +95,6 @@ class MessageAnswersetTable extends React.Component {
       colSpecObj.Header = () => (
         <div style={{ backgroundColor }}>{columnHeader}</div>
       );
-      console.log('Header:', colSpecObj.Header(), backgroundColor);
       return colSpecObj;
     });
     // Add Score column at the end
@@ -169,7 +168,7 @@ class MessageAnswersetTable extends React.Component {
           pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
           minRows={5}
           filterable
-          className="-striped -highlight"
+          className="-highlight"
           collapseOnDataChange={false}
           SubComponent={this.state.tableSubComponent}
           expanded={this.state.expanded}
