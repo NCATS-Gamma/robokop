@@ -22,6 +22,7 @@ class AppConfig {
       search: this.url('search/'),
       workflow: this.url('workflow/'),
       appAnswerset: this.url('app/answerset'),
+      appMsgAnswerset: this.url('app/answerset-message'),
       appComparison: this.url('app/comparison'),
     };
 
