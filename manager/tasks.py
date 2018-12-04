@@ -13,7 +13,7 @@ from manager.setup import app, mail, session_scope
 from manager.answer import Answerset
 from manager.question import get_question_by_id
 import manager.task  # make sure that question knows about .tasks
-import manager.logging_config  # set up the logger
+from manager.logging_config import get_task_logger  # set up the logger
 
 logger = logging.getLogger(__name__)
 
@@ -31,11 +31,6 @@ celery.conf.task_queues = (
 )
 
 
-# Tell celery not to mess with logging at all
-@signals.setup_logging.connect
-def setup_celery_logging(**kwargs):
-    pass
-celery.log.setup()
 
 
 class NoAnswersException(Exception):
@@ -46,6 +41,7 @@ class NoAnswersException(Exception):
 def answer_question(self, question_id, user_email=None):
     """Generate answerset for a question."""
     self.update_state(state='ANSWERING')
+    logger = get_task_logger(__name__)
     logger.info("Answering your question...")
 
     with session_scope() as session:
@@ -53,7 +49,7 @@ def answer_question(self, question_id, user_email=None):
 
         response = requests.post(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/', json=question.to_json())
         polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
-
+        
         for _ in range(60 * 60 * 24):  # wait up to 1 day
             time.sleep(1)
             response = requests.get(polling_url)
@@ -100,7 +96,7 @@ def answer_question(self, question_id, user_email=None):
 def update_kg(self, question_id, user_email=None):
     """Update the shared knowledge graph with respect to a question."""
     self.update_state(state='UPDATING KG')
-
+    logger  = get_task_logger(__name__)
     logger.info(f"Updating the knowledge graph for '{question_id}'...")
 
     with session_scope() as session:
