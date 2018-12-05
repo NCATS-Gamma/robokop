@@ -58,46 +58,60 @@ class WF1MOD3(Resource):
         max_results = request.args.get('max_results', default=250)
         qspec = {
             "machine_question": {
+                "nodes": [
+                    {
+                        "id": "n0",
+                        "type": "disease",
+                        "curie": "MONDO:0005148"
+                    },
+                    {
+                        "id": "n1",
+                        "type": "chemical_substance"
+                    },
+                    {
+                        "id": "n2",
+                        "type": "gene"
+                    },
+                    {
+                        "id": "n3",
+                        "type": "chemical_substance"
+                    }
+                ],
                 "edges": [
                     {
-                        "source_id": 'n1',
-                        "target_id": 'n0',
+                        "id": "e1",
+                        "source_id": "n1",
+                        "target_id": "n0",
                         "type": "contributes_to"
                     },
                     {
-                        "source_id": 'n2',
-                        "target_id": 'n1',
-                        "type": "positively_regulates__entity_to_entity"
+                        "id": "e2",
+                        "source_id": "n2",
+                        "target_id": "n1",
+                        "type": [
+                            "increases_synthesis_of",
+                            "increases_abundance_of",
+                            "increases_response_to",
+                            "decreases_updake_of"
+                        ]
                     },
                     {
-                        "source_id": 'n3',
-                        "target_id": 'n2',
-                        "type": "decreases_activity_of"
-                    }
-                ],
-                "nodes": [
-                    {
-                        "curie": disease_curie,
-                        "id": 'n0',
-                        "type": "disease"
-                    },
-                    {
-                        "id": 'n1',
-                        "type": "chemical_substance",
-                        "set": True
-                    },
-                    {
-                        "id": 'n2',
-                        "type": "gene",
-                        "set": True
-                    },
-                    {
-                        "id": 'n3',
-                        "type": "chemical_substance"
+                        "id": "e3",
+                        "source_id": "n3",
+                        "target_id": "n2",
+                        "type": [
+                            "decreases_activity_of",
+                            "decreases_expression_of",
+                            "increases_degradation_of",
+                            "decreases_stability_of",
+                            "decreases_synthesis_of",
+                            "decreases_secretion_of"
+                        ]
                     }
                 ]
             }
         }
+
 
         response = requests.post(
             f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/?max_results={max_results}",
@@ -159,42 +173,55 @@ class WF1MOD3a(Resource):
         max_results = request.args.get('max_results', default=250)
         qspec = {
             "machine_question": {
+                "nodes": [
+                    {
+                        "id": "n0",
+                        "type": "disease",
+                        "curie": "MONDO:0005148"
+                    },
+                    {
+                        "id": "n1",
+                        "type": "chemical_substance"
+                    },
+                    {
+                        "id": "n2",
+                        "type": "gene"
+                    },
+                    {
+                        "id": "n3",
+                        "type": "chemical_substance"
+                    }
+                ],
                 "edges": [
                     {
-                        "source_id": 'n1',
-                        "target_id": 'n0',
+                        "id": "e1",
+                        "source_id": "n1",
+                        "target_id": "n0",
                         "type": "contributes_to"
                     },
                     {
-                        "source_id": 'n2',
-                        "target_id": 'n1',
-                        "type": "negatively_regulates__entity_to_entity"
+                        "id": "e2",
+                        "source_id": "n2",
+                        "target_id": "n1",
+                        "type": [
+                            "increases_degradation_of",
+                            "decreases_abundance_of",
+                            "decreases_response_to",
+                            "increases_uptake_of"
+                        ]
                     },
                     {
-                        "source_id": 'n3',
-                        "target_id": 'n2',
-                        "type": "increases_activity_of"
-                    }
-                ],
-                "nodes": [
-                    {
-                        "curie": disease_curie,
-                        "id": 'n0',
-                        "type": "disease"
-                    },
-                    {
-                        "id": 'n1',
-                        "type": "chemical_substance",
-                        "set": True
-                    },
-                    {
-                        "id": 'n2',
-                        "type": "gene",
-                        "set": True
-                    },
-                    {
-                        "id": 'n3',
-                        "type": "chemical_substance"
+                        "id": "e3",
+                        "source_id": "n3",
+                        "target_id": "n2",
+                        "type": [
+                            "increases_activity_of",
+                            "increases_expression_of",
+                            "decreases_degradation_of",
+                            "increases_stability_of",
+                            "increases_synthesis_of",
+                            "increases_secretion_of"
+                        ]
                     }
                 ]
             }

@@ -9,7 +9,18 @@ services:
       - POSTGRES_PASSWORD
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
-
+  graphql:
+    image: graphile/postgraphile
+    container_name: postgraphile
+    environment:
+      - PGHOST=${POSTGRES_HOST}
+      - PGPORT=${POSTGRES_PORT}
+      - PGDATABASE=${POSTGRES_DB}
+      - PGUSER=${POSTGRES_USER}
+      - PGPASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "${GRAPHQL_PORT}:${GRAPHQL_PORT}"
+    command: postgraphile --port ${GRAPHQL_PORT} --watch
   manager:
     container_name: manager
     build:
