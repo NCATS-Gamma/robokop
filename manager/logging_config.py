@@ -3,7 +3,8 @@ import logging.handlers
 import os
 from celery._state import get_current_task
 
-def set_up_logger():
+def set_up_main_logger():
+    """ Sets up logging for the whole application."""
     # create formatter
     formatter = logging.Formatter("[%(asctime)s: %(levelname)s/%(name)s(%(processName)s)]: %(message)s")
 
@@ -36,25 +37,26 @@ def set_up_logger():
     logger.addHandler(console_handler)
     logger.addHandler(file_handler)
     logger.addHandler(smtp_handler)
-    logger = logging.getLogger('manager.tasks')
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(smtp_handler)
-    logger.propagate = False
     return logger
 
-logger = set_up_logger()
+logger = set_up_main_logger()
 
 
-def get_task_logger(module_name= None):
-    logger = set_up_logger()
-    current_task = get_current_task()
-    if current_task == None:
-        return logging.getLogger(module_name or __name__)
-    task_id = current_task.request.id
-    logger = logging.getLogger('manager.tasks' + f'.{task_id}')
-    file_path = os.path.join(os.environ.get('ROBOKOP_HOME'),'task_logs', f'{task_id}.log')
+def clear_log_handlers(logger):
+    """ Clears any handlers from the logger."""
+    for handler in logger.handlers:
+        handler.flush()
+        handler.close()
+    logger.handlers = []
+def add_task_id_based_handler(logger, task_id):
+    """Adds a file handler with task_id as file name to the logger."""
     formatter = logging.Formatter("[%(asctime)s: %(levelname)s/%(name)s(%(processName)s)]: %(message)s")
-    file_handler = logging.handlers.RotatingFileHandler(filename = file_path)
+    # create file handler and set level to debug
+    file_handler = logging.handlers.RotatingFileHandler(f"{os.environ['ROBOKOP_HOME']}/task_logs/{task_id}.log",
+        mode="a",
+        encoding="utf-8",
+        maxBytes=1e6,
+        backupCount=9)
+    file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
-    return logger

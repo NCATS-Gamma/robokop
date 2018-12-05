@@ -13,7 +13,7 @@ from manager.setup import app, mail, session_scope
 from manager.answer import Answerset
 from manager.question import get_question_by_id
 import manager.task  # make sure that question knows about .tasks
-from manager.logging_config import get_task_logger  # set up the logger
+from manager.logging_config import set_up_main_logger, clear_log_handlers, add_task_id_based_handler  # set up the logger
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,28 @@ celery.conf.task_queues = (
 )
 
 
+@signals.task_prerun.connect()
+def setup_logging(signal=None, sender=None, task_id=None, task=None, *args, **kwargs):
+    """
+    Changes the main logger's handlers so they could log to a task specific log file.    
+    """
+    logger = logging.getLogger('manager')
+    clear_log_handlers(logger)
+    add_task_id_based_handler(logger, task_id)
+
+@signals.task_postrun.connect()
+def tear_down_task_logging(**kwargs):
+    """
+    Reverts back logging to main configuration once task is finished.
+    """
+    logger = logging.getLogger('manager')
+    clear_log_handlers(logger)
+    # change logging config back to the way it was
+    set_up_main_logger()
+    #finally log task has finished to main file
+    logger = logging.getLogger(__name__)
+    logger.info(f"task {kwargs.get('task_id')} finished ...")
+
 
 
 class NoAnswersException(Exception):
@@ -41,7 +63,6 @@ class NoAnswersException(Exception):
 def answer_question(self, question_id, user_email=None):
     """Generate answerset for a question."""
     self.update_state(state='ANSWERING')
-    logger = get_task_logger(__name__)
     logger.info("Answering your question...")
 
     with session_scope() as session:
@@ -96,7 +117,6 @@ def answer_question(self, question_id, user_email=None):
 def update_kg(self, question_id, user_email=None):
     """Update the shared knowledge graph with respect to a question."""
     self.update_state(state='UPDATING KG')
-    logger  = get_task_logger(__name__)
     logger.info(f"Updating the knowledge graph for '{question_id}'...")
 
     with session_scope() as session:
