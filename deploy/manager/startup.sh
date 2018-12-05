@@ -13,6 +13,9 @@ else
     chown -R murphy:murphy $ROBOKOP_HOME
 fi
 
+echo "Creating task_logs dir if not present"
+mkdir -p $ROBOKOP_HOME/task_logs
+
 echo "Finding and removing stray pid files..."
 find . -prune -name "*.pid" -exec rm -rf {} \;
 
