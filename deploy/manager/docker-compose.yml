@@ -12,6 +12,8 @@ services:
   graphql:
     image: graphile/postgraphile
     container_name: postgraphile
+    depends_on:
+      - postgres
     environment:
       - PGHOST=${POSTGRES_HOST}
       - PGPORT=${POSTGRES_PORT}
