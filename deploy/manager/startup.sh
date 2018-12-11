@@ -3,7 +3,8 @@
 set -e
 
 cd $ROBOKOP_HOME/robokop
-
+mkdir $ROBOKOP_HOME/task_logs
+chmod 777 $ROBOKOP_HOME/task_logs
 sleep 3s
 
 if [ -n "$(find . -user "murphy" -prune)" ]; then
