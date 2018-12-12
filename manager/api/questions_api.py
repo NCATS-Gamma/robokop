@@ -105,7 +105,7 @@ class QuestionsAPI(Resource):
                                 $ref: '#/definitions/Question'
         """
         user = getAuthData()
-        get_messages() # Flush the most recent log of questions and activity
+        # get_messages() # Flush the most recent log of questions and activity
         question_list = list_questions(session=db.session)
 
         def augment_info(question):

@@ -364,7 +364,7 @@ class QuestionTasks(Resource):
         except Exception as err:
             return "Invalid question key.", 404
 
-        get_messages()
+        # get_messages() 
 
         tasks = question.tasks
         statuses = [

@@ -19,7 +19,7 @@ with app.app_context():
 
     # Create any database tables that don't exist yet.
     db.create_all()
-    get_messages()  # set up the manager logging queue
+    # get_messages()  # set up the manager logging queue
 
     # Create the Roles "admin" and "end-user" -- unless they already exist
     user_datastore.find_or_create_role(name='admin', description='Administrator')
