@@ -16,7 +16,8 @@ from manager.setup import app, api, db
 from manager.logging_config import logger
 from manager.util import getAuthData
 from manager.tasks import celery
-from manager.task import list_tasks, get_task_by_id
+from manager.task import list_tasks, get_task_by_id, TASK_TYPES
+
 
 concept_map = {}
 try:
@@ -577,3 +578,45 @@ class User(Resource):
         return user
 
 api.add_resource(User, '/user/')
+
+class TaskLog(Resource):
+    def get(self, task_id):
+        """
+        Get activity log for a task and logs of remote tasks associated with the task.
+        ---
+        tags: [util]
+        parameters:
+          - in: path
+            name: task_id
+            description: ID of task
+            schema:
+                type: string
+            required: true
+        responses:
+            200:
+                description: text
+        """
+        try:
+            task = get_task_by_id(task_id)
+        except KeyError:
+            return 'Task ID not found', 404
+
+        request_url = ''
+        if task.type == TASK_TYPES['answer']:
+            request_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{task.remote_task_id}/log"
+        elif task.type == TASK_TYPES['update']:
+            request_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{task.remote_task_id}/log"
+        else: 
+            return 'Invalid task type', 500
+        response = requests.get(request_url)
+        log = response.content.decode('utf-8')
+        result = {
+            'manager_task_id': task.id,
+            'remote_task_id': task.remote_task_id,
+            'task_type': task.type,
+            'remote_task_log': log
+        }
+        return result, 200
+            
+
+api.add_resource(TaskLog, '/t/<task_id>/log')

@@ -12,8 +12,8 @@ from flask_mail import Message
 from manager.setup import app, mail, session_scope
 from manager.answer import Answerset
 from manager.question import get_question_by_id
-import manager.task  # make sure that question knows about .tasks
-import manager.logging_config  # set up the logger
+from manager.task import Task, TASK_TYPES, save_task_info, update_task_info # make sure that question knows about .tasks
+from manager.logging_config import set_up_main_logger, clear_log_handlers, add_task_id_based_handler  # set up the logger
 
 logger = logging.getLogger(__name__)
 
@@ -31,11 +31,32 @@ celery.conf.task_queues = (
 )
 
 
-# Tell celery not to mess with logging at all
-@signals.setup_logging.connect
-def setup_celery_logging(**kwargs):
-    pass
-celery.log.setup()
+@signals.task_prerun.connect()
+def setup_logging(signal=None, sender=None, task_id=None, task=None, *args, **kwargs):
+    """
+    Changes the main logger's handlers so they could log to a task specific log file.    
+    """
+    logger = logging.getLogger('manager')
+    clear_log_handlers(logger)
+    add_task_id_based_handler(logger, task_id)
+
+@signals.task_postrun.connect()
+def task_post_run(**kwargs):
+    """
+    Reverts back logging to main configuration once task is finished.
+    Updates task object with end time.
+    """
+    task_id = kwargs.get('task_id')
+    logger = logging.getLogger('manager')
+    update_task_info(task_id)
+    logger.info("Fetched and stored results")
+    clear_log_handlers(logger)
+    # change logging config back to the way it was
+    set_up_main_logger()
+    #finally log task has finished to main file
+    logger = logging.getLogger(__name__)
+    logger.info(f"task {kwargs.get('task_id')} finished ...")
+
 
 
 class NoAnswersException(Exception):
@@ -52,8 +73,15 @@ def answer_question(self, question_id, user_email=None):
         question = get_question_by_id(question_id, session=session)
 
         response = requests.post(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/', json=question.to_json())
-        polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
-
+        remote_task_id = response.json()['task_id']
+        polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{remote_task_id}"
+        
+        save_task_info(task_id=self.request.id, 
+                question_id=question_id, 
+                task_type=TASK_TYPES['answer'], 
+                initiator=user_email,
+                remote_task_id=remote_task_id)
+        logger.info(f"Remote answering task started with id: {remote_task_id}")
         for _ in range(60 * 60 * 24):  # wait up to 1 day
             time.sleep(1)
             response = requests.get(polling_url)
@@ -100,14 +128,20 @@ def answer_question(self, question_id, user_email=None):
 def update_kg(self, question_id, user_email=None):
     """Update the shared knowledge graph with respect to a question."""
     self.update_state(state='UPDATING KG')
-
     logger.info(f"Updating the knowledge graph for '{question_id}'...")
 
     with session_scope() as session:
         question = get_question_by_id(question_id, session=session)
         response = requests.post(f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question.to_json())
-        polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task id']}"
-
+        remote_task_id = response.json()['task id']
+        polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{remote_task_id}"
+ 
+        save_task_info(task_id=self.request.id, 
+                question_id=question_id, 
+                task_type=TASK_TYPES['update'], 
+                initiator=user_email,
+                remote_task_id=remote_task_id)
+        logger.info(f"Remote Update task started with id: {remote_task_id}")
         for _ in range(60 * 60 * 24):  # wait up to 1 day
             time.sleep(1)
             response = requests.get(polling_url)
