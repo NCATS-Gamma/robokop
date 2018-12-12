@@ -22,7 +22,7 @@ services:
       - PGPASSWORD=${POSTGRES_PASSWORD}
     ports:
       - "${GRAPHQL_PORT}:${GRAPHQL_PORT}"
-    command: postgraphile --port ${GRAPHQL_PORT} --watch
+    command: postgraphile --port ${GRAPHQL_PORT} --watch --cors --simple-collections only
   manager:
     container_name: manager
     build:
