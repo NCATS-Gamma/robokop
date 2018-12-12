@@ -133,7 +133,7 @@ def update_kg(self, question_id, user_email=None):
     with session_scope() as session:
         question = get_question_by_id(question_id, session=session)
         response = requests.post(f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question.to_json())
-        remote_task_id = response.json()['task_id']
+        remote_task_id = response.json()['task id']
         polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{remote_task_id}"
  
         save_task_info(task_id=self.request.id, 
