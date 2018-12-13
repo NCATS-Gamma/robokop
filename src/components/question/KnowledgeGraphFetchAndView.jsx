@@ -28,12 +28,14 @@ class KnowledgeGraphFetchAndView extends React.Component {
     return `${w}px`;
   }
   scrollGraphToTop() {
-    $('html, body').animate(
-      {
-        scrollTop: $(this.props.scrollToId).offset().top - 3,
-      },
-      1000,
-    );
+    if (this.props.scrollToId !== '') {
+      $('html, body').animate(
+        {
+          scrollTop: $(this.props.scrollToId).offset().top - 3,
+        },
+        1000,
+      );
+    }
   }
 
   fetch() {
@@ -57,7 +59,7 @@ class KnowledgeGraphFetchAndView extends React.Component {
     return (
       <div id="kgFetchDiv">
         {(showFetchButton || showFetching || showWait) &&
-          <div style={{ margin: '15px' }}>
+          <div style={{ padding: '15px', textAlign: 'center' }}>
             {showWait &&
               <p>
                 Knowledge graph update in progress.
