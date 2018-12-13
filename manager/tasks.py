@@ -11,7 +11,7 @@ from flask_mail import Message
 
 from manager.setup import app, mail
 from manager.task import TASK_TYPES, save_task_info, update_task_info  # make sure that question knows about .tasks
-from manager.graphql_accessors import get_question_by_id, add_message
+from manager.graphql_accessors import get_question_json_by_id, add_answerset, get_question_by_id
 from manager.logging_config import set_up_main_logger, clear_log_handlers, add_task_id_based_handler  # set up the logger
 
 logger = logging.getLogger(__name__)
@@ -66,19 +66,27 @@ def answer_question(self, question_id, user_email=None):
     self.update_state(state='ANSWERING')
     logger.info("Answering your question...")
 
-    question = get_question_by_id(question_id)
-    message = {
-        'question_graph': question['machine_question'],
-        'knowledge_graph': {
-            'nodes': [],
-            'edges': []
-        },
-        'knowledge_maps': []
-    }
+    try:
+        question = get_question_by_id(question_id)
+        qgraph_id = question.qgraph_id
+        question = question.dump()
+        message = {
+            'question_graph': question['question_graph'],
+            'knowledge_graph': {
+                'nodes': [],
+                'edges': []
+            },
+            'knowledge_maps': []
+        }
 
-    response = requests.post(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/ti', json=message)
+        response = requests.post(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/ti', json=message)
+        message = response.json()
+        answerset = message['answers']
 
-    return add_message(response.json())
+        return add_answerset(answerset, qgraph_id=qgraph_id)
+    except Exception as e:
+        logger.exception(e)
+        raise e
 
 
 @celery.task(bind=True, exchange='manager', routing_key='manager.update', task_acks_late=True, track_started=True, worker_prefetch_multiplier=1)
@@ -87,7 +95,7 @@ def update_kg(self, question_id, user_email=None):
     self.update_state(state='UPDATING KG')
     logger.info(f"Updating the knowledge graph for '{question_id}'...")
 
-    question = get_question_by_id(question_id)
+    question = get_question_json_by_id(question_id)
     response = requests.post(f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question.to_json())
     remote_task_id = response.json()['task id']
     polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{remote_task_id}"

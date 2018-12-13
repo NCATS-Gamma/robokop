@@ -1,3 +1,5 @@
+"""Set Flask config variables."""
+
 import os
 
 DEBUG = True
@@ -5,22 +7,21 @@ SECRET_KEY = os.environ["ROBOKOP_SECRET_KEY"]
 DEFAULT_MAIL_SENDER = os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"]
 SECURITY_EMAIL_SENDER = os.environ["ROBOKOP_SECURITY_EMAIL_SENDER"]
 
-SQLALCHEMY_DATABASE_URI = f'postgresql://{os.environ["POSTGRES_USER"]}:{os.environ["POSTGRES_PASSWORD"]}@{os.environ["POSTGRES_HOST"]}:{os.environ["POSTGRES_PORT"]}/{os.environ["POSTGRES_DB"]}'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # Security Misc
 SECURITY_PASSWORD_SALT = os.environ["ROBOKOP_SECURITY_PASSWORD_SALT"]
 
 # Security views
-SECURITY_LOGIN_URL = '/login' # Specifies the login URL. Defaults to /login.
-SECURITY_LOGOUT_URL = '/logout' # Specifies the logout URL. Defaults to /logout.
-SECURITY_REGISTER_URL = '/register' # Specifies the register URL. Defaults to /register.
-SECURITY_RESET_URL = '/password/reset' # Specifies the password reset URL. Defaults to /reset.
-SECURITY_CHANGE_URL = '/password/change' # Specifies the password change URL. Defaults to /change.
-SECURITY_CONFIRM_URL = '/user/confirm' # Specifies the email confirmation URL. Defaults to /confirm.
-SECURITY_POST_LOGIN_VIEW = '/' # Specifies the default view to redirect to after a user logs in. This value can be set to a URL or an endpoint name. Defaults to /.
-SECURITY_POST_LOGOUT_VIEW = '/' # Specifies the default view to redirect to after a user logs out. This value can be set to a URL or an endpoint name. Defaults to /.
-SECURITY_CONFIRM_ERROR_VIEW = None # Specifies the view to redirect to if a confirmation error occurs. This value can be set to a URL or an endpoint name. If this value is None, the user is presented the default view to resend a confirmation link. Defaults to None.
+SECURITY_LOGIN_URL = '/login'  # Specifies the login URL. Defaults to /login.
+SECURITY_LOGOUT_URL = '/logout'  # Specifies the logout URL. Defaults to /logout.
+SECURITY_REGISTER_URL = '/register'  # Specifies the register URL. Defaults to /register.
+SECURITY_RESET_URL = '/password/reset'  # Specifies the password reset URL. Defaults to /reset.
+SECURITY_CHANGE_URL = '/password/change'  # Specifies the password change URL. Defaults to /change.
+SECURITY_CONFIRM_URL = '/user/confirm'  # Specifies the email confirmation URL. Defaults to /confirm.
+SECURITY_POST_LOGIN_VIEW = '/'  # Specifies the default view to redirect to after a user logs in. This value can be set to a URL or an endpoint name. Defaults to /.
+SECURITY_POST_LOGOUT_VIEW = '/'  # Specifies the default view to redirect to after a user logs out. This value can be set to a URL or an endpoint name. Defaults to /.
+SECURITY_CONFIRM_ERROR_VIEW = None  # Specifies the view to redirect to if a confirmation error occurs. This value can be set to a URL or an endpoint name. If this value is None, the user is presented the default view to resend a confirmation link. Defaults to None.
 # SECURITY_UNAUTHORIZED_VIEW = '/unauthorized' # Specifies the view to redirect to if a user attempts to access a URL/endpoint that they do not have permission to access. If this value is None, the user is presented with a default HTTP 403 response. Defaults to None.
 
 # Security Templates
@@ -33,17 +34,17 @@ SECURITY_SEND_CONFIRMATION_TEMPLATE = 'security/send_confirmation.html' # Specif
 SECURITY_SEND_LOGIN_TEMPLATE = 'security/send_login.html' # Specifies the path to the template for the send login instructions page for passwordless logins. Defaults to security/send_login.html.
 
 # Security Options
-SECURITY_CONFIRMABLE = True # Specifies if users are required to confirm their email address when registering a new account. If this value is True, Flask-Security creates an endpoint to handle confirmations and requests to resend confirmation instructions. The URL for this endpoint is specified by the SECURITY_CONFIRM_URL configuration option. Defaults to False.
-SECURITY_REGISTERABLE = True # Specifies if Flask-Security should create a user registration endpoint. The URL for this endpoint is specified by the SECURITY_REGISTER_URL configuration option. Defaults to False.
-SECURITY_RECOVERABLE = True # Specifies if Flask-Security should create a password reset/recover endpoint. The URL for this endpoint is specified by the SECURITY_RESET_URL configuration option. Defaults to False.
-SECURITY_CHANGEABLE = True # Specifies if Flask-Security should enable the change password endpoint. The URL for this endpoint is specified by the SECURITY_CHANGE_URL configuration option. Defaults to False.
+SECURITY_CONFIRMABLE = True  # Specifies if users are required to confirm their email address when registering a new account. If this value is True, Flask-Security creates an endpoint to handle confirmations and requests to resend confirmation instructions. The URL for this endpoint is specified by the SECURITY_CONFIRM_URL configuration option. Defaults to False.
+SECURITY_REGISTERABLE = True  # Specifies if Flask-Security should create a user registration endpoint. The URL for this endpoint is specified by the SECURITY_REGISTER_URL configuration option. Defaults to False.
+SECURITY_RECOVERABLE = True  # Specifies if Flask-Security should create a password reset/recover endpoint. The URL for this endpoint is specified by the SECURITY_RESET_URL configuration option. Defaults to False.
+SECURITY_CHANGEABLE = True  # Specifies if Flask-Security should enable the change password endpoint. The URL for this endpoint is specified by the SECURITY_CHANGE_URL configuration option. Defaults to False.
 
 # Security Email settings
-SECURITY_EMAIL_SUBJECT_REGISTER = 'Robokop - Please confirm your email' # Sets the subject for the confirmation email. Defaults to Welcome
-SECURITY_EMAIL_SUBJECT_PASSWORD_NOTICE = 'Robokop - Your password has been reset' # Sets subject for the password notice. Defaults to Your password has been reset
-SECURITY_EMAIL_SUBJECT_PASSWORD_RESET = 'Robokop - Password Reset Instructions' # Sets the subject for the password reset email. Defaults to Password reset instructions
-SECURITY_EMAIL_SUBJECT_PASSWORD_CHANGE_NOTICE = 'Robokop - Your password has been changed' # Sets the subject for the password change notice. Defaults to Your password has been changed
-SECURITY_EMAIL_SUBJECT_CONFIRM = 'Robokop - Please confirm your email' # Sets the subject for the email confirmation message. Defaults to Please confirm your email
+SECURITY_EMAIL_SUBJECT_REGISTER = 'Robokop - Please confirm your email'  # Sets the subject for the confirmation email. Defaults to Welcome
+SECURITY_EMAIL_SUBJECT_PASSWORD_NOTICE = 'Robokop - Your password has been reset'  # Sets subject for the password notice. Defaults to Your password has been reset
+SECURITY_EMAIL_SUBJECT_PASSWORD_RESET = 'Robokop - Password Reset Instructions'  # Sets the subject for the password reset email. Defaults to Password reset instructions
+SECURITY_EMAIL_SUBJECT_PASSWORD_CHANGE_NOTICE = 'Robokop - Your password has been changed'  # Sets the subject for the password change notice. Defaults to Your password has been changed
+SECURITY_EMAIL_SUBJECT_CONFIRM = 'Robokop - Please confirm your email'  # Sets the subject for the email confirmation message. Defaults to Please confirm your email
 
 # Mail Setup
 MAIL_SERVER = os.environ["ROBOKOP_MAIL_SERVER"]

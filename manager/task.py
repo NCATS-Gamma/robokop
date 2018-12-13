@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, DateTime, String, ForeignKeyConstraint
 from sqlalchemy.types import JSON
 
-from manager.setup import db
+from manager.setup_db import Base, db_session
 import manager.logging_config
 
 
@@ -22,7 +22,7 @@ TASK_TYPES = {
 }
 
 
-class Task(db.Model):
+class Task(Base):
     """Task object."""
 
     __tablename__ = 'task'
@@ -115,14 +115,14 @@ class Task(db.Model):
 def list_tasks(session=None):
     """Return all tasks."""
     if session is None:
-        session = db.session
+        session = db_session
     return session.query(Task).all()
 
 
 def get_task_by_id(task_id, session=None):
     """Return all tasks with id == task_id."""
     if session is None:
-        session = db.session
+        session = db_session
     task = session.query(Task).filter(Task.id == task_id).first()
     if not task:
         raise KeyError("No such task.")
@@ -132,7 +132,7 @@ def get_task_by_id(task_id, session=None):
 def save_task_info(task_id, question_id, task_type, initiator, remote_task_id=None, session=None):
     """Saves task information to database."""
     if session is None:
-        session = db.session
+        session = db_session
     task = Task(
         id=task_id,
         question_id=question_id,
@@ -148,7 +148,7 @@ def save_task_info(task_id, question_id, task_type, initiator, remote_task_id=No
 def update_task_info(task_id, session= None) :
     """ Updates the endtime of task when task is done"""
     if session is None:
-        session = db.session
+        session = db_session
     task = session.query(Task).get(task_id)
     task.end_timestamp = datetime.datetime.utcnow()
     session.commit()

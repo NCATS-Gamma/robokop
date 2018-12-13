@@ -7,11 +7,11 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.associationproxy import association_proxy
 
 from manager.user import User
-from manager.setup import db
+from manager.setup_db import Base
 from manager.util import DictLikeMixin
 
 
-class Feedback(db.Model, DictLikeMixin):
+class Feedback(Base, DictLikeMixin):
     """Represents a chunk of feedback concerning a specific Answer."""
 
     __tablename__ = 'feedback'

@@ -3,21 +3,16 @@
 import os
 from datetime import datetime
 from flask_security import Security, SQLAlchemySessionUserDatastore
-from manager.setup import app, db
+from manager.setup import app
+from manager.setup_db import init_db, db_session
 from manager.user import User, Role
 
-# Include these so that all the associated postgres tables get created.
-# from manager.question import Question
-import manager.task
-import manager.tables as tables
-import manager.feedback
+# Create any database tables that don't exist yet.
+init_db()
 
 with app.app_context():
-    user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
-    security = Security(app, user_datastore) # this sets some app.config
-
-    # Create any database tables that don't exist yet.
-    tables.load()
+    user_datastore = SQLAlchemySessionUserDatastore(db_session, User, Role)
+    security = Security(app, user_datastore)  # this sets some app.config
 
     # Create the Roles "admin" and "end-user" -- unless they already exist
     user_datastore.find_or_create_role(name='admin', description='Administrator')
@@ -35,11 +30,11 @@ with app.app_context():
         )
 
     # Commit any database changes; the User and Roles must exist before we can add a Role to the User
-    db.session.commit()
+    db_session.commit()
 
     # Give users "user" role, and admin the "admin" role. (This will have no effect if the
     # users already have these Roles.)
     user_datastore.add_role_to_user(admin_email, 'admin')
 
     # Again, commit any database changes.
-    db.session.commit()
+    db_session.commit()
