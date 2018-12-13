@@ -1,6 +1,8 @@
 import React from 'react';
 
 import { Grid, Row, Col, Button } from 'react-bootstrap';
+import { Query } from 'react-apollo';
+import { gql } from 'apollo-boost';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
@@ -10,6 +12,18 @@ import AnswersetPres from './components/answerset/AnswersetPres';
 
 const shortid = require('shortid');
 const _ = require('lodash');
+
+const TEST_QUERY = gql`
+  {
+    allQuestionsList {
+      nodeId,
+      id,
+      userId,
+      naturalQuestion,
+      machineQuestion,
+    }
+  }
+`;
 
 class Answerset extends React.Component {
   constructor(props) {
@@ -219,6 +233,17 @@ class Answerset extends React.Component {
           }
         </Grid>
         <Footer config={this.props.config} />
+        <Query query={TEST_QUERY}>
+          {({ loading, error, data }) => {
+            if (!loading && error) {
+              console.log('GraphQL error:', error);
+            }
+            if (!loading && !error) {
+              console.log('GraphQL data:', data);
+            }
+            return null;
+          }}
+        </Query>
       </div>
     );
   }
