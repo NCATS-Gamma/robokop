@@ -5,21 +5,19 @@ from datetime import datetime
 from flask_security import Security, SQLAlchemySessionUserDatastore
 from manager.setup import app, db
 from manager.user import User, Role
-from manager.celery_monitor import get_messages
 
 # Include these so that all the associated postgres tables get created.
-from manager.question import Question
-from manager.task import Task
-from manager.answer import Answer, Answerset
-from manager.feedback import Feedback
+# from manager.question import Question
+import manager.task
+import manager.tables as tables
+import manager.feedback
 
 with app.app_context():
     user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
     security = Security(app, user_datastore) # this sets some app.config
 
     # Create any database tables that don't exist yet.
-    db.create_all()
-    # get_messages()  # set up the manager logging queue
+    tables.load()
 
     # Create the Roles "admin" and "end-user" -- unless they already exist
     user_datastore.find_or_create_role(name='admin', description='Administrator')

@@ -6,11 +6,9 @@ from flask import request
 from flask_security import auth_required, current_user
 from flask_restful import Resource
 
-from manager.feedback import Feedback, list_feedback_by_question_answer
+from manager.feedback import Feedback
 from manager.setup import api, db
 from manager.user import get_user_by_email, get_user_by_id
-from manager.answer import get_answer_by_id
-from manager.question import get_question_by_id
 
 # New Feedback Submission
 class FeedbackAPI(Resource):
