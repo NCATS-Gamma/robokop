@@ -12,7 +12,7 @@ import requests
 from flask import request, Response
 from flask_restful import Resource, abort
 
-from manager.setup import app, api, db
+from manager.setup import app, api
 from manager.logging_config import logger
 from manager.util import getAuthData
 from manager.tasks import celery
@@ -257,27 +257,6 @@ class WF1MOD3a(Resource):
         return answerset, 200
 
 api.add_resource(WF1MOD3a, '/wf1mod3a/<disease_curie>/')
-
-class Tasks(Resource):
-    def get(self):
-        """
-        Get list of tasks (queued and completed)
-        ---
-        tags: [tasks]
-        responses:
-            200:
-                description: tasks
-                content:
-                    application/json:
-                        schema:
-                            type: array
-                            items:
-                                $ref: '#/definitions/Task'
-        """
-        tasks = list_tasks(session=db.session)
-        return [t.to_json() for t in tasks]
-
-api.add_resource(Tasks, '/tasks/')
 
 class TaskStatus(Resource):
     def get(self, task_id):

@@ -8,7 +8,7 @@ from flask_restful import Resource
 from manager.setup import api
 from manager.user import get_user_by_email
 import manager.logging_config
-from manager.graphql_accessors import add_question, add_message
+from manager.graphql_accessors import add_question, add_answerset, get_question_by_id
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ class MessagesAPI(Resource):
     """Messages endpoint."""
 
     @auth_required('session', 'basic')
-    def post(self):
+    def post(self, question_id):
         """
         Store a message.
         ---
@@ -47,11 +47,12 @@ class MessagesAPI(Resource):
             user_email = current_user.email
         logger.debug(f"Creating new question for user {user_email}.")
         logger.debug(request.json)
-        mid = add_message(request.json)
+        question = get_question_by_id(question_id)
+        mid = add_answerset(request.json, qgraph_id=question.qgraph_id)
 
         return mid, 201
 
-api.add_resource(MessagesAPI, '/messages/')
+api.add_resource(MessagesAPI, '/q/<question_id>/answers')
 
 
 class QuestionsAPI(Resource):
