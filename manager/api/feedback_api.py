@@ -7,7 +7,8 @@ from flask_security import auth_required, current_user
 from flask_restful import Resource
 
 from manager.feedback import Feedback
-from manager.setup import api, db
+from manager.setup import api
+
 from manager.user import get_user_by_email, get_user_by_id
 
 # New Feedback Submission

@@ -4,10 +4,10 @@ from flask_security import UserMixin, RoleMixin
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Boolean, DateTime, Column, Integer, \
                        String, ForeignKeyConstraint
-from manager.setup import db
+from manager.setup_db import Base, db_session
 
 
-class RolesUsers(db.Model):
+class RolesUsers(Base):
     """Define correpondence table between users and roles."""
 
     __tablename__ = 'roles_users'
@@ -21,7 +21,7 @@ class RolesUsers(db.Model):
     role_id = Column('role_id', Integer)
 
 
-class Role(db.Model, RoleMixin):
+class Role(Base, RoleMixin):
     """Role class."""
 
     __tablename__ = 'role'
@@ -33,7 +33,7 @@ class Role(db.Model, RoleMixin):
     description = Column(String)
 
 
-class User(db.Model, UserMixin):
+class User(Base, UserMixin):
     """User class."""
 
     __tablename__ = 'user'
@@ -66,7 +66,7 @@ class User(db.Model, UserMixin):
 def get_user_by_id(uid, session=None):
     """Get user by id."""
     if session is None:
-        session = db.session
+        session = db_session
     return session.query(User)\
         .filter(User.id == uid)\
         .first()
@@ -75,7 +75,7 @@ def get_user_by_id(uid, session=None):
 def list_users(session=None):
     """Get a list of all users."""
     if session is None:
-        session = db.session
+        session = db_session
     return session.query(User)\
         .all()
 
@@ -83,7 +83,7 @@ def list_users(session=None):
 def get_user_by_email(user_email, session=None):
     """Get user by email address."""
     if session is None:
-        session = db.session
+        session = db_session
     return session.query(User)\
         .filter(User.email == user_email)\
         .first()

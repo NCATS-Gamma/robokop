@@ -18,7 +18,7 @@ from manager.task import Task
 from manager.user import get_user_by_email
 from manager.tasks import answer_question, update_kg
 from manager.util import getAuthData
-from manager.setup import db, api
+from manager.setup import api
 import manager.logging_config
 import manager.api.definitions
 from manager.celery_monitor import get_messages
