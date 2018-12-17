@@ -5,35 +5,47 @@ import json
 import logging
 
 import redis
-
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy import Column, DateTime, String, ForeignKey
+from sqlalchemy import Column, DateTime, String, ForeignKeyConstraint
 from sqlalchemy.types import JSON
 
-from manager.setup import Base, db
-from manager.question import Question
+from manager.setup_db import Base, db_session
 import manager.logging_config
 
 
 logger = logging.getLogger(__name__)
 
+# Dictionary to keep task types consistent
+TASK_TYPES = {
+    "answer": "manager.tasks.answer_question",
+    "update": "manager.tasks.update_kg"
+}
 
-class Task(db.Model):
+
+class Task(Base):
     """Task object."""
 
     __tablename__ = 'task'
+    __table_args__ = (
+        ForeignKeyConstraint(['question_id'], ['public.question.id']),
+        {'schema': 'public'}
+    )
     id = Column(String, primary_key=True)
     type = Column(String)
     initiator = Column(String)
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
-    question_id = Column(String, ForeignKey('question.id'))
+    end_timestamp = Column(DateTime)
+    question_id = Column(String)
     _result = Column(JSON)
-
+    remote_task_id = Column(String)
     question = relationship(
-        Question,
-        backref=backref('tasks',
-                        uselist=True,
-                        cascade='delete,all'))
+        'Question',
+        backref=backref(
+            'tasks',
+            uselist=True,
+            cascade='delete,all'  # delete Tasks if Question is deleted
+        )
+    )
 
     def __init__(self, *args, **kwargs):
         """Create task object."""
@@ -42,7 +54,7 @@ class Task(db.Model):
         self.type = None
         self.initiator = None
         self.question_id = None
-
+        self.remote_task_id = None
         # apply json properties to existing attributes
         attributes = self.__dict__.keys()
         if args:
@@ -95,21 +107,48 @@ class Task(db.Model):
         keys = [str(column).split('.')[-1] for column in self.__table__.columns] + ['status', 'result']
         struct = {key: getattr(self, key) for key in keys}
         struct['timestamp'] = struct['timestamp'].isoformat()
+        if struct['end_timestamp'] != None:
+            struct['end_timestamp'] = struct['end_timestamp'].isoformat()
         return struct
 
 
 def list_tasks(session=None):
     """Return all tasks."""
     if session is None:
-        session = db.session
+        session = db_session
     return session.query(Task).all()
 
 
 def get_task_by_id(task_id, session=None):
     """Return all tasks with id == task_id."""
     if session is None:
-        session = db.session
+        session = db_session
     task = session.query(Task).filter(Task.id == task_id).first()
     if not task:
         raise KeyError("No such task.")
     return task
+
+
+def save_task_info(task_id, question_id, task_type, initiator, remote_task_id=None, session=None):
+    """Saves task information to database."""
+    if session is None:
+        session = db_session
+    task = Task(
+        id=task_id,
+        question_id=question_id,
+        type=task_type,
+        initiator=initiator,
+        remote_task_id=remote_task_id
+    )
+    session.add(task)
+    session.commit()
+    session.close()
+
+
+def update_task_info(task_id, session= None) :
+    """ Updates the endtime of task when task is done"""
+    if session is None:
+        session = db_session
+    task = session.query(Task).get(task_id)
+    task.end_timestamp = datetime.datetime.utcnow()
+    session.commit()

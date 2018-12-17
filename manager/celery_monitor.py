@@ -7,7 +7,7 @@ import json
 import pika
 
 from manager.task import Task
-from manager.setup import session_scope
+from manager.setup_db import session_scope
 import manager.logging_config
 
 logger = logging.getLogger(__name__)
