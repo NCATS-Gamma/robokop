@@ -4,6 +4,8 @@ import { Row, Col, Alert, FormGroup, FormControl, Popover, OverlayTrigger, Progr
 
 import GoPencil from 'react-icons/lib/go/pencil';
 import FaDownload from 'react-icons/lib/fa/download';
+import FaInfoCircle from 'react-icons/lib/fa/info-circle';
+// import FaClone from 'react-icons/lib/fa/clone';
 
 import QuestionToolbar from './QuestionToolbar';
 
@@ -121,7 +123,7 @@ class QuestionHeader extends React.Component {
     );
 
     const editNaturalNode = (
-      <OverlayTrigger trigger="click" placement="bottom" rootClose overlay={popoverEditNatural} container={this}>
+      <OverlayTrigger trigger="click" placement="bottom" rootClose overlay={popoverEditNatural}>
         <GoPencil />
       </OverlayTrigger>
     );
@@ -204,8 +206,8 @@ class QuestionHeader extends React.Component {
                 <ProgressBar striped active style={{ marginBottom: '5px' }} bsStyle="success" now={100} />
               </Alert>
             }
-            <div style={{ position: 'relative' }}>
-              <h1 style={{ paddingRight: '50px' }}>
+            <div style={{ position: 'block', paddingBottom: '10px' }}>
+              <h1 style={{ display: 'inline' }}>
                 {this.props.enableQuestionSelect &&
                   <a style={{ color: 'inherit' }} href={this.props.urlQuestion(this.props.question)}>{natural}</a>
                 }
@@ -219,48 +221,53 @@ class QuestionHeader extends React.Component {
                     {editNaturalNode}
                   </div>
                 }
-                <div className="pull-right" style={{ position: 'absolute', right: 0, bottom: 0 }}>
-                  {edited &&
-                    <div style={{ display: 'inline' }}>
-                      <Alert bsStyle="warning" style={{ fontSize: '12px', display: 'inline', paddingTop: '5px', paddingBottom: '5px' }}>
-                        You have unsaved changes! <span onClick={this.onSave} style={{ cursor: 'pointer', textDecoration: 'underline'}}>Save Now</span>
-                      </Alert>
-                      &nbsp;
-                      &nbsp;
-                    </div>
-                  }
-                  {this.props.showOtherQuestions && questionMenuItemList.length > 1 &&
-                    <DropdownButton id="diminisheddropdown" noCaret title="Similar Questions">
-                      {questionMenuItemList}
-                    </DropdownButton>
-                  }
-                  {this.props.showOtherAnswersets && answersetMenuItemList.length > 1 &&
-                    <DropdownButton id="diminisheddropdown" noCaret title="Other Answersets">
-                      {answersetMenuItemList}
-                    </DropdownButton>
-                  }
-                  {this.props.showToolbar &&
-                    <QuestionToolbar
-                      callbackNewAnswerset={this.props.callbackNewAnswerset}
-                      callbackRefresh={this.props.callbackRefresh}
-                      callbackFork={this.props.callbackFork}
-                      callbackTaskStatus={this.props.callbackTaskStatus}
-                      callbackDelete={this.props.callbackDelete}
-
-                      enableNewAnswersets={this.props.enableNewAnswersets && !active}
-                      enableQuestionRefresh={this.props.enableQuestionRefresh && !active}
-                      enableQuestionDelete={this.props.enableQuestionDelete && !active}
-                      enableQuestionFork={this.props.enableQuestionFork}
-                      enableTaskStatus={this.props.enableTaskStatus && active}
-                    />
-                  }
-                  {this.props.showDownload &&
-                    <span style={{ fontSize: '22px' }} title="Download">
-                      <FaDownload style={{ cursor: 'pointer' }} onClick={() => this.props.callbackDownload()} />
-                    </span>
-                  }
-                </div>
               </h1>
+              <span style={{ paddingLeft: '20px', fontSize: '30px' }}>
+                <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={this.props.questionGraphPopover}>
+                  <FaInfoCircle size={25} />
+                </OverlayTrigger>
+              </span>
+              <div className="pull-right" style={{ marginTop: '10px' }}>
+                {edited &&
+                  <div style={{ display: 'inline' }}>
+                    <Alert bsStyle="warning" style={{ fontSize: '12px', display: 'inline', paddingTop: '5px', paddingBottom: '5px' }}>
+                      You have unsaved changes! <span onClick={this.onSave} style={{ cursor: 'pointer', textDecoration: 'underline'}}>Save Now</span>
+                    </Alert>
+                    &nbsp;
+                    &nbsp;
+                  </div>
+                }
+                {this.props.showOtherQuestions && questionMenuItemList.length > 1 &&
+                  <DropdownButton id="diminisheddropdown" noCaret title="Similar Questions">
+                    {questionMenuItemList}
+                  </DropdownButton>
+                }
+                {this.props.showOtherAnswersets && answersetMenuItemList.length > 1 &&
+                  <DropdownButton id="diminisheddropdown" noCaret title="Other Answersets">
+                    {answersetMenuItemList}
+                  </DropdownButton>
+                }
+                {this.props.showToolbar &&
+                  <QuestionToolbar
+                    callbackNewAnswerset={this.props.callbackNewAnswerset}
+                    callbackRefresh={this.props.callbackRefresh}
+                    callbackFork={this.props.callbackFork}
+                    callbackTaskStatus={this.props.callbackTaskStatus}
+                    callbackDelete={this.props.callbackDelete}
+
+                    enableNewAnswersets={this.props.enableNewAnswersets && !active}
+                    enableQuestionRefresh={this.props.enableQuestionRefresh && !active}
+                    enableQuestionDelete={this.props.enableQuestionDelete && !active}
+                    enableQuestionFork={this.props.enableQuestionFork}
+                    enableTaskStatus={this.props.enableTaskStatus && active}
+                  />
+                }
+                {this.props.showDownload &&
+                  <span style={{ fontSize: '22px' }} title="Download">
+                    <FaDownload style={{ cursor: 'pointer' }} onClick={() => this.props.callbackDownload()} />
+                  </span>
+                }
+              </div>
             </div>
           </Col>
         </Row>

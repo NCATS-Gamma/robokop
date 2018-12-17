@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, ProgressBar, Panel } from 'react-bootstrap';
+import { BubbleLoader } from 'react-css-loaders';
 
 import KnowledgeGraphViewer from './KnowledgeGraphViewer';
 
@@ -57,9 +58,9 @@ class KnowledgeGraphFetchAndView extends React.Component {
     const width = this.getWidth();
 
     return (
-      <div id="kgFetchDiv">
+      <div id="kgFetchDiv" style={{ display: 'table-cell', width: '100%', verticalAlign: 'middle', textAlign: 'center' }}>
         {(showFetchButton || showFetching || showWait) &&
-          <div style={{ padding: '15px', textAlign: 'center' }}>
+          <div>
             {showWait &&
               <p>
                 Knowledge graph update in progress.
@@ -67,40 +68,31 @@ class KnowledgeGraphFetchAndView extends React.Component {
             }
             {/* {!showWait &&
               <p>
-                To explore knowledge graph we will need to load it...
+                To explore the knowledge graph we will need to load it...
               </p>
             } */}
-            <Button
-              onClick={this.fetch}
-              disabled={showFetching || showWait}
-            >
-              {!showFetching && !showWait &&
-                'Explore'
-              }
-              {showFetching && !showWait &&
-                'Loading ...'
-              }
-              {showWait &&
-                'Please wait...'
-              }
-            </Button>
+            {!showFetching && !showWait &&
+              <Button
+                onClick={this.fetch}
+                disabled={showFetching || showWait}
+              >
+                Load Graph
+              </Button>
+            }
+            {showFetching &&
+              <BubbleLoader style={{ marginTop: '0px' }} color="#b8c6db" />
+            }
           </div>
         }
-        <Panel style={panelExtraStyle} id="collapsible-panel-kg" expanded={showGraph} onToggle={() => {}}>
-          <Panel.Collapse>
-            <Panel.Body style={{ padding: '0px' }}>
-              {showGraph &&
-              <KnowledgeGraphViewer
-                height={height}
-                width={width}
-                graph={this.props.subgraph}
-                callbackRefresh={this.props.callbackRefresh}
-                concepts={this.props.concepts}
-              />
-              }
-            </Panel.Body>
-          </Panel.Collapse>
-        </Panel>
+        {showGraph &&
+          <KnowledgeGraphViewer
+            height={height}
+            width={width}
+            graph={this.props.subgraph}
+            callbackRefresh={this.props.callbackRefresh}
+            concepts={this.props.concepts}
+          />
+        }
       </div>
     );
   }
