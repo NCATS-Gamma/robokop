@@ -5,6 +5,7 @@ import json
 import logging
 
 import redis
+
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, DateTime, String, ForeignKeyConstraint
 from sqlalchemy.types import JSON
@@ -20,7 +21,6 @@ TASK_TYPES = {
     "answer": "manager.tasks.answer_question",
     "update": "manager.tasks.update_kg"
 }
-
 
 class Task(Base):
     """Task object."""
@@ -38,6 +38,7 @@ class Task(Base):
     question_id = Column(String)
     _result = Column(JSON)
     remote_task_id = Column(String)
+
     question = relationship(
         'Question',
         backref=backref(
@@ -55,6 +56,7 @@ class Task(Base):
         self.initiator = None
         self.question_id = None
         self.remote_task_id = None
+
         # apply json properties to existing attributes
         attributes = self.__dict__.keys()
         if args:
@@ -99,7 +101,7 @@ class Task(Base):
         # this let's us know when a task is lost rather than busy
         if result['status'] in ['SUCCESS', 'FAILURE', 'REVOKED']:
             self._result = result
-            db.session.commit()
+            db_session.commit()
         return result
 
     def to_json(self):
@@ -107,26 +109,23 @@ class Task(Base):
         keys = [str(column).split('.')[-1] for column in self.__table__.columns] + ['status', 'result']
         struct = {key: getattr(self, key) for key in keys}
         struct['timestamp'] = struct['timestamp'].isoformat()
-        if struct['end_timestamp'] != None:
-            struct['end_timestamp'] = struct['end_timestamp'].isoformat()
         return struct
 
+# def list_tasks(session=None):
+#     """Return all tasks."""
+#     if session is None:
+#         session = db_session
+#     return session.query(Task).all()
 
-def list_tasks(session=None):
-    """Return all tasks."""
-    if session is None:
-        session = db_session
-    return session.query(Task).all()
 
-
-def get_task_by_id(task_id, session=None):
-    """Return all tasks with id == task_id."""
-    if session is None:
-        session = db_session
-    task = session.query(Task).filter(Task.id == task_id).first()
-    if not task:
-        raise KeyError("No such task.")
-    return task
+# def get_task_by_id(task_id, session=None):
+#     """Return all tasks with id == task_id."""
+#     if session is None:
+#         session = db_session
+#     task = session.query(Task).filter(Task.id == task_id).first()
+#     if not task:
+#         raise KeyError("No such task.")
+#     return task
 
 
 def save_task_info(task_id, question_id, task_type, initiator, remote_task_id=None, session=None):
