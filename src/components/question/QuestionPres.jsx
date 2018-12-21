@@ -1,12 +1,14 @@
 import React from 'react';
 
-import { Grid, Row, Col, Popover, OverlayTrigger, Panel } from 'react-bootstrap';
+import { Grid, Row, Col, Popover, OverlayTrigger, Panel, Button } from 'react-bootstrap';
 import GoQuestion from 'react-icons/lib/go/question';
+import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
 
 import QuestionHeader from '../shared/QuestionHeader';
 import MachineQuestionView from '../shared/MachineQuestionView';
 import AnswersetSelector from './AnswersetSelector';
 import KnowledgeGraphFetchAndView from './KnowledgeGraphFetchAndView';
+import Loading from '../Loading';
 
 const shortid = require('shortid');
 
@@ -25,6 +27,126 @@ class QuestionPres extends React.Component {
         paddingTop: '15px',
       },
     };
+    this.renderInitializerBusy = this.renderInitializerBusy.bind(this);
+    this.renderAnswerRefreshBusy = this.renderAnswerRefreshBusy.bind(this);
+    this.renderNoAnswerSets = this.renderNoAnswerSets.bind(this);
+    this.renderPanelContents = this.renderPanelContents.bind(this);
+    this.renderAllOkay = this.renderAllOkay.bind(this);
+  }
+
+  renderInitializerBusy() {
+    return (
+      <div style={{ display: 'table', width: '100%', minHeight: '200px' }}>
+        <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+          <h4>
+            Getting Initial Answers. Please Wait.
+          </h4>
+          <Loading />
+        </div>
+      </div>
+    );
+  }
+
+  renderAnswerRefreshBusy() {
+    return (
+      <div style={{ display: 'table', minHeight: '200px', width: '100%' }}>
+        <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+          <div>
+            <h4>
+              {this.props.answerBusy &&
+                <span>
+                  We are working on getting new answers for this question. Please wait.
+                </span>
+              }
+              {this.props.refreshBusy &&
+                <span>
+                  We are working on updating the knowledge graph for this question. Please wait.
+                </span>
+              }
+            </h4>
+            <Loading />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  renderNoAnswerSets() {
+    return (
+      <div style={{ display: 'table', minHeight: '200px', width: '100%' }}>
+        <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
+          <h4>
+            No answer sets available.
+          </h4>
+          <p>
+            This may indicate a problem in the construction of the question, or a lack of available information.
+          </p>
+          <Button
+            bsSize="large"
+            alt="Get a New Answer Set"
+            onClick={this.props.callbackAnswersetNew}
+          >
+            Get New Answers
+            <br />
+            <GoPlaybackPlay />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  renderAllOkay() {
+    return (
+      <div style={{ position: 'relative', minHeight: '200px', display: 'table', width: '100%' }}>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          padding: '20px',
+          backgroundColor: '#fff',
+          boxShadow: '2px 2px 5px 0px #7777777d',
+          zIndex: 100,
+          }}
+        >
+          <AnswersetSelector
+            // showNewButton={enableNewAnswersets}
+            enableNewButton={!this.props.answerBusy}
+            refreshBusy={this.props.refreshBusy}
+            answerBusy={this.props.answerBusy}
+            initializerBusy={this.props.initializerBusy}
+            answersets={this.props.answersets}
+            callbackAnswersetNew={this.props.callbackNewAnswerset}
+            answersetUrl={this.props.answersetUrl}
+          />
+        </div>
+        <KnowledgeGraphFetchAndView
+          callbackFetchGraph={this.props.callbackFetchGraph}
+          callbackRefresh={this.props.callbackRefresh}
+          subgraph={this.props.subgraph}
+          concepts={this.props.concepts}
+          wait={this.props.refreshBusy}
+          // scrollToId="#localKGHeader"
+        />
+      </div>
+    );
+  }
+
+  renderPanelContents() {
+    const {
+      refreshBusy, answerBusy, initializerBusy, answersets,
+    } = this.props;
+    const haveAnAnswerSet = answersets && Array.isArray(answersets) && answersets.length > 0;
+
+    if (haveAnAnswerSet) {
+      return this.renderAllOkay();
+    }
+    if (initializerBusy) {
+      return this.renderInitializerBusy();
+    }
+    if (answerBusy || refreshBusy) {
+      return this.renderAnswerRefreshBusy();
+    }
+    return this.renderNoAnswerSets();
   }
 
   render() {
@@ -33,67 +155,19 @@ class QuestionPres extends React.Component {
       nodes: (('machine_question' in this.props.question) && this.props.question.machine_question && ('nodes' in this.props.question.machine_question)) ? this.props.question.machine_question.nodes : [],
     };
 
-    const userOwnsThisQuestion = this.props.owner === this.props.user.username; // Fix Me
-    const userIsLoggedIn = this.props.user.is_authenticated;
-    const enableEditing = (userOwnsThisQuestion && this.props.enableQuestionEdit) || this.props.user.is_admin;
-    const enableDelete = (userOwnsThisQuestion && this.props.enableQuestionDelete) || this.props.user.is_admin;
+    const {
+      owner, user, enableQuestionEdit, enableQuestionDelete,
+    } = this.props;
+
+    const userOwnsThisQuestion = owner === user.username; // Fix Me
+    const userIsLoggedIn = user.is_authenticated;
+    const enableEditing = (userOwnsThisQuestion && enableQuestionEdit) || user.is_admin;
+    const enableDelete = (userOwnsThisQuestion && enableQuestionDelete) || user.is_admin;
 
     const enableNewAnswersets = (userIsLoggedIn && this.props.enableNewAnswersets) || this.props.user.is_admin;
     const enableQuestionRefresh = (userIsLoggedIn && this.props.enableQuestionRefresh) || this.props.user.is_admin;
     const enableQuestionFork = (userIsLoggedIn && this.props.enableQuestionFork) || this.props.user.is_admin;
     const enableTaskStatus = ((userIsLoggedIn && this.props.enableTaskStatus) || this.props.user.is_admin) && (this.props.refreshBusy || this.props.answerBusy);
-
-    const machineQuestionHelp = (
-      <Popover id="machineQuestionTooltip" key={shortid.generate()} title="Machine Question" style={{ minWidth: '500px' }}>
-        <div style={{ textAlign: 'left' }}>
-          <p>
-            {'\
-            The natural language question is interpretted into a sequences of steps through biological concepts. \
-            We call this sequence of steps the "machine question". The machine question is used to find relevant\
-            knowledge sources to add to the knolwedge graph and find potential answers.\
-            '}
-          </p>
-          <br />
-          <p>
-            {'\
-            After a question is created the machine question is fixed. The knowledge graph, however, is always evolving, \
-            as are the sources we use to build on to the knolwedge graph. You can use this question to search for \
-            information to add to the knowledge graph.\
-            '
-            }
-          </p>
-        </div>
-      </Popover>
-    );
-
-    const answersetHelp = (
-      <Popover id="answersetTooltip" key={shortid.generate()} title="Answer Set" style={{ minWidth: '500px' }}>
-        <div style={{ textAlign: 'left' }}>
-          <p>
-            {'\
-            The machine question defines a sequence of steps through the knowledge graph. Each possible path through \
-            the knowledge graph that meets the requirements of the machine question is a potential answer. \
-            An "answer set" is a collection of paths through the knowledge graph that have been ranked for relevance \
-            and accuracy for this question. You can explore the answer set to find an answer that you believe or find interesting.\
-            '}
-          </p>
-          <br />
-          <p>
-            {'\
-            Because the knowledge graph is being updated as new knowledge sources are incorporated, new answer sets can \
-            be found and they be different than the last time.\
-            '}
-          </p>
-          <br />
-          <p>
-            {'\
-            The list of available answersets for this question are listed below. More than likely the most recent one is the most relevant.\
-            '
-            }
-          </p>
-        </div>
-      </Popover>
-    );
 
     const knowledgeGraphHelp = (
       <Popover id="knowledgeGraphTooltip" key={shortid.generate()} title="Local Knowledge Graph" style={{ minWidth: '500px' }}>
@@ -115,11 +189,22 @@ class QuestionPres extends React.Component {
       </Popover>
     );
 
+    const questionGraphPopover = (
+      <Popover id="qgraph-popover" title="Question Graph" style={{ minWidth: '650px' }}>
+        <MachineQuestionView
+          height={250}
+          concepts={this.props.concepts}
+          question={questionGraph}
+        />
+      </Popover>
+    );
+
     return (
       <Grid>
         <QuestionHeader
           question={this.props.question}
           showToolbar={userIsLoggedIn}
+          questionGraphPopover={questionGraphPopover}
 
           refreshBusy={this.props.refreshBusy}
           answerBusy={this.props.answerBusy}
@@ -141,70 +226,18 @@ class QuestionPres extends React.Component {
           enableTaskStatus={enableTaskStatus}
         />
         <Row style={this.styles.rowTopPad}>
-          <Col md={4}>
-            <Panel style={this.styles.questionGraphContainer}>
-              <Panel.Heading>
-                <Panel.Title componentClass="h3">
-                  Machine Question
-                  <OverlayTrigger placement="right" overlay={machineQuestionHelp}>
-                    <span> {'    '} <GoQuestion /> </span>
-                  </OverlayTrigger>
-                </Panel.Title>
-              </Panel.Heading>
-              <Panel.Body style={{ padding: 0 }}>
-                <MachineQuestionView
-                  height={250}
-                  concepts={this.props.concepts}
-                  question={questionGraph}
-                />
-              </Panel.Body>
-            </Panel>
-          </Col>
-          <Col md={8}>
-            <Panel style={this.styles.answersetContainer}>
-              <Panel.Heading>
-                <Panel.Title componentClass="h3">
-                  Answer Sets
-                  <OverlayTrigger placement="right" overlay={answersetHelp}>
-                    <span> {'    '} <GoQuestion /> </span>
-                  </OverlayTrigger>
-                </Panel.Title>
-              </Panel.Heading>
-              <Panel.Body>
-                <AnswersetSelector
-                  showNewButton={enableNewAnswersets}
-                  enableNewButton={!this.props.answerBusy}
-                  refreshBusy={this.props.refreshBusy}
-                  answerBusy={this.props.answerBusy}
-                  initializerBusy={this.props.initializerBusy}
-                  answersets={this.props.answersets}
-                  callbackAnswersetNew={this.props.callbackNewAnswerset}
-                  answersetUrl={this.props.answersetUrl}
-                />
-              </Panel.Body>
-            </Panel>
-          </Col>
-        </Row>
-        <Row>
           <Col md={12}>
             <Panel id="localKGHeader">
               <Panel.Heading>
                 <Panel.Title componentClass="h3">
-                  Local Knowledge Graph
+                  Local Knowledge Graph for Selected Answer Set
                   <OverlayTrigger placement="right" overlay={knowledgeGraphHelp}>
                     <span> {'    '} <GoQuestion /> </span>
                   </OverlayTrigger>
                 </Panel.Title>
               </Panel.Heading>
               <Panel.Body style={{ padding: 0 }}>
-                <KnowledgeGraphFetchAndView
-                  callbackFetchGraph={this.props.callbackFetchGraph}
-                  callbackRefresh={this.props.callbackRefresh}
-                  subgraph={this.props.subgraph}
-                  concepts={this.props.concepts}
-                  wait={this.props.refreshBusy}
-                  scrollToId="#localKGHeader"
-                />
+                {this.renderPanelContents()}
               </Panel.Body>
             </Panel>
           </Col>

@@ -6,6 +6,7 @@ import GoArrowRight from 'react-icons/lib/go/arrow-right';
 import GoCircuitBoard from 'react-icons/lib/go/circuit-board';
 
 import Select from 'react-select';
+import { DropdownList } from 'react-widgets';
 import Loading from '../Loading';
 
 const _ = require('lodash');
@@ -63,58 +64,6 @@ class AnswersetSelector extends React.Component {
     return { selectedId, showOverlay: !haveAnAnswerSet };
   }
 
-  getMainContent() {
-    const answersetFilter = this.props.answersets.filter(a => a.id === this.state.selectedId);
-    // if (answersetFilter.length < 1) {
-    //   console.log('Answerset filter failure');
-    // }
-    // if (answersetFilter.length > 1) {
-    //   console.log('Duplicated Answerset IDs');
-    // }
-    const answerset = answersetFilter[0];
-
-    let ts = answerset.datetime;
-    if (!ts.endsWith('Z')) {
-      ts = `${ts}Z`;
-    }
-    const d = new Date(ts);
-    const timeString = d.toLocaleString();
-
-    let { message } = answerset;
-    if (message == null || message.length < 1) {
-      message = 'No Message Provided';
-    }
-    let { creator } = answerset;
-    if (creator === undefined || creator == null) {
-      creator = '';
-    }
-    return (
-      <div style={{ paddingTop: '5px' }}>
-        <Row>
-          <Col md={12}>
-            <h4>{creator}</h4>
-            <h5>{timeString}</h5>
-            <pre>
-              {message}
-            </pre>
-          </Col>
-        </Row>
-        <Row>
-          <Col md={4} mdOffset={4}>
-            <Button
-              bsStyle="primary"
-              bsSize="large"
-              style={{ minWidth: '150px' }}
-              // onClick={() => this.props.callbackAnswersetOpen(answerset.id)}
-              href={this.props.answersetUrl(answerset)}
-            >
-              Explore <GoArrowRight /> <GoCircuitBoard />
-            </Button>
-          </Col>
-        </Row>
-      </div>
-    );
-  }
   handleSelectorChange(selectedOption) {
     this.setState({ selectedId: selectedOption.value });
   }
@@ -182,8 +131,8 @@ class AnswersetSelector extends React.Component {
     );
   }
   renderStandard() {
-    const { showNewButton } = this.props;
-    const moreThanOne = this.props.answersets.length > 1;
+    // const { showNewButton } = this.props;
+    // const moreThanOne = this.props.answersets.length > 1;
     const options = this.props.answersets.map((a) => {
       let ts = a.datetime;
       if (!ts.endsWith('Z')) {
@@ -202,47 +151,35 @@ class AnswersetSelector extends React.Component {
     });
     const disableNewButton = this.props.answerBusy || this.props.refreshBusy || this.props.initializerBusy;
     return (
-      <div>
+      <div style={{ minWidth: '300px' }}>
         <div id="answersetSelect" style={{ display: 'table', width: '100%' }}>
-          {!moreThanOne &&
-            <div>
-              <div style={{ display: 'table-cell', width: '100%' }}>
-                {`Answers from ${options[0].label}`}
-              </div>
+          <div style={{ display: 'table-row' }}>
+            <div style={{ display: 'table-cell', width: '100%' }}>
+              <DropdownList
+                data={options}
+                textField="label"
+                valueField="value"
+                onChange={this.handleSelectorChange}
+                value={this.state.selectedId}
+                disabled={options.length < 2}
+              />
             </div>
-          }
-          {moreThanOne &&
-            <div>
-              <div style={{ display: 'table-cell', width: '40%' }}>
-                {`${this.props.answersets.length} Different Answer Sets Available:`}
-              </div>
-              <div style={{ display: 'table-cell', width: '50%' }}>
-                <Select
-                  name="answerset-selector"
-                  value={this.state.selectedId}
-                  onChange={this.handleSelectorChange}
-                  options={options}
-                  clearable={false}
-                  searchable={false}
-                />
-              </div>
-            </div>
-          }
-          {showNewButton &&
-            <div style={{ display: 'table-cell', width: '34px' }}>
+          </div>
+          <div style={{ display: 'table-row' }}>
+            <div style={{ display: 'table-cell', width: '100%', textAlign: 'center', paddingTop: '10px' }}>
               <Button
-                bsSize="small"
-                style={{ padding: '5px 13px' }}
-                alt="Get a New Answer Set"
-                onClick={this.props.callbackAnswersetNew}
-                disabled={disableNewButton}
+                bsStyle="primary"
+                bsSize="large"
+                style={{ minWidth: '150px' }}
+                // onClick={() => this.props.callbackAnswersetOpen(answerset.id)}
+                href={this.props.answersetUrl(this.props.answersets.filter(a => a.id === this.state.selectedId)[0])}
               >
-                <GoPlaybackPlay />
+                Explore <GoArrowRight /> <GoCircuitBoard />
               </Button>
             </div>
-          }
+          </div>
         </div>
-        {this.getMainContent()}
+        {/* {this.getMainContent()} */}
       </div>
     );
   }
