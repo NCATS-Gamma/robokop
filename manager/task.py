@@ -10,7 +10,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, DateTime, String, ForeignKeyConstraint
 from sqlalchemy.types import JSON
 
-from manager.setup_db import Base, db_session
+from manager.setup_db import Base, db_session, session_scope
 import manager.logging_config
 
 
@@ -109,45 +109,51 @@ class Task(Base):
         keys = [str(column).split('.')[-1] for column in self.__table__.columns] + ['status', 'result']
         struct = {key: getattr(self, key) for key in keys}
         struct['timestamp'] = struct['timestamp'].isoformat()
+        if struct['end_timestamp']:
+            struct['end_timestamp'] = struct['end_timestamp'].isoformat()
+
         return struct
 
-# def list_tasks(session=None):
+# def list_tasks():
 #     """Return all tasks."""
-#     if session is None:
-#         session = db_session
-#     return session.query(Task).all()
+#     with session_scope() as session:
+#         tasks = session.query(Task).all()
+#         task_jsons = [task.to_json() for task in tasks]
+#     return task_jsons
 
 
-# def get_task_by_id(task_id, session=None):
-#     """Return all tasks with id == task_id."""
-#     if session is None:
-#         session = db_session
-#     task = session.query(Task).filter(Task.id == task_id).first()
-#     if not task:
-#         raise KeyError("No such task.")
-#     return task
+def get_task_by_id(task_id):
+    """Return all tasks with id == task_id."""
+    with session_scope() as session:
+        task = session.query(Task).filter(Task.id == task_id).first()
+        if not task:
+            raise KeyError("No such task.")
+        task_json = task.to_json()
+    return task_json
 
 
-def save_task_info(task_id, question_id, task_type, initiator, remote_task_id=None, session=None):
+def save_task_info(task_id, question_id, task_type, initiator, remote_task_id=None):
     """Saves task information to database."""
-    if session is None:
-        session = db_session
-    task = Task(
-        id=task_id,
-        question_id=question_id,
-        type=task_type,
-        initiator=initiator,
-        remote_task_id=remote_task_id
-    )
-    session.add(task)
-    session.commit()
-    session.close()
+    with session_scope() as session:
+        task = Task(
+            id=task_id,
+            question_id=question_id,
+            type=task_type,
+            initiator=initiator,
+            remote_task_id=remote_task_id
+        )
+        session.add(task)
 
-
-def update_task_info(task_id, session= None) :
+def save_remote_task_info(task_id, remote_task_id):
     """ Updates the endtime of task when task is done"""
-    if session is None:
-        session = db_session
-    task = session.query(Task).get(task_id)
-    task.end_timestamp = datetime.datetime.utcnow()
-    session.commit()
+    with session_scope() as session:
+        task = session.query(Task).get(task_id)
+        task.remote_task_id = remote_task_id
+        session.commit()
+
+def save_final_task_info(task_id):
+    """ Updates the endtime of task when task is done"""
+    with session_scope() as session:
+        task = session.query(Task).get(task_id)
+        task.end_timestamp = datetime.datetime.utcnow()
+        session.commit()

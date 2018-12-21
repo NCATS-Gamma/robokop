@@ -61,11 +61,14 @@ class AnswerQuestion(Resource):
         else:
             user_id = current_user.id
             user_email = current_user.email
+        
+        logger.info(f'Adding answer task for question {question_id} for user {user_email} to the queue')
         # Answer a question
         task = answer_question.apply_async(
             args=[question_id],
             kwargs={'user_email': user_email}
         )
+        logger.info(f'Answer task for question {question_id} for user {user_email} to the queue has recieved task_id {task.id}')
         return {'task_id': task.id}, 202
 
 api.add_resource(AnswerQuestion, '/q/<question_id>/answer/')
@@ -106,11 +109,14 @@ class RefreshKG(Resource):
         else:
             user_id = current_user.id
             user_email = current_user.email
+        
         # Update the knowledge graph for a question
+        logger.info(f'Adding update task for question {question_id} for user {user_email} to the queue')
         task = update_kg.apply_async(
             args=[question_id],
             kwargs={'user_email': user_email}
         )
+        logger.info(f'Update task for question {question_id} for user {user_email} to the queue has recieved task_id {task.id}')
         return {'task_id': task.id}, 202
 
 api.add_resource(RefreshKG, '/q/<question_id>/refresh_kg/')

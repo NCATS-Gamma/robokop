@@ -16,7 +16,7 @@ from manager.setup import app, api
 from manager.logging_config import logger
 from manager.util import getAuthData
 from manager.tasks import celery
-from manager.task import list_tasks, get_task_by_id, TASK_TYPES
+from manager.task import get_task_by_id, TASK_TYPES
 
 
 concept_map = {}
@@ -279,7 +279,13 @@ class TaskStatus(Resource):
                             $ref: '#/definitions/Task'
         """
         
-        return get_task_by_id(task_id).to_json()
+        try:
+            task = get_task_by_id(task_id)
+        except:
+            return 'Task not found', 404
+
+        logger.debug('got output')
+        return task
 
     def delete(self, task_id):
         """Revoke task
@@ -516,7 +522,7 @@ class Search(Resource):
 
         results = list({r['id']:r for r in results}.values())
         if not results and error_status['isError'] :
-            abort(error_status['code'], f"Bionames lookup endpoint returned {error_status['code']} error code")
+            abort(error_status['code'], message=f"Bionames lookup endpoint returned {error_status['code']} error code")
         else:
             return results
 
@@ -563,7 +569,7 @@ class TaskLog(Resource):
         """
         Get activity log for a task and logs of remote tasks associated with the task.
         ---
-        tags: [util]
+        tags: [tasks]
         parameters:
           - in: path
             name: task_id
@@ -580,20 +586,44 @@ class TaskLog(Resource):
         except KeyError:
             return 'Task ID not found', 404
 
-        request_url = ''
-        if task.type == TASK_TYPES['answer']:
-            request_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{task.remote_task_id}/log"
-        elif task.type == TASK_TYPES['update']:
-            request_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{task.remote_task_id}/log"
-        else: 
-            return 'Invalid task type', 500
-        response = requests.get(request_url)
-        log = response.content.decode('utf-8')
+        try:
+            request_url = ''
+            if task['type'] == TASK_TYPES['answer']:
+                request_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{task['remote_task_id']}/log"
+            elif task['type'] == TASK_TYPES['update']:
+                request_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{task['remote_task_id']}/log"
+            else: 
+                raise Exception('Invalid task type')
+            response = requests.get(request_url)
+            remote_log = response.content.decode('utf-8')
+            remote_log = remote_log.replace('\\n','\n') # Undo new line escaping, else it will happen twice
+            remote_log = remote_log.replace('\\\\','\\') # Undo slashing
+            remote_log = remote_log.replace('\\"','"') # Undo quotation escaping
+
+             # Remove surrounding quotes
+            first_quote = remote_log.find('"')
+            last_quote = remote_log.rfind('"')
+            if first_quote >= 0 and last_quote >= 0:
+                remote_log = remote_log[(first_quote+1):(last_quote-1)]
+        except:
+            remote_log = 'Error fetching log file.'
+
+        try:
+            local_log_file = os.path.join(os.environ['ROBOKOP_HOME'], 'task_logs', f'{task_id}.log')
+            if os.path.isfile(local_log_file):
+                with open(local_log_file, 'r') as log_file:
+                    local_log = log_file.read()
+            else:
+                local_log = ''
+        except:
+            local_log = 'Error fetching log file.'
+
         result = {
-            'manager_task_id': task.id,
-            'remote_task_id': task.remote_task_id,
-            'task_type': task.type,
-            'remote_task_log': log
+            'manager_task_id': task['id'],
+            'remote_task_id': task['remote_task_id'],
+            'task_type': task['type'],
+            'task_log': local_log,
+            'remote_task_log': remote_log
         }
         return result, 200
             

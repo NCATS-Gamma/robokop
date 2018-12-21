@@ -8,7 +8,7 @@ from flask_restful import Resource
 from manager.setup import api
 from manager.user import get_user_by_email
 import manager.logging_config
-from manager.graphql_accessors import add_question, add_answerset, get_question_by_id
+from manager.graphql_accessors import add_question, add_answerset, get_qgraph_id_by_question_id
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +47,8 @@ class MessagesAPI(Resource):
             user_email = current_user.email
         logger.debug(f"Creating new question for user {user_email}.")
         logger.debug(request.json)
-        question = get_question_by_id(question_id)
-        mid = add_answerset(request.json, qgraph_id=question.qgraph_id)
+        qgraph_id = get_qgraph_id_by_question_id(question_id)
+        mid = add_answerset(request.json, qgraph_id=qgraph_id)
 
         return mid, 201
 
@@ -88,6 +88,9 @@ class QuestionsAPI(Resource):
             user_id = current_user.id
             user_email = current_user.email
         logger.debug(f"Creating new question for user {user_email}.")
+        request_json = request.json
+        if 'question_graph' not in request_json:
+            request_json['question_graph'] = request_json.pop('machine_question', None)
         logger.debug(request.json)
         qid = add_question(request.json, owner_id=user_id)
 

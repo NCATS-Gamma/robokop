@@ -56,13 +56,20 @@ def get_question_json_by_id(question_id):
     return question
 
 
-def get_question_by_id(qid, session=None):
-    if session is None:
-        session = db_session
-    question = session.query(Question).filter(Question.id == qid).first()
+def get_question_by_id(qid):
+    with session_scope() as session:
+        question = session.query(Question).filter(Question.id == qid).first().dump()
     if not question:
         raise KeyError("No such question.")
     return question
+
+
+def get_qgraph_id_by_question_id(qid):
+    with session_scope() as session:
+        qgraph_id = session.query(Question).filter(Question.id == qid).first().qgraph_id
+    if not qgraph_id:
+        raise KeyError("No such question.")
+    return qgraph_id
 
 
 def add_question(q_json, qid=None, **kwargs):

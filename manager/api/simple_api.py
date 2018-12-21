@@ -19,6 +19,8 @@ from manager.setup import api
 
 logger = logging.getLogger(__name__)
 
+output_formats = ['APIStandard', 'Message', 'Answers']
+
 class Expand(Resource):
     def get(self, type1, id1, type2):
         """
@@ -135,6 +137,12 @@ class Quick(Resource):
             schema:
                 type: integer
             default: 250
+          - in: query
+            name: output_format
+            description: Requested output format. APIStandard or Message
+            schema:
+                type: string
+            default: APIStandard
         responses:
             200:
                 description: Answer set
@@ -143,9 +151,9 @@ class Quick(Resource):
                         schema:
                             $ref: '#/definitions/Response'
         """
-        logger.info('quick')
+        logger.info('Answering Question Quickly')
         question = request.json
-        logger.info("quack")
+        
         if ('rebuild' in question) and (str(question['rebuild']).upper() == 'TRUE'):
             logger.info("rebuild")
             response = requests.post(
@@ -170,8 +178,14 @@ class Quick(Resource):
 
         max_results = request.args.get('max_results')
         max_results = max_results if max_results is not None else 250
+
+        output_format = request.args.get('output_format', default=output_formats[0])
+        if output_format not in output_formats:
+            return f'output_format must be one of [{" ".join(output_formats)}]', 400
+
+
         response = requests.post(
-            f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/?max_results={max_results}',
+            f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/?max_results={max_results}&output_format={output_format}',
             json=question)
         polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
 
