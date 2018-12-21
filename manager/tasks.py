@@ -178,10 +178,11 @@ def update_kg(self, question_id, user_email=None):
 
     try:
         question_json = get_question_by_id(question_id)
+        builder_question = {'machine_question': question_json['question_graph']}
 
         logger.info('Calling Builder')
         try:
-            response = requests.post(f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question_json)
+            response = requests.post(f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=builder_question)
         except Exception as err:
             logger.warning('Failed to contact the builder')
             logger.exception(err)
