@@ -32,16 +32,17 @@ class QuestionListTableAgGrid extends React.Component {
 
     const sort = [
       { colId: 'isUserOwned', sort: 'desc' },
-      { colId: 'latest_answerset_timestamp', sort: 'desc' },
+      // { colId: 'latest_answerset_timestamp', sort: 'desc' },
     ];
     this.gridApi.setSortModel(sort);
   }
   onClick(event) {
-    if (event.column.colId === 'latest_answerset_id') {
-      this.props.callbackAnswersetSelect(event.node.data, { id: event.node.data.latest_answerset_id });
-    } else {
-      this.props.callbackQuestionSelect(event.node.data);
-    }
+    // if (event.column.colId === 'latest_answerset_id') {
+    //   this.props.callbackAnswersetSelect(event.node.data, { id: event.node.data.latest_answerset_id });
+    // } else {
+    //   this.props.callbackQuestionSelect(event.node.data);
+    // }
+    this.props.callbackQuestionSelect(event.node.data);
   }
   onFilterTextChange(event) {
     this.setState({ quickFilterText: event.target.value });
@@ -135,42 +136,42 @@ class QuestionListTableAgGrid extends React.Component {
                   },
                   {
                     headerName: 'Question',
-                    field: 'natural_question',
+                    field: 'naturalQuestion',
                     suppressMenu: true,
-                    width: 300,
+                    width: 500,
                   },
-                  {
-                    headerName: 'User',
-                    field: 'user_email',
-                    suppressMenu: true,
-                    width: 100,
-                  },
-                  {
-                    headerName: 'Notes',
-                    field: 'notes',
-                    suppressMenu: true,
-                    width: 200,
-                  },
-                  {
-                    headerName: '',
-                    field: 'isBusy',
-                    suppressMenu: true,
-                    cellRenderer: this.cellRendererBusy,
-                    width: 20,
-                    minWidth: 20,
-                    hide: false,
-                    cellClass: 'no-padding',
-                  },
-                  {
-                    headerName: '',
-                    field: 'latest_answerset_id',
-                    suppressMenu: true,
-                    cellRenderer: this.cellRendererAnswers,
-                    width: 20,
-                    minWidth: 20,
-                    hide: false,
-                    cellClass: 'no-padding',
-                  },
+                  // {
+                  //   headerName: 'User',
+                  //   field: 'user_email',
+                  //   suppressMenu: true,
+                  //   width: 100,
+                  // },
+                  // {
+                  //   headerName: 'Notes',
+                  //   field: 'notes',
+                  //   suppressMenu: true,
+                  //   width: 200,
+                  // },
+                  // {
+                  //   headerName: '',
+                  //   field: 'isBusy',
+                  //   suppressMenu: true,
+                  //   cellRenderer: this.cellRendererBusy,
+                  //   width: 20,
+                  //   minWidth: 20,
+                  //   hide: false,
+                  //   cellClass: 'no-padding',
+                  // },
+                  // {
+                  //   headerName: '',
+                  //   field: 'latest_answerset_id',
+                  //   suppressMenu: true,
+                  //   cellRenderer: this.cellRendererAnswers,
+                  //   width: 20,
+                  //   minWidth: 20,
+                  //   hide: false,
+                  //   cellClass: 'no-padding',
+                  // },
                 ]}
                 rowData={this.props.questions}
                 getRowClass={this.getRowClass}

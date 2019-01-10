@@ -16,17 +16,6 @@ class QuestionPres extends React.Component {
   constructor(props) {
     super(props);
 
-    this.styles = {
-      questionGraphContainer: {
-        minHeight: '300px',
-      },
-      answersetContainer: {
-        minHeight: '300px',
-      },
-      rowTopPad: {
-        paddingTop: '15px',
-      },
-    };
     this.renderInitializerBusy = this.renderInitializerBusy.bind(this);
     this.renderAnswerRefreshBusy = this.renderAnswerRefreshBusy.bind(this);
     this.renderNoAnswerSets = this.renderNoAnswerSets.bind(this);
@@ -150,6 +139,7 @@ class QuestionPres extends React.Component {
   }
 
   render() {
+    console.log(this.props.question)
     const questionGraph = {
       edges: (('machine_question' in this.props.question) && this.props.question.machine_question && ('edges' in this.props.question.machine_question)) ? this.props.question.machine_question.edges : [],
       nodes: (('machine_question' in this.props.question) && this.props.question.machine_question && ('nodes' in this.props.question.machine_question)) ? this.props.question.machine_question.nodes : [],
@@ -225,7 +215,7 @@ class QuestionPres extends React.Component {
           enableQuestionTask={enableQuestionFork}
           enableTaskStatus={enableTaskStatus}
         />
-        <Row style={this.styles.rowTopPad}>
+        <Row style={{ paddingTop: '15px' }}>
           <Col md={12}>
             <Panel id="localKGHeader">
               <Panel.Heading>
@@ -236,7 +226,7 @@ class QuestionPres extends React.Component {
                   </OverlayTrigger>
                 </Panel.Title>
               </Panel.Heading>
-              <Panel.Body style={{ padding: 0 }}>
+              <Panel.Body style={{ padding: 0, minHeight: '300px' }}>
                 {this.renderPanelContents()}
               </Panel.Body>
             </Panel>

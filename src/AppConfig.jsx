@@ -28,26 +28,22 @@ class AppConfig {
 
     // Other URLs that are primarily used for API calls
     this.apis = {
-      user: this.url('api/user/'),
-      concepts: this.url('api/concepts/'),
-      operations: this.url('api/operations/'),
-      questions: this.url('api/questions/'),
-      question: questionId => this.url(`api/q/${questionId}/`),
-      answerset: answersetId => this.url(`api/a/${answersetId}/`),
-      answer: (answersetId, answerId) => this.url(`api/a/${answersetId}/${answerId}/`),
-      questionTasks: questionId => this.url(`api/q/${questionId}/tasks/`),
-      questionAnswer: questionId => this.url(`api/q/${questionId}/answer/`),
-      questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg/`),
+      user: this.url('api/user/'), // GET current user credentials
+      concepts: this.url('api/concepts/'), // GET concepts contained in the global potential KG
+      operations: this.url('api/operations/'), // GET operations contained in global potential KG
+      questions: this.url('api/questions/'), // POST to store a new question
+      question: questionId => this.url(`api/q/${questionId}/`), // POST to update meta data, DELETE to delete the question
+      // answerset: answersetId => this.url(`api/a/${answersetId}/`),
+      // answer: (answersetId, answerId) => this.url(`api/a/${answersetId}/${answerId}/`),
+      // questionTasks: questionId => this.url(`api/q/${questionId}/tasks/`),
+      questionAnswer: questionId => this.url(`api/q/${questionId}/answer/`), // POST to initiate creation of a new answer set
+      questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg/`), // POST to initiate an update of the KG for this question
       parse: this.url('api/nlp/'),
-      tasks: this.url('api/tasks'),
-      task: taskId => this.url(`api/t/${taskId}/`),
-      feedbackNew: this.url('api/feedback/'),
-      feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
-      search: this.url('api/search/'),
-      flowbokop: {
-        execute: this.url('api/flowbokop/'),
-        graph: this.url('api/flowbokop/graph/'),
-      },
+      task: taskId => this.url(`api/t/${taskId}/`), // DELETE or GET status
+      taskLog: taskId => this.url(`api/t/${taskId}/log`), // GET detailed log of ongoing or completed task
+      feedbackNew: this.url('api/feedback/'), // POST new feedback
+      // feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
+      search: this.url('api/search/'), // POST for Bionames search
     };
 
     this.url = this.url.bind(this);
@@ -56,15 +52,12 @@ class AppConfig {
     this.user = this.user.bind(this);
     this.concepts = this.concepts.bind(this);
     this.operations = this.operations.bind(this);
-    this.questionListData = this.questionListData.bind(this);
-    this.questionData = this.questionData.bind(this);
-    this.questionSubgraph = this.questionSubgraph.bind(this);
-    this.answersetData = this.answersetData.bind(this);
-    this.answerData = this.answerData.bind(this);
-    this.tasksData = this.tasksData.bind(this);
-
-    this.flowbokopGraph = this.flowbokopGraph.bind(this);
-    this.flowbokopExecute = this.flowbokopExecute.bind(this);
+    // this.questionListData = this.questionListData.bind(this);
+    // this.questionData = this.questionData.bind(this);
+    // this.questionSubgraph = this.questionSubgraph.bind(this);
+    // this.answersetData = this.answersetData.bind(this);
+    // this.answerData = this.answerData.bind(this);
+    // this.tasksData = this.tasksData.bind(this);
 
     // Question and Answer Manipulation
     this.questionCreate = this.questionCreate.bind(this);
@@ -72,11 +65,10 @@ class AppConfig {
     this.questionUpdateMeta = this.questionUpdateMeta.bind(this);
     this.questionRefresh = this.questionRefresh.bind(this);
     this.questionFork = this.questionFork.bind(this);
-    this.questionTasks = this.questionTasks.bind(this);
+    // this.questionTasks = this.questionTasks.bind(this);
     this.taskStatus = this.taskStatus.bind(this);
     this.taskStop = this.taskStop.bind(this);
 
-    this.questionNewValidate = this.questionNewValidate.bind(this);
     this.questionNewTranslate = this.questionNewTranslate.bind(this);
     this.questionNewSearch = this.questionNewSearch.bind(this);
 
@@ -107,11 +99,9 @@ class AppConfig {
   concepts(fun, fail = () => {}) { this.getRequest(`${this.apis.concepts}`, fun, fail); }
   operations(fun) { this.getRequest(`${this.apis.operations}`, fun); }
   user(successFun, failureFun) { this.getRequest(`${this.apis.user}`, successFun, failureFun); }
-  questionListData(fun) { this.getRequest(`${this.apis.questions}`, fun); }
-  questionData(id, successFun, failureFun) { this.getRequest(`${this.apis.question(id)}`, successFun, failureFun); }
-  questionSubgraph(id, successFun, failureFun) { this.getRequest(`${this.apis.question(id)}subgraph/`, successFun, failureFun); }
-  answersetData(id, successFun, failureFun) { this.getRequest(`${this.apis.answerset(id)}`, successFun, failureFun); }
-  answerData(setId, id, successFun, failureFun) { this.getRequest(`${this.apis.answer(setId, id)}`, successFun, failureFun); }
+  // questionSubgraph(id, successFun, failureFun) { this.getRequest(`${this.apis.question(id)}subgraph/`, successFun, failureFun); }
+  // answersetData(id, successFun, failureFun) { this.getRequest(`${this.apis.answerset(id)}`, successFun, failureFun); }
+  // answerData(setId, id, successFun, failureFun) { this.getRequest(`${this.apis.answer(setId, id)}`, successFun, failureFun); }
 
   questionCreate(data, successFun, failureFun) {
     // Data must contain a complete specification for a new question
@@ -186,14 +176,14 @@ class AppConfig {
       { question_id: qid },
     );
   }
-  questionTasks(qid, successFun, failureFun) {
-    // Fetch active tasks for a specific question
-    this.getRequest(
-      this.apis.questionTasks(qid),
-      successFun,
-      failureFun,
-    );
-  }
+  // questionTasks(qid, successFun, failureFun) {
+  //   // Fetch active tasks for a specific question
+  //   this.getRequest(
+  //     this.apis.questionTasks(qid),
+  //     successFun,
+  //     failureFun,
+  //   );
+  // }
   questionUpdateMeta(qid, data, successFun, failureFun) {
     // Data must contain all necessary meta data fields
     // Can only be done by the owner
@@ -226,12 +216,12 @@ class AppConfig {
       successFun,
     );
   }
-  tasksData(successFun) {
-    this.getRequest(
-      this.apis.tasks,
-      successFun,
-    );
-  }
+  // tasksData(successFun) {
+  //   this.getRequest(
+  //     this.apis.tasks,
+  //     successFun,
+  //   );
+  // }
   taskStop(taskId, successFun, failureFun) {
     this.deleteRequest(
       this.apis.task(taskId),
@@ -256,23 +246,6 @@ class AppConfig {
     );
   }
 
-  flowbokopGraph(postData, successFun, failureFun) {
-    this.postRequest(
-      this.apis.flowbokop.graph,
-      postData,
-      successFun,
-      failureFun,
-    );
-  }
-  flowbokopExecute(postData, successFun, failureFun) {
-    this.postRequest(
-      this.apis.flowbokop.execute,
-      postData,
-      successFun,
-      failureFun,
-    );
-  }
-
   open(url) {
     window.open(url, '_blank'); // This will not open a new tab in all browsers, but will try
   }
@@ -285,13 +258,7 @@ class AppConfig {
   replaceUrl(title, url) {
     window.history.replaceState({}, title, url);
   }
-  // setUrl(title, url) {
-  //   history.pushState({}, title, url);
-  // }
 
-  questionNewValidate(postData, successFunction, failureFunction) {
-    console.log('Validate the machine question here');
-  }
   questionNewTranslate(questionText, successFunction, failureFunction) {
     this.postRequest(
       this.apis.parse,
@@ -320,12 +287,7 @@ class AppConfig {
       return Promise.resolve({ options: [] });
     });
   }
-  // submitRequest(url, data) {
-  //   http.open("POST", url, true);
-  //   http.setRequestHeader("Content-type", "application/json");
-  //   http.setRequestHeader("Accept", "application/json");
-  //   http.send(JSON.stringify(request));
-  // }
+  
   externalTemplateRequestGamma(queryId, terms, successFun, failureFun) {
     const url = 'http://robokop.renci.org:6011/api/query';
     const postData = {
@@ -418,6 +380,7 @@ class AppConfig {
       is_anonymous: true,
       is_admin: false,
       username: 'Anonymous',
+      user_id: '',
     };
     return { ...defaultUser, ...user };
   }

@@ -31,10 +31,10 @@ class QuestionListPres extends React.Component {
 
   syncStateAndProps(newProps) {
     const questions = newProps.questions.map((q) => {
-      q.isUserOwned = q.user_email === this.props.user.username;
-      q.hasAnswerset = Boolean(q.latest_answerset_id);
-      const qTasks = Array.isArray(q.tasks) ? q.tasks.filter(t => t.status !== 'FAILURE' && t.status !== 'SUCCESS') : [];
-      q.isBusy = qTasks.length > 0;
+      q.isUserOwned = q.ownerId.toString() === this.props.user.user_id;
+      q.hasAnswerset = false; // Boolean(q.latest_answerset_id);
+      // const qTasks = Array.isArray(q.tasks) ? q.tasks.filter(t => t.status !== 'FAILURE' && t.status !== 'SUCCESS') : [];
+      q.isBusy = false; // qTasks.length > 0;
       return q;
     });
     // Move the user owned questions to the top

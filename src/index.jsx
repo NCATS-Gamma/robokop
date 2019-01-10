@@ -68,9 +68,11 @@ const robokop = {
   },
   questionList: () => {
     ReactDOM.render(
-      <QuestionList
-        config={config}
-      />,
+      <ApolloProvider client={graphQlClient}>
+        <QuestionList
+          config={config}
+        />
+      </ApolloProvider>,
       document.getElementById('reactEntry'),
     );
   },
@@ -112,10 +114,12 @@ const robokop = {
   },
   question: (questionId) => {
     ReactDOM.render(
-      <Question
-        config={config}
-        id={questionId}
-      />,
+      <ApolloProvider client={graphQlClient}>
+        <Question
+          config={config}
+          id={questionId}
+        />
+      </ApolloProvider>,
       document.getElementById('reactEntry'),
     );
   },

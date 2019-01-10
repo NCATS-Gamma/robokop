@@ -134,20 +134,14 @@ class AnswersetSelector extends React.Component {
     // const { showNewButton } = this.props;
     // const moreThanOne = this.props.answersets.length > 1;
     const options = this.props.answersets.map((a) => {
-      let ts = a.datetime;
+      let ts = a.timestamp;
       if (!ts.endsWith('Z')) {
         ts = `${ts}Z`;
       }
       const d = new Date(ts);
       const timeString = d.toLocaleString();
 
-      let { creator } = a;
-      if (creator === undefined || creator == null) {
-        creator = '';
-      } else {
-        creator = ` - ${creator}`;
-      }
-      return { value: a.id, label: `${timeString} ${creator}` };
+      return { value: a.id, label: `${timeString}` };
     });
     const disableNewButton = this.props.answerBusy || this.props.refreshBusy || this.props.initializerBusy;
     return (

@@ -1,5 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Query } from 'react-apollo';
+import { gql } from 'apollo-boost';
 
 import { Grid, Row, Col, Button } from 'react-bootstrap';
 import Dialog from 'react-bootstrap-dialog';
@@ -11,6 +13,39 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import QuestionPres from './components/question/QuestionPres';
 
+
+const QUERY_GET_QUESTION_BY_ID = id => gql`
+{
+  question: questionById(id: "${id}") {
+    id
+    natural_question: naturalQuestion
+    notes
+    machine_question: qgraphByQgraphId {
+      body
+    }
+    question_graph: qgraphByQgraphId {
+      answersets: answersetsByQgraphIdList {
+        id
+        timestamp
+      } 
+    }
+  }
+}
+`;
+
+const QUERY_GET_TASKS_BY_ID = id => gql`
+{
+  questionById(id: "${id}") {
+    tasks: tasksByQuestionIdList {
+      id
+      timestamp
+      endTimestamp
+      initiator
+      result: _result
+    }
+  }
+}
+`;
 class Question extends React.Component {
   constructor(props) {
     super(props);
@@ -18,19 +53,15 @@ class Question extends React.Component {
     this.appConfig = new AppConfig(props.config);
 
     this.state = {
-      dataReady: false,
       userReady: false,
       conceptsReady: false,
       user: {},
-      question: {},
       concepts: [],
-      answersets: [],
       subgraph: null,
       runningTasks: [],
       prevRunningTasks: [],
       refreshBusy: false,
       answerBusy: false,
-      isValid: false,
     };
 
     this.taskPollingWaitTime = 2000; // in ms
@@ -54,20 +85,23 @@ class Question extends React.Component {
   }
 
   componentDidMount() {
-    this.appConfig.questionData(
-      this.props.id,
-      data => this.setState({
-        owner: data.owner,
-        question: data.question,
-        answersets: data.answerset_list,
-        isValid: true,
-        dataReady: true,
-      }),
-      () => this.setState({
-        isValid: false,
-        dataReady: true,
-      }),
-    );
+    // this.appConfig.questionData(
+    //   this.props.id,
+    //   (data) => {
+    //     console.log(data);
+    //     this.setState({
+    //       owner: data.owner,
+    //       question: data.question,
+    //       answersets: data.answerset_list,
+    //       isValid: true,
+    //       dataReady: true,
+    //     });
+    //   },
+    //   () => this.setState({
+    //     isValid: false,
+    //     dataReady: true,
+    //   }),
+    // );
     this.appConfig.user(data => this.setState({
       user: this.appConfig.ensureUser(data),
       userReady: true,
@@ -221,10 +255,9 @@ class Question extends React.Component {
   }
 
   callbackNewAnswerset() {
-    const q = this.state.question;
     // Send post request to build new answerset.
     this.appConfig.answersetCreate(
-      q.id,
+      this.props.id,
       (newData) => {
         this.addToTaskList({ answersetTask: newData.task_id });
         this.notificationSystem.addNotification({
@@ -248,10 +281,9 @@ class Question extends React.Component {
 
   callbackRefresh() {
     this.setState({ subgraph: null });
-    const q = this.state.question;
     // Send post request to update question data.
     this.appConfig.questionRefresh(
-      q.id,
+      this.props.id,
       (newData) => {
         this.addToTaskList({ questionTask: newData.task_id });
         this.notificationSystem.addNotification({
@@ -277,8 +309,7 @@ class Question extends React.Component {
     this.appConfig.questionUpdateMeta(this.props.id, newMeta, fun);
   }
   callbackFork() {
-    const q = this.state.question;
-    this.appConfig.questionFork(q.id);
+    this.appConfig.questionFork(this.props.id);
   }
   callbackTaskStatus() {
     const task = this.state.runningTasks[0];
@@ -363,8 +394,6 @@ class Question extends React.Component {
     }
   }
   callbackDelete() {
-    const q = this.state.question;
-
     this.dialogConfirm(
       () => {
         this.dialogWait({
@@ -375,7 +404,7 @@ class Question extends React.Component {
 
         // Actually try to delete the question here.
         this.appConfig.questionDelete(
-          q.id,
+          this.props.id,
           () => { console.log('Question Deleted'); this.appConfig.redirect(this.appConfig.urls.questions); },
           (err) => {
             console.log(err);
@@ -619,7 +648,7 @@ class Question extends React.Component {
   }
   renderLoading() {
     return (
-      <Loading />
+      <p />
     );
   }
   renderInvalid() {
@@ -652,38 +681,53 @@ class Question extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        <Grid>
-          {this.state.isValid &&
-            <QuestionPres
-              user={this.state.user}
-              owner={this.state.owner}
-              callbackUpdateMeta={this.callbackUpdateMeta}
-              callbackRefresh={this.callbackRefresh}
-              callbackNewAnswerset={this.callbackNewAnswerset}
-              callbackFork={this.callbackFork}
-              callbackDelete={this.callbackDelete}
-              callbackFetchGraph={this.callbackFetchGraph}
-              callbackTaskStatus={this.callbackTaskStatus}
-              answersetUrl={a => this.appConfig.urls.answerset(this.props.id, a.id)}
-              question={this.state.question}
-              answersets={this.state.answersets}
-              subgraph={this.state.subgraph}
-              concepts={this.state.concepts}
-              refreshBusy={this.state.refreshBusy}
-              answerBusy={this.state.answerBusy}
-              enableNewAnswersets={this.appConfig.enableNewAnswersets}
-              enableNewQuestions={this.appConfig.enableNewQuestions}
-              enableQuestionRefresh={this.appConfig.enableQuestionRefresh}
-              enableQuestionEdit={this.appConfig.enableQuestionEdit}
-              enableQuestionDelete={this.appConfig.enableQuestionDelete}
-              enableQuestionFork={this.appConfig.enableQuestionFork}
-              enableTaskStatus={this.appConfig.enableTaskStatus}
-            />
-          }
-          {!this.state.isValid &&
-            this.renderInvalid()
-          }
-        </Grid>
+        <Query query={QUERY_GET_QUESTION_BY_ID(this.props.id)}>
+          {({ loading, error, data }) => {
+            if (loading) {
+              // console.log('GraphQL is loading');
+              return <Loading />;
+            }
+
+            if (error) {
+              console.log('GraphQL error:', error);
+              return this.renderInvalid();
+            }
+            // Good response
+            // console.log('GraphQL data:', data);
+            const { question } = data;
+            question.machine_question = JSON.parse(question.machine_question.body);
+            const { answersets } = question.question_graph;
+            return (
+              <Grid>
+                <QuestionPres
+                  user={this.state.user}
+                  owner={this.state.owner}
+                  callbackUpdateMeta={this.callbackUpdateMeta}
+                  callbackRefresh={this.callbackRefresh}
+                  callbackNewAnswerset={this.callbackNewAnswerset}
+                  callbackFork={this.callbackFork}
+                  callbackDelete={this.callbackDelete}
+                  callbackFetchGraph={this.callbackFetchGraph}
+                  callbackTaskStatus={this.callbackTaskStatus}
+                  answersetUrl={a => this.appConfig.urls.answerset(this.props.id, a.id)}
+                  question={question}
+                  answersets={answersets}
+                  subgraph={this.state.subgraph}
+                  concepts={this.state.concepts}
+                  refreshBusy={this.state.refreshBusy}
+                  answerBusy={this.state.answerBusy}
+                  enableNewAnswersets={this.appConfig.enableNewAnswersets}
+                  enableNewQuestions={this.appConfig.enableNewQuestions}
+                  enableQuestionRefresh={this.appConfig.enableQuestionRefresh}
+                  enableQuestionEdit={this.appConfig.enableQuestionEdit}
+                  enableQuestionDelete={this.appConfig.enableQuestionDelete}
+                  enableQuestionFork={this.appConfig.enableQuestionFork}
+                  enableTaskStatus={this.appConfig.enableTaskStatus}
+                />
+              </Grid>
+            );
+          }}
+        </Query>
         <Footer config={this.props.config} />
         <Dialog ref={(el) => { this.dialog = el; }} />
         <NotificationSystem
@@ -693,7 +737,7 @@ class Question extends React.Component {
     );
   }
   render() {
-    const ready = this.state.dataReady && this.state.userReady && this.state.conceptsReady;
+    const ready = this.state.userReady && this.state.conceptsReady;
     return (
       <div>
         {!ready && this.renderLoading()}
