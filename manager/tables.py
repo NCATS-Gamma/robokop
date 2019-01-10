@@ -1,7 +1,8 @@
 """Classes for SQLAlchemy implementation of Message structure."""
 import logging
+import datetime
 
-from sqlalchemy import Column, String, Integer, ForeignKeyConstraint
+from sqlalchemy import Column, String, Integer, ForeignKeyConstraint, DateTime
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy import inspect
@@ -103,9 +104,11 @@ class Question(Base, FromDictMixin):
     )
     id = Column(QUESTION_ID_TYPE, primary_key=True)
     natural_question = Column(String)
+    notes = Column(String)
     owner_id = Column(Integer)
     qgraph_id = Column(QGRAPH_ID_TYPE)
     etc = Column(JSON)
+    timestamp = Column(DateTime)
 
     owner = relationship(
         'User',
@@ -128,12 +131,13 @@ class Question(Base, FromDictMixin):
         'question_graph': QGraph
     }
 
-    dump_attributes = ['id', 'owner_email', 'natural_question', 'question_graph']
+    dump_attributes = ['id', 'owner_email', 'natural_question', 'question_graph', 'timestamp', 'notes']
 
     def __init__(self, *args, **kwargs):
         """Initialize Question."""
         kwargs = self.preprocess_args(*args, **kwargs)
         super().__init__(**kwargs)
+        self.timestamp = datetime.datetime.now()
 
 
 class Answer(Base):
@@ -192,6 +196,7 @@ class Answerset(Base, FromDictMixin):
     )
     id = Column(ANSWERSET_ID_TYPE, primary_key=True)
     qgraph_id = Column(QGRAPH_ID_TYPE, primary_key=True)
+    timestamp = Column(DateTime)
 
     qgraph = relationship(
         'QGraph',
@@ -210,6 +215,7 @@ class Answerset(Base, FromDictMixin):
             raise RuntimeError('Answerset() expects exactly one positional argument.')
         super().__init__(**kwargs)
         self.answers = [Answer(a, qgraph_id=self.qgraph_id) for a in args[0]]
+        self.timestamp = datetime.datetime.now()
 
     def dump(self):
         """Dump answerset as json."""

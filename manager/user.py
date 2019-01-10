@@ -4,7 +4,7 @@ from flask_security import UserMixin, RoleMixin
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Boolean, DateTime, Column, Integer, \
                        String, ForeignKeyConstraint
-from manager.setup_db import Base, db_session
+from manager.setup_db import Base, session_scope
 
 
 class RolesUsers(Base):
@@ -65,25 +65,22 @@ class User(Base, UserMixin):
 
 def get_user_by_id(uid, session=None):
     """Get user by id."""
-    if session is None:
-        session = db_session
-    return session.query(User)\
-        .filter(User.id == uid)\
-        .first()
+    
+    with session_scope() as session:
+        return session.query(User)\
+            .filter(User.id == uid)\
+            .first().to_json()
 
 
 def list_users(session=None):
     """Get a list of all users."""
-    if session is None:
-        session = db_session
-    return session.query(User)\
-        .all()
+    with session_scope() as session:
+        return [u.to_json() for u in session.query(User).all()]
 
 
 def get_user_by_email(user_email, session=None):
     """Get user by email address."""
-    if session is None:
-        session = db_session
-    return session.query(User)\
-        .filter(User.email == user_email)\
-        .first()
+    with session_scope() as session:
+        return session.query(User)\
+            .filter(User.email == user_email)\
+            .first().to_json()

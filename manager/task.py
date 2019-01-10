@@ -6,11 +6,11 @@ import logging
 
 import redis
 
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship, backref, object_session
 from sqlalchemy import Column, DateTime, String, ForeignKeyConstraint
 from sqlalchemy.types import JSON
 
-from manager.setup_db import Base, db_session, session_scope
+from manager.setup_db import Base, session_scope
 import manager.logging_config
 
 
@@ -101,7 +101,8 @@ class Task(Base):
         # this let's us know when a task is lost rather than busy
         if result['status'] in ['SUCCESS', 'FAILURE', 'REVOKED']:
             self._result = result
-            db_session.commit()
+            session = object_session(self)
+            session.commit()
         return result
 
     def to_json(self):

@@ -11,7 +11,7 @@ from flask_mail import Message
 
 from manager.setup import app, mail
 from manager.task import TASK_TYPES, save_task_info, save_remote_task_info, save_final_task_info  # make sure that question knows about .tasks
-from manager.graphql_accessors import get_question_json_by_id, add_answerset, get_question_by_id, get_qgraph_id_by_question_id
+from manager.tables_accessors import add_answerset, get_question_by_id, get_qgraph_id_by_question_id
 from manager.logging_config import set_up_main_logger, clear_log_handlers, add_task_id_based_handler  # set up the logger
 
 logger = logging.getLogger(__name__)
@@ -93,7 +93,7 @@ def answer_question(self, question_id, user_email=None):
 
         remote_task_id = response.json()['task_id']
 
-        logger.info(f'The ranker has acknowledge with task_id {remote_task_id}')
+        logger.info(f'The ranker has acknowledged with task_id {remote_task_id}')
         save_remote_task_info(self.request.id, remote_task_id)
         
         logger.info(f"Starting to poll for results.")
@@ -101,6 +101,7 @@ def answer_question(self, question_id, user_email=None):
         for _ in range(60 * 60 * 24):  # wait up to 1 day
             time.sleep(1)
             response = requests.get(polling_url)
+            # logger.info(f"Poll results: {response}")
             if response.json()['status'] == 'FAILURE':
                 logger.info('Ranker reported the task as FAILURE. Aborting.')
                 raise RuntimeError('Question answering failed.')

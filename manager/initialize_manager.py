@@ -4,14 +4,14 @@ import os
 from datetime import datetime
 from flask_security import Security, SQLAlchemySessionUserDatastore
 from manager.setup import app
-from manager.setup_db import init_db, db_session
+from manager.setup_db import init_db, db_session, db_scoped_session
 from manager.user import User, Role
 
 # Create any database tables that don't exist yet.
 init_db()
 
 with app.app_context():
-    user_datastore = SQLAlchemySessionUserDatastore(db_session, User, Role)
+    user_datastore = SQLAlchemySessionUserDatastore(db_scoped_session, User, Role)
     security = Security(app, user_datastore)  # this sets some app.config
 
     # Create the Roles "admin" and "end-user" -- unless they already exist
@@ -30,11 +30,12 @@ with app.app_context():
         )
 
     # Commit any database changes; the User and Roles must exist before we can add a Role to the User
-    db_session.commit()
+    db_scoped_session.commit()
 
     # Give users "user" role, and admin the "admin" role. (This will have no effect if the
     # users already have these Roles.)
     user_datastore.add_role_to_user(admin_email, 'admin')
 
     # Again, commit any database changes.
-    db_session.commit()
+    db_scoped_session.commit()
+    db_scoped_session.remove()

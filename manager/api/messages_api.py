@@ -8,7 +8,7 @@ from flask_restful import Resource
 from manager.setup import api
 from manager.user import get_user_by_email
 import manager.logging_config
-from manager.graphql_accessors import add_question, add_answerset, get_qgraph_id_by_question_id
+from manager.tables_accessors import add_question, add_answerset, get_qgraph_id_by_question_id
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +19,9 @@ class MessagesAPI(Resource):
     @auth_required('session', 'basic')
     def post(self, question_id):
         """
-        Store a message.
+        Store an answer message for a question
         ---
-        tags: [storage]
+        tags: [question]
         requestBody:
             name: message
             content:
@@ -61,9 +61,9 @@ class QuestionsAPI(Resource):
     @auth_required('session', 'basic')
     def post(self):
         """
-        Store a question.
+        Create a question.
         ---
-        tags: [storage]
+        tags: [question]
         requestBody:
             name: question
             content:

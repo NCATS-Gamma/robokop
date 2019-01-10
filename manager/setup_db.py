@@ -10,8 +10,10 @@ from sqlalchemy.ext.declarative import declarative_base
 uri = f'postgresql://{os.environ["POSTGRES_USER"]}:{os.environ["POSTGRES_PASSWORD"]}@{os.environ["POSTGRES_HOST"]}:{os.environ["POSTGRES_PORT"]}/{os.environ["POSTGRES_DB"]}'
 engine = create_engine(uri, convert_unicode=True)
 Base = declarative_base()
-db_session = scoped_session(sessionmaker(bind=engine))
-Base.query = db_session.query_property()  # What does this do?
+# db_session = scoped_session(sessionmaker(bind=engine))
+db_session = sessionmaker(bind=engine)
+db_scoped_session = scoped_session(db_session)
+Base.query = db_scoped_session.query_property()  # What does this do?
 Base.metadata.bind = engine
 
 
