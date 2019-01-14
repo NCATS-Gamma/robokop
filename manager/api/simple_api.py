@@ -200,7 +200,7 @@ class Quick(Resource):
                 if response.json()['status'] == 'SUCCESS':
                     break
         else:
-            raise RuntimeError("Question answering has not completed after 1 hour. You may with to try the non-blocking API.")
+            raise RuntimeError("Question answering has not completed after 1 hour. You may want to try with the non-blocking API.")
 
         answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{response.json()['task_id']}")
         return answerset_json.json()

@@ -38,6 +38,8 @@ class AppConfig {
       // questionTasks: questionId => this.url(`api/q/${questionId}/tasks/`),
       questionAnswer: questionId => this.url(`api/q/${questionId}/answer/`), // POST to initiate creation of a new answer set
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg/`), // POST to initiate an update of the KG for this question
+      answersetSubgraph: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/subgraph/`), // GET to retrieve local subgraph given a quest creation of a new answer set
+      // answersetData: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/`), // GET to retrieve local subgraph given a quest creation of a new answer set
       parse: this.url('api/nlp/'),
       task: taskId => this.url(`api/t/${taskId}/`), // DELETE or GET status
       taskLog: taskId => this.url(`api/t/${taskId}/log`), // GET detailed log of ongoing or completed task
@@ -54,7 +56,7 @@ class AppConfig {
     this.operations = this.operations.bind(this);
     // this.questionListData = this.questionListData.bind(this);
     // this.questionData = this.questionData.bind(this);
-    // this.questionSubgraph = this.questionSubgraph.bind(this);
+    this.questionSubgraph = this.questionSubgraph.bind(this);
     // this.answersetData = this.answersetData.bind(this);
     // this.answerData = this.answerData.bind(this);
     // this.tasksData = this.tasksData.bind(this);
@@ -99,7 +101,9 @@ class AppConfig {
   concepts(fun, fail = () => {}) { this.getRequest(`${this.apis.concepts}`, fun, fail); }
   operations(fun) { this.getRequest(`${this.apis.operations}`, fun); }
   user(successFun, failureFun) { this.getRequest(`${this.apis.user}`, successFun, failureFun); }
-  // questionSubgraph(id, successFun, failureFun) { this.getRequest(`${this.apis.question(id)}subgraph/`, successFun, failureFun); }
+  questionSubgraph(id, successFun, failureFun) {
+    this.getRequest(this.apis.questionSubgraph(id), successFun, failureFun);
+  }
   // answersetData(id, successFun, failureFun) { this.getRequest(`${this.apis.answerset(id)}`, successFun, failureFun); }
   // answerData(setId, id, successFun, failureFun) { this.getRequest(`${this.apis.answer(setId, id)}`, successFun, failureFun); }
 

@@ -41,7 +41,6 @@ class Answerset extends React.Component {
       userReady: false,
       conceptsReady: false,
       user: {},
-      answerCount: null,
       answersetGraph: {},
       answersetFeedback: [],
       answersetId: '',
@@ -50,74 +49,14 @@ class Answerset extends React.Component {
       concepts: [],
     };
 
+    this.parseAnswersetInfo = this.parseAnswersetInfo.bind(this);
+
     this.callbackFeedbackSubmit = this.callbackFeedbackSubmit.bind(this);
     this.handleAnswerSelect = this.handleAnswerSelect.bind(this);
     this.handleNoAnswerSelect = this.handleNoAnswerSelect.bind(this);
   }
 
   componentDidMount() {
-    // makes the appropriate GET request from server.py,
-    // uses the result to set this.state
-    // this.appConfig.answersetData(
-    //   this.props.id,
-    //   (data) => {
-    //     const answers = _.cloneDeep(data.answerset.result_list);
-
-    //     answers.forEach((a) => {
-    //       a.result_graph.edge_list.forEach((edge) => {
-    //         if (!('id' in edge)) {
-    //           edge.id = `${edge.provided_by}(${edge.source_id}-(${edge.type})->${edge.target_id})`;
-    //         }
-    //       });
-    //     });
-
-    //     const nodesIdSet = new Set();
-    //     const edgesIdSet = new Set();
-    //     // Parse answerset specific graph here
-    //     // For each answer find new nodes and edges that haven't already been added
-    //     const nodes = [];
-    //     const edges = [];
-    //     answers.forEach((a) => {
-    //       const g = a.result_graph;
-    //       g.node_list.forEach((node) => {
-    //         if (!nodesIdSet.has(node.id)) {
-    //           nodesIdSet.add(node.id);
-    //           nodes.push(node);
-    //         }
-    //       });
-    //       g.edge_list.forEach((edge) => {
-    //         const edgeId = edge.id;
-    //         if (!edgesIdSet.has(edgeId)) {
-    //           edgesIdSet.add(edgeId);
-    //           edges.push(edge);
-    //         }
-    //       });
-    //     });
-    //     // Package
-    //     const answersetGraph = { node_list: nodes, edge_list: edges };
-
-    //     this.setState({
-    //       question: data.question,
-    //       answerset: data.answerset,
-    //       answers,
-    //       answerCount: data.answer_num,
-    //       answersetGraph,
-    //       answersetFeedback: data.feedback,
-    //       otherAnswersets: data.other_answersets,
-    //       otherQuestions: data.other_questions,
-    //       dataReady: true,
-    //       isValid: true,
-    //       answerId: this.props.answerId,
-    //     });
-    //   },
-    //   (err) => {
-    //     console.log(err);
-    //     this.setState({
-    //       dataReady: true,
-    //       isValid: false,
-    //     });
-    //   }
-    // );
     this.appConfig.user(data => this.setState({
       user: this.appConfig.ensureUser(data),
       userReady: true,
@@ -266,44 +205,38 @@ class Answerset extends React.Component {
   }
   renderLoadedUser() {
     const isAuth = this.state.user.is_authenticated;
+    const hasIds = 'questionId' in this.state && 'answersetId' in this.state;
     return (
       <div>
         <Header
           config={this.props.config}
           user={this.state.user}
         />
-        <Query query={QUERY_GET_QUESTION_BY_ID(this.props.id)}>
-          {({ loading, error, data }) => {
-            if (loading) {
-              // console.log('GraphQL is loading');
-              return <Loading />;
-            }
+        {hasIds &&
+          <Query query={QUERY_ANSWERSET_BY_IDS(this.state.questionId, this.state.answersetId)}>
+            {({ loading, error, data }) => {
+              if (loading) {
+                // console.log('GraphQL is loading');
+                return <Loading />;
+              }
 
-            if (error) {
-              console.log('GraphQL error:', error);
-              return this.renderInvalid();
-            }
-            // Good response
-            // console.log('GraphQL data:', data);
-            const parsedData = parseAnswersetInfo(data);
+              if (error) {
+                console.log('GraphQL error:', error);
+                return this.renderInvalid();
+              }
+              // Good response
+              // console.log('GraphQL data:', data);
+              const parsedData = this.parseAnswersetInfo(data);
 
-            const { question } = data;
-            question.machine_question = JSON.parse(question.machine_question.body);
-            const { answersets } = question.question_graph;
-
-            return (
-              <Grid>
-                {!this.state.isValid &&
-                  this.renderInvalid()
-                }
-                {this.state.isValid &&
+              return (
+                <Grid>
                   <AnswersetPres
                     user={this.state.user}
-                    question={this.state.question}
-                    answerset={this.state.answerset}
+                    question={parsedData.question}
+                    answerset={parsedData.answerset}
                     answerId={this.state.answerId}
-                    answers={this.state.answers}
-                    answerCount={this.state.answerCount}
+                    answers={parsedData.answers}
+                    answerCount={parsedData.answerCount}
                     answersetGraph={this.state.answersetGraph}
                     answersetFeedback={this.state.answersetFeedback}
                     concepts={this.state.concepts}
@@ -323,12 +256,11 @@ class Answerset extends React.Component {
                     getAnswerUrl={answer => this.appConfig.urls.answer(this.state.questionId, this.state.answersetId, answer.id)}
                     callbackFeedbackSubmit={this.callbackFeedbackSubmit}
                   />
-                }
-              </Grid>
-            );
-          }}
-        </Query>
-        
+                </Grid>
+              );
+            }}
+          </Query>
+        }
         <Footer config={this.props.config} />
       </div>
     );

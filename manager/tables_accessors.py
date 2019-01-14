@@ -85,6 +85,12 @@ def get_qgraph_id_by_question_id(qid):
         raise KeyError("No such question.")
     return qgraph_id
 
+def get_answerset_by_id(aid):
+    with session_scope() as session:
+        answerset = session.query(Answerset).filter(Answerset.id == aid).first().dump()
+    if not answerset:
+        raise KeyError("No such question.")
+    return answerset
 
 def add_question(q_json, qid=None, **kwargs):
     """Add question."""
