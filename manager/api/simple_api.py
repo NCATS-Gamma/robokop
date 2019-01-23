@@ -155,11 +155,11 @@ class Quick(Resource):
         question = request.json
         
         if ('rebuild' in question) and (str(question['rebuild']).upper() == 'TRUE'):
-            logger.info("rebuild")
+            logger.info("   Rebuilding")
             response = requests.post(
                 f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/',
                 json=request.json)
-            polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task id']}"
+            polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task_id']}"
 
             for _ in range(60 * 60):  # wait up to 1 hour
                 time.sleep(1)
@@ -174,7 +174,9 @@ class Quick(Resource):
             else:
                 raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
 
-            logger.info('Done updating KG. Answering question...')
+            logger.info('   Done updating KG.')
+        
+        logger.info('   Answering question...')
 
         max_results = request.args.get('max_results')
         max_results = max_results if max_results is not None else 250
@@ -184,6 +186,7 @@ class Quick(Resource):
             return f'output_format must be one of [{" ".join(output_formats)}]', 400
 
 
+        logger.info('   Posting to Ranker...')
         response = requests.post(
             f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/?max_results={max_results}&output_format={output_format}',
             json=question)
@@ -192,6 +195,8 @@ class Quick(Resource):
         for _ in range(60 * 60):  # wait up to 1 hour
             time.sleep(1)
             response = requests.get(polling_url)
+            logger.info('   Ranker polled for status')
+            # logger.info(response.text)
             if response.status_code == 200:
                 if response.json()['status'] == 'FAILURE':
                     raise RuntimeError('Question answering failed.')
@@ -202,7 +207,10 @@ class Quick(Resource):
         else:
             raise RuntimeError("Question answering has not completed after 1 hour. You may want to try with the non-blocking API.")
 
-        answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{response.json()['task_id']}")
+        answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}/result")
+        logger.info('   Returning response')
+        # logger.info(answerset_json)
+
         return answerset_json.json()
 
 api.add_resource(Quick, '/simple/quick/')
