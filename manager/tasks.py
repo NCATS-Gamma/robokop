@@ -101,17 +101,23 @@ def answer_question(self, question_id, user_email=None):
         for _ in range(60 * 60 * 24):  # wait up to 1 day
             time.sleep(1)
             response = requests.get(polling_url)
-            # logger.info(f"Poll results: {response}")
-            if response.json()['status'] == 'FAILURE':
-                logger.info('Ranker reported the task as FAILURE. Aborting.')
-                raise RuntimeError('Question answering failed.')
-            if response.json()['status'] == 'REVOKED':
-                logger.info('Ranker reported the task as REVOKED. Aborting.')
-                raise RuntimeError('Task terminated by admin.')
-            if response.json()['status'] == 'SUCCESS':
-                break
-            if _ % 30 == 0: # Every 30s update the log?
-                logger.info(f'Ranker is reporting it is busy, status = {response.json()["status"]}')
+            if response.status == 200:
+                # logger.info(f"Poll results: {response}")
+                if response.json()['status'] == 'FAILURE':
+                    logger.info('Ranker reported the task as FAILURE. Aborting.')
+                    raise RuntimeError('Question answering failed.')
+                if response.json()['status'] == 'REVOKED':
+                    logger.info('Ranker reported the task as REVOKED. Aborting.')
+                    raise RuntimeError('Task terminated by admin.')
+                if response.json()['status'] == 'SUCCESS':
+                    break
+                if _ % 30 == 0: # Every 30s update the log?
+                    logger.info(f'Ranker is reporting it is busy, status = {response.json()["status"]}')
+                else:
+                    pass
+            else:
+                # We didn't get a 200. This is because of server error or sometimes a dropped task
+                raise RuntimeError('Ranker did not return a 200 when requesting task status.')
         else:
             raise RuntimeError("Question answering has not completed after 1 day. It will continue working, but we will stop polling.")
 
@@ -201,17 +207,22 @@ def update_kg(self, question_id, user_email=None):
         for _ in range(60 * 60 * 24):  # wait up to 1 day
             time.sleep(1)
             response = requests.get(polling_url)
-            if response.json()['status'] == 'FAILURE':
-                logger.info('Builder reported the task as FAILURE. Aborting.')
-                raise RuntimeError('Question answering failed.')
-            if response.json()['status'] == 'REVOKED':
-                logger.info('Builder reported the task as REVOKED. Aborting.')
-                raise RuntimeError('Task terminated by admin.')
-            if response.json()['status'] == 'SUCCESS':
-                break
-            if _ % 30 == 0: # Every 30s update the log?
-                logger.info(f'Builder is reporting it is busy, status = {response.json()["status"]}')
-
+            if response.status == 200:
+                if response.json()['status'] == 'FAILURE':
+                    logger.info('Builder reported the task as FAILURE. Aborting.')
+                    raise RuntimeError('Question answering failed.')
+                if response.json()['status'] == 'REVOKED':
+                    logger.info('Builder reported the task as REVOKED. Aborting.')
+                    raise RuntimeError('Task terminated by admin.')
+                if response.json()['status'] == 'SUCCESS':
+                    break
+                if _ % 30 == 0: # Every 30s update the log?
+                    logger.info(f'Builder is reporting it is busy, status = {response.json()["status"]}')
+                else:
+                    pass
+            else:
+                # We didn't get a 200. This is because of server error or sometimes a dropped task
+                raise RuntimeError('Builder did not return a 200 when requesting task status.')
         else:
             raise RuntimeError("KG updating has not completed after 1 day. It will continue working, but we must return to the manager.")
 

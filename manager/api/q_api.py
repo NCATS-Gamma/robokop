@@ -69,6 +69,7 @@ class AnswersetAPI(Resource):
         """
         question_id, answerset_id = qid_aid.split('_')
         include_kg = request.args.get('include_kg', default=False)
+        include_kg = include_kg if isinstance(include_kg, bool) else True if isinstance(include_kg, str) and include_kg == 'true' else False
         query = f"""{{
             question: questionById(id: "{question_id}") {{
                 id
@@ -98,8 +99,11 @@ class AnswersetAPI(Resource):
             'answers': answers
         }
         if include_kg:
-            url = f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/kg_lookup'
+            url = f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/knowledge_graph'
+            logger.debug(message)
             response = requests.post(url, json=message)
+            logger.debug(response)
+            logger.debug(response.text)
             message['knowledge_graph'] = response.json()
         return message, 200
 
