@@ -5,6 +5,7 @@ Blueprint for /api/q/* endpoints
 import os
 import sys
 import re
+import json
 import logging
 from datetime import datetime
 import requests
@@ -25,7 +26,142 @@ from manager.celery_monitor import get_messages
 
 logger = logging.getLogger(__name__)
 
+
+class AnswersetAPI(Resource):
+
+    def get(self, qid_aid):
+        """
+        Get message for question/answerset.
+        ---
+        tags: [answerset]
+        parameters:
+          - in: path
+            name: qid_aid
+            description: "<question_id>_<answerset_id>"
+            schema:
+                type: string
+            required: true
+          - in: query
+            name: include_kg
+            description: Flag indicating whether to fetch the knowledge graph.
+            schema:
+                type: boolean
+            default: false
+        responses:
+            200:
+                description: "question edited"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
+            401:
+                description: "unauthorized"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
+            404:
+                description: "invalid question key"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
+        """
+        question_id, answerset_id = qid_aid.split('_')
+        include_kg = request.args.get('include_kg', default=False)
+        query = f"""{{
+            question: questionById(id: "{question_id}") {{
+                id
+                naturalQuestion
+                question_graph: qgraphByQgraphId {{
+                    id
+                    body
+                }}
+                qgraphByQgraphId {{
+                    answersetsByQgraphIdList(condition: {{id: "{answerset_id}"}}) {{
+                        answersByAnswersetIdAndQgraphIdList {{
+                            body
+                        }}
+                    }}
+                }}
+            }}
+        }}"""
+        request_body = {'query': query}
+        url = f'http://{os.environ["GRAPHQL_HOST"]}:{os.environ["GRAPHQL_PORT"]}/graphql'
+        response = requests.post(url, json=request_body)
+        graphql_out = response.json()
+        question_graph = json.loads(graphql_out['data']['question']['question_graph']['body'])
+        answers = graphql_out['data']['question']['qgraphByQgraphId']['answersetsByQgraphIdList'][-1]['answersByAnswersetIdAndQgraphIdList']
+        answers = [json.loads(answer['body']) for answer in answers]
+        message = {
+            'question_graph': question_graph,
+            'answers': answers
+        }
+        if include_kg:
+            url = f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/kg_lookup'
+            response = requests.post(url, json=message)
+            message['knowledge_graph'] = response.json()
+        return message, 200
+
+api.add_resource(AnswersetAPI, '/a/<qid_aid>/')
+
+
 class QuestionAPI(Resource):
+
+    def get(self, question_id):
+        """
+        Get message for question.
+        ---
+        tags: [question]
+        parameters:
+          - in: path
+            name: question_id
+            description: "question id"
+            schema:
+                type: string
+            required: true
+        responses:
+            200:
+                description: "question edited"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
+            401:
+                description: "unauthorized"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
+            404:
+                description: "invalid question key"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
+        """
+        include_kg = request.args.get('include_kg', default=False)
+        query = f"""{{
+            question: questionById(id: "{question_id}") {{
+                id
+                naturalQuestion
+                question_graph: qgraphByQgraphId {{
+                    id
+                    body
+                }}
+            }}
+        }}"""
+        request_body = {'query': query}
+        url = f'http://{os.environ["GRAPHQL_HOST"]}:{os.environ["GRAPHQL_PORT"]}/graphql'
+        response = requests.post(url, json=request_body)
+        graphql_out = response.json()
+        question_graph = json.loads(graphql_out['data']['question']['question_graph']['body'])
+        natural_question = json.loads(graphql_out['data']['question']['question_graph']['body'])
+        message = {
+            'natural_question': natural_question,
+            'question_graph': question_graph
+        }
+        return message, 200
 
     @auth_required('session', 'basic')
     def post(self, question_id):
