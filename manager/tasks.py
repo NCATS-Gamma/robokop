@@ -122,6 +122,8 @@ def answer_question(self, question_id, user_email=None):
         # logger.info(message)
 
         logger.info(f'{len(message["answers"])} answers were found')
+        if not message["answers"]:
+            raise NoAnswersException()
 
         logger.info('Storing answers.')
         answerset_id = add_answerset(message['answers'], qgraph_id=qgraph_id)
