@@ -4,17 +4,19 @@ import os
 from contextlib import contextmanager
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from flask_sqlalchemy import SQLAlchemy
+
+from manager.setup import app
 
 uri = f'postgresql://{os.environ["POSTGRES_USER"]}:{os.environ["POSTGRES_PASSWORD"]}@{os.environ["POSTGRES_HOST"]}:{os.environ["POSTGRES_PORT"]}/{os.environ["POSTGRES_DB"]}'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = uri
+db = SQLAlchemy(app)
+Base = db.Model
+
 engine = create_engine(uri, convert_unicode=True)
-Base = declarative_base()
-# db_session = scoped_session(sessionmaker(bind=engine))
-db_session = sessionmaker(bind=engine)
-db_scoped_session = scoped_session(db_session)
-Base.query = db_scoped_session.query_property()  # What does this do?
-Base.metadata.bind = engine
+Session = sessionmaker(bind=engine)
 
 
 def init_db():
@@ -26,14 +28,12 @@ def init_db():
     import manager.user
     import manager.feedback
     import manager.task
-    engine.execute('CREATE SCHEMA IF NOT EXISTS private')
-    Base.metadata.create_all(bind=engine)
-
+    db.create_all()
 
 @contextmanager
 def session_scope():
     """Handle SQLAlchemy session lifecycle."""
-    session = db_session()
+    session = Session()
     try:
         yield session
         # leave and come back here
