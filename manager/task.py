@@ -34,9 +34,10 @@ class Task(Base):
     type = Column(String)
     initiator = Column(String)
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    starting_timestamp = Column(DateTime)
     end_timestamp = Column(DateTime)
     question_id = Column(String)
-    _result = Column(JSON)
+    result = Column(JSON)
     remote_task_id = Column(String)
 
     question = relationship(
@@ -56,6 +57,7 @@ class Task(Base):
         self.initiator = None
         self.question_id = None
         self.remote_task_id = None
+        self.result = {}
 
         # apply json properties to existing attributes
         attributes = self.__dict__.keys()
@@ -74,19 +76,8 @@ class Task(Base):
             else:
                 logger.warning("Keyword argument '%s' ignored.", key)
 
-    @property
-    def status(self):
-        """Task status."""
-        if self.result is not None:
-            return self.result['status']
-        else:
-            return None
-
-    @property
-    def result(self):
-        """Task result."""
-        if self._result is not None:
-            return self._result
+    def get_result(self):
+        """Fetch task result from celery results db."""
 
         r = redis.Redis(
             host=os.environ['RESULTS_HOST'],
@@ -96,14 +87,8 @@ class Task(Base):
         value = r.get(f'celery-task-meta-{self.id}')
         if value is None:
             return None
-        result = json.loads(value)
-        # only store result permanently if task is complete
-        # this let's us know when a task is lost rather than busy
-        if result['status'] in ['SUCCESS', 'FAILURE', 'REVOKED']:
-            self._result = result
-            session = object_session(self)
-            session.commit()
-        return result
+        r = json.loads(value)
+        return r
 
     def to_json(self):
         """Export task as JSON-ifiable dict."""
@@ -112,6 +97,8 @@ class Task(Base):
         struct['timestamp'] = struct['timestamp'].isoformat()
         if struct['end_timestamp']:
             struct['end_timestamp'] = struct['end_timestamp'].isoformat()
+        if struct['starting_timestamp']:
+            struct['starting_timestamp'] = struct['starting_timestamp'].isoformat()
 
         return struct
 
@@ -133,6 +120,13 @@ def get_task_by_id(task_id):
     return task_json
 
 
+def save_starting_task_info(task_id):
+    """ Updates the time when the task was started """
+    with session_scope() as session:
+        task = session.query(Task).get(task_id)
+        task.starting_timestamp = datetime.datetime.utcnow()
+        session.commit()
+
 def save_task_info(task_id, question_id, task_type, initiator, remote_task_id=None):
     """Saves task information to database."""
     with session_scope() as session:
@@ -144,6 +138,12 @@ def save_task_info(task_id, question_id, task_type, initiator, remote_task_id=No
             remote_task_id=remote_task_id
         )
         session.add(task)
+
+def save_task_result(task_id):
+    with session_scope() as session:
+        task = session.query(Task).get(task_id)
+        task.result = task.get_result()
+        session.commit()
 
 def save_remote_task_info(task_id, remote_task_id):
     """ Updates the endtime of task when task is done"""

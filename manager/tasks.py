@@ -1,6 +1,7 @@
 """Tasks for Celery workers."""
 
 import os
+import json
 import time
 import logging
 
@@ -10,7 +11,7 @@ from kombu import Queue, Exchange
 from flask_mail import Message
 
 from manager.setup import app, mail
-from manager.task import TASK_TYPES, save_task_info, save_remote_task_info, save_final_task_info  # make sure that question knows about .tasks
+from manager.task import TASK_TYPES, save_task_info, save_task_result, save_starting_task_info, save_remote_task_info, save_final_task_info  # make sure that question knows about .tasks
 from manager.tables_accessors import add_answerset, get_question_by_id, get_qgraph_id_by_question_id
 from manager.logging_config import set_up_main_logger, clear_log_handlers, add_task_id_based_handler  # set up the logger
 
@@ -30,6 +31,36 @@ celery.conf.task_queues = (
 )
 
 
+@signals.after_task_publish.connect()
+def initialize_task(**kwargs):
+    headers = kwargs.get('headers')
+    
+    logger.debug(f'task headers {headers}')
+
+    # Save initial task information into POSTGRES
+    task_id = headers['id']
+
+    task_fun = headers['task']
+    if task_fun == 'manager.tasks.answer_question':
+        task_type = TASK_TYPES['answer']
+    elif task_fun == 'manager.tasks.update_kg':
+        task_type = TASK_TYPES['update']
+    else:
+        task_type = 'UNKNOWN'
+    task_args = json.loads(headers['kwargsrepr'].replace("'",'"'))
+    
+    initiator = task_args['user_email']
+    
+    question_id_list = json.loads(headers['argsrepr'].replace("'",'"'))
+    question_id = question_id_list[0]
+    
+    save_task_info(
+        task_id=task_id,
+        question_id=question_id,
+        task_type=task_type,
+        initiator=initiator,
+    )
+
 @signals.task_prerun.connect()
 def setup_logging(signal=None, sender=None, task_id=None, task=None, *args, **kwargs):
     """Change the main logger's handlers so they could log to a task specific log file."""
@@ -47,6 +78,11 @@ def task_post_run(**kwargs):
     Updates task object with end time.
     """
     task_id = kwargs.get('task_id')
+    
+    # Sync task status
+    save_task_result(task_id)
+
+    # Switch the loggers around
     logger = logging.getLogger('manager')
     save_final_task_info(task_id)
     logger.info('Task is complete. Ending task specific log.')
@@ -68,12 +104,7 @@ def answer_question(self, question_id, user_email=None):
     self.update_state(state='ANSWERING')
     logger.info("Answering question")
     
-    save_task_info(
-        task_id=self.request.id,
-        question_id=question_id,
-        task_type=TASK_TYPES['answer'],
-        initiator=user_email,
-    )
+    save_starting_task_info(task_id=self.request.id)
 
     try:
         question = get_question_by_id(question_id)
@@ -178,12 +209,7 @@ def update_kg(self, question_id, user_email=None):
     self.update_state(state='UPDATING KG')
     logger.info(f"Updating the knowledge graph for '{question_id}'")
 
-    save_task_info(
-        task_id=self.request.id,
-        question_id=question_id,
-        task_type=TASK_TYPES['update'],
-        initiator=user_email
-    )
+    save_starting_task_info(task_id=self.request.id)
 
     try:
         question_json = get_question_by_id(question_id)
