@@ -33,17 +33,17 @@ class AppConfig {
       operations: this.url('api/operations/'), // GET operations contained in global potential KG
       questions: this.url('api/questions/'), // POST to store a new question
       question: questionId => this.url(`api/q/${questionId}/`), // POST to update meta data, DELETE to delete the question
-      // answerset: answersetId => this.url(`api/a/${answersetId}/`),
+      answerset: answersetId => this.url(`api/a/${answersetId}/`),
       // answer: (answersetId, answerId) => this.url(`api/a/${answersetId}/${answerId}/`),
       // questionTasks: questionId => this.url(`api/q/${questionId}/tasks/`),
       questionAnswer: questionId => this.url(`api/q/${questionId}/answer/`), // POST to initiate creation of a new answer set
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg/`), // POST to initiate an update of the KG for this question
-      answersetSubgraph: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/subgraph/`), // GET to retrieve local subgraph given a quest creation of a new answer set
-      // answersetData: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/`), // GET to retrieve local subgraph given a quest creation of a new answer set
+      // answersetSubgraph: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/subgraph/`), // GET to retrieve local subgraph given a quest creation of a new answer set
+      answersetData: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/`), // GET to retrieve complete message
       parse: this.url('api/nlp/'),
       task: taskId => this.url(`api/t/${taskId}/`), // DELETE or GET status
       taskLog: taskId => this.url(`api/t/${taskId}/log`), // GET detailed log of ongoing or completed task
-      feedbackNew: this.url('api/feedback/'), // POST new feedback
+      // feedbackNew: this.url('api/feedback/'), // POST new feedback
       // feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
       search: this.url('api/search/'), // POST for Bionames search
     };
@@ -56,8 +56,8 @@ class AppConfig {
     this.operations = this.operations.bind(this);
     // this.questionListData = this.questionListData.bind(this);
     // this.questionData = this.questionData.bind(this);
-    this.questionSubgraph = this.questionSubgraph.bind(this);
-    // this.answersetData = this.answersetData.bind(this);
+    // this.questionSubgraph = this.questionSubgraph.bind(this);
+    this.answersetData = this.answersetData.bind(this);
     // this.answerData = this.answerData.bind(this);
     // this.tasksData = this.tasksData.bind(this);
 
@@ -104,7 +104,7 @@ class AppConfig {
   questionSubgraph(id, successFun, failureFun) {
     this.getRequest(this.apis.questionSubgraph(id), successFun, failureFun);
   }
-  // answersetData(id, successFun, failureFun) { this.getRequest(`${this.apis.answerset(id)}`, successFun, failureFun); }
+  answersetData(id, successFun, failureFun) { this.getRequest(`${this.apis.answerset(id)}`, successFun, failureFun); }
   // answerData(setId, id, successFun, failureFun) { this.getRequest(`${this.apis.answer(setId, id)}`, successFun, failureFun); }
 
   questionCreate(data, successFun, failureFun) {
@@ -234,21 +234,21 @@ class AppConfig {
     );
   }
 
-  answerFeedbackNew(data, successFun, failureFun) {
-    this.postRequest(
-      this.apis.feedbackNew,
-      data,
-      successFun,
-      failureFun,
-    );
-  }
-  answerFeedback(questionId, answersetId, successFun, failureFun) {
-    this.getRequest(
-      this.apis.feedback(questionId, answersetId),
-      successFun,
-      failureFun,
-    );
-  }
+  // answerFeedbackNew(data, successFun, failureFun) {
+  //   this.postRequest(
+  //     this.apis.feedbackNew,
+  //     data,
+  //     successFun,
+  //     failureFun,
+  //   );
+  // }
+  // answerFeedback(questionId, answersetId, successFun, failureFun) {
+  //   this.getRequest(
+  //     this.apis.feedback(questionId, answersetId),
+  //     successFun,
+  //     failureFun,
+  //   );
+  // }
 
   open(url) {
     window.open(url, '_blank'); // This will not open a new tab in all browsers, but will try
@@ -291,42 +291,42 @@ class AppConfig {
       return Promise.resolve({ options: [] });
     });
   }
-  
-  externalTemplateRequestGamma(queryId, terms, successFun, failureFun) {
-    const url = 'http://robokop.renci.org:6011/api/query';
-    const postData = {
-      query_type_id: queryId,
-      terms,
-    };
 
-    return this.postRequest(url, postData, successFun, failureFun);
-  }
-  externalTemplateRequestIndigo(queryId, terms, successFun, failureFun) {
-    const url = 'https://indigo.ncats.io/reasoner/api/v0/query';
-    const postData = {
-      query_type_id: queryId,
-      terms,
-    };
+  // externalTemplateRequestGamma(queryId, terms, successFun, failureFun) {
+  //   const url = 'http://robokop.renci.org:6011/api/query';
+  //   const postData = {
+  //     query_type_id: queryId,
+  //     terms,
+  //   };
 
-    this.postRequest(url, postData, successFun, failureFun);
-  }
-  externalTemplateRequestXray(queryId, terms, successFun, failureFun) {
-    const url = 'https://rtx.ncats.io/api/rtx/v1/query';
-    const termsFixed = { ...terms, 
-      rel_type: "directly_interacts_with",
-      target_label: "protein" };
-    if ('chemical_substance' in termsFixed) {
-      let chem = termsFixed.chemical_substance;
-      [, chem] = chem.split(':');
-      termsFixed.chemical_substance = chem;
-    }
+  //   return this.postRequest(url, postData, successFun, failureFun);
+  // }
+  // externalTemplateRequestIndigo(queryId, terms, successFun, failureFun) {
+  //   const url = 'https://indigo.ncats.io/reasoner/api/v0/query';
+  //   const postData = {
+  //     query_type_id: queryId,
+  //     terms,
+  //   };
 
-    const postData = {
-      known_query_type_id: queryId,
-      terms: termsFixed,
-    };
-    this.postRequest(url, postData, successFun, failureFun);
-  }
+  //   this.postRequest(url, postData, successFun, failureFun);
+  // }
+  // externalTemplateRequestXray(queryId, terms, successFun, failureFun) {
+  //   const url = 'https://rtx.ncats.io/api/rtx/v1/query';
+  //   const termsFixed = { ...terms, 
+  //     rel_type: "directly_interacts_with",
+  //     target_label: "protein" };
+  //   if ('chemical_substance' in termsFixed) {
+  //     let chem = termsFixed.chemical_substance;
+  //     [, chem] = chem.split(':');
+  //     termsFixed.chemical_substance = chem;
+  //   }
+
+  //   const postData = {
+  //     known_query_type_id: queryId,
+  //     terms: termsFixed,
+  //   };
+  //   this.postRequest(url, postData, successFun, failureFun);
+  // }
 
   getRequest(
     addr,

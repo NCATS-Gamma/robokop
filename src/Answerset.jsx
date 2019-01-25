@@ -1,35 +1,14 @@
 import React from 'react';
 
 import { Grid, Row, Col, Button } from 'react-bootstrap';
-import { Query } from 'react-apollo';
-import { gql } from 'apollo-boost';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Loading from './components/Loading';
-import AnswersetPres from './components/answerset/AnswersetPres';
+import MessageAnswersetPres from './components/answerset/MessageAnswersetPres';
 
-const shortid = require('shortid');
 const _ = require('lodash');
-
-const QUERY_ANSWERSET_BY_IDS = (qid, aid) => gql`
-{
-  question: questionById(id: "${qid}") {
-    id
-    question_graph: qgraphByQgraphId {
-      answersets: answersetsByQgraphIdList(condition: {id: "${aid}"} ) {
-        id
-        timestamp
-        answers: answersByAnswersetIdAndQgraphIdList {
-          id
-          body
-        }
-      }
-    }
-  }
-}
-`;
 
 class Answerset extends React.Component {
   constructor(props) {
@@ -38,18 +17,14 @@ class Answerset extends React.Component {
     this.appConfig = new AppConfig(props.config);
 
     this.state = {
+      dataReady: false,
       userReady: false,
       conceptsReady: false,
+      isValid: false,
       user: {},
-      answersetGraph: {},
-      answersetFeedback: [],
-      answersetId: '',
-      questionId: '',
       answerId: [],
       concepts: [],
     };
-
-    this.parseAnswersetInfo = this.parseAnswersetInfo.bind(this);
 
     this.callbackFeedbackSubmit = this.callbackFeedbackSubmit.bind(this);
     this.handleAnswerSelect = this.handleAnswerSelect.bind(this);
@@ -57,6 +32,28 @@ class Answerset extends React.Component {
   }
 
   componentDidMount() {
+    // makes the appropriate GET request from server.py,
+    // uses the result to set this.state
+    this.appConfig.answersetData(
+      this.props.id,
+      (data) => {
+        const message = data; // Add a little mroe logic here.
+
+        this.setState({
+          message
+          dataReady: true,
+          isValid: true,
+          answerId: this.props.answerId,
+        });
+      },
+      (err) => {
+        console.log(err);
+        this.setState({
+          dataReady: true,
+          isValid: false,
+        });
+      }
+    );
     this.appConfig.user(data => this.setState({
       user: this.appConfig.ensureUser(data),
       userReady: true,
@@ -69,77 +66,8 @@ class Answerset extends React.Component {
     });
   }
 
-  componentWillReceiveProps(nextProps) {
-    const subIds = nextProps.id.split('_');
-    this.setState({ questionId: subIds[0], answersetId: subIds[1] })
-  }
-
-  parseAnswersetInfo(data) {
-    //     const answers = _.cloneDeep(data.answerset.result_list);
-
-    //     answers.forEach((a) => {
-    //       a.result_graph.edge_list.forEach((edge) => {
-    //         if (!('id' in edge)) {
-    //           edge.id = `${edge.provided_by}(${edge.source_id}-(${edge.type})->${edge.target_id})`;
-    //         }
-    //       });
-    //     });
-
-    //     const nodesIdSet = new Set();
-    //     const edgesIdSet = new Set();
-    //     // Parse answerset specific graph here
-    //     // For each answer find new nodes and edges that haven't already been added
-    //     const nodes = [];
-    //     const edges = [];
-    //     answers.forEach((a) => {
-    //       const g = a.result_graph;
-    //       g.node_list.forEach((node) => {
-    //         if (!nodesIdSet.has(node.id)) {
-    //           nodesIdSet.add(node.id);
-    //           nodes.push(node);
-    //         }
-    //       });
-    //       g.edge_list.forEach((edge) => {
-    //         const edgeId = edge.id;
-    //         if (!edgesIdSet.has(edgeId)) {
-    //           edgesIdSet.add(edgeId);
-    //           edges.push(edge);
-    //         }
-    //       });
-    //     });
-    //     // Package
-    //     const answersetGraph = { node_list: nodes, edge_list: edges };
-
-    //     this.setState({
-    //       question: data.question,
-    //       answerset: data.answerset,
-    //       answers,
-    //       answerCount: data.answer_num,
-    //       answersetGraph,
-    //       answersetFeedback: data.feedback,
-    //       otherAnswersets: data.other_answersets,
-    //       otherQuestions: data.other_questions,
-    //       dataReady: true,
-    //       isValid: true,
-    //       answerId: this.props.answerId,
-    //     });
-
-    const question = {};
-    const answerset = {};
-    const answers = [];
-    const answerCount = [];
-    const answersetGraph = {};
-    return {
-      question,
-      answerset,
-      answers,
-      answerCount,
-      answersetGraph,
-    };
-  }
-
   callbackFeedbackSubmit(newPartialFeedback) {
-    const newFeedback = { ...newPartialFeedback, ...{ question_id: this.state.questionId, answerset_id: this.state.answersetId } };
+    const newFeedback = { ...newPartialFeedback, ...{ question_id: this.state.question.id, answerset_id: this.state.answerset.id } };
     // Set this.props.answerFeedback
     console.log(newFeedback);
 
@@ -147,8 +75,8 @@ class Answerset extends React.Component {
       newFeedback,
       () => {
         this.appConfig.answerFeedback(
-          this.state.questionId,
-          this.state.answersetId,
+          this.state.question.id,
+          this.state.answerset.id,
           (data) => {
             this.setState({ answersetFeedback: data });
           },
@@ -168,16 +96,16 @@ class Answerset extends React.Component {
   }
   handleAnswerSelect(answer) {
     // This creates subtle oddities between list and interactive view so it has been disabled.
-    this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answer(this.state.questionId, this.state.answersetId, answer.id));
+    this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, answer.id));
     // this.setState({ answerId: answer.id });
   }
   handleNoAnswerSelect() {
-    this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answerset(this.state.questionId, this.state.answersetId));
+    this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answerset(this.state.question.id, this.state.answerset.id));
     // this.setState({ answerId: [] });
   }
-  renderLoadingUser() {
+  renderLoading() {
     return (
-      <p />
+      <Loading />
     );
   }
   renderInvalid() {
@@ -203,64 +131,38 @@ class Answerset extends React.Component {
       </div>
     );
   }
-  renderLoadedUser() {
+  renderLoaded() {
     const isAuth = this.state.user.is_authenticated;
-    const hasIds = 'questionId' in this.state && 'answersetId' in this.state;
     return (
       <div>
         <Header
           config={this.props.config}
           user={this.state.user}
         />
-        {hasIds &&
-          <Query query={QUERY_ANSWERSET_BY_IDS(this.state.questionId, this.state.answersetId)}>
-            {({ loading, error, data }) => {
-              if (loading) {
-                // console.log('GraphQL is loading');
-                return <Loading />;
-              }
-
-              if (error) {
-                console.log('GraphQL error:', error);
-                return this.renderInvalid();
-              }
-              // Good response
-              // console.log('GraphQL data:', data);
-              const parsedData = this.parseAnswersetInfo(data);
-
-              return (
-                <Grid>
-                  <AnswersetPres
-                    user={this.state.user}
-                    question={parsedData.question}
-                    answerset={parsedData.answerset}
-                    answerId={this.state.answerId}
-                    answers={parsedData.answers}
-                    answerCount={parsedData.answerCount}
-                    answersetGraph={this.state.answersetGraph}
-                    answersetFeedback={this.state.answersetFeedback}
-                    concepts={this.state.concepts}
-                    otherQuestions={this.state.otherQuestions}
-                    otherAnswersets={this.state.otherAnswersets}
-                    enableUrlChange
-                    enableQuestionSelect
-                    enableFeedbackSubmit={isAuth}
-                    enableFeedbackView={isAuth}
-                    callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.questionId, a.id))}
-                    callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
-                    callbackAnswerSelected={this.handleAnswerSelect}
-                    urlQuestion={q => this.appConfig.urls.question(q.id)}
-                    urlAnswerset={a => this.appConfig.urls.answerset(this.state.questionId, a.id)}
-                    callbackNoAnswerSelected={this.handleNoAnswerSelect}
-                    enabledAnswerLink
-                    getAnswerUrl={answer => this.appConfig.urls.answer(this.state.questionId, this.state.answersetId, answer.id)}
-                    callbackFeedbackSubmit={this.callbackFeedbackSubmit}
-                  />
-                </Grid>
-              );
-            }}
-          </Query>
-        }
+        <Grid>
+          {!this.state.isValid &&
+            this.renderInvalid()
+          }
+          {this.state.isValid &&
+            <MessageAnswersetPres
+              user={this.state.user}
+              message={this.state.message}
+              answerId={this.state.answerId}
+              concepts={this.state.concepts}
+              enableUrlChange
+              enableQuestionSelect
+              callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
+              callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
+              callbackAnswerSelected={this.handleAnswerSelect}
+              urlQuestion={q => this.appConfig.urls.question(q.id)}
+              urlAnswerset={a => this.appConfig.urls.answerset(this.state.question.id, a.id)}
+              callbackNoAnswerSelected={this.handleNoAnswerSelect}
+              enabledAnswerLink
+              getAnswerUrl={answer => this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, answer.id)}
+              callbackFeedbackSubmit={this.callbackFeedbackSubmit}
+            />
+          }
+        </Grid>
         <Footer config={this.props.config} />
       </div>
     );
