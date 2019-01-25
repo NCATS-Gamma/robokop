@@ -100,10 +100,8 @@ class AnswersetAPI(Resource):
         }
         if include_kg:
             url = f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/knowledge_graph'
-            logger.debug(message)
+            
             response = requests.post(url, json=message)
-            logger.debug(response)
-            logger.debug(response.text)
             message['knowledge_graph'] = response.json()
         return message, 200
 
