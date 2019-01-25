@@ -101,7 +101,7 @@ def answer_question(self, question_id, user_email=None):
         for _ in range(60 * 60 * 24):  # wait up to 1 day
             time.sleep(1)
             response = requests.get(polling_url)
-            if response.status == 200:
+            if response.status_code == 200:
                 # logger.info(f"Poll results: {response}")
                 if response.json()['status'] == 'FAILURE':
                     logger.info('Ranker reported the task as FAILURE. Aborting.')
@@ -207,7 +207,7 @@ def update_kg(self, question_id, user_email=None):
         for _ in range(60 * 60 * 24):  # wait up to 1 day
             time.sleep(1)
             response = requests.get(polling_url)
-            if response.status == 200:
+            if response.status_code == 200:
                 if response.json()['status'] == 'FAILURE':
                     logger.info('Builder reported the task as FAILURE. Aborting.')
                     raise RuntimeError('Question answering failed.')
