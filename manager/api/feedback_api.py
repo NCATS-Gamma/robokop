@@ -38,7 +38,7 @@ class FeedbackAPI(Resource):
         # if auth:
         #     user_email = auth.username
         #     user = get_user_by_email(user_email, session=db.session)
-        #     user_id = user.id
+        #     user_id = user['id']
         # else:
         #     user_id = current_user.id
         #     user = get_user_by_id(user_id, session=db.session)
