@@ -28,6 +28,7 @@ def init_db():
     import manager.user
     import manager.feedback
     import manager.task
+    db.engine.execute('CREATE SCHEMA IF NOT EXISTS private')
     db.create_all()
 
 @contextmanager
