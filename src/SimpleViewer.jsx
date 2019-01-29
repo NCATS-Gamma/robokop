@@ -14,7 +14,7 @@ import MessageAnswersetPres from './components/answerset/MessageAnswersetPres';
 const shortid = require('shortid');
 const _ = require('lodash');
 
-class AnswersetApp extends React.Component {
+class SimpleViewer extends React.Component {
   constructor(props) {
     super(props);
     // We only read the communications config on creation
@@ -231,4 +231,4 @@ class AnswersetApp extends React.Component {
   }
 }
 
-export default AnswersetApp;
+export default SimpleViewer;

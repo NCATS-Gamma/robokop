@@ -21,16 +21,9 @@ import QuestionNewLinear from './QuestionNewLinear';
 import Question from './Question';
 import QuestionList from './QuestionList';
 import Answerset from './Answerset';
-import Workflow from './Workflow';
-import AnswersetApp from './AnswersetApp';
-import MessageAnswersetApp from './MessageAnswersetApp';
-import Comparison from './Comparison';
 import Activity from './Activity';
-import Search from './Search';
 import MultiSearch from './MultiSearch';
-import Simple from './Simple';
-import Flowbokop from './Flowbokop';
-import FlowbokopStore from './stores/flowbokopStore';
+import SimpleViewer from './SimpleViewer';
 import NewQuestionStore from './stores/newQuestionStore';
 
 // Our actual CSS and other images etc.
@@ -125,63 +118,20 @@ const robokop = {
   },
   answerset: (answersetId, answerId) => {
     ReactDOM.render(
-      <ApolloProvider client={graphQlClient}>
-        <Answerset
-          config={config}
-          id={answersetId}
-          answerId={answerId}
-        />
-      </ApolloProvider>,
-      document.getElementById('reactEntry'),
-    );
-  },
-  workflow: () => {
-    ReactDOM.render(
-      <Workflow
+      <Answerset
         config={config}
+        id={answersetId}
+        answerId={answerId}
       />,
       document.getElementById('reactEntry'),
     );
   },
-  app_answerset: () => {
+  simpleView: (id) => {
     ReactDOM.render(
-      <AnswersetApp
+      <SimpleViewer
         config={config}
+        id={id}
       />,
-      document.getElementById('reactEntry'),
-    );
-  },
-  app_msg_answerset: () => {
-    ReactDOM.render(
-      <MessageAnswersetApp
-        config={config}
-      />,
-      document.getElementById('reactEntry'),
-    );
-  },
-  app_comparison: () => {
-    ReactDOM.render(
-      <Comparison
-        config={config}
-      />,
-      document.getElementById('reactEntry'),
-    );
-  },
-  simple: () => {
-    ReactDOM.render(
-      <Simple
-        config={config}
-      />,
-      document.getElementById('reactEntry'),
-    );
-  },
-  flowbokop: () => {
-    ReactDOM.render(
-      <Provider store={new FlowbokopStore()}>
-        <Flowbokop
-          config={config}
-        />
-      </Provider>,
       document.getElementById('reactEntry'),
     );
   },

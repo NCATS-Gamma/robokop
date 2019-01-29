@@ -1,11 +1,11 @@
 <head>
-  <title>ROBOKOP - Simple</title>
+  <title>ROBOKOP - Answer Set Viewer</title>
 </head>
 
 <body>
   <div id="reactEntry"></div>
   <script type="text/javascript" src="{{ url_for('static', filename='bundle.js') }}"></script>
   <script type="text/javascript">
-    robokop.simple();
+    robokop.simpleView("{{ upload_id }}");
   </script>
 </body>
