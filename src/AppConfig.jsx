@@ -20,10 +20,7 @@ class AppConfig {
       answer: (questionId, answersetId, answerId) => this.url(`a/${questionId}_${answersetId}/${answerId}/`),
       about: this.url('about/'),
       search: this.url('search/'),
-      workflow: this.url('workflow/'),
-      appAnswerset: this.url('app/answerset'),
-      appMsgAnswerset: this.url('app/answerset-message'),
-      appComparison: this.url('app/comparison'),
+      view: this.url('simple/view/'),
     };
 
     // Other URLs that are primarily used for API calls
@@ -33,19 +30,16 @@ class AppConfig {
       operations: this.url('api/operations/'), // GET operations contained in global potential KG
       questions: this.url('api/questions/'), // POST to store a new question
       question: questionId => this.url(`api/q/${questionId}/`), // POST to update meta data, DELETE to delete the question
-      answerset: answersetId => this.url(`api/a/${answersetId}/`),
-      // answer: (answersetId, answerId) => this.url(`api/a/${answersetId}/${answerId}/`),
-      // questionTasks: questionId => this.url(`api/q/${questionId}/tasks/`),
       questionAnswer: questionId => this.url(`api/q/${questionId}/answer/`), // POST to initiate creation of a new answer set
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg/`), // POST to initiate an update of the KG for this question
-      // answersetSubgraph: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/subgraph/`), // GET to retrieve local subgraph given a quest creation of a new answer set
-      answersetData: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/`), // GET to retrieve complete message
+      answersetData: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/?include_kg=true`), // GET complete message
       parse: this.url('api/nlp/'),
       task: taskId => this.url(`api/t/${taskId}/`), // DELETE or GET status
       taskLog: taskId => this.url(`api/t/${taskId}/log`), // GET detailed log of ongoing or completed task
-      // feedbackNew: this.url('api/feedback/'), // POST new feedback
-      // feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
+      feedbackNew: this.url('api/feedback/'), // POST new feedback
+      feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
       search: this.url('api/search/'), // POST for Bionames search
+      view: this.url('api/simple/view'),
     };
 
     this.url = this.url.bind(this);
@@ -54,29 +48,20 @@ class AppConfig {
     this.user = this.user.bind(this);
     this.concepts = this.concepts.bind(this);
     this.operations = this.operations.bind(this);
-    // this.questionListData = this.questionListData.bind(this);
-    // this.questionData = this.questionData.bind(this);
-    // this.questionSubgraph = this.questionSubgraph.bind(this);
     this.answersetData = this.answersetData.bind(this);
-    // this.answerData = this.answerData.bind(this);
-    // this.tasksData = this.tasksData.bind(this);
-
+    
     // Question and Answer Manipulation
     this.questionCreate = this.questionCreate.bind(this);
     this.answersetCreate = this.answersetCreate.bind(this);
     this.questionUpdateMeta = this.questionUpdateMeta.bind(this);
     this.questionRefresh = this.questionRefresh.bind(this);
     this.questionFork = this.questionFork.bind(this);
-    // this.questionTasks = this.questionTasks.bind(this);
     this.taskStatus = this.taskStatus.bind(this);
+    this.taskLog = this.taskLog.bind(this);
     this.taskStop = this.taskStop.bind(this);
 
     this.questionNewTranslate = this.questionNewTranslate.bind(this);
     this.questionNewSearch = this.questionNewSearch.bind(this);
-
-    this.externalTemplateRequestIndigo = this.externalTemplateRequestIndigo.bind(this);
-    this.externalTemplateRequestXray = this.externalTemplateRequestXray.bind(this);
-    this.externalTemplateRequestGamma = this.externalTemplateRequestGamma.bind(this);
 
     // Read config parameters for enabling controls
     this.enableNewAnswersets = ((config.ui !== null) && (config.ui.enableNewAnswersets !== null)) ? config.ui.enableNewAnswersets : true;
@@ -101,22 +86,10 @@ class AppConfig {
   concepts(fun, fail = () => {}) { this.getRequest(`${this.apis.concepts}`, fun, fail); }
   operations(fun) { this.getRequest(`${this.apis.operations}`, fun); }
   user(successFun, failureFun) { this.getRequest(`${this.apis.user}`, successFun, failureFun); }
-  questionSubgraph(id, successFun, failureFun) {
-    this.getRequest(this.apis.questionSubgraph(id), successFun, failureFun);
-  }
-  answersetData(id, successFun, failureFun) { this.getRequest(`${this.apis.answerset(id)}`, successFun, failureFun); }
-  // answerData(setId, id, successFun, failureFun) { this.getRequest(`${this.apis.answer(setId, id)}`, successFun, failureFun); }
+  answersetData(qid, aid, successFun, failureFun) { this.getRequest(`${this.apis.answersetData(qid, aid)}`, successFun, failureFun); }
 
   questionCreate(data, successFun, failureFun) {
     // Data must contain a complete specification for a new question
-    // This is in flux but currently matches the spec from protocop
-    // const data = {
-    //   name: ''
-    //   natural: ''
-    //   notes: ''
-    //   query: {}, // Complex object matching current machine question syntax
-    // };
-    // console.log('questionCreate data is:', data); debugger;
     // To make a new question we post to the questions page with specifications for a question
     this.postRequest(
       this.apis.questions,
@@ -126,8 +99,7 @@ class AppConfig {
     );
   }
   answersetCreate(qid, successFun, failureFun) {
-    // New answersets are triggered by a post request to the question url with
-    // {command: answer}
+    // New answersets are triggered by a post request to the question url /answer
     this.postRequest(
       this.apis.questionAnswer(qid),
       null,
@@ -136,8 +108,7 @@ class AppConfig {
     );
   }
   questionRefresh(qid, successFun, failureFun) {
-    // A knowledge graph reset is triggered by a post request to the question url with
-    // {command: update}
+    // A knowledge graph reset is triggered by a post request to the question url /refresh_kg
     this.postRequest(
       this.apis.questionRefreshKG(qid),
       null,
@@ -180,14 +151,6 @@ class AppConfig {
       { question_id: qid },
     );
   }
-  // questionTasks(qid, successFun, failureFun) {
-  //   // Fetch active tasks for a specific question
-  //   this.getRequest(
-  //     this.apis.questionTasks(qid),
-  //     successFun,
-  //     failureFun,
-  //   );
-  // }
   questionUpdateMeta(qid, data, successFun, failureFun) {
     // Data must contain all necessary meta data fields
     // Can only be done by the owner
@@ -213,19 +176,18 @@ class AppConfig {
       failureFunction,
     );
   }
-
   taskStatus(taskId, successFun) {
     this.getRequest(
       this.apis.task(taskId),
       successFun,
     );
   }
-  // tasksData(successFun) {
-  //   this.getRequest(
-  //     this.apis.tasks,
-  //     successFun,
-  //   );
-  // }
+  taskLog(taskId, successFun) {
+    this.getRequest(
+      this.apis.taskLog(taskId),
+      successFun,
+    );
+  }
   taskStop(taskId, successFun, failureFun) {
     this.deleteRequest(
       this.apis.task(taskId),
@@ -233,22 +195,21 @@ class AppConfig {
       failureFun,
     );
   }
-
-  // answerFeedbackNew(data, successFun, failureFun) {
-  //   this.postRequest(
-  //     this.apis.feedbackNew,
-  //     data,
-  //     successFun,
-  //     failureFun,
-  //   );
-  // }
-  // answerFeedback(questionId, answersetId, successFun, failureFun) {
-  //   this.getRequest(
-  //     this.apis.feedback(questionId, answersetId),
-  //     successFun,
-  //     failureFun,
-  //   );
-  // }
+  answerFeedbackNew(data, successFun, failureFun) {
+    this.postRequest(
+      this.apis.feedbackNew,
+      data,
+      successFun,
+      failureFun,
+    );
+  }
+  answerFeedback(questionId, answersetId, successFun, failureFun) {
+    this.getRequest(
+      this.apis.feedback(questionId, answersetId),
+      successFun,
+      failureFun,
+    );
+  }
 
   open(url) {
     window.open(url, '_blank'); // This will not open a new tab in all browsers, but will try
@@ -291,42 +252,6 @@ class AppConfig {
       return Promise.resolve({ options: [] });
     });
   }
-
-  // externalTemplateRequestGamma(queryId, terms, successFun, failureFun) {
-  //   const url = 'http://robokop.renci.org:6011/api/query';
-  //   const postData = {
-  //     query_type_id: queryId,
-  //     terms,
-  //   };
-
-  //   return this.postRequest(url, postData, successFun, failureFun);
-  // }
-  // externalTemplateRequestIndigo(queryId, terms, successFun, failureFun) {
-  //   const url = 'https://indigo.ncats.io/reasoner/api/v0/query';
-  //   const postData = {
-  //     query_type_id: queryId,
-  //     terms,
-  //   };
-
-  //   this.postRequest(url, postData, successFun, failureFun);
-  // }
-  // externalTemplateRequestXray(queryId, terms, successFun, failureFun) {
-  //   const url = 'https://rtx.ncats.io/api/rtx/v1/query';
-  //   const termsFixed = { ...terms, 
-  //     rel_type: "directly_interacts_with",
-  //     target_label: "protein" };
-  //   if ('chemical_substance' in termsFixed) {
-  //     let chem = termsFixed.chemical_substance;
-  //     [, chem] = chem.split(':');
-  //     termsFixed.chemical_substance = chem;
-  //   }
-
-  //   const postData = {
-  //     known_query_type_id: queryId,
-  //     terms: termsFixed,
-  //   };
-  //   this.postRequest(url, postData, successFun, failureFun);
-  // }
 
   getRequest(
     addr,

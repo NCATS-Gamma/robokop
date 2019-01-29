@@ -57,12 +57,12 @@ def search():
     """Search for biomedical concept identifiers"""
     return render_template('search.html')
 
-@app.route('simple/view/')
+@app.route('/simple/view/')
 def viewer_blank():
     """Answerset Browser with upload capablitiy"""
     return render_template('viewer.html', upload_id='')
 
-@app.route('simple/view/<upload_id>/')
+@app.route('/simple/view/<upload_id>/')
 def viewer_file(upload_id):
     """Answerset Browser from uploaded file"""
     return render_template('viewer.html', upload_id=upload_id)
