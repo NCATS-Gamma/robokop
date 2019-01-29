@@ -47,53 +47,26 @@ def start():
     """Getting started guide"""
     return render_template('about.html')
 
-
 @app.route('/activity/')
 def activity():
     """List of tasks."""
     return render_template('activity.html')
-
-
-@app.route('/workflow/')
-def workflow():
-    """Workflow UI."""
-    return render_template('workflow.html')
-
 
 @app.route('/search/')
 def search():
     """Search for biomedical concept identifiers"""
     return render_template('search.html')
 
-
-@app.route('/flowbokop/')
-def flowbokop():
-    """Flowbokop UI."""
-    return render_template('flowbokop.html')
-
-
-@app.route('/simple/')
-def simple():
-    """Simple Interface"""
-    return render_template('simple.html')
-
-
-@app.route('/app/answerset/')
-def app_answerset():
+@app.route('simple/view/')
+def viewer_blank():
     """Answerset Browser with upload"""
-    return render_template('app_answerset.html')
+    return render_template('viewer.html', upload_id='')
 
+@app.route('simple/view/<upload_id>/')
+def viewer_file(upload_id):
+    """Answerset Browser with upload"""
+    return render_template('viewer.html', upload_id=upload_id)
 
-@app.route('/app/answerset-message/')
-def app_answerset_msg():
-    """Answerset Browser with upload for new message format"""
-    return render_template('app_msg_answerset.html')
-
-
-@app.route('/app/comparison/')
-def app_comparison():
-    """Template COP Comparison"""
-    return render_template('app_comparison.html')
 
 # Run Webserver
 if __name__ == '__main__':

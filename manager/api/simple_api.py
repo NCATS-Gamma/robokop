@@ -7,6 +7,7 @@ import sys
 import json
 import time
 import re
+from uuid import uuid4
 import logging
 from datetime import datetime
 import requests
@@ -18,6 +19,10 @@ from flask_restful import Resource
 from manager.setup import api
 
 logger = logging.getLogger(__name__)
+
+view_storage_dir = f"{os.environ['ROBOKOP_HOME']}/uploads/"
+if not os.path.exists(view_storage_dir):
+    os.mkdir(view_storage_dir)
 
 output_formats = ['APIStandard', 'Message', 'Answers']
 
@@ -215,6 +220,82 @@ class Quick(Resource):
 
 api.add_resource(Quick, '/simple/quick/')
 
+
+class View(Resource):
+    def post(self):
+        """
+        Upload an answerset for a question to view
+        ---
+        tags: [simple]
+        requestBody:
+            name: Answerset
+            description: The machine-readable question graph.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Message'
+            required: true
+        responses:
+            200:
+                description: A URL for further viewing
+        """
+        
+        logger.info('Recieving Answerset for storage and later viewing')
+        message = request.json
+        logger.info('Got message')
+
+        # Save the message to archive folder
+        for _ in range(25):
+            try:
+                uid = str(uuid4())
+                this_file = os.path.join(view_storage_dir, f'{uid}.json')
+                with open(this_file, 'x') as answerset_file:
+                    logger.info('Saving Message')
+                    json.dump(message, answerset_file)
+                break
+            except:
+                logger.info('Error encountered writting file. Retrying')
+                pass
+        else:
+            logger.info('Error encountered writting file')
+            return "Failed to save resource. Internal server error", 500
+        
+        return uid, 200
+
+api.add_resource(View, '/simple/view/')
+
+class ViewResources(Resource):
+    def get(self, uid):
+        """
+        Retrieve a previously uploaded answerset
+        ---
+        tags: [simple]
+        responses:
+            200:
+                description: A URL for further viewing
+                application/json:
+                        schema:
+                            $ref: '#/components/schemas/Message'
+            400:
+                description: invalid uid
+        """
+        
+        logger.info('Retrieving Answerset from storage')
+        try:
+            this_file = os.path.join(view_storage_dir, f'{uid}.json')
+            if os.path.isfile(this_file):
+                logger.info(f'Reading {this_file}')
+                with open(this_file, 'r') as answerset_file:
+                    answerset = json.load(answerset_file)
+            else:
+                return "ID not found", 400
+        except:
+            return "Error fetching data for ID", 500
+
+        return answerset
+
+api.add_resource(ViewResources, '/simple/view/<uid>/')
+
 class SimilaritySearch(Resource):
     def get(self, type1, id1, type2, by_type):
         """
@@ -350,7 +431,7 @@ class SimilaritySearch(Resource):
                 else:
                     raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
 
-                logger.info('Rebuild completed, status', response.json()['status'])
+                logger.info(f'Rebuild completed, status: {response.json()["status"]}')
             except Exception as e:
                 logger.error(e)
         else:
@@ -496,7 +577,7 @@ class EnrichedExpansion(Resource):
                     else:
                         raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
 
-                    logger.info('Rebuild completed, status', response.json()['status'])
+                    logger.info(f'Rebuild completed, status {response.json()["status"]}')
                 except Exception as e:
                     logger.error(e)
             else:

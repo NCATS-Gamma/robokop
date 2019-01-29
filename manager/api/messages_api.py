@@ -113,39 +113,3 @@ class QuestionsAPI(Resource):
         return question_id, 201
 
 api.add_resource(QuestionsAPI, '/questions/')
-
-
-
-class LocalKGAPI(Resource):
-    """Endpoint to fetch a local knowledge graph for a particular quesiton given an id."""
-
-    @auth_required('session', 'basic')
-    def get(self, q_a_id):
-        """
-        Get the local knowledge graph for a question.
-        ---
-        tags: [answerset]
-        responses:
-            201:
-                description: "question id"
-                content:
-                    text/plain:
-                        schema:
-                            type: string
-        """
-        sub_strings = q_a_id.split('_')
-        if len(sub_strings) != 2:
-            return "Invalid identifier", 404
-
-        q_id = sub_strings[0]
-        a_id = sub_strings[1]
-
-        question = get_question_by_id(q_id)
-        answerset = get_answerset_by_id(a_id)
-
-        logger.debug(f'Found answerset and question')
-        
-
-        return q_id, 201
-
-api.add_resource(LocalKGAPI, '/a/<q_a_id>/subgraph')

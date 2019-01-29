@@ -38,18 +38,3 @@ def new_from_post():
 def question_page(question_id):
     """Deliver user info page."""
     return render_template('question.html', question_id=question_id)
-
-
-@q.route('/new/search/', methods=['POST'])
-def question_new_search():
-    """Validate/provide suggestions for a search term."""
-
-
-@q.route('/new/validate/', methods=['POST'])
-def question_new_validate():
-    """Validate a machine question to ensure it could possibly be executed."""
-
-
-@q.route('/new/translate/', methods=['POST'])
-def question_new_translate():
-    """Translate a natural language question into a machine question."""
