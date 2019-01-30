@@ -123,7 +123,7 @@ class MessageAnswersetPres extends React.Component {
       minHeight: '50px',
       resize: 'vertical',
     };
-    const answersetGraph = toJS(this.answersetStore.message.knowledge_graph);
+    const answersetGraph = this.answersetStore.annotatedKnowledgeGraph;
     answersetGraph.node_list = answersetGraph.nodes;
     answersetGraph.edge_list = answersetGraph.edges;
     return (
@@ -252,27 +252,6 @@ class MessageAnswersetPres extends React.Component {
               handleTabSelect={this.handleTabSelect}
             />
           </Tab>
-          {/* <Tab
-            eventKey={answerSetTabEnum.interactive}
-            title="Interactive Selector"
-          >
-            <AnswersetInteractive
-              user={this.props.user} // Needed to parse feedback to know what is yours
-              answers={this.props.answers}
-              answersetFeedback={this.props.answersetFeedback}
-              answerId={this.props.answerId} // Monitored for select by parameter or page load
-              concepts={this.props.concepts}
-
-              enableFeedbackSubmit={this.props.enableFeedbackSubmit}
-              enableFeedbackView={this.props.enableFeedbackView}
-
-              callbackAnswerSelected={this.props.callbackAnswerSelected}
-              callbackNoAnswerSelected={this.props.callbackNoAnswerSelected}
-              callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
-              enabledAnswerLink={this.props.enabledAnswerLink}
-              getAnswerUrl={this.props.getAnswerUrl}
-            />
-          </Tab> */}
           <Tab
             eventKey={answerSetTabEnum.aggregate}
             title="Aggregate Graph"
@@ -360,7 +339,8 @@ MessageAnswersetPres.propTypes = {
       edges: PropTypes.arrayOf(PropTypes.object),
     }).isRequired,
     answers: PropTypes.arrayOf(PropTypes.shape({
-      bindings: PropTypes.object.isRequired,
+      edge_bindings: PropTypes.object.isRequired,
+      node_bindings: PropTypes.object.isRequired,
       score: PropTypes.number,
     })).isRequired, // ISO Timestamp
   }).isRequired,

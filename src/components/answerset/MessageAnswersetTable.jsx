@@ -214,7 +214,7 @@ class MessageAnswersetTable extends React.Component {
                 // console.log('A Td Element was clicked!');
                 // console.log('it produced this event:', e);
                 // console.log('It was in this column:', column);
-                // console.log('It was in this row:', rowInfo);
+                console.log('It was in this row:', rowInfo);
                 // console.log('It was in this table instance:', instance);
                 // console.log('It has the following state:', state);
                 // IMPORTANT! React-Table uses onClick internally to trigger

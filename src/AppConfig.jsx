@@ -32,7 +32,7 @@ class AppConfig {
       question: questionId => this.url(`api/q/${questionId}/`), // POST to update meta data, DELETE to delete the question
       questionAnswer: questionId => this.url(`api/q/${questionId}/answer/`), // POST to initiate creation of a new answer set
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg/`), // POST to initiate an update of the KG for this question
-      answersetData: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/?include_kg=true`), // GET complete message
+      answersetData: qid_aid => this.url(`api/a/${qid_aid}/?include_kg=true`), // GET complete message
       parse: this.url('api/nlp/'),
       task: taskId => this.url(`api/t/${taskId}/`), // DELETE or GET status
       taskLog: taskId => this.url(`api/t/${taskId}/log`), // GET detailed log of ongoing or completed task
@@ -86,7 +86,7 @@ class AppConfig {
   concepts(fun, fail = () => {}) { this.getRequest(`${this.apis.concepts}`, fun, fail); }
   operations(fun) { this.getRequest(`${this.apis.operations}`, fun); }
   user(successFun, failureFun) { this.getRequest(`${this.apis.user}`, successFun, failureFun); }
-  answersetData(qid, aid, successFun, failureFun) { this.getRequest(`${this.apis.answersetData(qid, aid)}`, successFun, failureFun); }
+  answersetData(qid_aid, successFun, failureFun) { this.getRequest(`${this.apis.answersetData(qid_aid)}`, successFun, failureFun); }
 
   questionCreate(data, successFun, failureFun) {
     // Data must contain a complete specification for a new question

@@ -24,6 +24,7 @@ class Answerset extends React.Component {
       user: {},
       answerId: [],
       concepts: [],
+      answersetFeedback: [], // Currently unused
     };
 
     this.callbackFeedbackSubmit = this.callbackFeedbackSubmit.bind(this);
@@ -37,10 +38,11 @@ class Answerset extends React.Component {
     this.appConfig.answersetData(
       this.props.id,
       (data) => {
-        const message = data; // Add a little mroe logic here.
+        console.log('Got data:', data);
+        const message = data;
 
         this.setState({
-          message
+          message,
           dataReady: true,
           isValid: true,
           answerId: this.props.answerId,
@@ -52,7 +54,7 @@ class Answerset extends React.Component {
           dataReady: true,
           isValid: false,
         });
-      }
+      },
     );
     this.appConfig.user(data => this.setState({
       user: this.appConfig.ensureUser(data),
@@ -103,7 +105,7 @@ class Answerset extends React.Component {
     this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answerset(this.state.question.id, this.state.answerset.id));
     // this.setState({ answerId: [] });
   }
-  renderLoading() {
+  renderLoadingUser() {
     return (
       <Loading />
     );
@@ -131,48 +133,53 @@ class Answerset extends React.Component {
       </div>
     );
   }
-  renderLoaded() {
-    const isAuth = this.state.user.is_authenticated;
+  renderLoadedUser(isLoading) {
+    // const isAuth = this.state.user.is_authenticated; // Previously used to enable feedback, maybe one day
     return (
       <div>
         <Header
           config={this.props.config}
           user={this.state.user}
         />
-        <Grid>
-          {!this.state.isValid &&
-            this.renderInvalid()
-          }
-          {this.state.isValid &&
-            <MessageAnswersetPres
-              user={this.state.user}
-              message={this.state.message}
-              answerId={this.state.answerId}
-              concepts={this.state.concepts}
-              enableUrlChange
-              enableQuestionSelect
-              callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
-              callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
-              callbackAnswerSelected={this.handleAnswerSelect}
-              urlQuestion={q => this.appConfig.urls.question(q.id)}
-              urlAnswerset={a => this.appConfig.urls.answerset(this.state.question.id, a.id)}
-              callbackNoAnswerSelected={this.handleNoAnswerSelect}
-              enabledAnswerLink
-              getAnswerUrl={answer => this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, answer.id)}
-              callbackFeedbackSubmit={this.callbackFeedbackSubmit}
-            />
-          }
-        </Grid>
+        {isLoading &&
+          <Loading />
+        }
+        {!isLoading &&
+          <Grid>
+            {!this.state.isValid &&
+              this.renderInvalid()
+            }
+            {this.state.isValid &&
+              <MessageAnswersetPres
+                user={this.state.user}
+                message={this.state.message}
+                answerId={this.state.answerId}
+                concepts={this.state.concepts}
+                enableUrlChange
+                enableQuestionSelect
+                callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
+                callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
+                callbackAnswerSelected={this.handleAnswerSelect}
+                urlQuestion={q => this.appConfig.urls.question(q.id)}
+                urlAnswerset={a => this.appConfig.urls.answerset(this.state.question.id, a.id)}
+                callbackNoAnswerSelected={this.handleNoAnswerSelect}
+                enabledAnswerLink
+                getAnswerUrl={answer => this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, answer.id)}
+                callbackFeedbackSubmit={this.callbackFeedbackSubmit}
+              />
+            }
+          </Grid>
+        }
         <Footer config={this.props.config} />
       </div>
     );
   }
   render() {
-    const ready = this.state.dataReady && this.state.userReady && this.state.conceptsReady;
+    const ready = this.state.userReady && this.state.conceptsReady;
     return (
       <div>
-        {!ready && this.renderLoading()}
-        {ready && this.renderLoaded()}
+        {!ready && this.renderLoadingUser()}
+        {ready && this.renderLoadedUser(!this.state.dataReady)}
       </div>
     );
   }
