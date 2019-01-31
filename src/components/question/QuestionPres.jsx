@@ -108,14 +108,17 @@ class QuestionPres extends React.Component {
             answersetUrl={this.props.answersetUrl}
           />
         </div>
-        <KnowledgeGraphFetchAndView
+        <div>
+          This should be a graph
+        </div>
+        {/* <KnowledgeGraphFetchAndView
           callbackFetchGraph={this.props.callbackFetchGraph}
           callbackRefresh={this.props.callbackRefresh}
           subgraph={this.props.subgraph}
           concepts={this.props.concepts}
           wait={this.props.refreshBusy}
           // scrollToId="#localKGHeader"
-        />
+        /> */}
       </div>
     );
   }
@@ -139,7 +142,7 @@ class QuestionPres extends React.Component {
   }
 
   render() {
-    console.log(this.props.question)
+    // console.log(this.props.question)
     const questionGraph = {
       edges: (('machine_question' in this.props.question) && this.props.question.machine_question && ('edges' in this.props.question.machine_question)) ? this.props.question.machine_question.edges : [],
       nodes: (('machine_question' in this.props.question) && this.props.question.machine_question && ('nodes' in this.props.question.machine_question)) ? this.props.question.machine_question.nodes : [],
@@ -149,7 +152,7 @@ class QuestionPres extends React.Component {
       owner, user, enableQuestionEdit, enableQuestionDelete,
     } = this.props;
 
-    const userOwnsThisQuestion = owner === user.username; // Fix Me
+    const userOwnsThisQuestion = owner === user.user_id; // Fix Me
     const userIsLoggedIn = user.is_authenticated;
     const enableEditing = (userOwnsThisQuestion && enableQuestionEdit) || user.is_admin;
     const enableDelete = (userOwnsThisQuestion && enableQuestionDelete) || user.is_admin;
