@@ -16,6 +16,7 @@ class AnswersetSelector extends React.Component {
     super(props);
 
     this.state = {
+      answersets: [],
       selectedId: null,
       showOverlay: true,
     };
@@ -44,96 +45,35 @@ class AnswersetSelector extends React.Component {
   }
 
   getUpdatedState(props) {
-    let selectedId = null;
     const haveAnAnswerSet = props.answersets && Array.isArray(props.answersets) && props.answersets.length > 0;
     if (haveAnAnswerSet) {
-      // Find the newest answerset
-      let newest = props.answersets[0];
-      let newestDate = new Date(newest.datetime);
-      props.answersets.forEach((a) => {
-        const d = new Date(a.datetime);
-        if (d > newestDate) {
-          // JS Date object works with standard caomparator
-          newestDate = d;
-          newest = a;
+      const answersetDates = props.answersets.map((a) => {
+        let ts = a.timestamp;
+        if (!ts.endsWith('Z')) {
+          ts = `${ts}Z`;
         }
+        return new Date(ts);
       });
 
-      selectedId = newest.id;
+      const inds = Array.apply(null, Array(answersetDates.length)).map(() => {}); // eslint-disable-line
+      const sortingInds = (inds).map((v, i) => i);
+      sortingInds.sort((a, b) => (answersetDates[b] - answersetDates[a]));
+      const answersets = sortingInds.map(v => props.answersets[v]);
+
+      this.props.callbackOnSelect(answersets[0].id);
+
+      return { answersets, selectedId: answersets[0].id, showOverlay: false };
     }
-    return { selectedId, showOverlay: !haveAnAnswerSet };
+
+    return { answersets: [], selectedId: null, showOverlay: true };
   }
 
   handleSelectorChange(selectedOption) {
-    this.setState({ selectedId: selectedOption.value });
+    this.setState({ selectedId: selectedOption.value }, () => this.props.callbackOnSelect(selectedOption.value));
   }
 
-  renderOverlay() {
-    return (
-      <div>
-        {this.props.initializerBusy &&
-          <div>
-            <h4>
-              Getting Initial Answers. Please Wait.
-            </h4>
-            <Loading />
-          </div>
-        }
-        {!this.props.initializerBusy && !(this.props.answerBusy || this.props.refreshBusy) &&
-          <div>
-            <Row>
-              <Col md={12}>
-                <h4>
-                  No answer sets available.
-                </h4>
-                <p>
-                  This may indicate a problem in the construction of the question, or a lack of available information.
-                </p>
-              </Col>
-            </Row>
-            <Row style={{ paddingTop: '10px' }}>
-              <Col md={4} mdOffset={4}>
-                <Button
-                  bsSize="large"
-                  alt="Get a New Answer Set"
-                  onClick={this.props.callbackAnswersetNew}
-                >
-                  Get New Answers
-                  <br />
-                  <GoPlaybackPlay />
-                </Button>
-              </Col>
-            </Row>
-          </div>
-        }
-        {!this.props.initializerBusy && (this.props.answerBusy || this.props.refreshBusy) &&
-          <div>
-            <Row>
-              <Col md={12}>
-                <h4>
-                  {this.props.answerBusy &&
-                    <span>
-                      We are working on getting new answers for this question. Please wait.
-                    </span>
-                  }
-                  {this.props.refreshBusy &&
-                    <span>
-                      We are working on updating the knowledge graph for this question. Please wait.
-                    </span>
-                  }
-                </h4>
-              </Col>
-            </Row>
-            <Loading />
-          </div>
-        }
-      </div>
-    );
-  }
-  renderStandard() {
-    // const { showNewButton } = this.props;
-    // const moreThanOne = this.props.answersets.length > 1;
-    const options = this.props.answersets.map((a) => {
+  render() {
+    const options = this.state.answersets.map((a) => {
       let ts = a.timestamp;
       if (!ts.endsWith('Z')) {
         ts = `${ts}Z`;
@@ -143,7 +83,7 @@ class AnswersetSelector extends React.Component {
 
       return { value: a.id, label: `${timeString}` };
     });
-    const disableNewButton = this.props.answerBusy || this.props.refreshBusy || this.props.initializerBusy;
+
     return (
       <div style={{ minWidth: '300px' }}>
         <div id="answersetSelect" style={{ display: 'table', width: '100%' }}>
@@ -165,30 +105,22 @@ class AnswersetSelector extends React.Component {
                 bsStyle="primary"
                 bsSize="large"
                 style={{ minWidth: '150px' }}
-                // onClick={() => this.props.callbackAnswersetOpen(answerset.id)}
-                href={this.props.answersetUrl(this.props.answersets.filter(a => a.id === this.state.selectedId)[0])}
+                href={this.props.answersetUrl(this.state.answersets.filter(a => a.id === this.state.selectedId)[0])}
               >
                 Explore <GoArrowRight /> <GoCircuitBoard />
               </Button>
             </div>
           </div>
         </div>
-        {/* {this.getMainContent()} */}
-      </div>
-    );
-  }
-  render() {
-    return (
-      <div>
-        {this.state.showOverlay &&
-          this.renderOverlay()
-        }
-        {!this.state.showOverlay &&
-          this.renderStandard()
-        }
       </div>
     );
   }
 }
+
+AnswersetSelector.defaultProps = {
+  question: {},
+  answersets: [],
+  callbackOnSelect: (selectedAnswersetId) => {},
+};
 
 export default AnswersetSelector;

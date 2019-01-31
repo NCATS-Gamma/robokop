@@ -12,32 +12,50 @@ import Footer from './components/Footer';
 import QuestionPres from './components/question/QuestionPres';
 
 const runningTaskFilter = (t) => {
-  // First see if this question has a result
   if (!(t.timestamp)) {
     // How did you get here without a timestamp
+    // Assume that it never properly made it on the queue
     // Abandon ship
     console.log('Strange task found (is it in the queue?):', t);
     return false;
   }
-  // We have a timestamp meaning it is at least in the queue
+
+  if (t.endTimestamp) {
+    // You have an endTimestamp
+    // Therefore you are done and presummably have a result
+    // We could check for result here
+    // But checking result requires parsing a json string
+    // This check is above the below, because sometimes, we can get
+    // booted from the queue without getting a startingTimestamp
+    // In some of those circumstances we will have an endTimestamp
+    // without a startingTimeStamp
+    return false;
+  }
+
+  // We have a timestamp but no endTimestamp meaning it is at least in the queue
   if (!(t.startingTimestamp)) {
     // You don't have a startTimestamp
     // This means you are sitting in the queue waiting to fire
-    console.log('startingTimestamp exit')
+    // Techincally you are "running"
     return true;
   }
-  if (!(t.endTimestamp)) {
-    // You don't have an endTimestamp but you have a startTimestamp
-    // You are actively being worked on
-    console.log('endTimestamp exit')
-    return true;
+
+  // We have a timestamp, startingTimeStamp but no endTimestamp
+  // So presumably you are being worked on, but how long is long enough?
+  // Sometimes we lose tasks for one reason or another
+  // We don't want to think things are running when errors never
+  // got properly logged
+  // Let's calculate the time since we started working on this task
+  const startTime = new Date(t.startingTimestamp);
+  const elapsedTimeDays = (Date.now() - startTime) / (1000 * 60 * 60 * 24);
+  if (elapsedTimeDays > 2) {
+    // If it has been actively worked on for more than 2 days we abandon ship
+    console.log('Potential zombie task found: ', t);
+    return false;
   }
-  // You have an endTimestamp
-  // We could check for a result but this requries JSON parsing.
-  // Not worth it at the moment.
-  // Assume it's probably there and therefore this task is finished
-  console.log('final exit')
-  return false;
+
+  // Otherwise you are really running
+  return true;
 };
 
 class Question extends React.Component {
@@ -67,6 +85,7 @@ class Question extends React.Component {
     this.notifyRefresh = this.notifyRefresh.bind(this);
     this.notifyAnswers = this.notifyAnswers.bind(this);
 
+    this.callbackFetchAnswerset = this.callbackFetchAnswerset.bind(this);
     this.callbackUpdateMeta = this.callbackUpdateMeta.bind(this);
     this.callbackRefresh = this.callbackRefresh.bind(this);
     this.callbackNewAnswerset = this.callbackNewAnswerset.bind(this);
@@ -82,8 +101,6 @@ class Question extends React.Component {
     this.appConfig.questionData(
       this.props.id,
       (data) => {
-        console.log(data);
-
         const { question } = data.data;
         question.machine_question = JSON.parse(question.machine_question.body);
         const { answersets } = question.question_graph;
@@ -96,10 +113,13 @@ class Question extends React.Component {
           dataReady: true,
         });
       },
-      () => this.setState({
-        isValid: false,
-        dataReady: true,
-      }),
+      (err) => {
+        console.log('Errors encountered loading page: ', err);
+        this.setState({
+          isValid: false,
+          dataReady: true,
+        });
+      },
     );
     this.appConfig.user(data => this.setState({
       user: this.appConfig.ensureUser(data),
@@ -121,9 +141,7 @@ class Question extends React.Component {
         // These tasks include all tasks ever for this question
 
         // We need to find the running tasks
-        console.log('pulled tasks: ', tasks);
         const runningTasks = tasks.filter(runningTaskFilter);
-        console.log('pulled runningTasks: ', runningTasks);
         const prevRunningTasks = this.state.runningTasks;
         this.setState({ runningTasks, prevRunningTasks }, this.updateTaskStatus);
       },
@@ -281,7 +299,6 @@ class Question extends React.Component {
   }
 
   callbackRefresh() {
-    this.setState({ subgraph: null });
     // Send post request to update question data.
     this.appConfig.questionRefresh(
       this.props.id,
@@ -507,11 +524,11 @@ class Question extends React.Component {
     const isAnswerTask = Boolean(newTask.answersetTask);
     const isRefreshTask = Boolean(newTask.questionTask);
 
-    if (isAnswerTask) {
-      console.log('Attempting to initializing new answerer task: ', newTask.answersetTask);
-    } else {
-      console.log('Attempting to initializing new updater task: ', newTask.questionTask);
-    }
+    // if (isAnswerTask) {
+    //   console.log('Attempting to initializing new answerer task: ', newTask.answersetTask);
+    // } else {
+    //   console.log('Attempting to initializing new updater task: ', newTask.questionTask);
+    // }
     setTimeout(
       () => {
         this.appConfig.questionTasks(
@@ -520,14 +537,14 @@ class Question extends React.Component {
             // Make sure this task id is in the list of tasks for this question
 
             const tasks = data.data.question.tasks; //eslint-disable-line
-            console.log('got question tasks: ', tasks);
+            // console.log('got question tasks: ', tasks);
             let taskId = newTask.answersetTask;
             if (isRefreshTask) {
               taskId = newTask.questionTask;
             }
-            console.log('searching for ', taskId);
+            // console.log('searching for ', taskId);
             const thisTask = tasks.find(t => t.id === taskId);
-            console.log('Found thisTask', thisTask);
+            // console.log('Found task', thisTask);
             if (!thisTask) {
               // Task went missing!@?!
               if (isAnswerTask) {
@@ -558,7 +575,7 @@ class Question extends React.Component {
             }
 
             if (thisTask.result && (Object.keys(thisTask.result).length > 0)) {
-              console.log('We have a result already?', thisTask.result);
+              // console.log('We have a result already?', thisTask.result);
               // We have a result already
               if (isAnswerTask) {
                 this.notifyAnswers(taskId);
@@ -588,6 +605,10 @@ class Question extends React.Component {
       500,
     );
   }
+
+  callbackFetchAnswerset(aid, successFun, failureFun) {
+    this.appConfig.answersetData(`${this.props.id}_${aid}`, successFun, failureFun);
+  }
   renderLoading() {
     return (
       <p />
@@ -599,11 +620,8 @@ class Question extends React.Component {
         <Row>
           <Col md={12}>
             <h3>
-              Unknown Question
+              {"We're sorry but we encountered an error trying to find this question."}
             </h3>
-            <p>
-              {"We're sorry but we can't find this question."}
-            </p>
           </Col>
         </Row>
         <Row>
@@ -634,10 +652,15 @@ class Question extends React.Component {
               callbackFork={this.callbackFork}
               callbackDelete={this.callbackDelete}
               callbackTaskStatus={this.callbackTaskStatus}
-              answersetUrl={a => this.appConfig.urls.answerset(this.props.id, a.id)}
+              callbackFetchAnswerset={this.callbackFetchAnswerset}
+              answersetUrl={(a) => {
+                if (a && (typeof a === 'object') && 'id' in a) {
+                  return this.appConfig.urls.answerset(this.props.id, a.id);
+                }
+                return '';
+              }}
               question={this.state.question}
               answersets={this.state.answersets}
-              subgraph={this.state.subgraph}
               concepts={this.state.concepts}
               refreshBusy={this.state.refreshBusy}
               answerBusy={this.state.answerBusy}

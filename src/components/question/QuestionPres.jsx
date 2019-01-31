@@ -6,8 +6,7 @@ import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
 
 import QuestionHeader from '../shared/QuestionHeader';
 import MachineQuestionView from '../shared/MachineQuestionView';
-import AnswersetSelector from './AnswersetSelector';
-import KnowledgeGraphFetchAndView from './KnowledgeGraphFetchAndView';
+import AnswersetList from './AnswersetList';
 import Loading from '../Loading';
 
 const shortid = require('shortid');
@@ -86,40 +85,13 @@ class QuestionPres extends React.Component {
 
   renderAllOkay() {
     return (
-      <div style={{ position: 'relative', minHeight: '200px', display: 'table', width: '100%' }}>
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          padding: '20px',
-          backgroundColor: '#fff',
-          boxShadow: '2px 2px 5px 0px #7777777d',
-          zIndex: 100,
-          }}
-        >
-          <AnswersetSelector
-            // showNewButton={enableNewAnswersets}
-            enableNewButton={!this.props.answerBusy}
-            refreshBusy={this.props.refreshBusy}
-            answerBusy={this.props.answerBusy}
-            initializerBusy={this.props.initializerBusy}
-            answersets={this.props.answersets}
-            callbackAnswersetNew={this.props.callbackNewAnswerset}
-            answersetUrl={this.props.answersetUrl}
-          />
-        </div>
-        <div>
-          This should be a graph
-        </div>
-        {/* <KnowledgeGraphFetchAndView
-          callbackFetchGraph={this.props.callbackFetchGraph}
-          callbackRefresh={this.props.callbackRefresh}
-          subgraph={this.props.subgraph}
-          concepts={this.props.concepts}
-          wait={this.props.refreshBusy}
-          // scrollToId="#localKGHeader"
-        /> */}
-      </div>
+      <AnswersetList
+        question={this.props.question}
+        answersets={this.props.answersets}
+        answersetUrl={this.props.answersetUrl}
+        concepts={this.props.concepts}
+        callbackFetchAnswerset={this.props.callbackFetchAnswerset}
+      />
     );
   }
 
@@ -152,7 +124,7 @@ class QuestionPres extends React.Component {
       owner, user, enableQuestionEdit, enableQuestionDelete,
     } = this.props;
 
-    const userOwnsThisQuestion = owner === user.user_id; // Fix Me
+    const userOwnsThisQuestion = owner === user.user_id;
     const userIsLoggedIn = user.is_authenticated;
     const enableEditing = (userOwnsThisQuestion && enableQuestionEdit) || user.is_admin;
     const enableDelete = (userOwnsThisQuestion && enableQuestionDelete) || user.is_admin;

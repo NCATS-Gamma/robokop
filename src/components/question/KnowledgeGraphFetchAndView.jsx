@@ -49,36 +49,14 @@ class KnowledgeGraphFetchAndView extends React.Component {
 
     const showGraph = !(this.props.subgraph === null);
     const showFetching = fetching;
-    const showFetchButton = !showGraph && !showFetching;
-    const showWait = this.props.wait;
-
-    const panelExtraStyle = { margin: 0, border: 'none' };
 
     const height = this.getHeight();
     const width = this.getWidth();
 
     return (
       <div id="kgFetchDiv" style={{ display: 'table-cell', width: '100%', verticalAlign: 'middle', textAlign: 'center' }}>
-        {(showFetchButton || showFetching || showWait) &&
+        {showFetching &&
           <div>
-            {showWait &&
-              <p>
-                Knowledge graph update in progress.
-              </p>
-            }
-            {/* {!showWait &&
-              <p>
-                To explore the knowledge graph we will need to load it...
-              </p>
-            } */}
-            {!showFetching && !showWait &&
-              <Button
-                onClick={this.fetch}
-                disabled={showFetching || showWait}
-              >
-                Load Graph
-              </Button>
-            }
             {showFetching &&
               <BubbleLoader style={{ marginTop: '0px' }} color="#b8c6db" />
             }

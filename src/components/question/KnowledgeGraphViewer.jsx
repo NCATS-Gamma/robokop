@@ -1,13 +1,10 @@
 import React from 'react';
 
-import { Button } from 'react-bootstrap';
-import GoSync from 'react-icons/lib/go/sync';
-
+import Loading from '../Loading';
 import getNodeTypeColorMap from '../util/colorUtils';
 
 const Graph = require('react-graph-vis').default;
 const _ = require('lodash');
-
 
 class KnowledgeGraphViewer extends React.Component {
   constructor(props) {
@@ -73,14 +70,6 @@ class KnowledgeGraphViewer extends React.Component {
     this.setNetworkCallbacks();
   }
 
-  // shouldComponentUpdate(nextProps) {
-  //   // Only redraw/remount component if graph components change
-  //   if (nextProps.showProgress === this.state.showProgress && _.isEqual(this.props.graph, nextProps.graph)) {
-  //     return false;
-  //   }
-  //   return true;
-  // }
-
   componentDidUpdate() {
     this.setNetworkCallbacks();
   }
@@ -92,7 +81,7 @@ class KnowledgeGraphViewer extends React.Component {
       this.network.on('doubleClick', () => this.network.fit());
       this.network.on('zoom', () => this.network.off('afterDrawing'));
       this.network.on('dragStart', () => this.network.off('afterDrawing'));
-      this.network.on('stabilizationIterationsDone', () => this.setState({ showProgress: false }));
+      // this.network.on('stabilizationIterationsDone', () => this.setState({ showProgress: false }));
     }
   }
 
@@ -149,30 +138,28 @@ class KnowledgeGraphViewer extends React.Component {
     return (
       <div style={{ margin: '15px' }}>
         <p>
-          The current knowledge graph does not have any relevant nodes for this question. You may need to update the knowledge graph for this question.
+          No knowledge graph available.
         </p>
-        <Button title="Update KG and Get New Answer Set" onClick={this.props.callbackRefresh}>
-          Update Knowledge Graph
-          <br />
-          <GoSync />
-        </Button>
       </div>
     );
   }
 
   render() {
-    const showGraph = 'nodes' in this.props.graph && Array.isArray(this.props.graph.nodes) && this.props.graph.nodes.length > 0;
-    const showNoGraph = !showGraph;
+    const showGraph = this.props.graph && (typeof this.props.graph === 'object') && 'nodes' in this.props.graph && Array.isArray(this.props.graph.nodes) && this.props.graph.nodes.length > 0;
+    const showLoading = this.props.loading;
     return (
       <div>
-        {showGraph &&
+        {showLoading &&
+          <Loading />
+        }
+        {!showLoading && showGraph &&
           this.renderGraph()
         }
-        {showNoGraph &&
+        {!showLoading && !showGraph &&
           this.renderNoGraph()
         }
       </div>
-    )
+    );
   }
 }
 
