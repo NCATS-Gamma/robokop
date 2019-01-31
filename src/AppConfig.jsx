@@ -40,6 +40,7 @@ class AppConfig {
       feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
       search: this.url('api/search/'), // POST for Bionames search
       view: this.url('api/simple/view'),
+      graphql: `${this.config.protocol}://${this.config.host}:5000/graphql`,
     };
 
     this.url = this.url.bind(this);
@@ -49,13 +50,15 @@ class AppConfig {
     this.concepts = this.concepts.bind(this);
     this.operations = this.operations.bind(this);
     this.answersetData = this.answersetData.bind(this);
-    
+
     // Question and Answer Manipulation
     this.questionCreate = this.questionCreate.bind(this);
     this.answersetCreate = this.answersetCreate.bind(this);
+    this.questionData = this.questionData.bind(this);
     this.questionUpdateMeta = this.questionUpdateMeta.bind(this);
     this.questionRefresh = this.questionRefresh.bind(this);
     this.questionFork = this.questionFork.bind(this);
+    this.questionTasks = this.questionTasks.bind(this);
     this.taskStatus = this.taskStatus.bind(this);
     this.taskLog = this.taskLog.bind(this);
     this.taskStop = this.taskStop.bind(this);
@@ -88,6 +91,26 @@ class AppConfig {
   user(successFun, failureFun) { this.getRequest(`${this.apis.user}`, successFun, failureFun); }
   answersetData(qid_aid, successFun, failureFun) { this.getRequest(`${this.apis.answersetData(qid_aid)}`, successFun, failureFun); }
 
+  questionData(qid, successFun, failureFun) {
+    const query = `{
+      question: questionById(id: "${qid}") {
+        id
+        ownerId
+        natural_question: naturalQuestion
+        notes
+        machine_question: qgraphByQgraphId {
+          body
+        }
+        question_graph: qgraphByQgraphId {
+          answersets: answersetsByQgraphIdList {
+            id
+            timestamp
+          } 
+        }
+      }
+    }`;
+    this.postRequest(this.apis.graphql, { query }, successFun, failureFun);
+  }
   questionCreate(data, successFun, failureFun) {
     // Data must contain a complete specification for a new question
     // To make a new question we post to the questions page with specifications for a question
@@ -115,6 +138,22 @@ class AppConfig {
       successFun,
       failureFun,
     );
+  }
+  questionTasks(qid, successFun, failureFun) {
+    const query = `{
+      question: questionById(id: "${qid}"){
+        tasks: tasksByQuestionIdList {
+          id
+          timestamp
+          startingTimestamp
+          endTimestamp
+          result
+          remoteTaskId
+          type
+        }
+      }
+    }`;
+    this.postRequest(this.apis.graphql, { query }, successFun, failureFun);
   }
   questionFork(qid) {
     // To fork a question we make a form submission post request to the questionNew page

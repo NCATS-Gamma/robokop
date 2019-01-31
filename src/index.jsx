@@ -107,12 +107,10 @@ const robokop = {
   },
   question: (questionId) => {
     ReactDOM.render(
-      <ApolloProvider client={graphQlClient}>
-        <Question
-          config={config}
-          id={questionId}
-        />
-      </ApolloProvider>,
+      <Question
+        config={config}
+        id={questionId}
+      />,
       document.getElementById('reactEntry'),
     );
   },

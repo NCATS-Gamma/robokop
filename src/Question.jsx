@@ -1,7 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Query } from 'react-apollo';
-import { gql } from 'apollo-boost';
 
 import { Grid, Row, Col, Button } from 'react-bootstrap';
 import Dialog from 'react-bootstrap-dialog';
@@ -13,39 +11,35 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import QuestionPres from './components/question/QuestionPres';
 
-
-const QUERY_GET_QUESTION_BY_ID = id => gql`
-{
-  question: questionById(id: "${id}") {
-    id
-    natural_question: naturalQuestion
-    notes
-    machine_question: qgraphByQgraphId {
-      body
-    }
-    question_graph: qgraphByQgraphId {
-      answersets: answersetsByQgraphIdList {
-        id
-        timestamp
-      } 
-    }
+const runningTaskFilter = (t) => {
+  // First see if this question has a result
+  if (!(t.timestamp)) {
+    // How did you get here without a timestamp
+    // Abandon ship
+    console.log('Strange task found (is it in the queue?):', t);
+    return false;
   }
-}
-`;
-
-const QUERY_GET_TASKS_BY_ID = id => gql`
-{
-  questionById(id: "${id}") {
-    tasks: tasksByQuestionIdList {
-      id
-      timestamp
-      endTimestamp
-      initiator
-      result: _result
-    }
+  // We have a timestamp meaning it is at least in the queue
+  if (!(t.startingTimestamp)) {
+    // You don't have a startTimestamp
+    // This means you are sitting in the queue waiting to fire
+    console.log('startingTimestamp exit')
+    return true;
   }
-}
-`;
+  if (!(t.endTimestamp)) {
+    // You don't have an endTimestamp but you have a startTimestamp
+    // You are actively being worked on
+    console.log('endTimestamp exit')
+    return true;
+  }
+  // You have an endTimestamp
+  // We could check for a result but this requries JSON parsing.
+  // Not worth it at the moment.
+  // Assume it's probably there and therefore this task is finished
+  console.log('final exit')
+  return false;
+};
+
 class Question extends React.Component {
   constructor(props) {
     super(props);
@@ -57,7 +51,8 @@ class Question extends React.Component {
       conceptsReady: false,
       user: {},
       concepts: [],
-      subgraph: null,
+      answersets: [],
+      question: [],
       runningTasks: [],
       prevRunningTasks: [],
       refreshBusy: false,
@@ -78,30 +73,34 @@ class Question extends React.Component {
     this.callbackFork = this.callbackFork.bind(this);
     this.callbackTaskStatus = this.callbackTaskStatus.bind(this);
     this.callbackDelete = this.callbackDelete.bind(this);
-    this.callbackFetchGraph = this.callbackFetchGraph.bind(this);
 
     this.dialogMessage = this.dialogMessage.bind(this);
     this.dialogConfirm = this.dialogConfirm.bind(this);
   }
 
   componentDidMount() {
-    // this.appConfig.questionData(
-    //   this.props.id,
-    //   (data) => {
-    //     console.log(data);
-    //     this.setState({
-    //       owner: data.owner,
-    //       question: data.question,
-    //       answersets: data.answerset_list,
-    //       isValid: true,
-    //       dataReady: true,
-    //     });
-    //   },
-    //   () => this.setState({
-    //     isValid: false,
-    //     dataReady: true,
-    //   }),
-    // );
+    this.appConfig.questionData(
+      this.props.id,
+      (data) => {
+        console.log(data);
+
+        const { question } = data.data;
+        question.machine_question = JSON.parse(question.machine_question.body);
+        const { answersets } = question.question_graph;
+
+        this.setState({
+          owner: question.ownerId,
+          question,
+          answersets,
+          isValid: true,
+          dataReady: true,
+        });
+      },
+      () => this.setState({
+        isValid: false,
+        dataReady: true,
+      }),
+    );
     this.appConfig.user(data => this.setState({
       user: this.appConfig.ensureUser(data),
       userReady: true,
@@ -118,17 +117,15 @@ class Question extends React.Component {
     this.appConfig.questionTasks(
       this.props.id,
       (data) => {
+        const tasks = data.data.question.tasks; //eslint-disable-line
+        // These tasks include all tasks ever for this question
+
+        // We need to find the running tasks
+        console.log('pulled tasks: ', tasks);
+        const runningTasks = tasks.filter(runningTaskFilter);
+        console.log('pulled runningTasks: ', runningTasks);
         const prevRunningTasks = this.state.runningTasks;
-        /*
-          data is of the form
-          [
-            {type: "manager.tasks.answer_question", timestamp: "2018-08-05T01:04:32.782701", status: "FAILURE"},
-            {type: "manager.tasks.update_kg", timestamp: "2018-08-05T01:06:59.364998", status: "SUCCESS"},
-            {type: "manager.tasks.answer_question", timestamp: "2018-08-05T01:06:59.372607", status: "SUCCESS"}
-          ]
-        */
-        const dataFilter = data.filter(x => x.status !== 'FAILURE' && x.status !== 'SUCCESS' && x.status !== 'REVOKED');
-        this.setState({ runningTasks: dataFilter, prevRunningTasks }, this.updateTaskStatus);
+        this.setState({ runningTasks, prevRunningTasks }, this.updateTaskStatus);
       },
       err => console.log('Issues fetching active tasks', err),
     );
@@ -159,27 +156,30 @@ class Question extends React.Component {
     if (refreshFinished) {
       const prevUpdateTasks = prevTasks.filter(x => x.type.endsWith('update_kg'));
       if (prevUpdateTasks.length > 0) {
-        this.notifyRefresh(prevUpdateTasks[0].uuid);
+        this.notifyRefresh(prevUpdateTasks[0].id);
       }
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
     if (answerFinished) {
       this.appConfig.questionData(
         this.props.id,
-        data => this.setState({
-          answersets: data.answerset_list,
-        }),
+        (data) => {
+          const { answersets } = data.data.question.question_graph;
+          this.setState({ answersets });
+        },
       );
       const prevAnswerTasks = prevTasks.filter(x => x.type.endsWith('answer_question'));
       if (prevAnswerTasks.length > 0) {
-        this.notifyAnswers(prevAnswerTasks[0].uuid);
+        this.notifyAnswers(prevAnswerTasks[0].id);
       }
       setTimeout(this.pullTasks, this.taskPollingWaitTime);
     }
   }
   notifyRefresh(taskId) {
     this.appConfig.taskStatus(taskId, (data) => {
-      if (data.status === 'SUCCESS') {
+      const success = ('status' in data.result) && (data.result.status === 'SUCCESS');
+      const revoked = ('status' in data.result) && (data.result.status === 'REVOKED');
+      if (success) {
         this.notificationSystem.addNotification({
           title: 'Knowledge Graph Update Complete',
           message: 'We finished updating the knowledge graph for this question. Go check it out!',
@@ -187,7 +187,7 @@ class Question extends React.Component {
           dismissible: 'click',
           position: 'tr',
         });
-      } else if (data.status === 'REVOKED') {
+      } else if (revoked) {
         console.log(taskId, data);
         this.notificationSystem.addNotification({
           title: 'Knowledge Graph Update Terminated',
@@ -216,8 +216,9 @@ class Question extends React.Component {
   }
   notifyAnswers(taskId) {
     this.appConfig.taskStatus(taskId, (data) => {
-      const success = data.status === 'SUCCESS';
-      const revoked = data.status === 'REVOKED';
+      // console.log('Notify Answers', data);
+      const success = ('status' in data.result) && (data.result.status === 'SUCCESS');
+      const revoked = ('status' in data.result) && (data.result.status === 'REVOKED');
       // const failure = data.status === 'FAILURE'; // Assume failure
       if (success) {
         this.notificationSystem.addNotification({
@@ -325,7 +326,7 @@ class Question extends React.Component {
     const { status } = task;
     const taskSummary = (
       <ul>
-        <li>{`ID: ${task.uuid}`}</li>
+        <li>{`ID: ${task.id}`}</li>
         <li>{`Initiator: ${task.initiator}`}</li>
         <li>{`Started: ${timeString}`}</li>
         <li>{`Status: ${status}`}</li>
@@ -352,7 +353,7 @@ class Question extends React.Component {
 
           // Actually try to delete the question here.
           this.appConfig.taskStop(
-            task.uuid,
+            task.id,
             () => {
               this.notificationSystem.addNotification({
                 title: 'Task Stopped',
@@ -421,21 +422,6 @@ class Question extends React.Component {
         confirmationText: 'Are you sure you want to delete this question? This action cannot be undone.',
         confirmationButtonText: 'Delete',
       },
-    );
-  }
-  callbackFetchGraph(afterDoneFun, afterDoneFunFail) {
-    this.appConfig.questionSubgraph(
-      this.props.id,
-      (data) => {
-        if (typeof data === 'string' || data instanceof String) {
-          // This usually happens due to a 404 but our current axios settings pass 404s as success
-          // Rather than changes that global we just catch it here, since this is the only place
-          this.setState({ subgraph: { edges: [], nodes: [] } }, afterDoneFunFail());
-          return;
-        }
-        this.setState({ subgraph: data }, afterDoneFun());
-      },
-      (err) => { console.log(err); this.setState({ subgraph: { edges: [], nodes: [] } }, afterDoneFunFail()); },
     );
   }
   dialogConfirm(callbackToDo, inputOptions) {
@@ -531,106 +517,32 @@ class Question extends React.Component {
         this.appConfig.questionTasks(
           this.props.id,
           (data) => {
-            // Remove failed and completed tasks here. We will check for these below.
-            const activeTasks = data.filter(x => x.status !== 'FAILURE' && x.status !== 'SUCCESS' && x.status !== 'REVOKED');
-            console.log('Checking if our new task actually started', activeTasks);
-            let allOk = true;
-            if (isAnswerTask) {
-              const answerTasks = activeTasks.filter(x => x.type.endsWith('answer_question'));
-              const ind = answerTasks.findIndex(a => a.uuid === newTask.answersetTask);
-              if (ind < 0) {
-                // Task is not in the list of active tasks
+            // Make sure this task id is in the list of tasks for this question
 
-                // Check to see if it happens to be done already?
-                this.appConfig.taskStatus(
-                  newTask.answersetTask,
-                  (taskStatusData) => {
-                    // 'STARTED' // Assume lost, how are you doing this but not in the active list for this question
-                    // 'PENDING' // Assume lost, how are you doing this but not in the active list for this question
-                    // 'UPDATE KG' // Assume lost, how are you doing this but not in the active list for this question
-                    // Anything else // Assume lost, how are you doing this but not in the active list for this question
-                    // 'SUCCESS' // Already done, great, fire notification
-                    // 'FAILURE' // Already failued, fire notificaiton
-                    const success = taskStatusData.status === 'SUCCESS';
-                    const failure = taskStatusData.status === 'FAILURE';
-                    const revoked = taskStatusData.status === 'REVOKED';
-                    if (success || failure || revoked) {
-                      this.notifyAnswers(newTask.answersetTask);
-                      return;
-                    }
-                    allOk = false;
-
-                    console.log('Missing Question Task!!?!', newTask.answersetTask);
-
-                    this.dialogMessage({
-                      title: 'Trouble Queuing Question Answering',
-                      text: 'We have lost track of your task. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
-                      buttonText: 'OK',
-                      buttonAction: () => {},
-                    });
-                  },
-                );
-              }
-              // Task is appropriately in the list of active tasks, start polling as normal
-            }
+            const tasks = data.data.question.tasks; //eslint-disable-line
+            console.log('got question tasks: ', tasks);
+            let taskId = newTask.answersetTask;
             if (isRefreshTask) {
-              const updateTasks = activeTasks.filter(x => x.type.endsWith('update_kg'));
-              const ind = updateTasks.findIndex(a => a.uuid === newTask.questionTask);
-              if (ind < 0) {
-                // Task is not in the list of active tasks
-
-                // Check to see if it happens to be done already?
-                this.appConfig.taskStatus(
-                  newTask.questionTask,
-                  (taskStatusData) => {
-                    // 'STARTED' // Assume lost, how are you doing this but not in the active list for this question
-                    // 'PENDING' // Assume lost, how are you doing this but not in the active list for this question
-                    // 'UPDATE KG' // Assume lost, how are you doing this but not in the active list for this question
-                    // Anything else // Assume lost, how are you doing this but not in the active list for this question
-                    // 'SUCCESS' // Already done, great, fire notification
-                    // 'FAILURE' // Already failued, fire notificaiton
-                    const success = taskStatusData.status === 'SUCCESS';
-                    const failure = taskStatusData.status === 'FAILURE';
-                    const revoked = taskStatusData.status === 'REVOKED';
-                    if (success || failure || revoked) {
-                      this.notifyRefresh(newTask.questionTask);
-                      return;
-                    }
-                    console.log('Missing Question Task!!?!', newTask.questionTask);
-                    allOk = false;
-                    this.dialogMessage({
-                      title: 'Trouble Queuing Knowledge Graph Update',
-                      text: 'We have lost track of your task. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
-                      buttonText: 'OK',
-                      buttonAction: () => {},
-                    });
-                  },
-                );
-              }
+              taskId = newTask.questionTask;
             }
-
-            // This assumes a single new task at a time!
-            // This may need to be fixed at some point.
-            if (allOk) {
-              this.setState(
-                {
-                  prevRunningTasks: activeTasks,
-                  runningTasks: activeTasks,
-                  answerBusy: isAnswerTask,
-                  refreshBusy: isRefreshTask,
-                },
-                this.updateTaskStatus,
-              );
-            } else {
+            console.log('searching for ', taskId);
+            const thisTask = tasks.find(t => t.id === taskId);
+            console.log('Found thisTask', thisTask);
+            if (!thisTask) {
+              // Task went missing!@?!
               if (isAnswerTask) {
+                console.log('Missing Question Task!!?!', taskId);
+
                 this.dialogMessage({
-                  title: 'Trouble Queuing Answer Set Generation',
-                  text: 'We have lost track of your tasks. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+                  title: 'Trouble Queuing Question Answering',
+                  text: 'We have lost track of your task. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
                   buttonText: 'OK',
                   buttonAction: () => {},
                 });
-              }
-              if (isRefreshTask) {
+              } else {
+                // isRefreshTask
+                console.log('Missing Question Task!!?!', taskId);
+
                 this.dialogMessage({
                   title: 'Trouble Queuing Knowledge Graph Update',
                   text: 'We have lost track of your tasks. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
@@ -638,7 +550,37 @@ class Question extends React.Component {
                   buttonAction: () => {},
                 });
               }
+              return;
             }
+            // Otherwise, it could be all done
+            if (thisTask.result && typeof thisTask.result === 'string') {
+              thisTask.result = JSON.parse(thisTask.result);
+            }
+
+            if (thisTask.result && (Object.keys(thisTask.result).length > 0)) {
+              console.log('We have a result already?', thisTask.result);
+              // We have a result already
+              if (isAnswerTask) {
+                this.notifyAnswers(taskId);
+              } else {
+                // isRefreshTask
+                this.notifyRefresh(taskId);
+              }
+              return;
+            }
+
+            // We have a task but no result
+            const runningTasks = tasks.filter(runningTaskFilter);
+            // Find the running tasks, update state, queue updateTaskStatus
+            this.setState(
+              {
+                prevRunningTasks: runningTasks,
+                runningTasks,
+                answerBusy: isAnswerTask,
+                refreshBusy: isRefreshTask,
+              },
+              this.updateTaskStatus,
+            );
           },
           err => console.log('Issues fetching active tasks', err),
         );
@@ -653,7 +595,7 @@ class Question extends React.Component {
   }
   renderInvalid() {
     return (
-      <Grid>
+      <div>
         <Row>
           <Col md={12}>
             <h3>
@@ -671,7 +613,7 @@ class Question extends React.Component {
             </Button>
           </Col>
         </Row>
-      </Grid>
+      </div>
     );
   }
   renderLoaded() {
@@ -681,53 +623,40 @@ class Question extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        <Query query={QUERY_GET_QUESTION_BY_ID(this.props.id)}>
-          {({ loading, error, data }) => {
-            if (loading) {
-              // console.log('GraphQL is loading');
-              return <Loading />;
-            }
-
-            if (error) {
-              console.log('GraphQL error:', error);
-              return this.renderInvalid();
-            }
-            // Good response
-            // console.log('GraphQL data:', data);
-            const { question } = data;
-            question.machine_question = JSON.parse(question.machine_question.body);
-            const { answersets } = question.question_graph;
-            return (
-              <Grid>
-                <QuestionPres
-                  user={this.state.user}
-                  owner={this.state.owner}
-                  callbackUpdateMeta={this.callbackUpdateMeta}
-                  callbackRefresh={this.callbackRefresh}
-                  callbackNewAnswerset={this.callbackNewAnswerset}
-                  callbackFork={this.callbackFork}
-                  callbackDelete={this.callbackDelete}
-                  callbackFetchGraph={this.callbackFetchGraph}
-                  callbackTaskStatus={this.callbackTaskStatus}
-                  answersetUrl={a => this.appConfig.urls.answerset(this.props.id, a.id)}
-                  question={question}
-                  answersets={answersets}
-                  subgraph={this.state.subgraph}
-                  concepts={this.state.concepts}
-                  refreshBusy={this.state.refreshBusy}
-                  answerBusy={this.state.answerBusy}
-                  enableNewAnswersets={this.appConfig.enableNewAnswersets}
-                  enableNewQuestions={this.appConfig.enableNewQuestions}
-                  enableQuestionRefresh={this.appConfig.enableQuestionRefresh}
-                  enableQuestionEdit={this.appConfig.enableQuestionEdit}
-                  enableQuestionDelete={this.appConfig.enableQuestionDelete}
-                  enableQuestionFork={this.appConfig.enableQuestionFork}
-                  enableTaskStatus={this.appConfig.enableTaskStatus}
-                />
-              </Grid>
-            );
-          }}
-        </Query>
+        <Grid>
+          {this.state.dataReady && this.state.isValid &&
+            <QuestionPres
+              user={this.state.user}
+              owner={this.state.owner}
+              callbackUpdateMeta={this.callbackUpdateMeta}
+              callbackRefresh={this.callbackRefresh}
+              callbackNewAnswerset={this.callbackNewAnswerset}
+              callbackFork={this.callbackFork}
+              callbackDelete={this.callbackDelete}
+              callbackTaskStatus={this.callbackTaskStatus}
+              answersetUrl={a => this.appConfig.urls.answerset(this.props.id, a.id)}
+              question={this.state.question}
+              answersets={this.state.answersets}
+              subgraph={this.state.subgraph}
+              concepts={this.state.concepts}
+              refreshBusy={this.state.refreshBusy}
+              answerBusy={this.state.answerBusy}
+              enableNewAnswersets={this.appConfig.enableNewAnswersets}
+              enableNewQuestions={this.appConfig.enableNewQuestions}
+              enableQuestionRefresh={this.appConfig.enableQuestionRefresh}
+              enableQuestionEdit={this.appConfig.enableQuestionEdit}
+              enableQuestionDelete={this.appConfig.enableQuestionDelete}
+              enableQuestionFork={this.appConfig.enableQuestionFork}
+              enableTaskStatus={this.appConfig.enableTaskStatus}
+            />
+          }
+          {this.state.dataReady && !this.state.isValid &&
+            this.renderInvalid()
+          }
+          {!this.state.dataReady &&
+            <Loading />
+          }
+        </Grid>
         <Footer config={this.props.config} />
         <Dialog ref={(el) => { this.dialog = el; }} />
         <NotificationSystem
