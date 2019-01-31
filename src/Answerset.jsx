@@ -18,16 +18,23 @@ class Answerset extends React.Component {
 
     this.state = {
       dataReady: false,
+      questionReady: false,
       userReady: false,
       conceptsReady: false,
       isValid: false,
       user: {},
       answerId: [],
       concepts: [],
+      owner: null,
+      message: {},
+      question: {},
+      questionId: null,
+      answersets: [],
       answersetFeedback: [], // Currently unused
     };
 
     this.callbackFeedbackSubmit = this.callbackFeedbackSubmit.bind(this);
+    this.callbackQuestionUpdateMeta = this.callbackQuestionUpdateMeta.bind(this);
     this.handleAnswerSelect = this.handleAnswerSelect.bind(this);
     this.handleNoAnswerSelect = this.handleNoAnswerSelect.bind(this);
   }
@@ -38,7 +45,6 @@ class Answerset extends React.Component {
     this.appConfig.answersetData(
       this.props.id,
       (data) => {
-        console.log('Got data:', data);
         const message = data;
 
         this.setState({
@@ -56,6 +62,30 @@ class Answerset extends React.Component {
         });
       },
     );
+    const qid = this.props.id.split('_')[0];
+    this.appConfig.questionData(
+      qid,
+      (data) => {
+        const { question } = data.data;
+        question.machine_question = JSON.parse(question.machine_question.body);
+        const { answersets } = question.question_graph;
+
+        this.setState({
+          questionId: qid,
+          owner: question.ownerId,
+          question,
+          answersets,
+          questionReady: true,
+        });
+      },
+      (err) => {
+        console.log(err);
+        this.setState({
+          questionReady: true,
+          isValid: false,
+        });
+      },
+    );
     this.appConfig.user(data => this.setState({
       user: this.appConfig.ensureUser(data),
       userReady: true,
@@ -66,6 +96,10 @@ class Answerset extends React.Component {
         conceptsReady: true,
       });
     });
+  }
+
+  callbackQuestionUpdateMeta(newMeta, fun) {
+    this.appConfig.questionUpdateMeta(this.state.questionId, newMeta, fun);
   }
 
   callbackFeedbackSubmit(newPartialFeedback) {
@@ -107,7 +141,7 @@ class Answerset extends React.Component {
   }
   renderLoadingUser() {
     return (
-      <Loading />
+      <p />
     );
   }
   renderInvalid() {
@@ -152,20 +186,18 @@ class Answerset extends React.Component {
             {this.state.isValid &&
               <MessageAnswersetPres
                 user={this.state.user}
+                question={this.state.question}
                 message={this.state.message}
                 answerId={this.state.answerId}
                 concepts={this.state.concepts}
-                enableUrlChange
                 enableQuestionSelect
+                enableQuestionEdit
+                callbackQuestionUpdateMeta={this.callbackQuestionUpdateMeta}
                 callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
                 callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
-                callbackAnswerSelected={this.handleAnswerSelect}
                 urlQuestion={q => this.appConfig.urls.question(q.id)}
                 urlAnswerset={a => this.appConfig.urls.answerset(this.state.question.id, a.id)}
-                callbackNoAnswerSelected={this.handleNoAnswerSelect}
-                enabledAnswerLink
-                getAnswerUrl={answer => this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, answer.id)}
-                callbackFeedbackSubmit={this.callbackFeedbackSubmit}
+                // callbackFeedbackSubmit={this.callbackFeedbackSubmit}
               />
             }
           </Grid>
@@ -179,7 +211,7 @@ class Answerset extends React.Component {
     return (
       <div>
         {!ready && this.renderLoadingUser()}
-        {ready && this.renderLoadedUser(!this.state.dataReady)}
+        {ready && this.renderLoadedUser(!(this.state.dataReady && this.state.questionReady))}
       </div>
     );
   }

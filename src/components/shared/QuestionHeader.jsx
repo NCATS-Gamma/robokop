@@ -222,11 +222,13 @@ class QuestionHeader extends React.Component {
                   </div>
                 }
               </h1>
-              <span style={{ paddingLeft: '20px', fontSize: '30px' }}>
-                <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={this.props.questionGraphPopover}>
-                  <FaInfoCircle size={25} />
-                </OverlayTrigger>
-              </span>
+              {this.props.questionGraphPopover &&
+                <span style={{ paddingLeft: '20px', fontSize: '30px' }}>
+                  <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={this.props.questionGraphPopover}>
+                    <FaInfoCircle size={25} />
+                  </OverlayTrigger>
+                </span>
+              }
               <div className="pull-right" style={{ marginTop: '10px' }}>
                 {edited &&
                   <div style={{ display: 'inline' }}>

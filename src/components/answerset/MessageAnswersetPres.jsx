@@ -1,14 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { FormControl, Row, Col, Grid, Tabs, Tab, Panel } from 'react-bootstrap';
+import { Row, Col, Grid, Tabs, Tab, Panel } from 'react-bootstrap';
 import { toJS } from 'mobx';
 import FaEye from 'react-icons/lib/fa/eye';
 import FaEyeSlash from 'react-icons/lib/fa/eye-slash';
 
-// import QuestionHeader from '../shared/QuestionHeader';
-// import AnswersetList from './AnswersetList';
-// import AnswersetInteractive from './AnswersetInteractive';
+import QuestionHeader from '../shared/QuestionHeader';
+
 import AnswersetGraph from './AnswersetGraph';
 import MachineQuestionView2 from './../shared/MachineQuestionView2';
 import MessageAnswersetTable from './MessageAnswersetTable';
@@ -77,7 +76,7 @@ class MessageAnswersetPres extends React.Component {
     this.toggleGraphVisibility = this.toggleGraphVisibility.bind(this);
 
     this.answersetStore = new AnswersetStore(this.props.message);
-    console.log('MobX Answerset Store:', this.answersetStore);
+    // console.log('MobX Answerset Store:', this.answersetStore);
   }
   onDownload() {
     const data = this.props.message;
@@ -119,95 +118,73 @@ class MessageAnswersetPres extends React.Component {
     // const showOtherQuestions = this.props.otherQuestions.length > 0;
     // const showOtherAnswersets = this.props.otherQuestions.length > 0;
     const { message } = this.props;
-    const notesStyle = {
-      minHeight: '50px',
-      resize: 'vertical',
-    };
     const answersetGraph = this.answersetStore.annotatedKnowledgeGraph;
     answersetGraph.node_list = answersetGraph.nodes;
     answersetGraph.edge_list = answersetGraph.edges;
     return (
       <div style={this.props.style}>
         {!this.props.omitHeader &&
-        <div>
-          {/* <Row>
-            <Col md={12}>
-              <h1 style={{ paddingRight: '50px' }}>
-                Question: {message.natural_question ? message.natural_question : ''}
-              </h1>
-            </Col>
-          </Row> */}
-          <Row>
-            {/* <Col id="questionNotes" md={12}>
-              <FormControl
-                disabled
-                componentClass="textarea"
-                placeholder="User Notes"
-                style={notesStyle}
-                // inputRef={(ref) => { this.notesRef = ref; }}
-                value={`${message.answers.length} potential answers found`}
-                // onChange={this.onEditNotes}
-              />
-            </Col> */}
-            <div className="col-md-12" style={{ height: '20px' }} />
-            <Col md={12}>
-              <Panel expanded={this.state.graphVisible} onToggle={() => {}} >
-                <Panel.Heading>
-                  <Panel.Title>
-                    {'Question Graph '}
-                    <div style={{ position: 'relative', float: 'right', top: '-3px' }}>
-                      <button
-                        style={{ padding: '2px', marginLeft: '5px' }}
-                        className="btn btn-default"
-                        title="Toggle visibility of Question graph"
-                        onClick={this.toggleGraphVisibility}
-                      >
-                        <span style={{ fontSize: '22px' }}>
-                          {!this.state.graphVisible && <FaEye style={{ cursor: 'pointer' }} />}
-                          {this.state.graphVisible && <FaEyeSlash style={{ cursor: 'pointer' }} />}
-                        </span>
-                      </button>
-                    </div>
-                  </Panel.Title>
-                </Panel.Heading>
-                <Panel.Collapse>
-                  <Panel.Body style={{ padding: '0px' }}>
-                    <MachineQuestionView2
-                      height={200}
-                      // width={width}
-                      question={toJS(this.answersetStore.message.question_graph)}
-                      concepts={this.props.concepts}
-                      graphState="display"
-                      selectable
-                      nodePreProcFn={nodePreProcFn}
-                      // nodeSelectCallback={this.nodeSelectCallback}
-                      // edgeSelectCallback={this.edgeSelectCallback}
-                    />
-                  </Panel.Body>
-                </Panel.Collapse>
-              </Panel>
-            </Col>
-          </Row>
-          {/* <QuestionHeader
-            question={this.props.question}
-            answerset={this.props.answerset}
+        <Row>
+          <Col md={12}>
+            <QuestionHeader
+              question={this.props.question}
+              answerset={message}
 
-            showOtherQuestions={showOtherQuestions}
-            otherQuestions={this.props.otherQuestions}
-            enableQuestionSelect={this.props.enableQuestionSelect}
-            callbackQuestionSelect={this.props.callbackQuestionSelect}
-            urlQuestion={this.props.urlQuestion}
+              enableQuestionSelect={this.props.enableQuestionSelect}
+              enableQuestionEdit={this.props.enableQuestionEdit}
+              callbackUpdate={this.props.callbackQuestionUpdateMeta}
+              callbackQuestionSelect={this.props.callbackQuestionSelect}
+              urlQuestion={this.props.urlQuestion}
 
-            showOtherAnswersets={showOtherAnswersets}
-            otherAnswersets={this.props.otherAnswersets}
-            callbackAnswersetSelect={this.props.callbackAnswersetSelect}
-            urlAnswerset={this.props.urlAnswerset}
+              callbackAnswersetSelect={this.props.callbackAnswersetSelect}
+              urlAnswerset={this.props.urlAnswerset}
 
-            showDownload
-            callbackDownload={this.onDownload}
-          /> */}
-        </div>
+              showDownload
+              callbackDownload={this.onDownload}
+            />
+          </Col>
+        </Row>
         }
+        <Row>
+          <div className="col-md-12" style={{ height: '20px' }} />
+          <Col md={12}>
+            <Panel expanded={this.state.graphVisible} onToggle={() => {}} >
+              <Panel.Heading>
+                <Panel.Title>
+                  {'Question Graph '}
+                  <div style={{ position: 'relative', float: 'right', top: '-3px' }}>
+                    <button
+                      style={{ padding: '2px', marginLeft: '5px' }}
+                      className="btn btn-default"
+                      title="Toggle visibility of Question graph"
+                      onClick={this.toggleGraphVisibility}
+                    >
+                      <span style={{ fontSize: '22px' }}>
+                        {!this.state.graphVisible && <FaEye style={{ cursor: 'pointer' }} />}
+                        {this.state.graphVisible && <FaEyeSlash style={{ cursor: 'pointer' }} />}
+                      </span>
+                    </button>
+                  </div>
+                </Panel.Title>
+              </Panel.Heading>
+              <Panel.Collapse>
+                <Panel.Body style={{ padding: '0px' }}>
+                  <MachineQuestionView2
+                    height={200}
+                    // width={width}
+                    question={toJS(this.answersetStore.message.question_graph)}
+                    concepts={this.props.concepts}
+                    graphState="display"
+                    selectable
+                    nodePreProcFn={nodePreProcFn}
+                    // nodeSelectCallback={this.nodeSelectCallback}
+                    // edgeSelectCallback={this.edgeSelectCallback}
+                  />
+                </Panel.Body>
+              </Panel.Collapse>
+            </Panel>
+          </Col>
+        </Row>
         <Tabs
           activeKey={this.state.tabKey}
           onSelect={this.handleTabSelect}
@@ -285,12 +262,14 @@ MessageAnswersetPres.defaultProps = {
   enableFeedbackView: false,
 
   omitHeader: false,
+  question: {},
 
   callbackNoAnswerSelected: () => {},
   callbackAnswerSelected: () => {},
   callbackAnswersetSelect: () => {},
   callbackQuestionSelect: () => {},
   callbackFeedbackSubmit: () => {},
+  callbackQuestionUpdateMeta: () => {},
   urlQuestion: () => {},
   urlAnswerset: () => {},
 
@@ -328,6 +307,7 @@ MessageAnswersetPres.propTypes = {
   answerId: PropTypes.oneOfType([PropTypes.number, PropTypes.array]),
 
   user: PropTypes.object.isRequired,
+  question: PropTypes.object,
 
   message: PropTypes.shape({
     question_graph: PropTypes.shape({

@@ -239,7 +239,7 @@ class MessageAnswersetTable extends React.Component {
             };
           }}
           getTrProps={(state, rowInfo) => ({
-              className: this.isSelected(rowInfo) ? 'selected-row' : '',
+              className: rowInfo ? (this.isSelected(rowInfo) ? 'selected-row' : '') : '', // eslint-disable-line no-nested-ternary
             })
           }
           // style={{ height: '480px' }}
