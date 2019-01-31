@@ -92,7 +92,7 @@ class Task(Base):
 
     def to_json(self):
         """Export task as JSON-ifiable dict."""
-        keys = [str(column).split('.')[-1] for column in self.__table__.columns] + ['status', 'result']
+        keys = [str(column).split('.')[-1] for column in self.__table__.columns] + ['result']
         struct = {key: getattr(self, key) for key in keys}
         struct['timestamp'] = struct['timestamp'].isoformat()
         if struct['end_timestamp']:
@@ -123,7 +123,8 @@ def get_task_by_id(task_id):
 def save_starting_task_info(task_id):
     """ Updates the time when the task was started """
     with session_scope() as session:
-        task = session.query(Task).get(task_id)
+        task = session.query(Task).filter(Task.id == task_id).first()
+        
         task.starting_timestamp = datetime.datetime.utcnow()
         session.commit()
 
@@ -141,20 +142,22 @@ def save_task_info(task_id, question_id, task_type, initiator, remote_task_id=No
 
 def save_task_result(task_id):
     with session_scope() as session:
-        task = session.query(Task).get(task_id)
+        task = session.query(Task).filter(Task.id == task_id).first()
         task.result = task.get_result()
         session.commit()
 
 def save_remote_task_info(task_id, remote_task_id):
     """ Updates the endtime of task when task is done"""
     with session_scope() as session:
-        task = session.query(Task).get(task_id)
+        # task = session.query(Task).get(task_id)
+        task = session.query(Task).filter(Task.id == task_id).first()
         task.remote_task_id = remote_task_id
         session.commit()
 
 def save_final_task_info(task_id):
     """ Updates the endtime of task when task is done"""
     with session_scope() as session:
-        task = session.query(Task).get(task_id)
+        # task = session.query(Task).get(task_id)
+        task = session.query(Task).filter(Task.id == task_id).first()
         task.end_timestamp = datetime.datetime.utcnow()
         session.commit()
