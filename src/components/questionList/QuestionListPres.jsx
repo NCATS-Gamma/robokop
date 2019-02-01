@@ -53,7 +53,7 @@ class QuestionListPres extends React.Component {
         const answersetsSorted = sortingInds.map(v => answersets[v]);
 
         q.hasAnswerset = true;
-        q.latestAnswersetId = answersetsSorted[0];
+        q.latestAnswersetId = answersetsSorted[0].id;
 
       } else {
         q.hasAnswerset = false;
