@@ -57,6 +57,8 @@ class SimpleViewer extends React.Component {
           this.setState({ hadError: true });
         },
       );
+    } else {
+      this.setState({ isReading: false })
     }
   }
   parseMessage(object) {
