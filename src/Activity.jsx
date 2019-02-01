@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Grid, Row, Col } from 'react-bootstrap';
+import { Grid } from 'react-bootstrap';
+
 import Dialog from 'react-bootstrap-dialog';
 import NotificationSystem from 'react-notification-system';
 
@@ -18,10 +19,11 @@ class Activity extends React.Component {
     this.appConfig = new AppConfig(props.config);
 
     this.state = {
-      dataReady: false,
       userReady: false,
+      dataReady: false,
+      hadError: false,
       user: {},
-      tasks: [],
+      questions: [],
     };
 
     this.callbackTaskStop = this.callbackTaskStop.bind(this);
@@ -40,33 +42,55 @@ class Activity extends React.Component {
     }));
   }
   refreshTasks() {
-    this.appConfig.tasksData(data => this.setState({
-      tasks: data,
-      dataReady: true,
-    }));
+    this.appConfig.questionList(
+      (data) => {
+        // console.log(data);
+        this.setState({
+          questions: data.data.questions,
+          dataReady: true,
+          hadError: false,
+        });
+      },
+      (err) => {
+        console.log('Error getting quesiont list:', err);
+        this.setState({
+          questions: [],
+          dataReady: false,
+          hadError: true,
+        });
+      },
+    );
   }
   callbackTaskStop(task) {
-    const isBusy = !(task.status === 'FAILURE' || task.status === 'SUCCESS' || task.status === 'REVOKED');
-    const isAuth = this.state.user.is_admin || this.state.user.username === task.initiator;
+    return;
+    
+    // const isBusy = !(task.status === 'FAILURE' || task.status === 'SUCCESS' || task.status === 'REVOKED');
+    const isAuth = this.state.user.is_admin || this.state.user.user_id === task.initiator;
 
-    let ts = task.timestamp;
-    if (!ts.endsWith('Z')) {
-      ts = `${ts}Z`;
+    let submittedStr = '';
+    let processingStr = '';
+    if (task.isZombie) {
+      submittedStr = 'This task was lost in a strange way';
+      processingStr = 'Zombie Task';
+    } else if (task.inQueue) {
+      submittedStr = 'This task was lost in a strange way';
+      processingStr = 'Zombie Task';
+    } else if (task.inProcess) {
+      submittedStr = 'This task was lost in a strange way';
+      processingStr = 'Zombie Task';
+    } else if (task.isFinished) {
+      submittedStr = 'This task was lost in a strange way';
+      processingStr = 'Zombie Task';
     }
-    const d = new Date(ts);
-    const timeString = d.toLocaleString();
 
-    let { status } = task;
-    if (isBusy) {
-      status = 'Active';
-    }
     const taskSummary = (
       <ul>
         <li>{`ID: ${task.id}`}</li>
-        <li>{`Question: ${task.question_id}`}</li>
+        <li>{`Question ID: ${task.questionId}`}</li>
         <li>{`Initiator: ${task.initiator}`}</li>
-        <li>{`Started: ${timeString}`}</li>
-        <li>{`Status: ${status}`}</li>
+        <li>{`Status: ${task.status}`}</li>
+        <li>{`Submitted: ${submittedStr}`}</li>
+        <li>{`Processing: ${processingStr}`}</li>
       </ul>
     );
 
@@ -95,7 +119,7 @@ class Activity extends React.Component {
             () => {
               this.notificationSystem.addNotification({
                 title: 'Task Stopped',
-                message: `Task ${task.id} for question ${task.question_id} succesfully stopped.`,
+                message: `Task ${task.id} for question ${task.questionId} succesfully stopped.`,
                 level: 'info',
                 position: 'tr',
                 dismissible: 'click',
@@ -215,7 +239,14 @@ class Activity extends React.Component {
   }
   renderLoading() {
     return (
-      <Loading />
+      <p />
+    );
+  }
+  renderError() {
+    return (
+      <h2>
+        There was a problem contacting the server.
+      </h2>
     );
   }
   renderLoaded() {
@@ -225,13 +256,21 @@ class Activity extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        <Grid>
-          <ActivityPres
-            user={this.state.user}
-            tasks={this.state.tasks}
-            onClick={this.callbackTaskStop}
-          />
-        </Grid>
+        {!this.state.dataReady && !this.state.hadError &&
+          <Loading />
+        }
+        {!this.state.dataReady && this.state.hadError &&
+          this.renderError()
+        }
+        {this.state.dataReady &&
+          <Grid>
+            <ActivityPres
+              user={this.state.user}
+              questions={this.state.questions}
+              onClick={this.callbackTaskStop}
+            />
+          </Grid>
+        }
         <Footer config={this.props.config} />
         <Dialog ref={(el) => { this.dialog = el; }} />
         <NotificationSystem
@@ -241,7 +280,7 @@ class Activity extends React.Component {
     );
   }
   render() {
-    const ready = this.state.dataReady && this.state.userReady;
+    const ready = this.state.userReady;
     return (
       <div>
         {!ready && this.renderLoading()}

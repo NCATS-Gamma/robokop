@@ -127,6 +127,7 @@ class AppConfig {
           startingTimestamp
           endTimestamp
           result
+          type
         }
         qgraphs: qgraphByQgraphId {
           answersets: answersetsByQgraphIdList {
