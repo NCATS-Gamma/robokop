@@ -22,7 +22,7 @@ class SimpleViewer extends React.Component {
       userReady: false,
       conceptsReady: false,
       hasMessage: false,
-      isReading: false,
+      isReading: true,
       user: {},
       message: {},
       concepts: [],
