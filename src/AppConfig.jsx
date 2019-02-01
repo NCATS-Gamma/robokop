@@ -39,7 +39,7 @@ class AppConfig {
       feedbackNew: this.url('api/feedback/'), // POST new feedback
       feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
       search: this.url('api/search/'), // POST for Bionames search
-      view: this.url('api/simple/view'),
+      viewData: id => this.url(`api/simple/view/${id}`),
       graphql: `${this.config.protocol}://${this.config.host}:5000/graphql`,
     };
 
@@ -65,6 +65,7 @@ class AppConfig {
 
     this.questionNewTranslate = this.questionNewTranslate.bind(this);
     this.questionNewSearch = this.questionNewSearch.bind(this);
+    this.viewData = this.viewData.bind(this);
 
     // Read config parameters for enabling controls
     this.enableNewAnswersets = ((config.ui !== null) && (config.ui.enableNewAnswersets !== null)) ? config.ui.enableNewAnswersets : true;
@@ -245,6 +246,13 @@ class AppConfig {
   answerFeedback(questionId, answersetId, successFun, failureFun) {
     this.getRequest(
       this.apis.feedback(questionId, answersetId),
+      successFun,
+      failureFun,
+    );
+  }
+  viewData(uploadId, successFun, failureFun) {
+    this.getRequest(
+      this.apis.viewData(uploadId),
       successFun,
       failureFun,
     );

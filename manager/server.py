@@ -60,12 +60,12 @@ def search():
 @app.route('/simple/view/')
 def viewer_blank():
     """Answerset Browser with upload capablitiy"""
-    return render_template('viewer.html', upload_id='')
+    return render_template('simpleView.html', upload_id='')
 
 @app.route('/simple/view/<upload_id>/')
 def viewer_file(upload_id):
     """Answerset Browser from uploaded file"""
-    return render_template('viewer.html', upload_id=upload_id)
+    return render_template('simpleView.html', upload_id=upload_id)
 
 
 # Run Webserver

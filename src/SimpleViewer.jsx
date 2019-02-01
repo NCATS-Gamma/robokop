@@ -1,9 +1,8 @@
 import React from 'react';
 
-import { Grid, Row, Col, Button } from 'react-bootstrap';
+import { Grid, Row, Col, Alert } from 'react-bootstrap';
 import Dropzone from 'react-dropzone';
 import FaCloudUpload from 'react-icons/lib/fa/cloud-upload';
-
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
@@ -11,7 +10,6 @@ import Footer from './components/Footer';
 import Loading from './components/Loading';
 import MessageAnswersetPres from './components/answerset/MessageAnswersetPres';
 
-const shortid = require('shortid');
 const _ = require('lodash');
 
 class SimpleViewer extends React.Component {
@@ -23,12 +21,15 @@ class SimpleViewer extends React.Component {
     this.state = {
       userReady: false,
       conceptsReady: false,
-      isValid: false,
+      hasMessage: false,
       isReading: false,
       user: {},
       message: {},
       concepts: [],
+      hadError: false,
     };
+
+    this.parseMessage = this.parseMessage.bind(this);
   }
 
   componentDidMount() {
@@ -44,8 +45,43 @@ class SimpleViewer extends React.Component {
         conceptsReady: true,
       });
     });
-  }
 
+    if (this.props.id) {
+      // request the file
+      this.appConfig.viewData(
+        this.props.id,
+        (object) => {
+          this.parseMessage(object); // This will set state
+        },
+        () => {
+          this.setState({ hadError: true });
+        },
+      );
+    }
+  }
+  parseMessage(object) {
+    const message = _.cloneDeep(object);
+    const allOk = _.isObject(message) &&
+      'question_graph' in message &&
+      'knowledge_graph' in message &&
+      'answers' in message;
+
+    // Probably do some more checks here
+
+    if (allOk) {
+      this.setState({
+        message,
+        hasMessage: true,
+        hadError: false,
+      });
+      return;
+    }
+    this.setState({
+      message: {},
+      hasMessage: false,
+      hadError: true,
+    });
+  }
   onDrop(acceptedFiles, rejectedFiles) {
     acceptedFiles.forEach((file) => {
       const fr = new window.FileReader();
@@ -55,103 +91,44 @@ class SimpleViewer extends React.Component {
         const fileContents = e.target.result;
         try {
           const object = JSON.parse(fileContents);
-          const message = _.cloneDeep(object);
-          message.creator = object.tool_version;
-          message.datetime = object.datetime;
-
-          // const question = { // These are the required fields for our question header
-          //   name: object.original_question_text, // This may seem backwards between name an natural but it looks better
-          //   natural_question: object.id,
-          //   notes: object.message, // We use the notes area to display the message
-          // };
-
-          const { answers } = message;
-          // assign score = -1 if missing
-          answers.forEach((a) => {
-            if (!a.score) {
-              a.score = -1;
-            }
-          });
-
-          // answers.forEach((a) => {
-          //   a.result_graph.edge_list.forEach((edge) => {
-          //     if (!('id' in edge)) {
-          //       edge.id = `${edge.provided_by}(${edge.source_id}-(${edge.type})->${edge.target_id})`;
-          //     }
-          //   });
-          // });
-
-          // answers.forEach((a, i) => {
-          //   const answerNodeIds = new Set();
-          //   a.result_graph.node_list.forEach((n) => {
-          //     if (answerNodeIds.has(n.id)) {
-          //       console.log(`Answer ${i + 1} has multiple nodes with id ${n.id}. Future errors will result.`);
-          //     } else {
-          //       answerNodeIds.add(n.id);
-          //     }
-          //   });
-          // });
-
-          // const nodesIdSet = new Set();
-          // const edgesIdSet = new Set();
-          // // Parse answerset specific graph here
-          // // For each answer find new nodes and edges that haven't already been added
-          // const nodes = [];
-          // const edges = [];
-          // answers.forEach((a) => {
-          //   const g = a.result_graph;
-          //   g.node_list.forEach((node) => {
-          //     if (!nodesIdSet.has(node.id)) {
-          //       nodesIdSet.add(node.id);
-          //       nodes.push(node);
-          //     }
-          //   });
-          //   g.edge_list.forEach((edge) => {
-          //     const edgeId = edge.id;
-          //     if (!edgesIdSet.has(edgeId)) {
-          //       edgesIdSet.add(edgeId);
-          //       edges.push(edge);
-          //     }
-          //   });
-          // });
-          // // Package
-          // const answersetGraph = { node_list: nodes, edge_list: edges };
-
-          this.setState({
-            message,
-            isValid: true,
-          });
+          this.parseMessage(object);
         } catch (err) {
           console.log(err);
-          window.alert('Failed to load this Answerset file. Are you sure this is valid?');
+          // window.alert('Failed to load this Answerset file. Are you sure this is valid?');
+          this.setState({ hadError: true });
         }
       };
       fr.onerror = () => {
-        window.alert('Sorry but there was a problem uploading the file. The file may be invalid.');
-      }
+        // window.alert('Sorry but there was a problem uploading the file. The file may be invalid.');
+        this.setState({ hadError: true });
+      };
       fr.readAsText(file);
-
     });
   }
 
   renderLoading() {
     return (
-      <Loading />
+      <p />
     );
   }
   renderBodyUpload() {
     return (
       <Row>
         <Col md={12}>
+          {this.state.hadError &&
+            <Alert bsStyle="danger">
+              An error was encountered loading the requested file.
+            </Alert>
+          }
           <h1>
-            Robokop Answer Set Explorer (Uses new Message spec)
+            Answer Set Explorer
             <br />
             <small>
-              {'Use the Robokop Answerset UI with answer files create from other sources.'}
+              {'Explore answers and visualize knowledge graphs.'}
             </small>
           </h1>
           <Dropzone
-            onDrop={(acceptedFiles, rejectedFiles) => this.onDrop(acceptedFiles, rejectedFiles) }
+            onDrop={(acceptedFiles, rejectedFiles) => this.onDrop(acceptedFiles, rejectedFiles)}
             multiple={false}
             style={{
               width: '100%',
@@ -169,7 +146,7 @@ class SimpleViewer extends React.Component {
                 <FaCloudUpload />
               </h1>
               <h3>
-                Drag and drop your answer set file, or click to browse.
+                Drag and drop an answerset file, or click to browse.
               </h3>
             </div>
           </Dropzone>
@@ -184,9 +161,6 @@ class SimpleViewer extends React.Component {
           <h1>
             Loading Answers...
             <br />
-            <small>
-              Please Wait.
-            </small>
           </h1>
           <Loading />
         </Col>
@@ -200,11 +174,12 @@ class SimpleViewer extends React.Component {
         user={this.state.user}
         concepts={this.state.concepts}
         message={this.state.message}
+        omitHeader
       />
     );
   }
   renderLoaded() {
-    const { isValid, isReading } = this.state;
+    const { hasMessage, isReading } = this.state;
     return (
       <div>
         <Header
@@ -212,9 +187,9 @@ class SimpleViewer extends React.Component {
           user={this.state.user}
         />
         <Grid>
-          {!isValid && !isReading && this.renderBodyUpload()}
-          {!isValid && isReading && this.renderBodyReading()}
-          {isValid && this.renderBodyValid()}
+          {!hasMessage && !isReading && this.renderBodyUpload()}
+          {!hasMessage && isReading && this.renderBodyReading()}
+          {hasMessage && this.renderBodyValid()}
         </Grid>
         <Footer config={this.props.config} />
       </div>
