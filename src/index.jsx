@@ -2,9 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'mobx-react';
 
-import { ApolloProvider } from 'react-apollo';
-import ApolloClient, { InMemoryCache } from 'apollo-boost';
-
 // Import static css, image, and font assets so that they can be found by webpack.
 import 'bootstrap/dist/css/bootstrap.css'; // path search within node_modules
 import 'ag-grid/dist/styles/ag-grid.css';
@@ -36,11 +33,6 @@ window.jQuery = window.$ = $; // eslint-disable-line
 require('bootstrap');
 const config = require('../config.json');
 
-const graphQlClient = new ApolloClient({
-  uri: `http://${config.host}:5000/graphql`,
-  cache: new InMemoryCache(),
-});
-
 const robokop = {
   config,
   landing: () => {
@@ -61,11 +53,9 @@ const robokop = {
   },
   questionList: () => {
     ReactDOM.render(
-      <ApolloProvider client={graphQlClient}>
-        <QuestionList
-          config={config}
-        />
-      </ApolloProvider>,
+      <QuestionList
+        config={config}
+      />,
       document.getElementById('reactEntry'),
     );
   },

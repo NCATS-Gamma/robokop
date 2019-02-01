@@ -37,12 +37,12 @@ class QuestionListTableAgGrid extends React.Component {
     this.gridApi.setSortModel(sort);
   }
   onClick(event) {
-    // if (event.column.colId === 'latest_answerset_id') {
-    //   this.props.callbackAnswersetSelect(event.node.data, { id: event.node.data.latest_answerset_id });
-    // } else {
-    //   this.props.callbackQuestionSelect(event.node.data);
-    // }
-    this.props.callbackQuestionSelect(event.node.data);
+    if (event.column.colId === 'latestAnswersetId') {
+      this.props.callbackAnswersetSelect(event.node.data, { id: event.node.data.latestAnswersetId });
+    } else {
+      this.props.callbackQuestionSelect(event.node.data);
+    }
+    // this.props.callbackQuestionSelect(event.node.data);
   }
   onFilterTextChange(event) {
     this.setState({ quickFilterText: event.target.value });
@@ -55,7 +55,7 @@ class QuestionListTableAgGrid extends React.Component {
   }
   cellRendererAnswers(params) {
     let out = '';
-    if (params.data !== '' && params.data !== undefined && params.data !== null && 'id' in params.data && params.data.id && 'latest_answerset_id' in params.data && params.data.latest_answerset_id) {
+    if (params.data !== '' && params.data !== undefined && params.data !== null && 'id' in params.data && params.data.id && 'latestAnswersetId' in params.data && params.data.latestAnswersetId) {
       out = `<div style="
         display: table;
         width: 100%;
@@ -152,26 +152,26 @@ class QuestionListTableAgGrid extends React.Component {
                   //   suppressMenu: true,
                   //   width: 200,
                   // },
-                  // {
-                  //   headerName: '',
-                  //   field: 'isBusy',
-                  //   suppressMenu: true,
-                  //   cellRenderer: this.cellRendererBusy,
-                  //   width: 20,
-                  //   minWidth: 20,
-                  //   hide: false,
-                  //   cellClass: 'no-padding',
-                  // },
-                  // {
-                  //   headerName: '',
-                  //   field: 'latest_answerset_id',
-                  //   suppressMenu: true,
-                  //   cellRenderer: this.cellRendererAnswers,
-                  //   width: 20,
-                  //   minWidth: 20,
-                  //   hide: false,
-                  //   cellClass: 'no-padding',
-                  // },
+                  {
+                    headerName: '',
+                    field: 'isBusy',
+                    suppressMenu: true,
+                    cellRenderer: this.cellRendererBusy,
+                    width: 20,
+                    minWidth: 20,
+                    hide: false,
+                    cellClass: 'no-padding',
+                  },
+                  {
+                    headerName: '',
+                    field: 'latestAnswersetId',
+                    suppressMenu: true,
+                    cellRenderer: this.cellRendererAnswers,
+                    width: 20,
+                    minWidth: 20,
+                    hide: false,
+                    cellClass: 'no-padding',
+                  },
                 ]}
                 rowData={this.props.questions}
                 getRowClass={this.getRowClass}

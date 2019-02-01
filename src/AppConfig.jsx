@@ -59,6 +59,7 @@ class AppConfig {
     this.questionRefresh = this.questionRefresh.bind(this);
     this.questionFork = this.questionFork.bind(this);
     this.questionTasks = this.questionTasks.bind(this);
+    this.questionList = this.questionList.bind(this);
     this.taskStatus = this.taskStatus.bind(this);
     this.taskLog = this.taskLog.bind(this);
     this.taskStop = this.taskStop.bind(this);
@@ -111,6 +112,31 @@ class AppConfig {
       }
     }`;
     this.postRequest(this.apis.graphql, { query }, successFun, failureFun);
+  }
+  questionList(successFun, failtureFun) {
+    const query = `{
+      questions: allQuestionsList {
+        id
+        naturalQuestion
+        ownerId
+        notes
+        timestamp
+        tasks: tasksByQuestionIdList {
+          id
+          timestamp
+          startingTimestamp
+          endTimestamp
+          result
+        }
+        qgraphs: qgraphByQgraphId {
+          answersets: answersetsByQgraphIdList {
+            id
+            timestamp
+          }
+        }
+      }
+    }`;
+    this.postRequest(this.apis.graphql, { query }, successFun, failtureFun);
   }
   questionCreate(data, successFun, failureFun) {
     // Data must contain a complete specification for a new question

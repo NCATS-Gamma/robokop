@@ -1,25 +1,11 @@
 import React from 'react';
 import { Grid } from 'react-bootstrap';
-import { Query } from 'react-apollo';
-import { gql } from 'apollo-boost';
 
 import AppConfig from './AppConfig';
 import Loading from './components/Loading';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import QuestionListPres from './components/questionList/QuestionListPres';
-
-const QUERY_GET_QUESTIONS = gql`
-  {
-    questions: allQuestionsList {
-      id
-      naturalQuestion
-      ownerId
-      notes
-      timestamp
-    }
-  }
-`;
 
 class QuestionList extends React.Component {
   constructor(props) {
@@ -29,7 +15,10 @@ class QuestionList extends React.Component {
 
     this.state = {
       userReady: false,
+      dataReady: false,
       user: {},
+      questions: [],
+      hadError: false,
     };
 
     this.callbackQuestionNew = this.callbackQuestionNew.bind(this);
@@ -41,6 +30,16 @@ class QuestionList extends React.Component {
       user: this.appConfig.ensureUser(data),
       userReady: true,
     }));
+    this.appConfig.questionList(
+      (data) => {
+        console.log(data)
+        this.setState({ questions: data.data.questions, dataReady: true });
+      },
+      (err) => {
+        console.log(err);
+        this.setState({ hadError: true, dataReady: false });
+      },
+    );
   }
   callbackQuestionNew() {
     this.appConfig.redirect(this.appConfig.urls.questionDesign);
@@ -64,33 +63,24 @@ class QuestionList extends React.Component {
           config={this.props.config}
           user={this.state.user}
         />
-        <Query query={QUERY_GET_QUESTIONS}>
-          {({ loading, error, data }) => {
-            if (loading) {
-              // console.log('GraphQL is loading');
-              return <Loading />;
-            }
-
-            if (error) {
-              console.log('GraphQL error:', error);
-              return this.renderError();
-            }
-            // Good response
-            // console.log('GraphQL data:', data);
-            return (
-              <Grid>
-                <QuestionListPres
-                  loginUrl={this.appConfig.urls.login}
-                  callbackQuestionNew={this.callbackQuestionNew}
-                  callbackAnswersetSelect={(q, a) => this.appConfig.open(this.appConfig.urls.answerset(q.id, a.id))}
-                  callbackQuestionSelect={q => this.appConfig.open(this.appConfig.urls.question(q.id))}
-                  questions={data.questions}
-                  user={this.state.user}
-                />
-              </Grid>
-            );
-          }}
-        </Query>
+        {!this.state.dataReady && !this.state.hadError &&
+          <Loading />
+        }
+        {!this.state.dataReady && this.state.hadError &&
+          this.renderError()
+        }
+        {this.state.dataReady &&
+          <Grid>
+            <QuestionListPres
+              loginUrl={this.appConfig.urls.login}
+              callbackQuestionNew={this.callbackQuestionNew}
+              callbackAnswersetSelect={(q, a) => this.appConfig.open(this.appConfig.urls.answerset(q.id, a.id))}
+              callbackQuestionSelect={q => this.appConfig.open(this.appConfig.urls.question(q.id))}
+              questions={this.state.questions}
+              user={this.state.user}
+            />
+          </Grid>
+        }
         <Footer config={this.props.config} />
       </div>
     );
