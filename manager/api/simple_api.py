@@ -148,6 +148,12 @@ class Quick(Resource):
             schema:
                 type: string
             default: Message
+          - in: query
+            name: max_connectivity
+            description: Maximum number of edges into or out of nodes within the answer (0 for infinite)
+            schema:
+                type: integer
+            default: 0
         responses:
             200:
                 description: Answer set
@@ -191,9 +197,21 @@ class Quick(Resource):
             return f'output_format must be one of [{" ".join(output_formats)}]', 400
 
 
+        max_connectivity = request.args.get('max_connectivity', default=None)
+        if max_connectivity:
+            try:
+                max_connectivity = int(max_connectivity)
+            except ValueError:
+                return 'max_connectivity should be an integer', 400
+            except:
+                raise
+            if max_connectivity < 0:
+                max_connectivity = None
+
+
         logger.info('   Posting to Ranker...')
         response = requests.post(
-            f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/?max_results={max_results}&output_format={output_format}',
+            f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/?max_results={max_results}&output_format={output_format}&max_connectivity={max_connectivity}',
             json=question)
         polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
 
