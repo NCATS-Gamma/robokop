@@ -1,6 +1,6 @@
 {
     "name": "Gamma WF5 - $name$ ($identifier$)",
-    "natural_question": "WF5: $chem$ ($identifier$) to gene to phenotype association.",
+    "natural_question": "WF5: $name$ ($identifier$) to gene to phenotype association.",
     "machine_question": {
       "nodes": [
         {
