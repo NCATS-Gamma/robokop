@@ -62,7 +62,7 @@ class WF1MOD3(Resource):
                     {
                         "id": "n0",
                         "type": "disease",
-                        "curie": "MONDO:0005148"
+                        "curie": disease_curie
                     },
                     {
                         "id": "n1",
@@ -177,7 +177,7 @@ class WF1MOD3a(Resource):
                     {
                         "id": "n0",
                         "type": "disease",
-                        "curie": "MONDO:0005148"
+                        "curie": disease_curie
                     },
                     {
                         "id": "n1",
