@@ -105,7 +105,7 @@ class Expand(Resource):
             }
         }
         logger.info('Running the expand service by a call to robokop/quick')
-        predicate = request.args.get('predicate')
+        predicate = request.args.get('predicate', default=None)
         if predicate is not None:
             question['machine_question']['edges'][0]['type'] = predicate
         csv = request.args.get('csv', default='false')
