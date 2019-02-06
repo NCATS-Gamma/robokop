@@ -198,7 +198,6 @@ class Quick(Resource):
 
         max_connectivity = request.args.get('max_connectivity', default=None)
         
-        logger.debug(f'max_connectivity={max_connectivity}')
         if max_connectivity and isinstance(max_connectivity, str):
             if max_connectivity.lower() == 'none':
                 max_connectivity = None
