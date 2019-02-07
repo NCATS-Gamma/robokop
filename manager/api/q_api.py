@@ -20,12 +20,17 @@ from manager.user import get_user_by_email
 from manager.tasks import answer_question, update_kg
 from manager.util import getAuthData
 from manager.setup import api
+from manager.setup_db import engine
 import manager.logging_config
 import manager.api.definitions
 from manager.celery_monitor import get_messages
 
 logger = logging.getLogger(__name__)
 
+
+def log_qpool_status():
+    status = engine.pool.status()
+    logger.debug(status)
 
 class AnswersetAPI(Resource):
 
@@ -102,7 +107,11 @@ class AnswersetAPI(Resource):
             url = f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/knowledge_graph'
             
             response = requests.post(url, json=message)
+            if response.status_code >= 300:
+                return 'Trouble contacting the ranker, there is probably a problem with the neo4j database', 500
+
             message['knowledge_graph'] = response.json()
+        log_qpool_status()
         return message, 200
 
 api.add_resource(AnswersetAPI, '/a/<qid_aid>/')
@@ -142,7 +151,6 @@ class QuestionAPI(Resource):
                         schema:
                             type: string
         """
-        include_kg = request.args.get('include_kg', default=False)
         query = f"""{{
             question: questionById(id: "{question_id}") {{
                 id
@@ -163,6 +171,7 @@ class QuestionAPI(Resource):
             'natural_question': natural_question,
             'question_graph': question_graph
         }
+        log_qpool_status()
         return message, 200
 
     @auth_required('session', 'basic')
@@ -244,9 +253,9 @@ class QuestionAPI(Resource):
             mods['notes'] = request.json['notes']
         if 'natural_question' in request.json:
             mods['natural_question'] = request.json['natural_question']
-
+        
         modify_question_by_id(question_id, mods)
-
+        log_qpool_status()
         return "SUCCESS", 200
 
     @auth_required('session', 'basic')
@@ -387,7 +396,7 @@ class RefreshKG(Resource):
         if auth:
             user_email = auth.username
             user = get_user_by_email(user_email)
-            user_id = user['id']
+            # user_id = user['id']
         else:
             user_id = current_user.id
             user_email = current_user.email

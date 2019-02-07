@@ -17,17 +17,21 @@ from manager.logging_config import logger
 from manager.util import getAuthData
 from manager.tasks import celery
 from manager.task import get_task_by_id, TASK_TYPES
-
+from manager.setup_db import engine
 
 concept_map = {}
 try:
     with app.open_resource('api/concept_map.json') as map_file:
         concept_map = json.load(map_file)
-        logger.warning('Succesfully read concept_map.json')
+        logger.warning('Successfully read concept_map.json')
 except Exception as e:
     logger.error(
         'misc_api.py:: Could not '
         f'find/read concept_map.json - {e}')
+
+def log_qpool_status():
+    status = engine.pool.status()
+    logger.debug(status)
 
 class WF1MOD3(Resource):
     def get(self, disease_curie):
@@ -284,7 +288,6 @@ class TaskStatus(Resource):
         except:
             return 'Task not found', 404
 
-        logger.debug('got output')
         return task
 
     def delete(self, task_id):
@@ -371,6 +374,9 @@ class Concepts(Resource):
         bad_concepts =['NAME.DISEASE', 'NAME.PHENOTYPE', 'NAME.DRUG']
         concepts = [c for c in concepts if not c in bad_concepts]
         concepts.sort()
+
+        logger.debug('Fetched concepts')
+        log_qpool_status()
         return concepts
 
 api.add_resource(Concepts, '/concepts/')
@@ -560,6 +566,8 @@ class User(Resource):
                                     example: me@mydomain.edu
         """
         user = getAuthData()
+        logger.debug('Fetched user')
+        log_qpool_status()
         return user
 
 api.add_resource(User, '/user/')
