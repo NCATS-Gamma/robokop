@@ -329,7 +329,7 @@ class Question extends React.Component {
             () => {
               this.notificationSystem.addNotification({
                 title: 'Task Stopped',
-                message: 'Task succesfully stopped.',
+                message: 'Task successfully stopped.',
                 level: 'info',
                 position: 'tr',
                 dismissible: 'click',

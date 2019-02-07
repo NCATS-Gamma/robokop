@@ -119,7 +119,7 @@ class Activity extends React.Component {
             () => {
               this.notificationSystem.addNotification({
                 title: 'Task Stopped',
-                message: `Task ${task.id} for question ${task.questionId} succesfully stopped.`,
+                message: `Task ${task.id} for question ${task.questionId} successfully stopped.`,
                 level: 'info',
                 position: 'tr',
                 dismissible: 'click',
