@@ -88,6 +88,8 @@ class AnswersetTableSubComponent extends React.Component {
         concepts={this.props.concepts}
         layoutRandomSeed={Math.floor(Math.random() * 100)}
         callbackOnGraphClick={() => {}}
+        showSupport
+        omitEdgeLabel={false}
         height={350}
       />
     );

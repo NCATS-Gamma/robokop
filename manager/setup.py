@@ -1,19 +1,18 @@
+"""Set up Flask and flasgger."""
+
 import os
-import json
-import sys
-from contextlib import contextmanager
+import traceback
+import logging
 
 from flask import Flask, Blueprint
 from flask_mail import Mail
-from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from flasgger import Swagger
+import werkzeug
 
-from sqlalchemy import Column, Integer, ForeignKey, Table, String, create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from manager import logging_config
 
-Base = declarative_base()
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_folder='../pack', template_folder='../templates')
 # Set default static folder to point to parent static folder where all
@@ -21,24 +20,6 @@ app = Flask(__name__, static_folder='../pack', template_folder='../templates')
 app.config.from_pyfile('robokop_flask_config.py')
 
 mail = Mail(app)
-db = SQLAlchemy(app)
-
-# traditional sqlalchemy setup, for celery tasks
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-Base.metadata.bind = engine
-Session = sessionmaker(bind=engine)
-
-@contextmanager
-def session_scope():
-    session = Session()
-    try:
-        yield session
-        session.commit()
-    except:
-        session.rollback()
-        raise
-    finally:
-        session.close()
 
 api_blueprint = Blueprint('api', __name__, url_prefix='/api')
 api = Api(api_blueprint)
@@ -86,3 +67,17 @@ app.config['SWAGGER'] = {
 }
 
 swagger = Swagger(app, template=template, config=swagger_config)
+
+
+@app.errorhandler(Exception)
+def handle_error(ex):
+    """Handle all server errors."""
+    if isinstance(ex, werkzeug.exceptions.HTTPException):
+        raise ex
+    tb = traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)
+    logger.exception(ex)
+    # return tb[-1], 500
+    return "Internal server error. See the logs for details.", 500
+app.register_error_handler(500, handle_error)
+app.config['PROPAGATE_EXCEPTIONS'] = True
+app.url_map.strict_slashes = False

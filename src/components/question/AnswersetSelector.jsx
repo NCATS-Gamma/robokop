@@ -6,6 +6,7 @@ import GoArrowRight from 'react-icons/lib/go/arrow-right';
 import GoCircuitBoard from 'react-icons/lib/go/circuit-board';
 
 import Select from 'react-select';
+import { DropdownList } from 'react-widgets';
 import Loading from '../Loading';
 
 const _ = require('lodash');
@@ -15,6 +16,7 @@ class AnswersetSelector extends React.Component {
     super(props);
 
     this.state = {
+      answersets: [],
       selectedId: null,
       showOverlay: true,
     };
@@ -43,221 +45,82 @@ class AnswersetSelector extends React.Component {
   }
 
   getUpdatedState(props) {
-    let selectedId = null;
     const haveAnAnswerSet = props.answersets && Array.isArray(props.answersets) && props.answersets.length > 0;
     if (haveAnAnswerSet) {
-      // Find the newest answerset
-      let newest = props.answersets[0];
-      let newestDate = new Date(newest.datetime);
-      props.answersets.forEach((a) => {
-        const d = new Date(a.datetime);
-        if (d > newestDate) {
-          // JS Date object works with standard caomparator
-          newestDate = d;
-          newest = a;
+      const answersetDates = props.answersets.map((a) => {
+        let ts = a.timestamp;
+        if (!ts.endsWith('Z')) {
+          ts = `${ts}Z`;
         }
+        return new Date(ts);
       });
 
-      selectedId = newest.id;
+      const inds = Array.apply(null, Array(answersetDates.length)).map(() => {}); // eslint-disable-line
+      const sortingInds = (inds).map((v, i) => i);
+      sortingInds.sort((a, b) => (answersetDates[b] - answersetDates[a]));
+      const answersets = sortingInds.map(v => props.answersets[v]);
+
+      this.props.callbackOnSelect(answersets[0].id);
+
+      return { answersets, selectedId: answersets[0].id, showOverlay: false };
     }
-    return { selectedId, showOverlay: !haveAnAnswerSet };
+
+    return { answersets: [], selectedId: null, showOverlay: true };
   }
 
-  getMainContent() {
-    const answersetFilter = this.props.answersets.filter(a => a.id === this.state.selectedId);
-    // if (answersetFilter.length < 1) {
-    //   console.log('Answerset filter failure');
-    // }
-    // if (answersetFilter.length > 1) {
-    //   console.log('Duplicated Answerset IDs');
-    // }
-    const answerset = answersetFilter[0];
-
-    let ts = answerset.datetime;
-    if (!ts.endsWith('Z')) {
-      ts = `${ts}Z`;
-    }
-    const d = new Date(ts);
-    const timeString = d.toLocaleString();
-
-    let { message } = answerset;
-    if (message == null || message.length < 1) {
-      message = 'No Message Provided';
-    }
-    let { creator } = answerset;
-    if (creator === undefined || creator == null) {
-      creator = '';
-    }
-    return (
-      <div style={{ paddingTop: '5px' }}>
-        <Row>
-          <Col md={12}>
-            <h4>{creator}</h4>
-            <h5>{timeString}</h5>
-            <pre>
-              {message}
-            </pre>
-          </Col>
-        </Row>
-        <Row>
-          <Col md={4} mdOffset={4}>
-            <Button
-              bsStyle="primary"
-              bsSize="large"
-              style={{ minWidth: '150px' }}
-              // onClick={() => this.props.callbackAnswersetOpen(answerset.id)}
-              href={this.props.answersetUrl(answerset)}
-            >
-              Explore <GoArrowRight /> <GoCircuitBoard />
-            </Button>
-          </Col>
-        </Row>
-      </div>
-    );
-  }
   handleSelectorChange(selectedOption) {
-    this.setState({ selectedId: selectedOption.value });
+    this.setState({ selectedId: selectedOption.value }, () => this.props.callbackOnSelect(selectedOption.value));
   }
 
-  renderOverlay() {
-    return (
-      <div>
-        {this.props.initializerBusy &&
-          <div>
-            <h4>
-              Getting Initial Answers. Please Wait.
-            </h4>
-            <Loading />
-          </div>
-        }
-        {!this.props.initializerBusy && !(this.props.answerBusy || this.props.refreshBusy) &&
-          <div>
-            <Row>
-              <Col md={12}>
-                <h4>
-                  No answer sets available.
-                </h4>
-                <p>
-                  This may indicate a problem in the construction of the question, or a lack of available information.
-                </p>
-              </Col>
-            </Row>
-            <Row style={{ paddingTop: '10px' }}>
-              <Col md={4} mdOffset={4}>
-                <Button
-                  bsSize="large"
-                  alt="Get a New Answer Set"
-                  onClick={this.props.callbackAnswersetNew}
-                >
-                  Get New Answers
-                  <br />
-                  <GoPlaybackPlay />
-                </Button>
-              </Col>
-            </Row>
-          </div>
-        }
-        {!this.props.initializerBusy && (this.props.answerBusy || this.props.refreshBusy) &&
-          <div>
-            <Row>
-              <Col md={12}>
-                <h4>
-                  {this.props.answerBusy &&
-                    <span>
-                      We are working on getting new answers for this question. Please wait.
-                    </span>
-                  }
-                  {this.props.refreshBusy &&
-                    <span>
-                      We are working on updating the knowledge graph for this question. Please wait.
-                    </span>
-                  }
-                </h4>
-              </Col>
-            </Row>
-            <Loading />
-          </div>
-        }
-      </div>
-    );
-  }
-  renderStandard() {
-    const { showNewButton } = this.props;
-    const moreThanOne = this.props.answersets.length > 1;
-    const options = this.props.answersets.map((a) => {
-      let ts = a.datetime;
+  render() {
+    const options = this.state.answersets.map((a) => {
+      let ts = a.timestamp;
       if (!ts.endsWith('Z')) {
         ts = `${ts}Z`;
       }
       const d = new Date(ts);
       const timeString = d.toLocaleString();
 
-      let { creator } = a;
-      if (creator === undefined || creator == null) {
-        creator = '';
-      } else {
-        creator = ` - ${creator}`;
-      }
-      return { value: a.id, label: `${timeString} ${creator}` };
+      return { value: a.id, label: `${timeString}` };
     });
-    const disableNewButton = this.props.answerBusy || this.props.refreshBusy || this.props.initializerBusy;
+
     return (
-      <div>
+      <div style={{ minWidth: '300px' }}>
         <div id="answersetSelect" style={{ display: 'table', width: '100%' }}>
-          {!moreThanOne &&
-            <div>
-              <div style={{ display: 'table-cell', width: '100%' }}>
-                {`Answers from ${options[0].label}`}
-              </div>
+          <div style={{ display: 'table-row' }}>
+            <div style={{ display: 'table-cell', width: '100%' }}>
+              <DropdownList
+                data={options}
+                textField="label"
+                valueField="value"
+                onChange={this.handleSelectorChange}
+                value={this.state.selectedId}
+                disabled={options.length < 2}
+              />
             </div>
-          }
-          {moreThanOne &&
-            <div>
-              <div style={{ display: 'table-cell', width: '40%' }}>
-                {`${this.props.answersets.length} Different Answer Sets Available:`}
-              </div>
-              <div style={{ display: 'table-cell', width: '50%' }}>
-                <Select
-                  name="answerset-selector"
-                  value={this.state.selectedId}
-                  onChange={this.handleSelectorChange}
-                  options={options}
-                  clearable={false}
-                  searchable={false}
-                />
-              </div>
-            </div>
-          }
-          {showNewButton &&
-            <div style={{ display: 'table-cell', width: '34px' }}>
+          </div>
+          <div style={{ display: 'table-row' }}>
+            <div style={{ display: 'table-cell', width: '100%', textAlign: 'center', paddingTop: '10px' }}>
               <Button
-                bsSize="small"
-                style={{ padding: '5px 13px' }}
-                alt="Get a New Answer Set"
-                onClick={this.props.callbackAnswersetNew}
-                disabled={disableNewButton}
+                bsStyle="primary"
+                bsSize="large"
+                style={{ minWidth: '150px' }}
+                href={this.props.answersetUrl(this.state.answersets.filter(a => a.id === this.state.selectedId)[0])}
               >
-                <GoPlaybackPlay />
+                Explore <GoArrowRight /> <GoCircuitBoard />
               </Button>
             </div>
-          }
+          </div>
         </div>
-        {this.getMainContent()}
-      </div>
-    );
-  }
-  render() {
-    return (
-      <div>
-        {this.state.showOverlay &&
-          this.renderOverlay()
-        }
-        {!this.state.showOverlay &&
-          this.renderStandard()
-        }
       </div>
     );
   }
 }
+
+AnswersetSelector.defaultProps = {
+  question: {},
+  answersets: [],
+  callbackOnSelect: (selectedAnswersetId) => {},
+};
 
 export default AnswersetSelector;

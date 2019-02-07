@@ -25,6 +25,7 @@ def getAuthData():
     is_authenticated = current_user.is_authenticated
     is_active = current_user.is_active
     is_anonymous = current_user.is_anonymous
+    user_id = current_user.get_id()
     if is_anonymous:
         username = "Anonymous"
         is_admin = False
@@ -36,7 +37,8 @@ def getAuthData():
             'is_active': is_active,\
             'is_anonymous': is_anonymous,\
             'is_admin': is_admin,\
-            'username': username}
+            'username': username,\
+            'user_id': user_id}
 
 class DictLikeMixin():
     def init_from_args(self, *args, **kwargs):

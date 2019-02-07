@@ -94,30 +94,82 @@ class AnswersetStore {
       });
       qNodeIds.push(n.id);
     });
+    const qEdgeIds = [];
+    this.message.question_graph.edges.forEach((e) => {
+      qEdgeIds.push(e.id);
+    });
     const answers = [];
     this.message.answers.forEach((ans) => {
-      const ansObj = { score: ans.score, nodes: {}, id: ans.id };
+      const ansObj = { score: ans.score, nodes: {}, edges: {}, id: ans.id };
       qNodeIds.forEach((qNodeId) => {
-        let nodeListObj = { isSet: false };
-        if (!isObservableArray(ans.bindings[qNodeId])) { // This is not a set node
-          nodeListObj = { ...nodeListObj, ...toJS(this.getKgNode(ans.bindings[qNodeId])) };
+        const qNode = this.getQNode(qNodeId);
+        let nodeListObj = { type: qNode.type, isSet: false };
+        if (!isObservableArray(ans.node_bindings[qNodeId])) {
+          // This is not a set node
+          nodeListObj = { ...nodeListObj, ...toJS(this.getKgNode(ans.node_bindings[qNodeId])) };
         } else {
-          const qNode = this.getQNode(qNodeId);
+          // Set
           nodeListObj = { type: qNode.type, name: `Set: ${entityNameDisplay(qNode.type)}`, isSet: true };
-          nodeListObj.setNodes = ans.bindings[qNodeId].map(kgNodeId => toJS(this.getKgNode(kgNodeId)));
+          nodeListObj.setNodes = ans.node_bindings[qNodeId].map(kgNodeId => toJS(this.getKgNode(kgNodeId)));
         }
         ansObj.nodes[qNodeId] = nodeListObj;
+      });
+      qEdgeIds.forEach((qEdgeId) => {
+        let cEdgeIds = [];
+        if (!isObservableArray(ans.edge_bindings[qEdgeId])) { // Just a single id
+          cEdgeIds = [ans.edge_bindings[qEdgeId]];
+        } else { // we already have an array.
+          cEdgeIds = ans.edge_bindings[qEdgeId];
+        }
+
+        ansObj.edges[qEdgeId] = cEdgeIds.map(eid => toJS(this.getKgEdge(eid)));
       });
       answers.push(ansObj);
     });
     return toJS({ answers, headerInfo });
+  }
+  @computed get annotatedKnowledgeGraph() {
+    // KG nodes don't always have type
+    // If they don't we need to figure out which qNodes they most like correspond to
+    // Then check labels and use the corresponding type
+
+    const graph = this.message.knowledge_graph;
+
+    if (this.message.question_graph) {
+      const qNodes = this.message.question_graph.nodes;
+      const qNodeBindings = qNodes.map(q => q.id);
+
+      graph.nodes.forEach((n) => {
+        if (!('type' in n)) {
+          const qNodeCounts = qNodeBindings.map(() => 0);
+
+          this.message.answers.forEach((a) => {
+            // Go through answers and look for this node
+            Object.keys(a.node_bindings).forEach((key) => {
+              if (a.node_bindings[key] === n.id) {
+                // This answer lists this node as qNode: key
+                qNodeCounts[qNodeBindings.indexOf(key)] += 1;
+              }
+            });
+          });
+          // See what question node this was mapped to most
+          const maxCounts = qNodeCounts.reduce((m, val) => Math.max(m, val));
+          const qNodeIndex = qNodeCounts.indexOf(maxCounts);
+
+          // Use that Q Nodes Type
+          n.type = qNodes[qNodeIndex].type;
+        }
+      });
+    }
+
+    return toJS(graph);
   }
 
   // Returns subgraphViewer compatible format graph spec { node_list: {}, edge_list: {} }
   @computed get activeAnswerGraph() {
     const answer = this.message.answers[this.ansIdToIndMap.get(this.activeAnswerId)];
     const graph = { node_list: [], edge_list: [] };
-    const bindingsMap = new Map(Object.entries(answer.bindings));
+    const bindingsMap = new Map(Object.entries(answer.node_bindings));
     const qNodeIdsToSquash = [];
     const squashedKgNodeIdToQnodeId = new Map(); // Store mapping from kgNodeId to qNodeId for all squashed nodes
     // Process all Nodes in answer first. NOTE: nodeId is always kgNodeId except if it is squashed
@@ -152,12 +204,13 @@ class AnswersetStore {
         if (!isObservableArray(nodeObj) && !Array.isArray(nodeObj)) {
           nodeObj = [nodeObj];
         }
-        nodeObj.forEach(nObj => graph.node_list.push(_.cloneDeep(nObj)));
+        nodeObj.forEach(nObj => graph.node_list.push(_.cloneDeep(toJS(nObj))));
       }
     });
 
+    const bindingsMapEdges = new Map(Object.entries(answer.edge_bindings));
     // Process all Edges in answer after nodes
-    bindingsMap.forEach((val, keyId) => {
+    bindingsMapEdges.forEach((val, keyId) => {
       if (this.qEdgeIdToIndMap.has(keyId)) { // This is an edge
         const qEdge = this.getQEdge(keyId);
         // Force kgEdgeIds in answer to always be a list of kgEdgeId(s)
@@ -189,7 +242,7 @@ class AnswersetStore {
         if (!isObservableArray(edgeObj) && !Array.isArray(edgeObj)) {
           edgeObj = [edgeObj];
         }
-        edgeObj.forEach(eObj => graph.edge_list.push(_.cloneDeep(eObj)));
+        edgeObj.forEach(eObj => graph.edge_list.push(_.cloneDeep(toJS(eObj))));
       }
     });
     return graph;

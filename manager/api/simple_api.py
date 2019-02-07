@@ -7,6 +7,7 @@ import sys
 import json
 import time
 import re
+from uuid import uuid4
 import logging
 from datetime import datetime
 import requests
@@ -18,6 +19,50 @@ from flask_restful import Resource
 from manager.setup import api
 
 logger = logging.getLogger(__name__)
+
+view_storage_dir = f"{os.environ['ROBOKOP_HOME']}/uploads/"
+if not os.path.exists(view_storage_dir):
+    os.mkdir(view_storage_dir)
+
+output_formats = ['DENSE', 'MESSAGE', 'CSV', 'ANSWERS']
+
+def parse_args_output_format(req_args):
+    output_format = req_args.get('output_format', default=output_formats[1])
+    if output_format.upper() not in output_formats:
+        raise RuntimeError(f'output_format must be one of [{" ".join(output_formats)}]')
+    
+    return output_format
+
+def parse_args_max_results(req_args):
+    max_results = req_args.get('max_results', default=None)
+    max_results = max_results if max_results is not None else 250
+    return max_results
+
+def parse_args_max_connectivity(req_args):
+    max_connectivity = req_args.get('max_connectivity', default=None)
+    
+    if max_connectivity and isinstance(max_connectivity, str):
+        if max_connectivity.lower() == 'none':
+            max_connectivity = None
+        else:
+            try:
+                max_connectivity = int(max_connectivity)
+            except ValueError:
+                raise RuntimeError(f'max_connectivity should be an integer')
+            except:
+                raise
+            if max_connectivity < 0:
+                max_connectivity = None
+
+    return max_connectivity
+
+def parse_args_rebuild(req_args):
+    rebuild = request.args.get('rebuild', default='false')
+    
+    if not (rebuild.lower() in ['true', 'false']):
+        raise RuntimeError(f'rebuild must be "true" or "false"')
+
+    return rebuild.lower()
 
 class Expand(Resource):
     def get(self, type1, id1, type2):
@@ -53,15 +98,29 @@ class Expand(Resource):
                 type: string
             default: "disease_to_gene_association"
           - in: query
-            name: csv
-            schema:
-                type: boolean
-            default: false
-          - in: query
             name: rebuild
             schema:
                 type: boolean
             default: false
+          - in: query
+            name: output_format
+            description: Requested output format. DENSE, MESSAGE, CSV or ANSWERS
+            schema:
+                type: string
+            default: MESSAGE
+          - in: query
+            name: max_connectivity
+            description: Maximum number of edges into or out of nodes within the answer (0 for infinite, None for an adaptive procedure)
+            schema:
+                type: integer
+            default: None
+          - in: query
+            name: max_results
+            description: Maximum number of results to return. Provide -1 to indicate no maximum.
+            schema:
+                type: integer
+            default: 250
+
         responses:
             200:
                 description: answers
@@ -97,19 +156,24 @@ class Expand(Resource):
                 ]
             }
         }
-        logger.info('expand')
-        predicate = request.args.get('predicate')
+        logger.info('Running the expand service by a call to robokop/quick')
+        
+        predicate = request.args.get('predicate', default=None)
         if predicate is not None:
             question['machine_question']['edges'][0]['type'] = predicate
-        csv = request.args.get('csv', default='false')
-        question['rebuild'] = request.args.get('rebuild', default='false')
+
+        max_results = parse_args_max_results(request.args)
+        output_format = parse_args_output_format(request.args)
+        max_connectivity = parse_args_max_connectivity(request.args)
+
+        # Ger rebuild from request args
+        question['rebuild'] = parse_args_rebuild(request.args)
+
         response = requests.post(
-            f'http://manager:{os.environ["MANAGER_PORT"]}/api/simple/quick/?max_results=-1',
+            f'http://manager:{os.environ["MANAGER_PORT"]}/api/simple/quick/?max_results={max_results}&max_connectivity={max_connectivity}&output_format={output_format}',
             json=question)
         answerset = response.json()
-        if csv.upper() == 'TRUE':
-            node_names = [f"{a['nodes'][-1]['name']}({a['nodes'][-1]['id']})" if 'name' in a['nodes'][-1] else a['nodes'][-1]['id'] for a in answerset['answers']]
-            return node_names
+
         return answerset
 
 api.add_resource(Expand, '/simple/expand/<type1>/<id1>/<type2>')
@@ -130,6 +194,23 @@ class Quick(Resource):
             required: true
         parameters:
           - in: query
+            name: rebuild
+            schema:
+                type: boolean
+            default: false
+          - in: query
+            name: output_format
+            description: Requested output format. DENSE, MESSAGE, CSV or ANSWERS
+            schema:
+                type: string
+            default: MESSAGE
+          - in: query
+            name: max_connectivity
+            description: Maximum number of edges into or out of nodes within the answer (0 for infinite, None for an adaptive procedure)
+            schema:
+                type: integer
+            default: None
+          - in: query
             name: max_results
             description: Maximum number of results to return. Provide -1 to indicate no maximum.
             schema:
@@ -143,15 +224,18 @@ class Quick(Resource):
                         schema:
                             $ref: '#/definitions/Response'
         """
-        logger.info('quick')
+        logger.info('Answering Question Quickly')
         question = request.json
-        logger.info("quack")
+        
+        if not ('rebuild' in question):
+            question['rebuild'] = parse_args_rebuild(request.args)
+
         if ('rebuild' in question) and (str(question['rebuild']).upper() == 'TRUE'):
-            logger.info("rebuild")
+            logger.info("   Rebuilding")
             response = requests.post(
                 f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/',
                 json=request.json)
-            polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task id']}"
+            polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task_id']}"
 
             for _ in range(60 * 60):  # wait up to 1 hour
                 time.sleep(1)
@@ -166,18 +250,30 @@ class Quick(Resource):
             else:
                 raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
 
-            logger.info('Done updating KG. Answering question...')
+            logger.info('   Done updating KG.')
+        
+        logger.info('   Answering question...')
 
-        max_results = request.args.get('max_results')
-        max_results = max_results if max_results is not None else 250
+        max_results = parse_args_max_results(request.args)
+        output_format = parse_args_output_format(request.args)
+        max_connectivity = parse_args_max_connectivity(request.args)
+
+        logger.info('   Posting to Ranker...')
         response = requests.post(
-            f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/?max_results={max_results}',
+            f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/?max_results={max_results}&output_format={output_format}&max_connectivity={max_connectivity}',
             json=question)
+
+        if not isinstance(response.json(), dict):
+            logger.debug(response.json())
+            raise RuntimeError("The robokop ranker could not correctly initiate the task.")
+
         polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
 
         for _ in range(60 * 60):  # wait up to 1 hour
             time.sleep(1)
             response = requests.get(polling_url)
+            logger.info('   Ranker polled for status')
+            # logger.info(response.text)
             if response.status_code == 200:
                 if response.json()['status'] == 'FAILURE':
                     raise RuntimeError('Question answering failed.')
@@ -186,12 +282,90 @@ class Quick(Resource):
                 if response.json()['status'] == 'SUCCESS':
                     break
         else:
-            raise RuntimeError("Question answering has not completed after 1 hour. You may with to try the non-blocking API.")
+            raise RuntimeError("Question answering has not completed after 1 hour. You may want to try with the non-blocking API.")
 
-        answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{response.json()['task_id']}")
+        answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}/result")
+        logger.info('   Returning response')
+        # logger.info(answerset_json)
+
         return answerset_json.json()
 
 api.add_resource(Quick, '/simple/quick/')
+
+
+class View(Resource):
+    def post(self):
+        """
+        Upload an answerset for a question to view
+        ---
+        tags: [simple]
+        requestBody:
+            name: Answerset
+            description: The machine-readable question graph.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Message'
+            required: true
+        responses:
+            200:
+                description: A URL for further viewing
+        """
+        
+        logger.info('Recieving Answerset for storage and later viewing')
+        message = request.json
+        
+        # Save the message to archive folder
+        for _ in range(25):
+            try:
+                uid = str(uuid4())
+                this_file = os.path.join(view_storage_dir, f'{uid}.json')
+                with open(this_file, 'x') as answerset_file:
+                    logger.info('Saving Message')
+                    json.dump(message, answerset_file)
+                break
+            except:
+                logger.info('Error encountered writting file. Retrying')
+                pass
+        else:
+            logger.info('Error encountered writting file')
+            return "Failed to save resource. Internal server error", 500
+        
+        return uid, 200
+
+api.add_resource(View, '/simple/view/')
+
+class ViewResources(Resource):
+    def get(self, uid):
+        """
+        Retrieve a previously uploaded answerset
+        ---
+        tags: [simple]
+        responses:
+            200:
+                description: A URL for further viewing
+                application/json:
+                        schema:
+                            $ref: '#/components/schemas/Message'
+            400:
+                description: invalid uid
+        """
+        
+        logger.info('Retrieving Answerset from storage')
+        try:
+            this_file = os.path.join(view_storage_dir, f'{uid}.json')
+            if os.path.isfile(this_file):
+                logger.info(f'Reading {this_file}')
+                with open(this_file, 'r') as answerset_file:
+                    answerset = json.load(answerset_file)
+            else:
+                return "ID not found", 400
+        except:
+            return "Error fetching data for ID", 500
+
+        return answerset
+
+api.add_resource(ViewResources, '/simple/view/<uid>/')
 
 class SimilaritySearch(Resource):
     def get(self, type1, id1, type2, by_type):
@@ -235,16 +409,11 @@ class SimilaritySearch(Resource):
                 type: float
             default: 0.5
           - in: query
-            name: maxresults
+            name: max_results
             description: "The maximum number of results to return. Set to 0 to return all results."
             schema:
                 type: integer
-            default: 100
-          - in: query
-            name: csv
-            schema:
-                type: boolean
-            default: true
+            default: 250
           - in: query
             name: rebuild
             description: "Rebuild local knowledge graph for this similarity search"
@@ -272,7 +441,9 @@ class SimilaritySearch(Resource):
         #  default: false
         response = requests.post( f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/synonymize/{id1}/{type1}/' )
         sid1 = response.json()['id']
-        rebuild = request.args.get('rebuild', default = 'False')
+
+        rebuild = parse_args_rebuild(request.args)        
+        
         if rebuild.upper()=='TRUE':
             try:
                 question = {
@@ -313,7 +484,7 @@ class SimilaritySearch(Resource):
                     }
                 }
                 response = requests.post( f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question)
-                polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task id']}"
+                polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task_id']}"
 
                 for _ in range(60 * 60):  # wait up to 1 hour
                     time.sleep(1)
@@ -328,16 +499,16 @@ class SimilaritySearch(Resource):
                 else:
                     raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
 
-                logger.info('Rebuild completed, status', response.json()['status'])
+                logger.info(f'Rebuild completed, status: {response.json()["status"]}')
             except Exception as e:
                 logger.error(e)
         else:
-            logger.info("No rebuild")
+            logger.info("No rebuild requested during similarity")
 
         #Now we're ready to calculate sim
 
         sim_params = {'threshhold':request.args.get('threshhold', default = None),
-                      'maxresults':request.args.get('maxresults', default = None)}
+                      'max_results': parse_args_max_results(request.args)}
         sim_params = {k:v for k,v in sim_params.items() if v is not None}
         response = requests.get( f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/similarity/{type1}/{sid1}/{type2}/{by_type}', params=sim_params)
 
@@ -378,7 +549,7 @@ class EnrichedExpansion(Resource):
                                 description: "Number between 0 and 1 indicating the minimum similarity to return"
                                 type: number
                                 default: 0.5
-                            maxresults:
+                            max_results:
                                 description: "The maximum number of results to return. Set to 0 to return all results."
                                 type: integer
                                 default: 100
@@ -401,7 +572,7 @@ class EnrichedExpansion(Resource):
                                 default: false
                         example:
                             threshhold: 0.5
-                            maxresults: 100
+                            max_results: 100
                             identifiers: ["MONDO:0014683", "MONDO:0005737"]
                             include_descendants: false
                             rebuild: false
@@ -459,7 +630,7 @@ class EnrichedExpansion(Resource):
                         }
                     }
                     response = requests.post( f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/', json=question)
-                    polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task id']}"
+                    polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task_id']}"
 
                     for _ in range(60 * 60):  # wait up to 1 hour
                         time.sleep(1)
@@ -474,7 +645,7 @@ class EnrichedExpansion(Resource):
                     else:
                         raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
 
-                    logger.info('Rebuild completed, status', response.json()['status'])
+                    logger.info(f'Rebuild completed, status {response.json()["status"]}')
                 except Exception as e:
                     logger.error(e)
             else:
@@ -485,8 +656,8 @@ class EnrichedExpansion(Resource):
             threshhold = parameters['threshhold']
         else:
             threshhold = 0.05
-        if 'maxresults' in parameters:
-            maxresults = parameters['maxresults']
+        if 'max_results' in parameters:
+            maxresults = parameters['max_results']
         else:
             maxresults = 100
         if 'num_type1' in parameters:
@@ -495,7 +666,7 @@ class EnrichedExpansion(Resource):
             num_type1 = None
         params = {'identifiers':list(normed_identifiers),
                   'threshhold':threshhold,
-                  'maxresults':maxresults,
+                  'max_results':maxresults,
                   'num_type1':num_type1}
         response = requests.post( f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/enrichment/{type1}/{type2}',json=params)
         return response.json()

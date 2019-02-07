@@ -269,7 +269,8 @@ def standardize_edge(edge):
         'source_id': edge['source_id'],
         'target_id': edge['target_id'],
         'type': edge['type'],
-        'publications': edge['publications']
+        'publications': edge['publications'],
+        'num_publications': len(edge['publications']) + (edge['num_publications'] if 'num_publications' in edge else 0)
     }
     return output
 

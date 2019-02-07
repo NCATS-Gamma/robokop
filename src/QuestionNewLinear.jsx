@@ -153,9 +153,6 @@ class QuestionNewLinear extends React.Component {
   onSearch(input, nodeType) {
     return this.appConfig.questionNewSearch(input, nodeType);
   }
-  onValidate(postData) {
-    this.appConfig.questionNewValidate(postData);
-  }
   onTranslate(postData) {
     this.appConfig.questionNewTranslate(postData);
   }
@@ -283,7 +280,6 @@ class QuestionNewLinear extends React.Component {
             handleChangeMachineQuestion={this.handleChangeMachineQuestion}
             callbackCreate={this.onCreate}
             callbackSearch={this.onSearch}
-            callbackValidate={this.onValidate}
             callbackTranslate={this.onTranslate}
             callbackCancel={this.onCancel}
           />

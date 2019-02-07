@@ -26,6 +26,8 @@ class AnswersetGraph extends React.Component {
                   subgraph={this.props.answersetGraph}
                   concepts={this.props.concepts}
                   layoutRandomSeed={Math.floor(Math.random() * 100)}
+                  showSupport={false}
+                  omitEdgeLabel
                   callbackOnGraphClick={() => {}}
                 />
               }

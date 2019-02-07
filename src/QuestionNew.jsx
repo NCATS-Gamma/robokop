@@ -145,9 +145,10 @@ const GraphTitleButtons = ({
         className="btn btn-default"
         disabled={!isValidQuestion}
         title={isValidQuestion ? 'Submit question' : errorMsg}
+        onClick={onSubmitQuestion}
       >
         <span style={{ fontSize: '22px' }}>
-          <FaPaperPlaneO style={{ cursor: 'pointer' }} onClick={onSubmitQuestion} />
+          <FaPaperPlaneO style={{ cursor: 'pointer' }} />
         </span>
       </button>
       <button
@@ -162,7 +163,7 @@ const GraphTitleButtons = ({
               border: 'none',
             }}
           >
-            <FaUpload style={{ cursor: 'pointer' }} onClick={() => {}} />
+            <FaUpload style={{ cursor: 'pointer' }} /> {/* onClick={() => {}} */}
           </Dropzone>
         </span>
       </button>
@@ -171,18 +172,20 @@ const GraphTitleButtons = ({
         className="btn btn-default"
         disabled={!isValidQuestion}
         title={isValidQuestion ? 'Download Machine Question as JSON' : errorMsg}
+        onClick={onDownloadQuestion}
       >
         <span style={{ fontSize: '22px' }}>
-          <FaDownload style={{ cursor: 'pointer' }} onClick={onDownloadQuestion} />
+          <FaDownload style={{ cursor: 'pointer' }} />
         </span>
       </button>
       {/* Delete/ Reset Graph Button */}
       <button
         style={buttonStyles}
         className="btn btn-default"
+        onClick={onResetQuestion}
       >
         <span style={{ fontSize: '22px' }} title="Reset Machine Question editor">
-          <FaTrash style={{ cursor: 'pointer' }} onClick={onResetQuestion} />
+          <FaTrash style={{ cursor: 'pointer' }} />
         </span>
       </button>
     </div>

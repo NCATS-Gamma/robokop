@@ -190,79 +190,36 @@ class Task():
     ---
     type: object
     properties:
-        uuid:
+        id:
             type: string
-            example: "000481a4-0a42-41a3-8d82-f957aa0242cd"
-        name:
+            example: "543e7d71-2b71-43cd-b438-908e8ffda6a7"
+        type:
             type: string
             example: "manager.tasks.update_kg"
-        state:
+        initiator:
             type: string
-            example: "STARTED"
-        received:
-            type: number
-            example: 1527126644.7026913
-        sent:
-            type: number
-        started:
-            type: number
-            example: 1527127749.5369344
-        rejected:
-            type: number
-        succeeded:
-            type: number
-        failed:
-            type: number
-        retried:
-            type: number
-        revoked:
-            type: number
-        args:
-            type: string
-            example: "['e5762fc349dd4abd0145c41ac4d42f4c']"
-        kwargs:
-            type: string
-            example: "{'question_id': '3mrYX07S7E8D', 'user_email': 'patrick@covar.com'}"
-        eta:
-            type: number
-        expires:
-            type: number
-        retries:
-            type: integer
-            example: 0
-        result:
-            type: string
-        exception:
-            type: string
+            example: "someone@internet.com"
         timestamp:
-            type: number
-            example: 1527127749.5369344
-        runtime:
-            type: number
-        traceback:
             type: string
-        exchange:
+            description: Time stamp when the task was first submitted
+            example: "1982-10-18T05:30:00.12345"
+        startingTimestamp: 
             type: string
-        routing_key:
+            description: Time stamp when the task was started (pulled from the queue)
+            example: "1982-10-18T05:30:00.12345"
+        endTimestamp: 
             type: string
-        clock:
-            type: number
-            example: 250648
-        client:
+            description: Time stamp when the task was finished
+            example: "1982-10-18T05:30:00.12345"
+        questionId:
             type: string
-        root:
+            example: "a123e5bc-2b71-43cd-b438-908e8ffda6a7"
+            description: Identifier of the question this task corresponds to
+        result:
+            type: object
+            description: structure of results of the object, status and traceback information
+        remoteTaskId:
             type: string
-            example: "000481a4-0a42-41a3-8d82-f957aa0242cd"
-        root_id:
-            type: string
-            example: "000481a4-0a42-41a3-8d82-f957aa0242cd"
-        parent:
-            type: string
-        parent_id:
-            type: string
-        children:
-            type: array
-            example: []
     """
     pass
 
@@ -290,18 +247,18 @@ class Question():
         notes: "#ebola #q1"
         machine_question:
             nodes:
-              - id: 0
-                type: disease
+              - id: "n0"
+                type: "disease"
                 curie: "MONDO:0005737"
-              - id: 1
-                type: gene
-              - id: 2
-                type: genetic_condition
+              - id: "n1"
+                type: "gene"
+              - id: "n2"
+                type: "genetic_condition"
             edges:
-              - source_id: 0
-                target_id: 1
-              - source_id: 1
-                target_id: 2
+              - source_id: "n0"
+                target_id: "n1"
+              - source_id: "n1"
+                target_id: "n2"
     """
     pass
     
@@ -402,61 +359,6 @@ class Curie():
             type: string
             required: false
             example: "Ebola hemorrhagic fever"
-    """
-    pass
-
-@swagger.definition('Curie2')
-class Curie2():
-    """
-    Curie
-    ---
-    type: object
-    properties:
-        curie:
-            type: string
-            required: true
-            example: "MONDO:0008753"
-        label:
-            type: string
-            required: false
-            example: "Alkaptonuria"
-    """
-    pass
-
-@swagger.definition('Curie3')
-class Curie3():
-    """
-    Curie
-    ---
-    type: object
-    properties:
-        curie:
-            type: string
-            required: true
-            example: "MONDO:0000265"
-        label:
-            type: string
-            required: false
-            example: "Usher syndrome type 1"
-            
-    """
-    pass
-
-@swagger.definition('Curie4')
-class Curie4():
-    """
-    Curie
-    ---
-    type: object
-    properties:
-        curie:
-            type: string
-            required: true
-            example: "MONDO:0016484"
-        label:
-            type: string
-            required: false
-            example: "Usher syndrome type 2"
     """
     pass
 

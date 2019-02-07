@@ -1,0 +1,44 @@
+version: "3"
+services:
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_DB
+      - POSTGRES_PASSWORD
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+  graphql:
+    image: graphile/postgraphile
+    container_name: postgraphile
+    depends_on:
+      - postgres
+    environment:
+      - PGHOST=${POSTGRES_HOST}
+      - PGPORT=${POSTGRES_PORT}
+      - PGDATABASE=${POSTGRES_DB}
+      - PGUSER=${POSTGRES_USER}
+      - PGPASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "${GRAPHQL_PORT}:${GRAPHQL_PORT}"
+    command: postgraphile --port ${GRAPHQL_PORT} --watch --cors --simple-collections only --disable-default-mutations
+  manager:
+    container_name: manager
+    build:
+      context: .
+    env_file:
+      - ../../../shared/robokop.env
+    environment:
+      - ROBOKOP_HOME=/home/murphy
+      - CELERY_BROKER_URL=amqp://${BROKER_USER}:${BROKER_PASSWORD}@${BROKER_HOST}:${BROKER_PORT}/manager
+      - CELERY_RESULT_BACKEND=redis://:${RESULTS_PASSWORD}@${RESULTS_HOST}:${RESULTS_PORT}/${MANAGER_RESULTS_DB}
+      - SUPERVISOR_PORT=${MANAGER_SUPERVISOR_PORT}
+      - PYTHONPATH=/home/murphy/robokop
+    ports:
+      - "${MANAGER_PORT}:${MANAGER_PORT}"
+      - "${MANAGER_SUPERVISOR_PORT}:${MANAGER_SUPERVISOR_PORT}"
+    volumes:
+      - ../../../logs:/home/murphy/logs
+      - ../../../shared:/home/murphy/shared
+      - ../..:/home/murphy/robokop

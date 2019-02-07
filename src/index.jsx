@@ -18,16 +18,9 @@ import QuestionNewLinear from './QuestionNewLinear';
 import Question from './Question';
 import QuestionList from './QuestionList';
 import Answerset from './Answerset';
-import Workflow from './Workflow';
-import AnswersetApp from './AnswersetApp';
-import MessageAnswersetApp from './MessageAnswersetApp';
-import Comparison from './Comparison';
 import Activity from './Activity';
-import Search from './Search';
 import MultiSearch from './MultiSearch';
-import Simple from './Simple';
-import Flowbokop from './Flowbokop';
-import FlowbokopStore from './stores/flowbokopStore';
+import SimpleViewer from './SimpleViewer';
 import NewQuestionStore from './stores/newQuestionStore';
 
 // Our actual CSS and other images etc.
@@ -121,53 +114,12 @@ const robokop = {
       document.getElementById('reactEntry'),
     );
   },
-  workflow: () => {
+  simpleView: (id) => {
     ReactDOM.render(
-      <Workflow
+      <SimpleViewer
         config={config}
+        id={id}
       />,
-      document.getElementById('reactEntry'),
-    );
-  },
-  app_answerset: () => {
-    ReactDOM.render(
-      <AnswersetApp
-        config={config}
-      />,
-      document.getElementById('reactEntry'),
-    );
-  },
-  app_msg_answerset: () => {
-    ReactDOM.render(
-      <MessageAnswersetApp
-        config={config}
-      />,
-      document.getElementById('reactEntry'),
-    );
-  },
-  app_comparison: () => {
-    ReactDOM.render(
-      <Comparison
-        config={config}
-      />,
-      document.getElementById('reactEntry'),
-    );
-  },
-  simple: () => {
-    ReactDOM.render(
-      <Simple
-        config={config}
-      />,
-      document.getElementById('reactEntry'),
-    );
-  },
-  flowbokop: () => {
-    ReactDOM.render(
-      <Provider store={new FlowbokopStore()}>
-        <Flowbokop
-          config={config}
-        />
-      </Provider>,
       document.getElementById('reactEntry'),
     );
   },
