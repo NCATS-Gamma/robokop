@@ -1,9 +1,11 @@
 import React from 'react';
 
 import AnswersetSelector from './AnswersetSelector';
-import KnowledgeGraphViewer from './KnowledgeGraphViewer';
+// import KnowledgeGraphViewer from './KnowledgeGraphViewer';
+import SubGraphViewer from '../shared/SubGraphViewer';
 
 import AnswersetStore from './../../stores/messageAnswersetStore';
+import Loading from '../Loading';
 
 // const _ = require('lodash');
 
@@ -37,11 +39,15 @@ class AnswersetList extends React.Component {
       this.props.callbackFetchAnswerset(
         aid,
         (data) => {
-          // console.log('Fetched Answerset: ', data);
           const messagestore = new AnswersetStore(data);
 
           const answerset = data;
           const kg = messagestore.annotatedKnowledgeGraph;
+          kg.node_list = kg.nodes;
+          kg.edge_list = kg.edges;
+          delete kg.nodes;
+          delete kg.edges;
+
           this.setState({
             loadingAnswerset: false,
             loadededAnswerset: answerset,
@@ -63,7 +69,7 @@ class AnswersetList extends React.Component {
   }
 
   getHeight() {
-    const h = $(window).height() - 50;
+    const h = $(window).height() - 350;
     return `${h}px`;
   }
   getWidth() {
@@ -93,13 +99,33 @@ class AnswersetList extends React.Component {
             callbackOnSelect={aid => this.onAnswersetSelect(aid)}
           />
         </div>
-        <KnowledgeGraphViewer
-          height={this.getHeight()}
-          width={this.getWidth()}
-          concepts={this.props.concepts}
-          graph={this.state.loadedKnowledgeGraph}
-          loading={this.state.loadingAnswerset}
-        />
+        <div
+          style={{
+            height: this.getHeight(),
+            maxHeight: this.getHeight(),
+            width: this.getWidth(),
+            maxWidth: this.getWidth(),
+          }}
+        >
+          {this.state.loadingAnswerset &&
+            <div>
+              <Loading
+                message={<p style={{ textAlign: 'center' }}>Loading Knowledge Graph</p>}
+              />
+            </div>
+          }
+          {this.state.loadededAnswerset &&
+            <SubGraphViewer
+              subgraph={this.state.loadedKnowledgeGraph}
+              concepts={this.props.concepts}
+              layoutRandomSeed={Math.floor(Math.random() * 100)}
+              showSupport={false}
+              height={this.getHeight()}
+              omitEdgeLabel
+              callbackOnGraphClick={() => {}}
+            />
+          }
+        </div>
       </div>
     );
   }
