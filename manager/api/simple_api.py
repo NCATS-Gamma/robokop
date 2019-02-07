@@ -24,7 +24,45 @@ view_storage_dir = f"{os.environ['ROBOKOP_HOME']}/uploads/"
 if not os.path.exists(view_storage_dir):
     os.mkdir(view_storage_dir)
 
-output_formats = ['APIStandard', 'Message', 'Answers']
+output_formats = ['DENSE', 'MESSAGE', 'CSV', 'ANSWERS']
+
+def parse_args_output_format(req_args):
+    output_format = req_args.get('output_format', default=output_formats[1])
+    if output_format.upper() not in output_formats:
+        raise RuntimeError(f'output_format must be one of [{" ".join(output_formats)}]')
+    
+    return output_format
+
+def parse_args_max_results(req_args):
+    max_results = req_args.get('max_results', default=None)
+    max_results = max_results if max_results is not None else 250
+    return max_results
+
+def parse_args_max_connectivity(req_args):
+    max_connectivity = req_args.get('max_connectivity', default=None)
+    
+    if max_connectivity and isinstance(max_connectivity, str):
+        if max_connectivity.lower() == 'none':
+            max_connectivity = None
+        else:
+            try:
+                max_connectivity = int(max_connectivity)
+            except ValueError:
+                raise RuntimeError(f'max_connectivity should be an integer')
+            except:
+                raise
+            if max_connectivity < 0:
+                max_connectivity = None
+
+    return max_connectivity
+
+def parse_args_rebuild(req_args):
+    rebuild = request.args.get('rebuild', default='false')
+    
+    if not (rebuild.lower() in ['true', 'false']):
+        raise RuntimeError(f'rebuild must be "true" or "false"')
+
+    return rebuild.lower()
 
 class Expand(Resource):
     def get(self, type1, id1, type2):
@@ -60,15 +98,29 @@ class Expand(Resource):
                 type: string
             default: "disease_to_gene_association"
           - in: query
-            name: csv
-            schema:
-                type: boolean
-            default: false
-          - in: query
             name: rebuild
             schema:
                 type: boolean
             default: false
+          - in: query
+            name: output_format
+            description: Requested output format. DENSE, MESSAGE, CSV or ANSWERS
+            schema:
+                type: string
+            default: MESSAGE
+          - in: query
+            name: max_connectivity
+            description: Maximum number of edges into or out of nodes within the answer (0 for infinite, None for an adaptive procedure)
+            schema:
+                type: integer
+            default: None
+          - in: query
+            name: max_results
+            description: Maximum number of results to return. Provide -1 to indicate no maximum.
+            schema:
+                type: integer
+            default: 250
+
         responses:
             200:
                 description: answers
@@ -105,18 +157,23 @@ class Expand(Resource):
             }
         }
         logger.info('Running the expand service by a call to robokop/quick')
+        
         predicate = request.args.get('predicate', default=None)
         if predicate is not None:
             question['machine_question']['edges'][0]['type'] = predicate
-        csv = request.args.get('csv', default='false')
-        question['rebuild'] = request.args.get('rebuild', default='false')
+
+        max_results = parse_args_max_results(request.args)
+        output_format = parse_args_output_format(request.args)
+        max_connectivity = parse_args_max_connectivity(request.args)
+
+        # Ger rebuild from request args
+        question['rebuild'] = parse_args_rebuild(request.args)
+
         response = requests.post(
-            f'http://manager:{os.environ["MANAGER_PORT"]}/api/simple/quick/?max_results=-1',
+            f'http://manager:{os.environ["MANAGER_PORT"]}/api/simple/quick/?max_results={max_results}&max_connectivity={max_connectivity}&output_format={output_format}',
             json=question)
         answerset = response.json()
-        if csv.upper() == 'TRUE':
-            node_names = [f"{a['nodes'][-1]['name']}({a['nodes'][-1]['id']})" if 'name' in a['nodes'][-1] else a['nodes'][-1]['id'] for a in answerset['answers']]
-            return node_names
+
         return answerset
 
 api.add_resource(Expand, '/simple/expand/<type1>/<id1>/<type2>')
@@ -137,23 +194,28 @@ class Quick(Resource):
             required: true
         parameters:
           - in: query
+            name: rebuild
+            schema:
+                type: boolean
+            default: false
+          - in: query
+            name: output_format
+            description: Requested output format. DENSE, MESSAGE, CSV or ANSWERS
+            schema:
+                type: string
+            default: MESSAGE
+          - in: query
+            name: max_connectivity
+            description: Maximum number of edges into or out of nodes within the answer (0 for infinite, None for an adaptive procedure)
+            schema:
+                type: integer
+            default: None
+          - in: query
             name: max_results
             description: Maximum number of results to return. Provide -1 to indicate no maximum.
             schema:
                 type: integer
             default: 250
-          - in: query
-            name: output_format
-            description: Requested output format. APIStandard or Message
-            schema:
-                type: string
-            default: Message
-          - in: query
-            name: max_connectivity
-            description: Maximum number of edges into or out of nodes within the answer (0 for infinite)
-            schema:
-                type: integer
-            default: 0
         responses:
             200:
                 description: Answer set
@@ -165,6 +227,9 @@ class Quick(Resource):
         logger.info('Answering Question Quickly')
         question = request.json
         
+        if not ('rebuild' in question):
+            question['rebuild'] = parse_args_rebuild(request.args)
+
         if ('rebuild' in question) and (str(question['rebuild']).upper() == 'TRUE'):
             logger.info("   Rebuilding")
             response = requests.post(
@@ -189,29 +254,9 @@ class Quick(Resource):
         
         logger.info('   Answering question...')
 
-        max_results = request.args.get('max_results', default=None)
-        max_results = max_results if max_results is not None else 250
-
-        output_format = request.args.get('output_format', default=output_formats[1])
-        if output_format not in output_formats:
-            return f'output_format must be one of [{" ".join(output_formats)}]', 400
-
-        max_connectivity = request.args.get('max_connectivity', default=None)
-        
-        if max_connectivity and isinstance(max_connectivity, str):
-            if max_connectivity.lower() == 'none':
-                max_connectivity = None
-            else:
-                try:
-                    max_connectivity = int(max_connectivity)
-                except ValueError:
-                    logger.debug(max_connectivity)
-                    return 'max_connectivity should be an integer', 400
-                except:
-                    raise
-                if max_connectivity < 0:
-                    max_connectivity = None
-
+        max_results = parse_args_max_results(request.args)
+        output_format = parse_args_output_format(request.args)
+        max_connectivity = parse_args_max_connectivity(request.args)
 
         logger.info('   Posting to Ranker...')
         response = requests.post(
@@ -269,8 +314,7 @@ class View(Resource):
         
         logger.info('Recieving Answerset for storage and later viewing')
         message = request.json
-        logger.info('Got message')
-
+        
         # Save the message to archive folder
         for _ in range(25):
             try:
@@ -365,16 +409,11 @@ class SimilaritySearch(Resource):
                 type: float
             default: 0.5
           - in: query
-            name: maxresults
+            name: max_results
             description: "The maximum number of results to return. Set to 0 to return all results."
             schema:
                 type: integer
-            default: 100
-          - in: query
-            name: csv
-            schema:
-                type: boolean
-            default: true
+            default: 250
           - in: query
             name: rebuild
             description: "Rebuild local knowledge graph for this similarity search"
@@ -402,7 +441,9 @@ class SimilaritySearch(Resource):
         #  default: false
         response = requests.post( f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/synonymize/{id1}/{type1}/' )
         sid1 = response.json()['id']
-        rebuild = request.args.get('rebuild', default = 'False')
+
+        rebuild = parse_args_rebuild(request.args)        
+        
         if rebuild.upper()=='TRUE':
             try:
                 question = {
@@ -462,12 +503,12 @@ class SimilaritySearch(Resource):
             except Exception as e:
                 logger.error(e)
         else:
-            logger.info("No rebuild")
+            logger.info("No rebuild requested during similarity")
 
         #Now we're ready to calculate sim
 
         sim_params = {'threshhold':request.args.get('threshhold', default = None),
-                      'maxresults':request.args.get('maxresults', default = None)}
+                      'max_results': parse_args_max_results(request.args)}
         sim_params = {k:v for k,v in sim_params.items() if v is not None}
         response = requests.get( f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/similarity/{type1}/{sid1}/{type2}/{by_type}', params=sim_params)
 
@@ -508,7 +549,7 @@ class EnrichedExpansion(Resource):
                                 description: "Number between 0 and 1 indicating the minimum similarity to return"
                                 type: number
                                 default: 0.5
-                            maxresults:
+                            max_results:
                                 description: "The maximum number of results to return. Set to 0 to return all results."
                                 type: integer
                                 default: 100
@@ -531,7 +572,7 @@ class EnrichedExpansion(Resource):
                                 default: false
                         example:
                             threshhold: 0.5
-                            maxresults: 100
+                            max_results: 100
                             identifiers: ["MONDO:0014683", "MONDO:0005737"]
                             include_descendants: false
                             rebuild: false
@@ -615,8 +656,8 @@ class EnrichedExpansion(Resource):
             threshhold = parameters['threshhold']
         else:
             threshhold = 0.05
-        if 'maxresults' in parameters:
-            maxresults = parameters['maxresults']
+        if 'max_results' in parameters:
+            maxresults = parameters['max_results']
         else:
             maxresults = 100
         if 'num_type1' in parameters:
@@ -625,7 +666,7 @@ class EnrichedExpansion(Resource):
             num_type1 = None
         params = {'identifiers':list(normed_identifiers),
                   'threshhold':threshhold,
-                  'maxresults':maxresults,
+                  'max_results':maxresults,
                   'num_type1':num_type1}
         response = requests.post( f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/enrichment/{type1}/{type2}',json=params)
         return response.json()
