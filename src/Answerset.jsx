@@ -176,7 +176,9 @@ class Answerset extends React.Component {
           user={this.state.user}
         />
         {isLoading &&
-          <Loading />
+          <Loading
+            message={<p style={{ textAlign: 'center' }}>Loading Answerset</p>}
+          />
         }
         {!isLoading &&
           <Grid>
