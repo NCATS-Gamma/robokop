@@ -113,7 +113,7 @@ class Expand(Resource):
             description: Maximum number of edges into or out of nodes within the answer (0 for infinite, None for an adaptive procedure)
             schema:
                 type: integer
-            default: None
+            default: 0
           - in: query
             name: max_results
             description: Maximum number of results to return. Provide -1 to indicate no maximum.
@@ -209,7 +209,7 @@ class Quick(Resource):
             description: Maximum number of edges into or out of nodes within the answer (0 for infinite, None for an adaptive procedure)
             schema:
                 type: integer
-            default: None
+            default: 0
           - in: query
             name: max_results
             description: Maximum number of results to return. Provide -1 to indicate no maximum.
@@ -536,7 +536,7 @@ class EnrichedExpansion(Resource):
             schema:
                 type: string
             required: true
-            default: "disease"
+            default: "phenotypic_feature"
         requestBody:
             name: all_the_things
             description: "This should probably be a schema object"
@@ -573,7 +573,7 @@ class EnrichedExpansion(Resource):
                         example:
                             threshhold: 0.5
                             max_results: 100
-                            identifiers: ["MONDO:0014683", "MONDO:0005737"]
+                            identifiers: ["MONDO:0005147", "MONDO:0005148"]
                             include_descendants: false
                             rebuild: false
         responses:
