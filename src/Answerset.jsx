@@ -6,9 +6,8 @@ import AppConfig from './AppConfig';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Loading from './components/Loading';
-import AnswersetPres from './components/answerset/AnswersetPres';
+import MessageAnswersetPres from './components/answerset/MessageAnswersetPres';
 
-const shortid = require('shortid');
 const _ = require('lodash');
 
 class Answerset extends React.Component {
@@ -19,20 +18,23 @@ class Answerset extends React.Component {
 
     this.state = {
       dataReady: false,
+      questionReady: false,
       userReady: false,
       conceptsReady: false,
       isValid: false,
       user: {},
-      answerset: {},
-      answers: [],
-      answerCount: null,
-      answersetGraph: {},
-      answersetFeedback: [],
       answerId: [],
       concepts: [],
+      owner: null,
+      message: {},
+      question: {},
+      questionId: null,
+      answersets: [],
+      answersetFeedback: [], // Currently unused
     };
 
     this.callbackFeedbackSubmit = this.callbackFeedbackSubmit.bind(this);
+    this.callbackQuestionUpdateMeta = this.callbackQuestionUpdateMeta.bind(this);
     this.handleAnswerSelect = this.handleAnswerSelect.bind(this);
     this.handleNoAnswerSelect = this.handleNoAnswerSelect.bind(this);
   }
@@ -43,50 +45,10 @@ class Answerset extends React.Component {
     this.appConfig.answersetData(
       this.props.id,
       (data) => {
-        const answers = _.cloneDeep(data.answerset.result_list);
-
-        answers.forEach((a) => {
-          a.result_graph.edge_list.forEach((edge) => {
-            if (!('id' in edge)) {
-              edge.id = `${edge.provided_by}(${edge.source_id}-(${edge.type})->${edge.target_id})`;
-            }
-          });
-        });
-
-        const nodesIdSet = new Set();
-        const edgesIdSet = new Set();
-        // Parse answerset specific graph here
-        // For each answer find new nodes and edges that haven't already been added
-        const nodes = [];
-        const edges = [];
-        answers.forEach((a) => {
-          const g = a.result_graph;
-          g.node_list.forEach((node) => {
-            if (!nodesIdSet.has(node.id)) {
-              nodesIdSet.add(node.id);
-              nodes.push(node);
-            }
-          });
-          g.edge_list.forEach((edge) => {
-            const edgeId = edge.id;
-            if (!edgesIdSet.has(edgeId)) {
-              edgesIdSet.add(edgeId);
-              edges.push(edge);
-            }
-          });
-        });
-        // Package
-        const answersetGraph = { node_list: nodes, edge_list: edges };
+        const message = data;
 
         this.setState({
-          question: data.question,
-          answerset: data.answerset,
-          answers,
-          answerCount: data.answer_num,
-          answersetGraph,
-          answersetFeedback: data.feedback,
-          otherAnswersets: data.other_answersets,
-          otherQuestions: data.other_questions,
+          message,
           dataReady: true,
           isValid: true,
           answerId: this.props.answerId,
@@ -98,7 +60,31 @@ class Answerset extends React.Component {
           dataReady: true,
           isValid: false,
         });
-      }
+      },
+    );
+    const qid = this.props.id.split('_')[0];
+    this.appConfig.questionData(
+      qid,
+      (data) => {
+        const { question } = data.data;
+        question.machine_question = JSON.parse(question.machine_question.body);
+        const { answersets } = question.question_graph;
+
+        this.setState({
+          questionId: qid,
+          owner: question.ownerId,
+          question,
+          answersets,
+          questionReady: true,
+        });
+      },
+      (err) => {
+        console.log(err);
+        this.setState({
+          questionReady: true,
+          isValid: false,
+        });
+      },
     );
     this.appConfig.user(data => this.setState({
       user: this.appConfig.ensureUser(data),
@@ -110,6 +96,10 @@ class Answerset extends React.Component {
         conceptsReady: true,
       });
     });
+  }
+
+  callbackQuestionUpdateMeta(newMeta, fun) {
+    this.appConfig.questionUpdateMeta(this.state.questionId, newMeta, fun);
   }
 
   callbackFeedbackSubmit(newPartialFeedback) {
@@ -149,9 +139,9 @@ class Answerset extends React.Component {
     this.appConfig.replaceUrl('Robokop - Answers', this.appConfig.urls.answerset(this.state.question.id, this.state.answerset.id));
     // this.setState({ answerId: [] });
   }
-  renderLoading() {
+  renderLoadingUser() {
     return (
-      <Loading />
+      <p />
     );
   }
   renderInvalid() {
@@ -177,57 +167,53 @@ class Answerset extends React.Component {
       </div>
     );
   }
-  renderLoaded() {
-    const isAuth = this.state.user.is_authenticated;
+  renderLoadedUser(isLoading) {
+    // const isAuth = this.state.user.is_authenticated; // Previously used to enable feedback, maybe one day
     return (
       <div>
         <Header
           config={this.props.config}
           user={this.state.user}
         />
-        <Grid>
-          {!this.state.isValid &&
-            this.renderInvalid()
-          }
-          {this.state.isValid &&
-            <AnswersetPres
-              user={this.state.user}
-              question={this.state.question}
-              answerset={this.state.answerset}
-              answerId={this.state.answerId}
-              answers={this.state.answers}
-              answerCount={this.state.answerCount}
-              answersetGraph={this.state.answersetGraph}
-              answersetFeedback={this.state.answersetFeedback}
-              concepts={this.state.concepts}
-              otherQuestions={this.state.otherQuestions}
-              otherAnswersets={this.state.otherAnswersets}
-              enableUrlChange
-              enableQuestionSelect
-              enableFeedbackSubmit={isAuth}
-              enableFeedbackView={isAuth}
-              callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
-              callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
-              callbackAnswerSelected={this.handleAnswerSelect}
-              urlQuestion={q => this.appConfig.urls.question(q.id)}
-              urlAnswerset={a => this.appConfig.urls.answerset(this.state.question.id, a.id)}
-              callbackNoAnswerSelected={this.handleNoAnswerSelect}
-              enabledAnswerLink
-              getAnswerUrl={answer => this.appConfig.urls.answer(this.state.question.id, this.state.answerset.id, answer.id)}
-              callbackFeedbackSubmit={this.callbackFeedbackSubmit}
-            />
-          }
-        </Grid>
+        {isLoading &&
+          <Loading
+            message={<p style={{ textAlign: 'center' }}>Loading Answerset</p>}
+          />
+        }
+        {!isLoading &&
+          <Grid>
+            {!this.state.isValid &&
+              this.renderInvalid()
+            }
+            {this.state.isValid &&
+              <MessageAnswersetPres
+                user={this.state.user}
+                question={this.state.question}
+                message={this.state.message}
+                answerId={this.state.answerId}
+                concepts={this.state.concepts}
+                enableQuestionSelect
+                enableQuestionEdit
+                callbackQuestionUpdateMeta={this.callbackQuestionUpdateMeta}
+                callbackAnswersetSelect={a => this.appConfig.redirect(this.appConfig.urls.answerset(this.state.question.id, a.id))}
+                callbackQuestionSelect={q => this.appConfig.redirect(this.appConfig.urls.question(q.id))}
+                urlQuestion={q => this.appConfig.urls.question(q.id)}
+                urlAnswerset={a => this.appConfig.urls.answerset(this.state.question.id, a.id)}
+                // callbackFeedbackSubmit={this.callbackFeedbackSubmit}
+              />
+            }
+          </Grid>
+        }
         <Footer config={this.props.config} />
       </div>
     );
   }
   render() {
-    const ready = this.state.dataReady && this.state.userReady && this.state.conceptsReady;
+    const ready = this.state.userReady && this.state.conceptsReady;
     return (
       <div>
-        {!ready && this.renderLoading()}
-        {ready && this.renderLoaded()}
+        {!ready && this.renderLoadingUser()}
+        {ready && this.renderLoadedUser(!(this.state.dataReady && this.state.questionReady))}
       </div>
     );
   }

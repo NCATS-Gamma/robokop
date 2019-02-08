@@ -32,16 +32,17 @@ class QuestionListTableAgGrid extends React.Component {
 
     const sort = [
       { colId: 'isUserOwned', sort: 'desc' },
-      { colId: 'latest_answerset_timestamp', sort: 'desc' },
+      // { colId: 'latest_answerset_timestamp', sort: 'desc' },
     ];
     this.gridApi.setSortModel(sort);
   }
   onClick(event) {
-    if (event.column.colId === 'latest_answerset_id') {
-      this.props.callbackAnswersetSelect(event.node.data, { id: event.node.data.latest_answerset_id });
+    if (event.column.colId === 'latestAnswersetId') {
+      this.props.callbackAnswersetSelect(event.node.data, { id: event.node.data.latestAnswersetId });
     } else {
       this.props.callbackQuestionSelect(event.node.data);
     }
+    // this.props.callbackQuestionSelect(event.node.data);
   }
   onFilterTextChange(event) {
     this.setState({ quickFilterText: event.target.value });
@@ -54,7 +55,7 @@ class QuestionListTableAgGrid extends React.Component {
   }
   cellRendererAnswers(params) {
     let out = '';
-    if (params.data !== '' && params.data !== undefined && params.data !== null && 'id' in params.data && params.data.id && 'latest_answerset_id' in params.data && params.data.latest_answerset_id) {
+    if (params.data !== '' && params.data !== undefined && params.data !== null && 'id' in params.data && params.data.id && 'latestAnswersetId' in params.data && params.data.latestAnswersetId) {
       out = `<div style="
         display: table;
         width: 100%;
@@ -135,22 +136,22 @@ class QuestionListTableAgGrid extends React.Component {
                   },
                   {
                     headerName: 'Question',
-                    field: 'natural_question',
+                    field: 'naturalQuestion',
                     suppressMenu: true,
-                    width: 300,
+                    width: 500,
                   },
-                  {
-                    headerName: 'User',
-                    field: 'user_email',
-                    suppressMenu: true,
-                    width: 100,
-                  },
-                  {
-                    headerName: 'Notes',
-                    field: 'notes',
-                    suppressMenu: true,
-                    width: 200,
-                  },
+                  // {
+                  //   headerName: 'User',
+                  //   field: 'user_email',
+                  //   suppressMenu: true,
+                  //   width: 100,
+                  // },
+                  // {
+                  //   headerName: 'Notes',
+                  //   field: 'notes',
+                  //   suppressMenu: true,
+                  //   width: 200,
+                  // },
                   {
                     headerName: '',
                     field: 'isBusy',
@@ -163,7 +164,7 @@ class QuestionListTableAgGrid extends React.Component {
                   },
                   {
                     headerName: '',
-                    field: 'latest_answerset_id',
+                    field: 'latestAnswersetId',
                     suppressMenu: true,
                     cellRenderer: this.cellRendererAnswers,
                     width: 20,

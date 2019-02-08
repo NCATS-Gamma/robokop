@@ -3,6 +3,8 @@ import { Row, Col, Button } from 'react-bootstrap';
 
 import QuestionListTableAgGrid from './QuestionListTableAgGrid';
 
+import runningTaskFilter from '../util/runningTaskFilter';
+
 class QuestionListPres extends React.Component {
   constructor(props) {
     super(props);
@@ -22,25 +24,51 @@ class QuestionListPres extends React.Component {
   }
 
   getTableHeight() {
-    let h = $(window).height() - 250;
-    if (h < 250) {
-      h = 250;
+    let h = $(window).height() - 300;
+    if (h < 300) {
+      h = 300;
     }
     return `${h}px`;
   }
 
   syncStateAndProps(newProps) {
     const questions = newProps.questions.map((q) => {
-      q.isUserOwned = q.user_email === this.props.user.username;
-      q.hasAnswerset = Boolean(q.latest_answerset_id);
-      const qTasks = Array.isArray(q.tasks) ? q.tasks.filter(t => t.status !== 'FAILURE' && t.status !== 'SUCCESS') : [];
-      q.isBusy = qTasks.length > 0;
+      q.isUserOwned = q.ownerId.toString() === this.props.user.user_id;
+      q.hasAnswerset = false; // Boolean(q.latest_answerset_id);
+      
+      const answersets = ('qgraphs' in q && 'answersets' in q.qgraphs && Array.isArray(q.qgraphs.answersets)) ? q.qgraphs.answersets : [];
+
+      if (answersets.length > 0) {
+        const answersetDates = answersets.map((a) => {
+          let ts = a.timestamp;
+          if (!ts.endsWith('Z')) {
+            ts = `${ts}Z`;
+          }
+          return new Date(ts);
+        });
+
+        const inds = Array.apply(null, Array(answersetDates.length)).map(() => {}); // eslint-disable-line
+        const sortingInds = (inds).map((v, i) => i);
+        sortingInds.sort((a, b) => (answersetDates[b] - answersetDates[a]));
+        const answersetsSorted = sortingInds.map(v => answersets[v]);
+
+        q.hasAnswerset = true;
+        q.latestAnswersetId = answersetsSorted[0].id;
+
+      } else {
+        q.hasAnswerset = false;
+        q.latestAnswersetId = '';
+      }
+
+      const qRunningTasks = Array.isArray(q.tasks) ? q.tasks.filter(runningTaskFilter) : [];
+      q.isBusy = qRunningTasks.length > 0;
       return q;
     });
-    // Move the user owned questions to the top
-    // questions = questions.filter(q => q.isUserOwned).concat(questions.filter(q => !q.isUserOwned));
 
-    this.setState({ questions });
+    // Move the user owned questions to the top
+    const questionsSorted = questions.filter(q => q.isUserOwned).concat(questions.filter(q => !q.isUserOwned));
+
+    this.setState({ questions: questionsSorted });
   }
 
   render() {

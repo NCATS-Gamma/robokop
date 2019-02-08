@@ -3,11 +3,24 @@ import { Row, Col } from 'react-bootstrap';
 
 import ActivityTableAgGrid from './ActivityTableAgGrid';
 
+const _ = require('lodash');
+
+const timestampToDate = (ts) => {
+  if (ts) {
+    if (!ts.endsWith('Z')) {
+      ts = `${ts}Z`;
+    }
+    return new Date(ts);
+  }
+  return null;
+}
+
 class AdminPres extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       tasks: [],
+      questions: [],
     };
 
     this.syncStateAndProps = this.syncStateAndProps.bind(this);
@@ -40,10 +53,15 @@ class AdminPres extends React.Component {
     //   "status": "FAILURE"
     // },...
     // ];
+    console.log(newProps);
+    const { questions } = newProps;
+    
     let tasks = [];
-    if ('tasks' in newProps && Array.isArray(newProps.tasks)) {
-      tasks = newProps.tasks.map((t) => {
-        t.isUserOwned = t.initiator === this.props.user.username;
+    /* eslint-disable no-param-reassign */
+    questions.forEach((q) => {
+      const qTasks = q.tasks.map((t) => {
+        t.questionId = q.id;
+        t.isUserOwned = t.initiator === this.props.user.user_id;
         if (t.type.endsWith('update_kg')) {
           t.typeName = 'Refresh';
         } else if (t.type.endsWith('answer_question')) {
@@ -51,18 +69,45 @@ class AdminPres extends React.Component {
         } else {
           t.typeName = '?';
         }
-        let ts = t.timestamp;
-        if (!ts.endsWith('Z')) {
-          ts = `${ts}Z`;
+        t.result = JSON.parse(t.result);
+        t.timestamp = timestampToDate(t.timestamp);
+        t.endTimestamp = timestampToDate(t.endTimestamp);
+        t.startingTimestamp = timestampToDate(t.startingTimestamp);
+        t.isZombie = !t.timestamp;
+        if (t.timestamp && t.startingTimestamp) {
+          t.timeInQueue = t.startingTimestamp - t.timestamp;
+          t.inQueue = false;
+        } else {
+          t.timeInQueue = Date.now() - t.startingTimestamp;
+          t.inQueue = true;
         }
-        const d = new Date(ts);
-        t.timeString = d.toLocaleString();
+        if (t.timestamp && t.startingTimestamp && t.endTimestamp) {
+          t.timeInProcess = t.endTimestamp - t.startingTimestamp;
+          t.inProcess = false;
+        } else {
+          t.timeInProcess = Date.now() - t.startingTimestamp;
+          t.inProcess = true;
+        }
+        t.isFinished = !_.isEmpty(t.result);
+
+        if (t.inQueue) {
+          t.status = 'Queued';
+        } else if (t.inProcess) {
+          t.status = 'Processing';
+        } else if (t.isFinished) {
+          t.status = 'Complete';
+        } else {
+          t.status = 'Zombie';
+        }
 
         return t;
       });
-    }
+      tasks = tasks.concat(qTasks);
+      delete q.tasks;
+    });
+    /* eslint-enable no-param-reassign */
 
-    this.setState({ tasks });
+    this.setState({ tasks, questions });
   }
 
   render() {
@@ -76,7 +121,7 @@ class AdminPres extends React.Component {
         <Row>
           <Col md={12}>
             <h1>
-              Robokop Active Tasks
+              Robokop Activity
             </h1>
           </Col>
           <Col md={12}>
@@ -91,6 +136,7 @@ class AdminPres extends React.Component {
             }
             {hasTasks &&
               <ActivityTableAgGrid
+                questions={this.state.questions}
                 tasks={this.state.tasks}
                 showSearch
                 onClick={this.props.onClick}
