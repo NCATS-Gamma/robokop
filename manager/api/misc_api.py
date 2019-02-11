@@ -90,6 +90,12 @@ class WF1MOD3(Resource):
             schema:
                 type: string
             default: MESSAGE
+          - in: query
+            name: max_connectivity
+            description: Maximum number of edges into or out of nodes within the answer (0 for infinite, None for an adaptive procedure)
+            schema:
+                type: integer
+            default: 0
         responses:
             200:
                 description: Answer set
@@ -205,6 +211,12 @@ class WF1MOD3a(Resource):
             schema:
                 type: integer
             default: 250
+          - in: query
+            name: max_connectivity
+            description: Maximum number of edges into or out of nodes within the answer (0 for infinite, None for an adaptive procedure)
+            schema:
+                type: integer
+            default: 0
         responses:
             200:
                 description: Answer set
