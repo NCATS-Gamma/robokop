@@ -33,6 +33,38 @@ def log_qpool_status():
     status = engine.pool.status()
     logger.debug(status)
 
+output_formats = ['DENSE', 'MESSAGE', 'CSV', 'ANSWERS']
+
+def parse_args_output_format(req_args):
+    output_format = req_args.get('output_format', default=output_formats[1])
+    if output_format.upper() not in output_formats:
+        raise RuntimeError(f'output_format must be one of [{" ".join(output_formats)}]')
+    
+    return output_format
+
+def parse_args_max_results(req_args):
+    max_results = req_args.get('max_results', default=None)
+    max_results = max_results if max_results is not None else 250
+    return max_results
+
+def parse_args_max_connectivity(req_args):
+    max_connectivity = req_args.get('max_connectivity', default=None)
+    
+    if max_connectivity and isinstance(max_connectivity, str):
+        if max_connectivity.lower() == 'none':
+            max_connectivity = None
+        else:
+            try:
+                max_connectivity = int(max_connectivity)
+            except ValueError:
+                raise RuntimeError(f'max_connectivity should be an integer')
+            except:
+                raise
+            if max_connectivity < 0:
+                max_connectivity = None
+
+    return max_connectivity
+
 class WF1MOD3(Resource):
     def get(self, disease_curie):
         """
@@ -52,6 +84,12 @@ class WF1MOD3(Resource):
             schema:
                 type: integer
             default: 250
+          - in: query
+            name: output_format
+            description: Requested output format. DENSE, MESSAGE, CSV or ANSWERS
+            schema:
+                type: string
+            default: MESSAGE
         responses:
             200:
                 description: Answer set
@@ -60,7 +98,10 @@ class WF1MOD3(Resource):
                         schema:
                             $ref: '#/definitions/Response'
         """
-        max_results = request.args.get('max_results', default=250)
+        max_results = parse_args_max_results(request.args)
+        output_format = parse_args_output_format(request.args)
+        max_connectivity = parse_args_max_connectivity(request.args)
+
         qspec = {
             "machine_question": {
                 "nodes": [
@@ -119,7 +160,7 @@ class WF1MOD3(Resource):
 
 
         response = requests.post(
-            f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/?max_results={max_results}",
+            f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/?max_results={max_results}&max_connectivity={max_connectivity}&output_format={output_format}",
             json=qspec)
         polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
 
@@ -137,12 +178,9 @@ class WF1MOD3(Resource):
         else:
             return "ROBOKOP has not completed after 1 hour. It's still working.", 202
 
-        response = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{response.json()['task_id']}?standardize=true")
+        response = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}/result")
 
         answerset = response.json()
-        # strip out support edges for now
-        for result in answerset['result_list']:
-            result['result_graph']['edge_list'] = [edge for edge in result['result_graph']['edge_list'] if edge['type'] != 'literature_co-occurrence']
 
         return answerset, 200
 
@@ -175,7 +213,10 @@ class WF1MOD3a(Resource):
                         schema:
                             $ref: '#/definitions/Response'
         """
-        max_results = request.args.get('max_results', default=250)
+        max_results = parse_args_max_results(request.args)
+        output_format = parse_args_output_format(request.args)
+        max_connectivity = parse_args_max_connectivity(request.args)
+
         qspec = {
             "machine_question": {
                 "nodes": [
@@ -233,7 +274,7 @@ class WF1MOD3a(Resource):
         }
 
         response = requests.post(
-            f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/?max_results={max_results}",
+            f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/?max_results={max_results}&max_connectivity={max_connectivity}&output_format={output_format}",
             json=qspec)
         polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
 
@@ -251,13 +292,10 @@ class WF1MOD3a(Resource):
         else:
             return "ROBOKOP has not completed after 1 hour. It's still working.", 202
 
-        response = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/result/{response.json()['task_id']}?standardize=true")
+        response = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}/result")
 
         answerset = response.json()
-        # strip out support edges for now
-        for result in answerset['result_list']:
-            result['result_graph']['edge_list'] = [edge for edge in result['result_graph']['edge_list'] if edge['type'] != 'literature_co-occurrence']
-
+        
         return answerset, 200
 
 api.add_resource(WF1MOD3a, '/wf1mod3a/<disease_curie>/')
