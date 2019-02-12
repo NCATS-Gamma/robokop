@@ -72,7 +72,7 @@ class QuestionPres extends React.Component {
           <Button
             bsSize="large"
             alt="Get a New Answer Set"
-            onClick={this.props.callbackAnswersetNew}
+            onClick={this.props.callbackNewAnswerset}
           >
             Get New Answers
             <br />
