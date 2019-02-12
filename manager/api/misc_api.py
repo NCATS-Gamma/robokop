@@ -104,6 +104,7 @@ class WF1MOD3(Resource):
                         schema:
                             $ref: '#/definitions/Response'
         """
+        logger.info('WF1Mod3 - Initializing')
         max_results = parse_args_max_results(request.args)
         output_format = parse_args_output_format(request.args)
         max_connectivity = parse_args_max_connectivity(request.args)
@@ -168,8 +169,14 @@ class WF1MOD3(Resource):
         response = requests.post(
             f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/?max_results={max_results}&max_connectivity={max_connectivity}&output_format={output_format}",
             json=qspec)
-        polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
+        
+        if not isinstance(response.json(), dict):
+            logger.debug('Failed to initialize the job with the ranker:')
+            logger.debug(response.json())
+            raise RuntimeError("The robokop ranker could not correctly initiate the task.")
 
+        polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
+        logger.info('WF1Mod3 - Ranking Job Initialized')
         for _ in range(60 * 60):  # wait up to 1 hour
             logger.debug(f'polling {polling_url}...')
             time.sleep(1)
@@ -184,10 +191,11 @@ class WF1MOD3(Resource):
         else:
             return "ROBOKOP has not completed after 1 hour. It's still working.", 202
 
+        logger.info('WF1Mod3 - Getting Results')
         response = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}/result")
 
         answerset = response.json()
-
+        logger.info('WF1Mod3 - Complete')
         return answerset, 200
 
 api.add_resource(WF1MOD3, '/wf1mod3/<disease_curie>/')
@@ -225,6 +233,7 @@ class WF1MOD3a(Resource):
                         schema:
                             $ref: '#/definitions/Response'
         """
+        logger.info('WF1Mod3a - Initializing')
         max_results = parse_args_max_results(request.args)
         output_format = parse_args_output_format(request.args)
         max_connectivity = parse_args_max_connectivity(request.args)
@@ -288,8 +297,14 @@ class WF1MOD3a(Resource):
         response = requests.post(
             f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/?max_results={max_results}&max_connectivity={max_connectivity}&output_format={output_format}",
             json=qspec)
-        polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
+        
+        if not isinstance(response.json(), dict):
+            logger.info('WF1Mod3a - Could not initialize the job with the ranker')
+            logger.debug(response.json())
+            raise RuntimeError("The robokop ranker could not correctly initiate the task.")
 
+        polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
+        logger.info('WF1Mod3a - Job initialized')
         for _ in range(60 * 60):  # wait up to 1 hour
             logger.debug(f'polling {polling_url}...')
             time.sleep(1)
@@ -303,11 +318,11 @@ class WF1MOD3a(Resource):
                     break
         else:
             return "ROBOKOP has not completed after 1 hour. It's still working.", 202
-
+        logger.info('WF1Mod3a - Getting results')
         response = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}/result")
-
-        answerset = response.json()
         
+        answerset = response.json()
+        logger.info('WF1Mod3a - Complete')
         return answerset, 200
 
 api.add_resource(WF1MOD3a, '/wf1mod3a/<disease_curie>/')
