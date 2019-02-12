@@ -158,9 +158,11 @@ def answer_question(self, question_id, user_email=None):
         message = response.json()
         # logger.info(message)
 
-        logger.info(f'{len(message["answers"])} answers were found')
         if not message["answers"]:
+            logger.info(f'No answers found')
             raise NoAnswersException()
+
+        logger.info(f'{len(message["answers"])} answers were found')
 
         logger.info('Storing answers.')
         answerset_id = add_answerset(message['answers'], qgraph_id=qgraph_id)
