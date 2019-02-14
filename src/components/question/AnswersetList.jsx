@@ -7,7 +7,7 @@ import SubGraphViewer from '../shared/SubGraphViewer';
 import AnswersetStore from './../../stores/messageAnswersetStore';
 import Loading from '../Loading';
 
-// const _ = require('lodash');
+const _ = require('lodash');
 
 class AnswersetList extends React.Component {
   constructor(props) {
@@ -21,6 +21,12 @@ class AnswersetList extends React.Component {
     };
 
     this.onAnswersetSelect = this.onAnswersetSelect.bind(this);
+  }
+
+  shouldComponentUpdate(newProps, newState) {
+    const propsAllMatch = (newProps.answersets.length === this.props.answersets.length);
+    const stateAllMatch = (newState.loadingAnswerset === this.state.loadingAnswerset);
+    return !(propsAllMatch && stateAllMatch);
   }
 
   onAnswersetSelect(aid) {
@@ -69,19 +75,22 @@ class AnswersetList extends React.Component {
   }
 
   getHeight() {
+    console.log('getting height');
     const h = $(window).height() - 350;
     return `${h}px`;
   }
   getWidth() {
     let w = 500;
-    w = $('#AnswersetListDiv').innerWidth();
+    w = $('#answersetList').innerWidth();
     // Ask how big the parent div is?
     return `${w}px`;
   }
 
   render() {
+    const height = this.getHeight();
+    const width = this.getWidth();
     return (
-      <div style={{ position: 'relative', minHeight: '200px', display: 'table', width: '100%', id: 'AnswersetListDiv' }}>
+      <div id='answersetList' style={{ position: 'relative', minHeight: '200px', display: 'table', width: '100%' }}>
         <div style={{
           position: 'absolute',
           top: 0,
@@ -101,10 +110,8 @@ class AnswersetList extends React.Component {
         </div>
         <div
           style={{
-            height: this.getHeight(),
-            maxHeight: this.getHeight(),
-            width: this.getWidth(),
-            maxWidth: this.getWidth(),
+            height: height,
+            width: width
           }}
         >
           {this.state.loadingAnswerset &&
@@ -114,13 +121,13 @@ class AnswersetList extends React.Component {
               />
             </div>
           }
-          {this.state.loadededAnswerset &&
+          {this.state.loadededAnswerset && !this.state.loadingAnswerset &&
             <SubGraphViewer
               subgraph={this.state.loadedKnowledgeGraph}
               concepts={this.props.concepts}
               layoutRandomSeed={Math.floor(Math.random() * 100)}
               showSupport={false}
-              height={this.getHeight()}
+              height={height}
               omitEdgeLabel
               callbackOnGraphClick={() => {}}
             />

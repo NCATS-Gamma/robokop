@@ -51,9 +51,9 @@ class ActivityTableAgGrid extends React.Component {
   }
   cellRendererStatus(params) {
     let out = params.value;
-    const isBusy = (params.value !== 'FAILURE' && params.value !== 'SUCCESS' && params.value !== 'REVOKED');
+    const isBusy = (params.value !== 'FAILURE' && params.value !== 'SUCCESS' && params.value !== 'REVOKED' && params.value !== 'Complete');
     const isFailure = params.value === 'FAILURE';
-    const isSuccess = params.value === 'SUCCESS';
+    const isSuccess = params.value === 'SUCCESS' || params.value === 'Complete';
     const isRevoked = params.value === 'REVOKED';
 
     if (isBusy) {

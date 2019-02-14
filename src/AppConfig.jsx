@@ -123,6 +123,7 @@ class AppConfig {
         timestamp
         tasks: tasksByQuestionIdList {
           id
+          initiator
           timestamp
           startingTimestamp
           endTimestamp

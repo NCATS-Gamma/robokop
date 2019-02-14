@@ -20,8 +20,8 @@ class QuestionListTableAgGrid extends React.Component {
     this.onFilterTextChange = this.onFilterTextChange.bind(this);
     this.getRowClass = this.getRowClass.bind(this);
 
-    this.cellRendererAnswers = this.cellRendererAnswers.bind(this);
-    this.cellRendererBusy = this.cellRendererBusy.bind(this);
+    // this.cellRendererAnswers = this.cellRendererAnswers.bind(this);
+    this.cellRendererStatus = this.cellRendererStatus.bind(this);
   }
 
   onGridReady(params) {
@@ -40,7 +40,8 @@ class QuestionListTableAgGrid extends React.Component {
     if (event.column.colId === 'latestAnswersetId') {
       this.props.callbackAnswersetSelect(event.node.data, { id: event.node.data.latestAnswersetId });
     } else {
-      this.props.callbackQuestionSelect(event.node.data);
+      this.props.onClick(event.node.data);
+      // this.props.callbackQuestionSelect(event.node.data);
     }
     // this.props.callbackQuestionSelect(event.node.data);
   }
@@ -53,27 +54,27 @@ class QuestionListTableAgGrid extends React.Component {
     }
     return 'question-row-is-unowned';
   }
-  cellRendererAnswers(params) {
+  // cellRendererAnswers(params) {
+  //   let out = '';
+  //   if (params.data !== '' && params.data !== undefined && params.data !== null && 'id' in params.data && params.data.id && 'latestAnswersetId' in params.data && params.data.latestAnswersetId) {
+  //     out = `<div style="
+  //       display: table;
+  //       width: 100%;
+  //       position: absolute;
+  //       height: 100%;">
+  //         <div style="
+  //           display: table-cell;
+  //           vertical-align: middle;
+  //         ">
+  //           <img src=../${NetworkImg} height="25" width="25" />
+  //         </div>
+  //       </div>`;
+  //   }
+  //   return out;
+  // }
+  cellRendererStatus(params) {
     let out = '';
-    if (params.data !== '' && params.data !== undefined && params.data !== null && 'id' in params.data && params.data.id && 'latestAnswersetId' in params.data && params.data.latestAnswersetId) {
-      out = `<div style="
-        display: table;
-        width: 100%;
-        position: absolute;
-        height: 100%;">
-          <div style="
-            display: table-cell;
-            vertical-align: middle;
-          ">
-            <img src=../${NetworkImg} height="25" width="25" />
-          </div>
-        </div>`;
-    }
-    return out;
-  }
-  cellRendererBusy(params) {
-    let out = '';
-    if (params.value) {
+    if (!params.value) {
       out = `<div style="
         display: table;
         width: 100%;
@@ -87,6 +88,19 @@ class QuestionListTableAgGrid extends React.Component {
           </div>
         </div>`;
       // out = 'Updating...';
+    } else {
+      out = `<div style="
+        display: table;
+        width: 100%;
+        position: absolute;
+        height: 100%;">
+          <div style="
+            display: table-cell;
+            vertical-align: middle;
+          ">
+            <img src=../${NetworkImg} height="25" width="25" />
+          </div>
+        </div>`;
     }
     return out;
   }
@@ -152,21 +166,21 @@ class QuestionListTableAgGrid extends React.Component {
                   //   suppressMenu: true,
                   //   width: 200,
                   // },
-                  {
-                    headerName: '',
-                    field: 'isBusy',
-                    suppressMenu: true,
-                    cellRenderer: this.cellRendererBusy,
-                    width: 20,
-                    minWidth: 20,
-                    hide: false,
-                    cellClass: 'no-padding',
-                  },
+                  // {
+                  //   headerName: '',
+                  //   field: 'isBusy',
+                  //   suppressMenu: true,
+                  //   cellRenderer: this.cellRendererBusy,
+                  //   width: 20,
+                  //   minWidth: 20,
+                  //   hide: false,
+                  //   cellClass: 'no-padding',
+                  // },
                   {
                     headerName: '',
                     field: 'latestAnswersetId',
                     suppressMenu: true,
-                    cellRenderer: this.cellRendererAnswers,
+                    cellRenderer: this.cellRendererStatus,
                     width: 20,
                     minWidth: 20,
                     hide: false,

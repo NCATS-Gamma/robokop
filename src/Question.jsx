@@ -236,7 +236,7 @@ class Question extends React.Component {
         this.addToTaskList({ answersetTask: newData.task_id });
         this.notificationSystem.addNotification({
           title: 'Answer Set Generation in Progress',
-          message: "We are working on developing a new Answer Set for this this question. This can take a little bit. We will send you an email when it's ready.",
+          message: "We are working on developing a new Answer Set for this question. This can take a little bit. We will send you an email when it's ready.",
           level: 'info',
           position: 'tr',
           dismissible: 'click',
@@ -245,7 +245,7 @@ class Question extends React.Component {
       () => {
         this.dialogMessage({
           title: 'Trouble Queuing Answer Set Generation',
-          text: 'This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+          text: 'This could be due to an intermittent network error. If you encounter this error repeatedly, please contact a system administrator.',
           buttonText: 'OK',
           buttonAction: () => {},
         });

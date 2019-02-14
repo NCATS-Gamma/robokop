@@ -315,3 +315,29 @@ div.vis-tooltip .invalid-node {
   vertical-align: middle;
   align-items: center;
 }
+
+/* Task Modal CSS */
+.taskListTask {
+  /* border: 1px black solid; */
+  cursor: pointer;
+}
+.taskListTask:hover {
+  background-color: lightgrey;
+}
+.taskListTask.active {
+  background-color: lightsteelblue;
+}
+.taskListItem {
+  width: 20%;
+  display: inline-block;
+  text-align: center;
+  border: 1px solid black;
+  height: 100%;
+}
+.logButton {
+  float: right;
+  position: relative;
+  top: -35px;
+  cursor: pointer;
+  margin: 0px 10px;
+}

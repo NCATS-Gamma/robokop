@@ -116,6 +116,7 @@ class QuestionListPres extends React.Component {
               callbackAnswersetSelect={this.props.callbackAnswersetSelect}
               callbackQuestionSelect={this.props.callbackQuestionSelect}
               height={tableHeight}
+              onClick={this.props.onClick}
             />
           </Col>
         </Row>

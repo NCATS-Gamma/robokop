@@ -62,9 +62,9 @@ class Activity extends React.Component {
     );
   }
   callbackTaskStop(task) {
-    return;
-    
-    // const isBusy = !(task.status === 'FAILURE' || task.status === 'SUCCESS' || task.status === 'REVOKED');
+    // return;
+    console.log('Task: ', task);
+    const isBusy = !(task.status === 'FAILURE' || task.status === 'SUCCESS' || task.status === 'REVOKED');
     const isAuth = this.state.user.is_admin || this.state.user.user_id === task.initiator;
 
     let submittedStr = '';

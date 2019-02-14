@@ -1,11 +1,11 @@
 import React from 'react';
 import { Grid } from 'react-bootstrap';
-
 import AppConfig from './AppConfig';
 import Loading from './components/Loading';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import QuestionListPres from './components/questionList/QuestionListPres';
+import TasksModal from './components/shared/TasksModal';
 
 class QuestionList extends React.Component {
   constructor(props) {
@@ -19,8 +19,11 @@ class QuestionList extends React.Component {
       user: {},
       questions: [],
       hadError: false,
+      question: {}
     };
 
+    this.callbackTaskStop = this.callbackTaskStop.bind(this);
+    this.closeModal = this.closeModal.bind(this);
     this.callbackQuestionNew = this.callbackQuestionNew.bind(this);
     this.renderError = this.renderError.bind(this);
   }
@@ -32,7 +35,7 @@ class QuestionList extends React.Component {
     }));
     this.appConfig.questionList(
       (data) => {
-        console.log(data)
+        // console.log(data);
         this.setState({ questions: data.data.questions, dataReady: true });
       },
       (err) => {
@@ -41,6 +44,15 @@ class QuestionList extends React.Component {
       },
     );
   }
+
+  callbackTaskStop(question) {
+    this.setState({ question });
+  }
+
+  closeModal() {
+    this.setState({ question: {} });
+  }
+
   callbackQuestionNew() {
     this.appConfig.redirect(this.appConfig.urls.questionDesign);
   }
@@ -78,9 +90,11 @@ class QuestionList extends React.Component {
               callbackQuestionSelect={q => this.appConfig.open(this.appConfig.urls.question(q.id))}
               questions={this.state.questions}
               user={this.state.user}
+              onClick={this.callbackTaskStop}
             />
           </Grid>
         }
+        {Object.keys(this.state.question).length && <TasksModal config={this.props.config} question={this.state.question} user={this.state.user} closeModal={this.closeModal} />}
         <Footer config={this.props.config} />
       </div>
     );
