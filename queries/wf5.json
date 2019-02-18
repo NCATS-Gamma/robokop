@@ -1,0 +1,46 @@
+{
+  "name": "WF5 - $name1$ ($identifier1$)",
+  "natural_question": "WF5 - $name1$ ($identifier1$) to gene to pathway to gene to drug",
+  "machine_question": {
+    "nodes": [{
+        "id": "n0",
+        "type": "disease",
+        "curie": [
+          "$identifier1$"
+        ]
+      },
+      {
+        "id": "n1",
+        "type": "gene"
+      },
+      {
+        "id": "n2",
+        "type": "biological_process_or_activity"
+      },
+      {
+        "id": "n3",
+        "type": "gene"
+      },
+      {
+        "id": "n4",
+        "type": "drug"
+      }
+    ],
+    "edges": [{
+        "id": "e0",
+        "source_id": "n0",
+        "target_id": "n1"
+      },
+      {
+        "id": "e1",
+        "source_id": "n1",
+        "target_id": "n2"
+      },
+      {
+        "id": "e2",
+        "source_id": "n2",
+        "target_id": "n3"
+      }
+    ]
+  }
+}

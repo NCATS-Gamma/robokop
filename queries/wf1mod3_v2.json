@@ -1,0 +1,57 @@
+{
+  "name": "WF1 Module 3 (version 2) - $name1$ ($identifier1$)",
+  "natural_question": "WF1 Module 3 (version 2) - $name1$ ($identifier1$) to chemical_substance to gene to chemical_substance",
+  "machine_question": {
+    "nodes": [{
+        "id": "n0",
+        "type": "disease",
+        "curie": [
+          "$identifier1"
+        ]
+      },
+      {
+        "id": "n1",
+        "type": "chemical_substance"
+      },
+      {
+        "id": "n2",
+        "type": "gene"
+      },
+      {
+        "id": "n3",
+        "type": "chemical_substance"
+      }
+    ],
+    "edges": [{
+        "id": "e1",
+        "source_id": "n1",
+        "target_id": "n0",
+        "type": "contributes_to"
+      },
+      {
+        "id": "e2",
+        "source_id": "n2",
+        "target_id": "n1",
+        "type": [
+          "increases_degradation_of",
+          "decreases_abundance_of",
+          "decreases_response_to",
+          "increases_uptake_of"
+        ]
+      },
+      {
+        "id": "e3",
+        "source_id": "n3",
+        "target_id": "n2",
+        "type": [
+          "increases_activity_of",
+          "increases_expression_of",
+          "decreases_degradation_of",
+          "increases_stability_of",
+          "increases_synthesis_of",
+          "increases_secretion_of"
+        ]
+      }
+    ]
+  }
+}

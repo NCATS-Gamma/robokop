@@ -1,14 +1,13 @@
 {
-  "natural_question": "What is the COP for $drug$ ($drugId$) and $condition$ ($diseaseId$)?",
+  "natural_question": "COP for $name1$ ($identifier1$) and $name2$ ($identifier2$)?",
   "machine_question": {
     "nodes": [
       {
         "id": "node0",
         "type": "chemical_substance",
         "set": false,
-        "name": "$drug$",
         "curie": [
-          "$drugId$"
+          "$identifier1$"
         ]
       },
       {
@@ -34,15 +33,8 @@
       {
         "id": "node5",
         "type": "phenotypic_feature",
-        "set": true
-      },
-      {
-        "id": "node6",
-        "type": "disease",
-        "set": false,
-        "name": "$condition$",
         "curie": [
-          "$diseaseId$"
+          "$identifier2$"
         ]
       }
     ],
@@ -71,11 +63,6 @@
         "id": "edge45",
         "source_id": "node4",
         "target_id": "node5"
-      },
-      {
-        "id": "edge56",
-        "source_id": "node5",
-        "target_id": "node6"
       }
     ]
   }

@@ -1,0 +1,43 @@
+{
+  "name": "WF4 - $name1$ ($identifier1$)",
+  "natural_question": "WF5: $name1$ ($identifier1$) to gene to phenotype association.",
+  "machine_question": {
+    "nodes": [
+      {
+        "id": "n0",
+        "type": "chemical_substance",
+        "curie": [
+          "$identifier1$"
+        ]
+      },
+      {
+        "id": "n1",
+        "type": "gene"
+      },
+      {
+        "id": "n2",
+        "type": "biological_process_or_activity"
+      },
+      {
+        "id": "n3",
+        "type": "phenotypic_feature"
+      }
+    ],
+    "edges": [{
+        "id": "e0",
+        "source_id": "n0",
+        "target_id": "n1"
+      },
+      {
+        "id": "e1",
+        "source_id": "n1",
+        "target_id": "n2"
+      },
+      {
+        "id": "e2",
+        "source_id": "n2",
+        "target_id": "n3"
+      }
+    ]
+  }
+}
