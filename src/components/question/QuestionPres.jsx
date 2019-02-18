@@ -170,7 +170,7 @@ class QuestionPres extends React.Component {
           question={this.props.question}
           showToolbar={userIsLoggedIn}
           questionGraphPopover={questionGraphPopover}
-
+          user={this.props.user}
           refreshBusy={this.props.refreshBusy}
           answerBusy={this.props.answerBusy}
           initializerBusy={this.props.initializerBusy}

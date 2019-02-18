@@ -50,10 +50,11 @@ class ActivityTableAgGrid extends React.Component {
     return 'question-row-is-unowned';
   }
   cellRendererStatus(params) {
+    console.log(params);
     let out = params.value;
-    const isBusy = (params.value !== 'FAILURE' && params.value !== 'SUCCESS' && params.value !== 'REVOKED' && params.value !== 'Complete');
-    const isFailure = params.value === 'FAILURE';
-    const isSuccess = params.value === 'SUCCESS' || params.value === 'Complete';
+    const isBusy = (params.value !== 'Zombie' && params.value !== 'Complete');
+    const isFailure = params.value === 'Zombie';
+    const isSuccess = params.value === 'Complete';
     const isRevoked = params.value === 'REVOKED';
 
     if (isBusy) {
@@ -69,7 +70,6 @@ class ActivityTableAgGrid extends React.Component {
             <img src=../${LoadingImg} height="25" width="25" />
           </div>
         </div>`;
-      // out = 'Updating...';
     }
     if (isFailure) {
       out = `<div style="
@@ -163,13 +163,13 @@ class ActivityTableAgGrid extends React.Component {
                     headerName: 'ID',
                     field: 'id',
                     suppressMenu: true,
-                    width: 175,
+                    width: 125,
                   },
                   {
                     headerName: 'Question ID',
-                    field: 'question_id',
+                    field: 'questionId',
                     suppressMenu: true,
-                    width: 100,
+                    width: 125,
                   },
                   {
                     headerName: 'Type',
@@ -179,16 +179,17 @@ class ActivityTableAgGrid extends React.Component {
                   },
                   {
                     headerName: 'Started',
-                    field: 'timeString',
+                    field: 'startingTimestamp',
                     suppressMenu: true,
-                    width: 150,
+                    width: 100,
                   },
                   {
-                    headerName: 'State',
+                    headerName: 'Status',
+                    headerClass: 'no-padding',
                     field: 'status',
                     suppressMenu: true,
                     cellRenderer: this.cellRendererStatus,
-                    width: 20,
+                    width: 50,
                     minWidth: 20,
                     hide: false,
                     cellClass: 'no-padding',

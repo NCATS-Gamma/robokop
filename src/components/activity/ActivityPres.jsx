@@ -15,7 +15,7 @@ const timestampToDate = (ts) => {
   return null;
 }
 
-class AdminPres extends React.Component {
+class ActivityPres extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -53,7 +53,6 @@ class AdminPres extends React.Component {
     //   "status": "FAILURE"
     // },...
     // ];
-    console.log(newProps);
     const { questions } = newProps;
     
     let tasks = [];
@@ -61,7 +60,7 @@ class AdminPres extends React.Component {
     questions.forEach((q) => {
       const qTasks = q.tasks.map((t) => {
         t.questionId = q.id;
-        t.isUserOwned = t.initiator === this.props.user.user_id;
+        t.isUserOwned = t.initiator === this.props.user.username;
         if (t.type.endsWith('update_kg')) {
           t.typeName = 'Refresh';
         } else if (t.type.endsWith('answer_question')) {
@@ -69,10 +68,9 @@ class AdminPres extends React.Component {
         } else {
           t.typeName = '?';
         }
-        t.result = JSON.parse(t.result);
-        t.timestamp = timestampToDate(t.timestamp);
-        t.endTimestamp = timestampToDate(t.endTimestamp);
-        t.startingTimestamp = timestampToDate(t.startingTimestamp);
+        t.timestamp = t.timestamp && new Date(t.timestamp).toLocaleString();
+        t.endTimestamp = t.endTimestamp && new Date(t.endTimestamp).toLocaleString();
+        t.startingTimestamp = t.startingTimestamp && new Date(t.startingTimestamp).toLocaleString();
         t.isZombie = !t.timestamp;
         if (t.timestamp && t.startingTimestamp) {
           t.timeInQueue = t.startingTimestamp - t.timestamp;
@@ -103,7 +101,7 @@ class AdminPres extends React.Component {
         return t;
       });
       tasks = tasks.concat(qTasks);
-      delete q.tasks;
+      // delete q.tasks;
     });
     /* eslint-enable no-param-reassign */
 
@@ -150,4 +148,4 @@ class AdminPres extends React.Component {
   }
 }
 
-export default AdminPres;
+export default ActivityPres;

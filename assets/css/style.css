@@ -95,6 +95,10 @@ body :focus {
 */
 .no-padding {
   padding: 0px !important;
+  text-align: center;
+}
+.ag-header-cell-text {
+  flex: 1;
 }
 
 .close-button {
@@ -317,8 +321,10 @@ div.vis-tooltip .invalid-node {
 }
 
 /* Task Modal CSS */
+.modal-dialog {
+  width: 70%;
+}
 .taskListTask {
-  /* border: 1px black solid; */
   cursor: pointer;
 }
 .taskListTask:hover {
@@ -326,6 +332,9 @@ div.vis-tooltip .invalid-node {
 }
 .taskListTask.active {
   background-color: lightsteelblue;
+}
+button.taskListTask {
+  padding: 0;
 }
 .taskListItem {
   width: 20%;

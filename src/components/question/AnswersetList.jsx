@@ -56,7 +56,7 @@ class AnswersetList extends React.Component {
 
           this.setState({
             loadingAnswerset: false,
-            loadededAnswerset: answerset,
+            loadedAnswerset: answerset,
             loadedKnowledgeGraph: kg,
             loadedAnswersetId: aid,
           });
@@ -65,7 +65,7 @@ class AnswersetList extends React.Component {
           console.log('error encountered fetching AS:', err);
           this.setState({
             loadingAnswerset: false,
-            loadededAnswerset: null,
+            loadedAnswerset: null,
             loadedKnowledgeGraph: null,
             loadedAnswersetId: null,
           });
@@ -121,7 +121,7 @@ class AnswersetList extends React.Component {
               />
             </div>
           }
-          {this.state.loadededAnswerset && !this.state.loadingAnswerset &&
+          {this.state.loadedAnswerset && !this.state.loadingAnswerset &&
             <SubGraphViewer
               subgraph={this.state.loadedKnowledgeGraph}
               concepts={this.props.concepts}

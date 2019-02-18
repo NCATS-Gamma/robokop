@@ -20,8 +20,8 @@ class QuestionListTableAgGrid extends React.Component {
     this.onFilterTextChange = this.onFilterTextChange.bind(this);
     this.getRowClass = this.getRowClass.bind(this);
 
-    // this.cellRendererAnswers = this.cellRendererAnswers.bind(this);
-    this.cellRendererStatus = this.cellRendererStatus.bind(this);
+    this.cellRendererAnswers = this.cellRendererAnswers.bind(this);
+    this.cellRendererTaskStatus = this.cellRendererTaskStatus.bind(this);
   }
 
   onGridReady(params) {
@@ -37,13 +37,14 @@ class QuestionListTableAgGrid extends React.Component {
     this.gridApi.setSortModel(sort);
   }
   onClick(event) {
-    if (event.column.colId === 'latestAnswersetId') {
+    const clickedColumn = event.column.colId;
+    if (clickedColumn === 'latestAnswersetId' && event.node.data.latestAnswersetId) {
       this.props.callbackAnswersetSelect(event.node.data, { id: event.node.data.latestAnswersetId });
-    } else {
+    } else if (clickedColumn === 'isBusy') {
       this.props.onClick(event.node.data);
-      // this.props.callbackQuestionSelect(event.node.data);
+    } else {
+      this.props.callbackQuestionSelect(event.node.data);
     }
-    // this.props.callbackQuestionSelect(event.node.data);
   }
   onFilterTextChange(event) {
     this.setState({ quickFilterText: event.target.value });
@@ -54,27 +55,28 @@ class QuestionListTableAgGrid extends React.Component {
     }
     return 'question-row-is-unowned';
   }
-  // cellRendererAnswers(params) {
-  //   let out = '';
-  //   if (params.data !== '' && params.data !== undefined && params.data !== null && 'id' in params.data && params.data.id && 'latestAnswersetId' in params.data && params.data.latestAnswersetId) {
-  //     out = `<div style="
-  //       display: table;
-  //       width: 100%;
-  //       position: absolute;
-  //       height: 100%;">
-  //         <div style="
-  //           display: table-cell;
-  //           vertical-align: middle;
-  //         ">
-  //           <img src=../${NetworkImg} height="25" width="25" />
-  //         </div>
-  //       </div>`;
-  //   }
-  //   return out;
-  // }
-  cellRendererStatus(params) {
+  cellRendererAnswers(params) {
     let out = '';
-    if (!params.value) {
+    if (params.data !== '' && params.data !== undefined && params.data !== null && 'id' in params.data && params.data.id && 'latestAnswersetId' in params.data && params.data.latestAnswersetId) {
+      out = `<div style="
+        display: table;
+        width: 100%;
+        position: absolute;
+        height: 100%;">
+          <div style="
+            display: table-cell;
+            vertical-align: middle;
+          ">
+            <img src=../${NetworkImg} height="25" width="25" />
+          </div>
+        </div>`;
+    }
+    return out;
+  }
+  cellRendererTaskStatus(params) {
+    console.log(params);
+    let out = '';
+    if (params.data.isBusy) {
       out = `<div style="
         display: table;
         width: 100%;
@@ -87,7 +89,6 @@ class QuestionListTableAgGrid extends React.Component {
             <img src=../${LoadingImg} height="25" width="25" />
           </div>
         </div>`;
-      // out = 'Updating...';
     } else {
       out = `<div style="
         display: table;
@@ -98,7 +99,7 @@ class QuestionListTableAgGrid extends React.Component {
             display: table-cell;
             vertical-align: middle;
           ">
-            <img src=../${NetworkImg} height="25" width="25" />
+            <svg fill="currentColor" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="0 0 40 40" style="vertical-align: middle;"><g><path d="m31 7.5h-27.5v10h27.5l5-5-5-5z m-10 7.5h-5v-5h5v5z m0-15h-5v5h5v-5z m-5 40h5v-20h-5v20z"></path></g></svg>
           </div>
         </div>`;
     }
@@ -143,7 +144,7 @@ class QuestionListTableAgGrid extends React.Component {
                     field: 'isUserOwned',
                     suppressMenu: true,
                     cellRenderer: this.cellRendererOwned,
-                    width: 5,
+                    width: 20,
                     hide: true,
                     tooltip: value => (value ? 'This is your question' : ''),
                     suppressResize: true,
@@ -166,22 +167,24 @@ class QuestionListTableAgGrid extends React.Component {
                   //   suppressMenu: true,
                   //   width: 200,
                   // },
-                  // {
-                  //   headerName: '',
-                  //   field: 'isBusy',
-                  //   suppressMenu: true,
-                  //   cellRenderer: this.cellRendererBusy,
-                  //   width: 20,
-                  //   minWidth: 20,
-                  //   hide: false,
-                  //   cellClass: 'no-padding',
-                  // },
                   {
-                    headerName: '',
+                    headerName: 'Task Status',
+                    headerClass: 'no-padding',
+                    field: 'isBusy',
+                    suppressMenu: true,
+                    cellRenderer: this.cellRendererTaskStatus,
+                    width: 70,
+                    minWidth: 20,
+                    hide: false,
+                    cellClass: 'no-padding',
+                  },
+                  {
+                    headerName: 'Answerset',
+                    headerClass: 'no-padding',
                     field: 'latestAnswersetId',
                     suppressMenu: true,
-                    cellRenderer: this.cellRendererStatus,
-                    width: 20,
+                    cellRenderer: this.cellRendererAnswers,
+                    width: 70,
                     minWidth: 20,
                     hide: false,
                     cellClass: 'no-padding',

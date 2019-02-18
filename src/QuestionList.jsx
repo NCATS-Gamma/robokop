@@ -5,7 +5,7 @@ import Loading from './components/Loading';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import QuestionListPres from './components/questionList/QuestionListPres';
-import TasksModal from './components/shared/TasksModal';
+import TasksModal from './components/shared/taskModal/TasksModal';
 
 class QuestionList extends React.Component {
   constructor(props) {
@@ -19,13 +19,13 @@ class QuestionList extends React.Component {
       user: {},
       questions: [],
       hadError: false,
-      question: {}
+      question: {},
+      showModal: false,
     };
 
     this.callbackTaskStop = this.callbackTaskStop.bind(this);
-    this.closeModal = this.closeModal.bind(this);
+    this.toggleModal = this.toggleModal.bind(this);
     this.callbackQuestionNew = this.callbackQuestionNew.bind(this);
-    this.renderError = this.renderError.bind(this);
   }
 
   componentDidMount() {
@@ -46,65 +46,56 @@ class QuestionList extends React.Component {
   }
 
   callbackTaskStop(question) {
-    this.setState({ question });
+    this.setState({ question }, () => {
+      this.toggleModal();
+    });
   }
 
-  closeModal() {
-    this.setState({ question: {} });
+  toggleModal() {
+    this.setState(prevState => ({ showModal: !prevState.showModal }));
   }
 
   callbackQuestionNew() {
     this.appConfig.redirect(this.appConfig.urls.questionDesign);
   }
-  renderLoadingUser() {
-    return (
-      <p />
-    );
-  }
-  renderError() {
-    return (
-      <h2>
-        There was a problem contacting the server.
-      </h2>
-    );
-  }
-  renderLoadedUser() {
-    return (
-      <div>
-        <Header
-          config={this.props.config}
-          user={this.state.user}
-        />
-        {!this.state.dataReady && !this.state.hadError &&
-          <Loading />
-        }
-        {!this.state.dataReady && this.state.hadError &&
-          this.renderError()
-        }
-        {this.state.dataReady &&
-          <Grid>
-            <QuestionListPres
-              loginUrl={this.appConfig.urls.login}
-              callbackQuestionNew={this.callbackQuestionNew}
-              callbackAnswersetSelect={(q, a) => this.appConfig.open(this.appConfig.urls.answerset(q.id, a.id))}
-              callbackQuestionSelect={q => this.appConfig.open(this.appConfig.urls.question(q.id))}
-              questions={this.state.questions}
-              user={this.state.user}
-              onClick={this.callbackTaskStop}
-            />
-          </Grid>
-        }
-        {Object.keys(this.state.question).length && <TasksModal config={this.props.config} question={this.state.question} user={this.state.user} closeModal={this.closeModal} />}
-        <Footer config={this.props.config} />
-      </div>
-    );
-  }
+
   render() {
     const ready = this.state.userReady;
     return (
       <div>
-        {!ready && this.renderLoadingUser()}
-        {ready && this.renderLoadedUser()}
+        {ready ?
+          <div>
+            <Header
+              config={this.props.config}
+              user={this.state.user}
+            />
+            {!this.state.dataReady && !this.state.hadError &&
+              <Loading />
+            }
+            {!this.state.dataReady && this.state.hadError &&
+              <h2>
+                There was a problem contacting the server.
+              </h2>
+            }
+            {this.state.dataReady &&
+              <Grid>
+                <QuestionListPres
+                  loginUrl={this.appConfig.urls.login}
+                  callbackQuestionNew={this.callbackQuestionNew}
+                  callbackAnswersetSelect={(q, a) => this.appConfig.open(this.appConfig.urls.answerset(q.id, a.id))}
+                  callbackQuestionSelect={q => this.appConfig.open(this.appConfig.urls.question(q.id))}
+                  questions={this.state.questions}
+                  user={this.state.user}
+                  onClick={this.callbackTaskStop}
+                />
+              </Grid>
+            }
+            <TasksModal question={this.state.question} user={this.state.user} showModal={this.state.showModal} toggleModal={this.toggleModal} />
+            <Footer config={this.props.config} />
+          </div>
+          :
+          <p />
+        }
       </div>
     );
   }
