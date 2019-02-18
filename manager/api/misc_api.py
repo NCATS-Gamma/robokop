@@ -677,7 +677,7 @@ class TaskLog(Resource):
             first_quote = remote_log.find('"')
             last_quote = remote_log.rfind('"')
             if first_quote >= 0 and last_quote >= 0:
-                remote_log = remote_log[(first_quote+1):(last_quote-1)]
+                remote_log = remote_log[(first_quote+1):last_quote]
         except:
             remote_log = 'Error fetching log file.'
 
