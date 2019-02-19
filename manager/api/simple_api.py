@@ -24,6 +24,8 @@ view_storage_dir = f"{os.environ['ROBOKOP_HOME']}/uploads/"
 if not os.path.exists(view_storage_dir):
     os.mkdir(view_storage_dir)
 
+template_dir = f"{os.environ['ROBOKOP_HOME']}/robokop/queries"
+
 output_formats = ['DENSE', 'MESSAGE', 'CSV', 'ANSWERS']
 
 def parse_args_output_format(req_args):
@@ -138,7 +140,7 @@ class Expand(Resource):
             'machine_question': {
                 'nodes': [
                     {
-                        'id': 'n0',
+                        'id': 'n0', 
                         'curie': id1,
                         'type': type1
                     },
@@ -224,7 +226,7 @@ class Quick(Resource):
                         schema:
                             $ref: '#/definitions/Response'
         """
-        logger.info('Answering Question Quickly')
+        logger.info('Answering question quickly')
         question = request.json
         
         if not ('rebuild' in question):
@@ -234,12 +236,20 @@ class Quick(Resource):
             logger.info("   Rebuilding")
             response = requests.post(
                 f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/',
-                json=request.json)
+                json=request.json
+            )
+
+            if not isinstance(response.json(), dict):
+                logger.debug(f'Builder failure: {response.json()}')
+                raise RuntimeError("The robokop builder could not correctly initiate the task.")
+
+            logger.debug(f'   Builder acknowledged with task_id {response.json()["task_id"]}')
             polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task_id']}"
 
             for _ in range(60 * 60):  # wait up to 1 hour
                 time.sleep(1)
                 response = requests.get(polling_url)
+                logger.info('   Builder polled for status')
                 if response.status_code == 200:
                     if response.json()['status'] == 'FAILURE':
                         raise RuntimeError('Builder failed.')
@@ -267,6 +277,7 @@ class Quick(Resource):
             logger.debug(response.json())
             raise RuntimeError("The robokop ranker could not correctly initiate the task.")
 
+        logger.debug(f'   Ranker acknowledged with task_id {response.json()["task_id"]}')
         polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
 
         for _ in range(60 * 60):  # wait up to 1 hour
@@ -679,3 +690,232 @@ class EnrichedExpansion(Resource):
         identifiers.update(descendants)
 
 api.add_resource(EnrichedExpansion, '/simple/enriched/<type1>/<type2>')
+
+def list_templates():
+    template_jsons = [f.replace('.json','').lower() for f in os.listdir(template_dir) if os.path.isfile(os.path.join(template_dir, f)) and '.json' in f]
+    template_jsons.sort()
+    return template_jsons
+
+def load_and_complete_template(template_id, **kwargs):
+    template_file = os.path.join(template_dir, template_id.lower() + '.json')
+    if not os.path.isfile(template_file):
+        logger.info(f'Invalid template_id {template_id}')
+        raise Exception(f'Invalid template_id {template_id}')
+
+    with open(template_file, 'r') as template_fid:
+        template = template_fid.read()
+
+    if kwargs is not None:
+        for key in kwargs:
+            if f'${key}$' not in template:
+                logger.info(f'template string {key} is not used in template {template_id}')
+                raise Exception(f'template string {key} is not used in template {template_id}')
+            template = template.replace(f'${key}$', kwargs[key])
+    
+    return template
+class Templates(Resource):
+    def get(self):
+        """
+        Return a list of available templates.
+        ---
+        tags: [simple]
+        responses:
+            200:
+                description: concepts
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: string
+        """
+        templates = list_templates()
+        return templates
+    
+api.add_resource(Templates, '/simple/templates/')
+
+class Template(Resource):
+    def get(self, template_id, **kwargs):
+        """
+        Return an optionally completed template
+        ---
+        tags: [simple]
+        parameters:
+          - in: path
+            name: template_id
+            description: "The id for the template to be filled in. See /simple/templates"
+            schema:
+                type: string
+            required: true
+            default: "wf1mod1"
+          - in: path
+            name: identifier1
+            description: "The curie for the first template node."
+            schema:
+                type: string
+            required: true
+            default: "MONDO:0005737"
+          - in: path
+            name: identifier2
+            description: "The curie for the second template node (if necessary)"
+            schema:
+                type: string
+            required: false
+            default: ""
+          - in: query
+            name: name1
+            description: "Natural language name for the first template node. This is only used in the natural language question"
+            schema:
+                type: string
+            required: false
+            default: "Ebola"
+          - in: query
+            name: name2
+            description: "Natural language name for the second template node. This is only used in the natural language question"
+            schema:
+                type: string
+            required: false
+            default: ""
+        responses:
+            200:
+                description: A machine question 
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: string
+        """
+
+        template_args = {}
+        for arg in kwargs:
+            if kwargs[arg]:
+                template_args[arg] = kwargs[arg]
+
+        for arg in request.args:
+            if request.args[arg]:
+                template_args[arg] = request.args[arg]
+
+        try:
+            question = load_and_complete_template(template_id, **template_args)
+        except Exception as e:
+            return str(e), 500
+
+        return json.loads(question), 200
+
+api.add_resource(Template, '/simple/template/<template_id>/', '/simple/template/<template_id>/<identifier1>/', '/simple/template/<template_id>/<identifier1>/<identifier2>/', '/simple/template/<template_id>/<identifier1>/<identifier2>/<identifier3>/')
+
+
+class TemplateRun(Resource):
+    def get(self, template_id, **kwargs):
+        """
+        Answer a templated questions.
+        ---
+        tags: [simple]
+        parameters:
+          - in: path
+            name: template_id
+            description: "The id for the template to be filled in. See /simple/templates"
+            schema:
+                type: string
+            required: true
+            default: "wf1mod1"
+          - in: path
+            name: identifier1
+            description: "The curie for the first template node."
+            schema:
+                type: string
+            required: true
+            default: "MONDO:0005737"
+          - in: path
+            name: identifier2
+            description: "The curie for the second template node (if necessary)"
+            schema:
+                type: string
+            required: false
+            default: ""
+          - in: query
+            name: name1
+            description: "Natural language name for the first template node. This is only used in the natural language question"
+            schema:
+                type: string
+            required: false
+            default: "Ebola"
+          - in: query
+            name: name2
+            description: "Natural language name for the second template node. This is only used in the natural language question"
+            schema:
+                type: string
+            required: false
+            default: ""
+          - in: query
+            name: rebuild
+            description: Request a rebuild of the knowledge graph specifically for this question
+            schema:
+                type: boolean
+            default: false
+          - in: query
+            name: output_format
+            description: Requested output format. DENSE, MESSAGE, CSV or ANSWERS
+            schema:
+                type: string
+            default: MESSAGE
+          - in: query
+            name: max_connectivity
+            description: Maximum number of edges into or out of nodes within the answer (0 for infinite, None for an adaptive procedure)
+            schema:
+                type: integer
+            default: 0
+          - in: query
+            name: max_results
+            description: Maximum number of results to return. Provide -1 to indicate no maximum.
+            schema:
+                type: integer
+            default: 250
+
+        responses:
+            200:
+                description: answers
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                answers:
+                                    type: array
+                                    items:
+                                        $ref: '#/definitions/Answer'
+        """
+        logger.info(f'Quick Template - {template_id}')
+
+        template_args = {}
+        for arg in kwargs:
+            if kwargs[arg]:
+                template_args[arg] = kwargs[arg]
+
+        quick_args = ['output_format', 'rebuild', 'max_connectivity', 'max_results']
+        for arg in request.args:
+            if arg not in quick_args:
+                template_args[arg] = request.args[arg]
+    
+        question = json.loads(load_and_complete_template(template_id, **template_args))
+        
+        max_results = parse_args_max_results(request.args)
+        output_format = parse_args_output_format(request.args)
+        max_connectivity = parse_args_max_connectivity(request.args)
+
+        # Ger rebuild from request args
+        question['rebuild'] = parse_args_rebuild(request.args)
+
+        logger.info('Running completed templated response using quick')
+        response = requests.post(
+            f'http://manager:{os.environ["MANAGER_PORT"]}/api/simple/quick/?max_results={max_results}&max_connectivity={max_connectivity}&output_format={output_format}',
+            json=question)
+        if response.status_code >= 300:
+            return "Bad response from the question answering service."
+        answerset = response.json()
+
+        return answerset
+
+api.add_resource(TemplateRun, '/simple/quick/template/<template_id>/<identifier1>/', '/simple/quick/template/<template_id>/<identifier1>/<identifier2>/', '/simple/quick/template/<template_id>/<identifier1>/<identifier2>/<identifier3>/')
+

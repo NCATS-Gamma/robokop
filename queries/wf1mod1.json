@@ -7,7 +7,7 @@
                 "id": "n0",
                 "type": "disease",
                 "curie": [
-                  "$identifier1"
+                  "$identifier1$"
                 ]
             },
             {
