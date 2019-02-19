@@ -96,9 +96,16 @@ class Expand(Resource):
             default: "gene"
           - in: query
             name: predicate
+            description: "edge predicate between the two nodes, also see direction"
             schema:
                 type: string
             default: "disease_to_gene_association"
+          - in: query
+            name: direction
+            description: "direction of the edge between the two nodes, can be one of out, in, undirected. The default is out meaning an edge from node_1 to node_2. This parameter only matters if predicate is also set."
+            schema:
+                type: string
+            default: "out"
           - in: query
             name: rebuild
             schema:
@@ -136,6 +143,21 @@ class Expand(Resource):
                                     items:
                                         $ref: '#/definitions/Answer'
         """
+        direction = request.args.get('direction', 'out')
+        direction = direction.lower()
+        if direction not in ['out', 'in', 'undirected']:
+            return "Invalid direction parameter", 405
+
+        if direction == 'in':
+            source_id = 'n1'
+            target_id = 'n0'
+        else:
+            source_id = 'n0'
+            target_id = 'n1'
+
+        directed = True
+        if direction == 'undirected':
+            directed = False
         question = {
             'machine_question': {
                 'nodes': [
@@ -152,8 +174,9 @@ class Expand(Resource):
                 'edges': [
                     {
                         'id': 'e0',
-                        'source_id': 'n0',
-                        'target_id': 'n1'
+                        'source_id': source_id,
+                        'target_id': target_id,
+                        'directed': directed
                     }
                 ]
             }
