@@ -41,7 +41,6 @@ class Activity extends React.Component {
   refreshTasks() {
     this.appConfig.questionList(
       (data) => {
-        console.log(data);
         this.setState({
           questions: data.data.questions,
           dataReady: true,

@@ -74,7 +74,6 @@ class QuestionListTableAgGrid extends React.Component {
     return out;
   }
   cellRendererTaskStatus(params) {
-    console.log(params);
     let out = '';
     if (params.data.isBusy) {
       out = `<div style="
@@ -143,6 +142,7 @@ class QuestionListTableAgGrid extends React.Component {
                     headerName: '*',
                     field: 'isUserOwned',
                     suppressMenu: true,
+                    suppressSorting: true,
                     cellRenderer: this.cellRendererOwned,
                     width: 20,
                     hide: true,
@@ -153,25 +153,15 @@ class QuestionListTableAgGrid extends React.Component {
                     headerName: 'Question',
                     field: 'naturalQuestion',
                     suppressMenu: true,
+                    suppressSorting: true,
                     width: 500,
                   },
-                  // {
-                  //   headerName: 'User',
-                  //   field: 'user_email',
-                  //   suppressMenu: true,
-                  //   width: 100,
-                  // },
-                  // {
-                  //   headerName: 'Notes',
-                  //   field: 'notes',
-                  //   suppressMenu: true,
-                  //   width: 200,
-                  // },
                   {
                     headerName: 'Task Status',
                     headerClass: 'no-padding',
                     field: 'isBusy',
                     suppressMenu: true,
+                    suppressSorting: true,
                     cellRenderer: this.cellRendererTaskStatus,
                     width: 70,
                     minWidth: 20,
@@ -183,6 +173,7 @@ class QuestionListTableAgGrid extends React.Component {
                     headerClass: 'no-padding',
                     field: 'latestAnswersetId',
                     suppressMenu: true,
+                    suppressSorting: true,
                     cellRenderer: this.cellRendererAnswers,
                     width: 70,
                     minWidth: 20,

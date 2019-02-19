@@ -31,11 +31,6 @@ class ActivityTableAgGrid extends React.Component {
     this.columnApi = params.columnApi;
 
     this.gridApi.sizeColumnsToFit();
-
-    const sort = [
-      { colId: 'timeString', sort: 'desc' },
-    ];
-    this.gridApi.setSortModel(sort);
   }
   onClick(event) {
     this.props.onClick(event.node.data);
@@ -50,7 +45,6 @@ class ActivityTableAgGrid extends React.Component {
     return 'question-row-is-unowned';
   }
   cellRendererStatus(params) {
-    console.log(params);
     let out = params.value;
     const isBusy = (params.value !== 'Zombie' && params.value !== 'Complete');
     const isFailure = params.value === 'Zombie';
@@ -123,15 +117,6 @@ class ActivityTableAgGrid extends React.Component {
     return out;
   }
   render() {
-    // { headerName: '', field: 'isBusy', suppressMenu: true, cellRenderer: this.cellRendererBusy, width: 10 },
-    // {
-    //   headerName: '',
-    //   field: 'latest_answerset_id',
-    //   suppressMenu: true,
-    //   cellRenderer: this.cellRendererAnswers,
-    //   width: 10,
-    //   onCellClicked: params => console.log('Clicked'),
-    // },
     return (
       <div>
         <Panel>
@@ -153,6 +138,7 @@ class ActivityTableAgGrid extends React.Component {
                     headerName: '*',
                     field: 'isUserOwned',
                     suppressMenu: true,
+                    suppressSorting: true,
                     cellRenderer: this.cellRendererOwned,
                     width: 5,
                     hide: true,
@@ -163,24 +149,28 @@ class ActivityTableAgGrid extends React.Component {
                     headerName: 'ID',
                     field: 'id',
                     suppressMenu: true,
+                    suppressSorting: true,
                     width: 125,
                   },
                   {
                     headerName: 'Question ID',
                     field: 'questionId',
                     suppressMenu: true,
+                    suppressSorting: true,
                     width: 125,
                   },
                   {
                     headerName: 'Type',
                     field: 'typeName',
                     suppressMenu: true,
+                    suppressSorting: true,
                     width: 50,
                   },
                   {
                     headerName: 'Started',
                     field: 'startingTimestamp',
                     suppressMenu: true,
+                    suppressSorting: true,
                     width: 100,
                   },
                   {
@@ -188,6 +178,7 @@ class ActivityTableAgGrid extends React.Component {
                     headerClass: 'no-padding',
                     field: 'status',
                     suppressMenu: true,
+                    suppressSorting: true,
                     cellRenderer: this.cellRendererStatus,
                     width: 50,
                     minWidth: 20,

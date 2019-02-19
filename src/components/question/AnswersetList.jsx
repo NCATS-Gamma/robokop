@@ -75,7 +75,6 @@ class AnswersetList extends React.Component {
   }
 
   getHeight() {
-    console.log('getting height');
     const h = $(window).height() - 350;
     return `${h}px`;
   }

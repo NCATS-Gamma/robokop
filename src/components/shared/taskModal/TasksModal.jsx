@@ -7,6 +7,17 @@ import TaskLogs from './TaskLogs';
 const config = require('../../../../config.json');
 const _ = require('lodash');
 
+const timestampToDate = (ts) => {
+  let ts2 = ts;
+  if (ts) {
+    if (!ts.endsWith('Z')) {
+      ts2 = `${ts}Z`;
+    }
+    return new Date(ts2);
+  }
+  return null;
+};
+
 class TasksModal extends Component {
   constructor(props) {
     super(props);
@@ -35,10 +46,12 @@ class TasksModal extends Component {
 
   componentDidUpdate(prevProps) {
     // if the question changes or the modal is opened up, get the task logs
-    if (!_.isEqual(prevProps.question, this.props.question) || ((prevProps.showModal !== this.props.showModal) && this.props.showModal)) {
-      if (this.props.question) {
-        this.getTaskLogs(this.props.question.tasks[0].id, 0);
+    if (!_.isEqual(prevProps.tasks, this.props.tasks) || ((prevProps.showModal !== this.props.showModal) && this.props.showModal)) {
+      if (this.props.tasks) {
+        console.log('got new tasks');
+        this.getTaskLogs(this.props.tasks[0].id, 0);
       } else if (this.props.task) {
+        console.log('got new task');
         this.getTaskLogs(this.props.task.id, 0);
       }
     }
@@ -52,6 +65,7 @@ class TasksModal extends Component {
     this.appConfig.taskLog(
       taskId,
       (logs) => {
+        console.log('getting updated task logs');
         this.setState({
           managerLogs: JSON.stringify(logs.task_log),
           rankerLogs: JSON.stringify(logs.remote_task_log),
@@ -67,7 +81,7 @@ class TasksModal extends Component {
     key,
     style,
   }) {
-    const task = this.props.question.tasks[index];
+    const task = this.props.tasks[index];
     let taskType = task.type;
     if (taskType.endsWith('update_kg')) {
       taskType = 'Refresh';
@@ -76,9 +90,9 @@ class TasksModal extends Component {
     } else {
       taskType = '?';
     }
-    const initialTime = task.timestamp && new Date(task.timestamp).toLocaleString();
-    const startTime = task.startingTimestamp && new Date(task.startingTimestamp).toLocaleString();
-    const endTime = task.endTimestamp && new Date(task.endTimestamp).toLocaleString();
+    const initialTime = task.timestamp && timestampToDate(task.timestamp).toLocaleString();
+    const startTime = task.startingTimestamp && timestampToDate(task.startingTimestamp).toLocaleString();
+    const endTime = task.endTimestamp && timestampToDate(task.endTimestamp).toLocaleString();
     const result = JSON.parse(task.result).status;
     return (
       <button key={key} className={`taskListTask${this.state.activeTask === index ? ' active' : ''}`} style={style} onClick={() => this.getTaskLogs(task.id, index)}>
@@ -158,9 +172,9 @@ class TasksModal extends Component {
   render() {
     const { activeTask } = this.state;
     const {
-      question, showModal, toggleModal, task,
+      header, showModal, toggleModal, task, tasks,
     } = this.props;
-    const rowCount = (question && question.tasks && question.tasks.length) || 0;
+    const rowCount = (tasks && tasks.length) || 0;
     const listHeight = Math.max(Math.min((rowCount * 50), 200), 100);
     return (
       <Modal
@@ -168,15 +182,15 @@ class TasksModal extends Component {
         onHide={toggleModal}
         backdrop
       >
-        {question &&
+        {header &&
           <Modal.Header closeButton>
             <Modal.Title>
-              {question.naturalQuestion || question.natural_question}
+              {header}
             </Modal.Title>
           </Modal.Header>
         }
         <Modal.Body>
-          {question &&
+          {tasks &&
             <div>
               <h3 style={this.styles.list}>Task Type</h3>
               <h3 style={this.styles.list}>Initialized</h3>
@@ -192,6 +206,7 @@ class TasksModal extends Component {
                     rowHeight={50}
                     rowRenderer={this.renderTasks}
                     activeTask={this.state.activeTask}
+                    tasks={this.props.tasks}
                   />
                 )}
               </AutoSizer>
@@ -202,14 +217,14 @@ class TasksModal extends Component {
               <Panel.Heading>
                 <Panel.Title>
                   <h3 style={{ textAlign: 'center' }}>Task Logs</h3>
-                  {question &&
+                  {tasks &&
                     <button className="logButton" onClick={this.hideLogs}>
                       <span>
                         X
                       </span>
                     </button>
                   }
-                  <button className="logButton" onClick={() => { this.getTaskLogs((question && question.tasks[activeTask].id) || task.id, activeTask); }}>
+                  <button className="logButton" onClick={() => { this.getTaskLogs((tasks && tasks[activeTask].id) || task.id, activeTask); }}>
                     <span>
                       Refresh
                     </span>

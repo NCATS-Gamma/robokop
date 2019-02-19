@@ -32,10 +32,11 @@ class QuestionListPres extends React.Component {
   }
 
   syncStateAndProps(newProps) {
-    const questions = newProps.questions.map((q) => {
+    const questions = newProps.questions.map((question) => {
+      const q = question;
       q.isUserOwned = q.ownerId.toString() === this.props.user.user_id;
       q.hasAnswerset = false; // Boolean(q.latest_answerset_id);
-      
+
       const answersets = ('qgraphs' in q && 'answersets' in q.qgraphs && Array.isArray(q.qgraphs.answersets)) ? q.qgraphs.answersets : [];
 
       if (answersets.length > 0) {
@@ -54,7 +55,6 @@ class QuestionListPres extends React.Component {
 
         q.hasAnswerset = true;
         q.latestAnswersetId = answersetsSorted[0].id;
-
       } else {
         q.hasAnswerset = false;
         q.latestAnswersetId = '';

@@ -8,7 +8,6 @@ import FaInfoCircle from 'react-icons/lib/fa/info-circle';
 // import FaClone from 'react-icons/lib/fa/clone';
 
 import QuestionToolbar from './QuestionToolbar';
-import TasksModal from './taskModal/TasksModal';
 
 const timestampToTimeString = (ts) => {
   let ts2 = ts;
@@ -34,13 +33,11 @@ class QuestionHeader extends React.Component {
       editedNotes: false,
       notes: '',
       natural: '',
-      showModal: false,
     };
 
     this.onEditNatural = this.onEditNatural.bind(this);
     this.onEditNotes = this.onEditNotes.bind(this);
     this.onSave = this.onSave.bind(this);
-    this.toggleModal = this.toggleModal.bind(this);
   }
 
   componentDidMount() {
@@ -70,8 +67,7 @@ class QuestionHeader extends React.Component {
     const stateAllMatch = (newState.editedNatural === this.state.editedNatural) &&
       (newState.editedNotes === this.state.editedNotes) &&
       (newState.notes === this.state.notes) &&
-      (newState.natural === this.state.natural) &&
-      (newState.showModal === this.state.showModal);
+      (newState.natural === this.state.natural);
 
     return !(propsAllMatch && stateAllMatch);
   }
@@ -81,9 +77,6 @@ class QuestionHeader extends React.Component {
   }
   onEditNotes(e) {
     this.setState({ editedNotes: true, notes: e.target.value });
-  }
-  toggleModal() {
-    this.setState(prevState => ({ showModal: !prevState.showModal }));
   }
   onSave() {
     const newMeta = {
@@ -205,7 +198,6 @@ class QuestionHeader extends React.Component {
 
     return (
       <div>
-        <TasksModal question={this.props.question} user={this.props.user} showModal={this.state.showModal} toggleModal={this.toggleModal} />
         <Row>
           <Col md={12}>
             {active &&
@@ -270,7 +262,7 @@ class QuestionHeader extends React.Component {
                     callbackNewAnswerset={this.props.callbackNewAnswerset}
                     callbackRefresh={this.props.callbackRefresh}
                     callbackFork={this.props.callbackFork}
-                    callbackTaskStatus={this.toggleModal}
+                    callbackTaskStatus={this.props.callbackTaskStatus}
                     callbackDelete={this.props.callbackDelete}
 
                     enableNewAnswersets={this.props.enableNewAnswersets && !active}

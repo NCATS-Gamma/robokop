@@ -9,9 +9,12 @@ import AppConfig from './AppConfig';
 import Loading from './components/Loading';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import TasksModal from './components/shared/taskModal/TasksModal';
 import QuestionPres from './components/question/QuestionPres';
 
 import runningTaskFilter from './components/util/runningTaskFilter';
+
+const _ = require('lodash');
 
 class Question extends React.Component {
   constructor(props) {
@@ -25,15 +28,19 @@ class Question extends React.Component {
       user: {},
       concepts: [],
       answersets: [],
-      question: [],
+      question: {},
+      tasks: [],
       runningTasks: [],
       prevRunningTasks: [],
       refreshBusy: false,
       answerBusy: false,
+      showModal: false,
     };
 
     this.taskPollingWaitTime = 2000; // in ms
 
+    this.toggleModal = this.toggleModal.bind(this);
+    this.sortTasks = this.sortTasks.bind(this);
     this.pullTasks = this.pullTasks.bind(this);
     this.updateTaskStatus = this.updateTaskStatus.bind(this);
 
@@ -88,6 +95,16 @@ class Question extends React.Component {
     });
     this.pullTasks();
   }
+  toggleModal() {
+    this.setState(prevState => ({ showModal: !prevState.showModal }));
+  }
+  sortTasks() {
+    const sortedTasks = this.state.tasks;
+    if (sortedTasks.length) {
+      return sortedTasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    }
+    return [];
+  }
   pullTasks() {
     this.appConfig.questionTasks(
       this.props.id,
@@ -98,7 +115,7 @@ class Question extends React.Component {
         // We need to find the running tasks
         const runningTasks = tasks.filter(runningTaskFilter);
         const prevRunningTasks = this.state.runningTasks;
-        this.setState({ runningTasks, prevRunningTasks }, this.updateTaskStatus);
+        this.setState({ tasks, runningTasks, prevRunningTasks }, this.updateTaskStatus);
       },
       err => console.log('Issues fetching active tasks', err),
     );
@@ -233,6 +250,7 @@ class Question extends React.Component {
     this.appConfig.answersetCreate(
       this.props.id,
       (newData) => {
+        console.log(newData);
         this.addToTaskList({ answersetTask: newData.task_id });
         this.notificationSystem.addNotification({
           title: 'Answer Set Generation in Progress',
@@ -247,7 +265,7 @@ class Question extends React.Component {
           title: 'Trouble Queuing Answer Set Generation',
           text: 'This could be due to an intermittent network error. If you encounter this error repeatedly, please contact a system administrator.',
           buttonText: 'OK',
-          buttonAction: () => {},
+          buttonAction: () => { },
         });
       },
     );
@@ -272,7 +290,7 @@ class Question extends React.Component {
           title: 'Trouble Refreshing the Knowledge Graph',
           text: 'This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
           buttonText: 'OK',
-          buttonAction: () => {},
+          buttonAction: () => { },
         });
       },
     );
@@ -285,87 +303,90 @@ class Question extends React.Component {
     this.appConfig.questionFork(this.props.id);
   }
   callbackTaskStatus() {
-    const task = this.state.runningTasks[0];
-    const isAuth = this.state.user.is_admin || this.state.user.username === task.initiator;
-
-    let ts = task.timestamp;
-    if (!ts.endsWith('Z')) {
-      ts = `${ts}Z`;
-    }
-    const d = new Date(ts);
-    const timeString = d.toLocaleString();
-
-    const { status } = task;
-    const taskSummary = (
-      <ul>
-        <li>{`ID: ${task.id}`}</li>
-        <li>{`Initiator: ${task.initiator}`}</li>
-        <li>{`Started: ${timeString}`}</li>
-        <li>{`Status: ${status}`}</li>
-      </ul>
-    );
-
-    if (isAuth) {
-      const content = (
-        <div>
-          {taskSummary}
-          <h3>
-            You can stop this task prior to completion. Would you like to stop this task?
-          </h3>
-        </div>
-      );
-
-      this.dialogConfirm(
-        () => {
-          this.dialogWait({
-            title: 'Stoping Task...',
-            text: '',
-            showLoading: true,
-          });
-
-          // Actually try to delete the question here.
-          this.appConfig.taskStop(
-            task.id,
-            () => {
-              this.notificationSystem.addNotification({
-                title: 'Task Stopped',
-                message: 'Task successfully stopped.',
-                level: 'info',
-                position: 'tr',
-                dismissible: 'click',
-              });
-              this.dialog.hide();
-            },
-            (err) => {
-              console.log(err);
-              this.dialogMessage({
-                title: 'Task Not Stopped!',
-                text: 'We were unable to stop the task. This could due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
-                buttonText: 'OK',
-              });
-            },
-          );
-        },
-        {
-          confirmationTitle: 'Task Status',
-          confirmationText: content,
-          confirmationButtonText: 'Stop',
-        },
-      );
-    } else {
-      const content = (
-        <div>
-          {taskSummary}
-        </div>
-      );
-      this.dialogMessage({
-        title: 'Task Status',
-        text: content,
-        buttonText: 'OK',
-        buttonAction: () => {},
-      });
-    }
+    this.toggleModal();
   }
+  // callbackTaskStatus() {
+  //   const task = this.state.runningTasks[0];
+  //   const isAuth = this.state.user.is_admin || this.state.user.username === task.initiator;
+
+  //   let ts = task.timestamp;
+  //   if (!ts.endsWith('Z')) {
+  //     ts = `${ts}Z`;
+  //   }
+  //   const d = new Date(ts);
+  //   const timeString = d.toLocaleString();
+
+  //   const { status } = task;
+  //   const taskSummary = (
+  //     <ul>
+  //       <li>{`ID: ${task.id}`}</li>
+  //       <li>{`Initiator: ${task.initiator}`}</li>
+  //       <li>{`Started: ${timeString}`}</li>
+  //       <li>{`Status: ${status}`}</li>
+  //     </ul>
+  //   );
+
+  //   if (isAuth) {
+  //     const content = (
+  //       <div>
+  //         {taskSummary}
+  //         <h3>
+  //           You can stop this task prior to completion. Would you like to stop this task?
+  //         </h3>
+  //       </div>
+  //     );
+
+  //     this.dialogConfirm(
+  //       () => {
+  //         this.dialogWait({
+  //           title: 'Stoping Task...',
+  //           text: '',
+  //           showLoading: true,
+  //         });
+
+  //         // Actually try to delete the question here.
+  //         this.appConfig.taskStop(
+  //           task.id,
+  //           () => {
+  //             this.notificationSystem.addNotification({
+  //               title: 'Task Stopped',
+  //               message: 'Task successfully stopped.',
+  //               level: 'info',
+  //               position: 'tr',
+  //               dismissible: 'click',
+  //             });
+  //             this.dialog.hide();
+  //           },
+  //           (err) => {
+  //             console.log(err);
+  //             this.dialogMessage({
+  //               title: 'Task Not Stopped!',
+  //               text: 'We were unable to stop the task. This could due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
+  //               buttonText: 'OK',
+  //             });
+  //           },
+  //         );
+  //       },
+  //       {
+  //         confirmationTitle: 'Task Status',
+  //         confirmationText: content,
+  //         confirmationButtonText: 'Stop',
+  //       },
+  //     );
+  //   } else {
+  //     const content = (
+  //       <div>
+  //         {taskSummary}
+  //       </div>
+  //     );
+  //     this.dialogMessage({
+  //       title: 'Task Status',
+  //       text: content,
+  //       buttonText: 'OK',
+  //       buttonAction: () => { },
+  //     });
+  //   }
+  // }
   callbackDelete() {
     this.dialogConfirm(
       () => {
@@ -409,7 +430,7 @@ class Question extends React.Component {
       title: options.confirmationTitle,
       body: options.confirmationText,
       actions: [
-        Dialog.CancelAction(() => {}),
+        Dialog.CancelAction(() => { }),
         Dialog.Action(
           options.confirmationButtonText,
           () => callbackToDo(),
@@ -446,7 +467,7 @@ class Question extends React.Component {
       body: bodyNode,
       actions: [],
       bsSize: 'large',
-      onHide: () => {},
+      onHide: () => { },
     });
   }
   dialogMessage(inputOptions) {
@@ -454,7 +475,7 @@ class Question extends React.Component {
       title: 'Hi',
       text: 'How are you?',
       buttonText: 'OK',
-      buttonAction: () => {},
+      buttonAction: () => { },
     };
     const options = { ...defaultOptions, ...inputOptions };
 
@@ -490,15 +511,15 @@ class Question extends React.Component {
           this.props.id,
           (data) => {
             // Make sure this task id is in the list of tasks for this question
-
-            const tasks = data.data.question.tasks; //eslint-disable-line
+            const { tasks } = data.data.question;
             // console.log('got question tasks: ', tasks);
             let taskId = newTask.answersetTask;
             if (isRefreshTask) {
               taskId = newTask.questionTask;
             }
             // console.log('searching for ', taskId);
-            const thisTask = tasks.find(t => t.id === taskId);
+            // we are editing this is place, don't want to modify the tasks
+            const thisTask = _.cloneDeep(tasks.find(t => t.id === taskId));
             // console.log('Found task', thisTask);
             if (!thisTask) {
               // Task went missing!@?!
@@ -509,7 +530,7 @@ class Question extends React.Component {
                   title: 'Trouble Queuing Question Answering',
                   text: 'We have lost track of your task. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
                   buttonText: 'OK',
-                  buttonAction: () => {},
+                  buttonAction: () => { },
                 });
               } else {
                 // isRefreshTask
@@ -519,7 +540,7 @@ class Question extends React.Component {
                   title: 'Trouble Queuing Knowledge Graph Update',
                   text: 'We have lost track of your tasks. This could be due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
                   buttonText: 'OK',
-                  buttonAction: () => {},
+                  buttonAction: () => { },
                 });
               }
               return;
@@ -546,6 +567,7 @@ class Question extends React.Component {
             // Find the running tasks, update state, queue updateTaskStatus
             this.setState(
               {
+                tasks,
                 prevRunningTasks: runningTasks,
                 runningTasks,
                 answerBusy: isAnswerTask,
@@ -564,91 +586,80 @@ class Question extends React.Component {
   callbackFetchAnswerset(aid, successFun, failureFun) {
     this.appConfig.answersetData(`${this.props.id}_${aid}`, successFun, failureFun);
   }
-  renderLoading() {
-    return (
-      <p />
-    );
-  }
-  renderInvalid() {
-    return (
-      <div>
-        <Row>
-          <Col md={12}>
-            <h3>
-              {"We're sorry but we encountered an error trying to find this question."}
-            </h3>
-          </Col>
-        </Row>
-        <Row>
-          <Col md={4}>
-            <Button bsSize="large" href={this.appConfig.urls.questions}>
-              Browse Questions
-            </Button>
-          </Col>
-        </Row>
-      </div>
-    );
-  }
-  renderLoaded() {
-    return (
-      <div>
-        <Header
-          config={this.props.config}
-          user={this.state.user}
-        />
-        <Grid>
-          {this.state.dataReady && this.state.isValid &&
-            <QuestionPres
-              user={this.state.user}
-              owner={this.state.owner}
-              callbackUpdateMeta={this.callbackUpdateMeta}
-              callbackRefresh={this.callbackRefresh}
-              callbackNewAnswerset={this.callbackNewAnswerset}
-              callbackFork={this.callbackFork}
-              callbackDelete={this.callbackDelete}
-              callbackTaskStatus={this.callbackTaskStatus}
-              callbackFetchAnswerset={this.callbackFetchAnswerset}
-              answersetUrl={(a) => {
-                if (a && (typeof a === 'object') && 'id' in a) {
-                  return this.appConfig.urls.answerset(this.props.id, a.id);
-                }
-                return '';
-              }}
-              question={this.state.question}
-              answersets={this.state.answersets}
-              concepts={this.state.concepts}
-              refreshBusy={this.state.refreshBusy}
-              answerBusy={this.state.answerBusy}
-              enableNewAnswersets={this.appConfig.enableNewAnswersets}
-              enableNewQuestions={this.appConfig.enableNewQuestions}
-              enableQuestionRefresh={this.appConfig.enableQuestionRefresh}
-              enableQuestionEdit={this.appConfig.enableQuestionEdit}
-              enableQuestionDelete={this.appConfig.enableQuestionDelete}
-              enableQuestionFork={this.appConfig.enableQuestionFork}
-              enableTaskStatus={this.appConfig.enableTaskStatus}
-            />
-          }
-          {this.state.dataReady && !this.state.isValid &&
-            this.renderInvalid()
-          }
-          {!this.state.dataReady &&
-            <Loading />
-          }
-        </Grid>
-        <Footer config={this.props.config} />
-        <Dialog ref={(el) => { this.dialog = el; }} />
-        <NotificationSystem
-          ref={(ref) => { this.notificationSystem = ref; }}
-        />
-      </div>
-    );
-  }
   render() {
     const ready = this.state.userReady && this.state.conceptsReady;
     return (
       <div>
-        {!ready && this.renderLoading()}
-        {ready && this.renderLoaded()}
+        {ready ?
+          <div>
+            <Header
+              config={this.props.config}
+              user={this.state.user}
+            />
+            <Grid>
+              {this.state.dataReady && this.state.isValid &&
+                <QuestionPres
+                  user={this.state.user}
+                  owner={this.state.owner}
+                  callbackUpdateMeta={this.callbackUpdateMeta}
+                  callbackRefresh={this.callbackRefresh}
+                  callbackNewAnswerset={this.callbackNewAnswerset}
+                  callbackFork={this.callbackFork}
+                  callbackDelete={this.callbackDelete}
+                  callbackTaskStatus={this.callbackTaskStatus}
+                  callbackFetchAnswerset={this.callbackFetchAnswerset}
+                  answersetUrl={(a) => {
+                    if (a && (typeof a === 'object') && 'id' in a) {
+                      return this.appConfig.urls.answerset(this.props.id, a.id);
+                    }
+                    return '';
+                  }}
+                  question={this.state.question}
+                  answersets={this.state.answersets}
+                  concepts={this.state.concepts}
+                  refreshBusy={this.state.refreshBusy}
+                  answerBusy={this.state.answerBusy}
+                  enableNewAnswersets={this.appConfig.enableNewAnswersets}
+                  enableNewQuestions={this.appConfig.enableNewQuestions}
+                  enableQuestionRefresh={this.appConfig.enableQuestionRefresh}
+                  enableQuestionEdit={this.appConfig.enableQuestionEdit}
+                  enableQuestionDelete={this.appConfig.enableQuestionDelete}
+                  enableQuestionFork={this.appConfig.enableQuestionFork}
+                  enableTaskStatus={this.appConfig.enableTaskStatus}
+                />
+              }
+              {this.state.dataReady && !this.state.isValid &&
+                <div>
+                  <Row>
+                    <Col md={12}>
+                      <h3>
+                        {"We're sorry but we encountered an error trying to find this question."}
+                      </h3>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md={4}>
+                      <Button bsSize="large" href={this.appConfig.urls.questions}>
+                        Browse Questions
+                      </Button>
+                    </Col>
+                  </Row>
+                </div>
+              }
+              {!this.state.dataReady &&
+                <Loading />
+              }
+            </Grid>
+            <Footer config={this.props.config} />
+            <TasksModal header={this.state.question.natural_question} tasks={this.sortTasks()} user={this.state.user} showModal={this.state.showModal} toggleModal={this.toggleModal} />
+            <Dialog ref={(el) => { this.dialog = el; }} />
+            <NotificationSystem
+              ref={(ref) => { this.notificationSystem = ref; }}
+            />
+          </div>
+          :
+          <p />
+        }
       </div>
     );
   }

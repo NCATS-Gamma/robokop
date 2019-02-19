@@ -26,6 +26,7 @@ class QuestionList extends React.Component {
     this.callbackTaskStop = this.callbackTaskStop.bind(this);
     this.toggleModal = this.toggleModal.bind(this);
     this.callbackQuestionNew = this.callbackQuestionNew.bind(this);
+    this.sortTasks = this.sortTasks.bind(this);
   }
 
   componentDidMount() {
@@ -53,6 +54,13 @@ class QuestionList extends React.Component {
 
   toggleModal() {
     this.setState(prevState => ({ showModal: !prevState.showModal }));
+  }
+
+  sortTasks(tasks) {
+    if (tasks) {
+      return tasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    }
+    return [];
   }
 
   callbackQuestionNew() {
@@ -90,8 +98,8 @@ class QuestionList extends React.Component {
                 />
               </Grid>
             }
-            <TasksModal question={this.state.question} user={this.state.user} showModal={this.state.showModal} toggleModal={this.toggleModal} />
             <Footer config={this.props.config} />
+            <TasksModal header={this.state.question.naturalQuestion} tasks={this.sortTasks(this.state.question.tasks)} user={this.state.user} showModal={this.state.showModal} toggleModal={this.toggleModal} />
           </div>
           :
           <p />
