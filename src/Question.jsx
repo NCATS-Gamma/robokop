@@ -305,88 +305,7 @@ class Question extends React.Component {
   callbackTaskStatus() {
     this.toggleModal();
   }
-  // callbackTaskStatus() {
-  //   const task = this.state.runningTasks[0];
-  //   const isAuth = this.state.user.is_admin || this.state.user.username === task.initiator;
 
-  //   let ts = task.timestamp;
-  //   if (!ts.endsWith('Z')) {
-  //     ts = `${ts}Z`;
-  //   }
-  //   const d = new Date(ts);
-  //   const timeString = d.toLocaleString();
-
-  //   const { status } = task;
-  //   const taskSummary = (
-  //     <ul>
-  //       <li>{`ID: ${task.id}`}</li>
-  //       <li>{`Initiator: ${task.initiator}`}</li>
-  //       <li>{`Started: ${timeString}`}</li>
-  //       <li>{`Status: ${status}`}</li>
-  //     </ul>
-  //   );
-
-  //   if (isAuth) {
-  //     const content = (
-  //       <div>
-  //         {taskSummary}
-  //         <h3>
-  //           You can stop this task prior to completion. Would you like to stop this task?
-  //         </h3>
-  //       </div>
-  //     );
-
-  //     this.dialogConfirm(
-  //       () => {
-  //         this.dialogWait({
-  //           title: 'Stoping Task...',
-  //           text: '',
-  //           showLoading: true,
-  //         });
-
-  //         // Actually try to delete the question here.
-  //         this.appConfig.taskStop(
-  //           task.id,
-  //           () => {
-  //             this.notificationSystem.addNotification({
-  //               title: 'Task Stopped',
-  //               message: 'Task successfully stopped.',
-  //               level: 'info',
-  //               position: 'tr',
-  //               dismissible: 'click',
-  //             });
-  //             this.dialog.hide();
-  //           },
-  //           (err) => {
-  //             console.log(err);
-  //             this.dialogMessage({
-  //               title: 'Task Not Stopped!',
-  //               text: 'We were unable to stop the task. This could due to an intermittent network error. If you encounter this error repeatedly, please contact the system administrators.',
-  //               buttonText: 'OK',
-  //             });
-  //           },
-  //         );
-  //       },
-  //       {
-  //         confirmationTitle: 'Task Status',
-  //         confirmationText: content,
-  //         confirmationButtonText: 'Stop',
-  //       },
-  //     );
-  //   } else {
-  //     const content = (
-  //       <div>
-  //         {taskSummary}
-  //       </div>
-  //     );
-  //     this.dialogMessage({
-  //       title: 'Task Status',
-  //       text: content,
-  //       buttonText: 'OK',
-  //       buttonAction: () => { },
-  //     });
-  //   }
-  // }
   callbackDelete() {
     this.dialogConfirm(
       () => {
@@ -518,7 +437,7 @@ class Question extends React.Component {
               taskId = newTask.questionTask;
             }
             // console.log('searching for ', taskId);
-            // we are editing this is place, don't want to modify the tasks
+            // we are editing this in place, don't want to modify the tasks
             const thisTask = _.cloneDeep(tasks.find(t => t.id === taskId));
             // console.log('Found task', thisTask);
             if (!thisTask) {

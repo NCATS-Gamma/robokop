@@ -97,7 +97,6 @@ class ActivityPres extends React.Component {
         return t;
       });
       tasks = tasks.concat(qTasks);
-      // delete q.tasks;
     });
     tasks = tasks.sort((a, b) => new Date(b.startingTimestamp) - new Date(a.startingTimestamp));
     this.setState({ tasks });

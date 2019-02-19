@@ -48,10 +48,8 @@ class TasksModal extends Component {
     // if the question changes or the modal is opened up, get the task logs
     if (!_.isEqual(prevProps.tasks, this.props.tasks) || ((prevProps.showModal !== this.props.showModal) && this.props.showModal)) {
       if (this.props.tasks) {
-        console.log('got new tasks');
         this.getTaskLogs(this.props.tasks[0].id, 0);
       } else if (this.props.task) {
-        console.log('got new task');
         this.getTaskLogs(this.props.task.id, 0);
       }
     }
@@ -65,7 +63,6 @@ class TasksModal extends Component {
     this.appConfig.taskLog(
       taskId,
       (logs) => {
-        console.log('getting updated task logs');
         this.setState({
           managerLogs: JSON.stringify(logs.task_log),
           rankerLogs: JSON.stringify(logs.remote_task_log),

@@ -347,7 +347,6 @@ class AppConfig {
     },
   ) {
     this.comms.get(addr).then((result) => {
-      // console.log('Get Request', result);
       successFunction(result.data); // 'ok'
     }).catch((err) => {
       failureFunction(err);
@@ -365,7 +364,6 @@ class AppConfig {
     },
   ) {
     this.comms.post(addr, data).then((result) => {
-      // console.log('Post Request: ', result);
       successFunction(result.data);
     }).catch((err) => {
       failureFunction(err);

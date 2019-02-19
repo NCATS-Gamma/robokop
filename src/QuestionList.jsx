@@ -36,7 +36,6 @@ class QuestionList extends React.Component {
     }));
     this.appConfig.questionList(
       (data) => {
-        // console.log(data);
         this.setState({ questions: data.data.questions, dataReady: true });
       },
       (err) => {
