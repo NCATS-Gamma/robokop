@@ -169,7 +169,7 @@ class QuestionHeader extends React.Component {
     }
     let creator = 'Reasoner';
     if (('answerset' in this.props) && ('creator' in this.props.answerset)) {
-      creator = this.props.answerset.creator;
+      ({ creator } = this.props.answerset);
     }
     const answersetMenuItemList = [
       <MenuItem
@@ -232,8 +232,16 @@ class QuestionHeader extends React.Component {
               <div className="pull-right" style={{ marginTop: '10px' }}>
                 {edited &&
                   <div style={{ display: 'inline' }}>
-                    <Alert bsStyle="warning" style={{ fontSize: '12px', display: 'inline', paddingTop: '5px', paddingBottom: '5px' }}>
-                      You have unsaved changes! <span onClick={this.onSave} style={{ cursor: 'pointer', textDecoration: 'underline'}}>Save Now</span>
+                    <Alert
+                      bsStyle="warning"
+                      style={{
+                        fontSize: '12px',
+                        display: 'inline',
+                        paddingTop: '5px',
+                        paddingBottom: '5px',
+                      }}
+                    >
+                      You have unsaved changes! <button onClick={this.onSave} style={{ cursor: 'pointer', textDecoration: 'underline' }}>Save Now</button>
                     </Alert>
                     &nbsp;
                     &nbsp;

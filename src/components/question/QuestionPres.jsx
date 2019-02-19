@@ -72,7 +72,7 @@ class QuestionPres extends React.Component {
           <Button
             bsSize="large"
             alt="Get a New Answer Set"
-            onClick={this.props.callbackAnswersetNew}
+            onClick={this.props.callbackNewAnswerset}
           >
             Get New Answers
             <br />
@@ -170,7 +170,7 @@ class QuestionPres extends React.Component {
           question={this.props.question}
           showToolbar={userIsLoggedIn}
           questionGraphPopover={questionGraphPopover}
-
+          user={this.props.user}
           refreshBusy={this.props.refreshBusy}
           answerBusy={this.props.answerBusy}
           initializerBusy={this.props.initializerBusy}

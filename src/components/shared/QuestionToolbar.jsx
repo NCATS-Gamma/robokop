@@ -18,9 +18,6 @@ class QuestionToolbar extends React.Component {
   }
 
   render() {
-    const refreshing = this.props.refreshBusy;
-    const answering =  this.props.answerBusy;
-
     return (
       <DropdownButton
         bsStyle="default"
@@ -51,15 +48,12 @@ class QuestionToolbar extends React.Component {
         >
           <GoRepoForked /> Ask a New Question Like this One
         </MenuItem>
-        {this.props.enableTaskStatus &&
           <MenuItem
             eventKey="4"
-            disabled={!this.props.enableTaskStatus}
             onSelect={this.props.callbackTaskStatus}
           >
-            <GoMilestone /> Status of the Running Task
+            <GoMilestone /> Tasks
           </MenuItem>
-        }
         <MenuItem divider />
         <MenuItem
           eventKey="5"

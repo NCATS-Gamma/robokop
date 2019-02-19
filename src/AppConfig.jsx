@@ -103,6 +103,15 @@ class AppConfig {
         machine_question: qgraphByQgraphId {
           body
         }
+        tasks: tasksByQuestionIdList {
+          id
+          initiator
+          timestamp
+          startingTimestamp
+          endTimestamp
+          result
+          type
+        }
         question_graph: qgraphByQgraphId {
           answersets: answersetsByQgraphIdList {
             id
@@ -123,6 +132,7 @@ class AppConfig {
         timestamp
         tasks: tasksByQuestionIdList {
           id
+          initiator
           timestamp
           startingTimestamp
           endTimestamp

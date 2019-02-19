@@ -6,21 +6,21 @@ import ActivityTableAgGrid from './ActivityTableAgGrid';
 const _ = require('lodash');
 
 const timestampToDate = (ts) => {
+  let ts2 = ts;
   if (ts) {
     if (!ts.endsWith('Z')) {
-      ts = `${ts}Z`;
+      ts2 = `${ts}Z`;
     }
-    return new Date(ts);
+    return new Date(ts2);
   }
   return null;
-}
+};
 
-class AdminPres extends React.Component {
+class ActivityPres extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       tasks: [],
-      questions: [],
     };
 
     this.syncStateAndProps = this.syncStateAndProps.bind(this);
@@ -28,10 +28,6 @@ class AdminPres extends React.Component {
   }
   componentDidMount() {
     this.syncStateAndProps(this.props);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.syncStateAndProps(nextProps);
   }
 
   getTableHeight() {
@@ -53,15 +49,14 @@ class AdminPres extends React.Component {
     //   "status": "FAILURE"
     // },...
     // ];
-    console.log(newProps);
     const { questions } = newProps;
-    
+
     let tasks = [];
-    /* eslint-disable no-param-reassign */
     questions.forEach((q) => {
-      const qTasks = q.tasks.map((t) => {
+      const qTasks = q.tasks.map((task) => {
+        const t = task;
         t.questionId = q.id;
-        t.isUserOwned = t.initiator === this.props.user.user_id;
+        t.isUserOwned = t.initiator === this.props.user.username;
         if (t.type.endsWith('update_kg')) {
           t.typeName = 'Refresh';
         } else if (t.type.endsWith('answer_question')) {
@@ -69,10 +64,9 @@ class AdminPres extends React.Component {
         } else {
           t.typeName = '?';
         }
-        t.result = JSON.parse(t.result);
-        t.timestamp = timestampToDate(t.timestamp);
-        t.endTimestamp = timestampToDate(t.endTimestamp);
-        t.startingTimestamp = timestampToDate(t.startingTimestamp);
+        t.timestamp = t.timestamp && timestampToDate(t.timestamp).toLocaleString();
+        t.endTimestamp = t.endTimestamp && timestampToDate(t.endTimestamp).toLocaleString();
+        t.startingTimestamp = t.startingTimestamp && timestampToDate(t.startingTimestamp).toLocaleString();
         t.isZombie = !t.timestamp;
         if (t.timestamp && t.startingTimestamp) {
           t.timeInQueue = t.startingTimestamp - t.timestamp;
@@ -103,18 +97,14 @@ class AdminPres extends React.Component {
         return t;
       });
       tasks = tasks.concat(qTasks);
-      delete q.tasks;
     });
-    /* eslint-enable no-param-reassign */
-
-    this.setState({ tasks, questions });
+    tasks = tasks.sort((a, b) => new Date(b.startingTimestamp) - new Date(a.startingTimestamp));
+    this.setState({ tasks });
   }
 
   render() {
     const nTasks = this.state.tasks.length;
     const hasTasks = nTasks > 0;
-
-    const showTasksEmpty = !hasTasks;
     const tableHeight = this.getTableHeight();
     return (
       <div>
@@ -125,7 +115,14 @@ class AdminPres extends React.Component {
             </h1>
           </Col>
           <Col md={12}>
-            {showTasksEmpty &&
+            {hasTasks ?
+              <ActivityTableAgGrid
+                tasks={this.state.tasks}
+                showSearch
+                onClick={this.props.onClick}
+                height={tableHeight}
+              />
+              :
               <div>
                 <p>
                   There are no tasks.
@@ -134,15 +131,6 @@ class AdminPres extends React.Component {
                 <br />
               </div>
             }
-            {hasTasks &&
-              <ActivityTableAgGrid
-                questions={this.state.questions}
-                tasks={this.state.tasks}
-                showSearch
-                onClick={this.props.onClick}
-                height={tableHeight}
-              />
-            }
           </Col>
         </Row>
       </div>
@@ -150,4 +138,4 @@ class AdminPres extends React.Component {
   }
 }
 
-export default AdminPres;
+export default ActivityPres;
