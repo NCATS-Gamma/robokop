@@ -3,7 +3,8 @@ import { observable, action, computed, flow, toJS, configure, autorun, reaction,
 import { graphStates } from '../components/flowbokop/FlowbokopGraphFetchAndView';
 import AppConfig from '../AppConfig';
 
-const config = require('../../config.json');
+import { config } from '../index';
+
 const _ = require('lodash');
 
 configure({ enforceActions: 'always' }); // Prevent observable mutations in MobX outside of actions

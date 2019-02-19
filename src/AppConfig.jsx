@@ -40,7 +40,7 @@ class AppConfig {
       feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
       search: this.url('api/search/'), // POST for Bionames search
       viewData: id => this.url(`api/simple/view/${id}`),
-      graphql: `${this.config.protocol}://${this.config.host}:5000/graphql`,
+      graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql`,
     };
 
     this.url = this.url.bind(this);

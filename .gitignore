@@ -22,4 +22,3 @@ neo4j_plugins
 *.tsv.gz
 deploy/src
 scripting/jobs/*
-config.json
