@@ -129,7 +129,6 @@ class Expand(Resource):
             schema:
                 type: integer
             default: 250
-
         responses:
             200:
                 description: answers
