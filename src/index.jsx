@@ -31,7 +31,23 @@ const $ = require('jquery');
 window.jQuery = window.$ = $; // eslint-disable-line
 
 require('bootstrap');
-const config = require('../config.json');
+const config = {
+  ui: {
+    enableNewAnswersets: true,
+    enableNewQuestions: true,
+    enableQuestionRefresh: true,
+    enableQuestionEdit: true,
+    enableQuestionDelete: true,
+    enableQuestionFork: true,
+    enableTaskStatus: true,
+    enableAnswerFeedback: true,
+  },
+  // Add environmental dependent variables to config here.
+  host: process.env.ROBOKOP_HOST,
+  port: process.env.MANAGER_PORT,
+  protocol: process.env.ROBOKOP_PROTOCOL,
+  graphqlPort: process.env.GRAPHQL_PORT,
+};
 
 const robokop = {
   config,
@@ -125,5 +141,5 @@ const robokop = {
   },
 };
 
-export { robokop };
+export { robokop, config };
 

@@ -178,7 +178,7 @@ class FlowbokopExpand(Resource):
         }
 
         response = requests.post(
-            f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/flowbokop/robokop/',
+            f'http://manager:{os.environ["MANAGER_PORT"]}/api/flowbokop/robokop/',
             json=post_data)
         if response.status_code < 300:
             output = response.json()
@@ -259,7 +259,7 @@ class FlowbokopSimilarity(Resource):
 
         out_curies = []
         for curie_dict in in_curies_list:
-            url = f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/simple/similarity/{type1}/{curie_dict["curie"]}/{type2}/{by_type}'
+            url = f'http://manager:{os.environ["MANAGER_PORT"]}/api/simple/similarity/{type1}/{curie_dict["curie"]}/{type2}/{by_type}'
             option_string = [f'{key}={options[key]}' for key in options]
             if option_string:
                 url += '?' + '&'.join(option_string)
@@ -345,7 +345,7 @@ class FlowbokopEnrichment(Resource):
 
         out_curies = []
         data['identifiers'] = [n['curie'] for n in in_curies_list]
-        url = f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/simple/enriched/{type1}/{type2}'
+        url = f'http://manager:{os.environ["MANAGER_PORT"]}/api/simple/enriched/{type1}/{type2}'
 
         response = requests.post(url, json=data)
         if response.status_code >= 300:
@@ -405,7 +405,7 @@ class FlowbokopRobokop(Resource):
                 node['curie'] = [c['curie'] for c in in_curies_list]
 
         response = requests.post(
-            f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["MANAGER_PORT"]}/api/simple/quick/',
+            f'http://manager:{os.environ["MANAGER_PORT"]}/api/simple/quick/',
             json=question)
         if response.status_code < 300:
             answerset = response.json()

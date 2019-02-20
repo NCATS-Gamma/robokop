@@ -40,7 +40,7 @@ class AppConfig {
       feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
       search: this.url('api/search/'), // POST for Bionames search
       viewData: id => this.url(`api/simple/view/${id}`),
-      graphql: `${this.config.protocol}://${this.config.host}:5000/graphql`,
+      graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql`,
       publications: (id1, id2) => this.url(`api/omnicorp/${id1}/${id2}`), // GET publications for one identifier or a pair of identifiers
     };
 

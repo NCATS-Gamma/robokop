@@ -3,8 +3,8 @@ import { Panel, Modal } from 'react-bootstrap';
 import { AutoSizer, List } from 'react-virtualized';
 import AppConfig from '../../../AppConfig';
 import TaskLogs from './TaskLogs';
+import { config } from '../../../index';
 
-const config = require('../../../../config.json');
 const _ = require('lodash');
 
 const timestampToDate = (ts) => {

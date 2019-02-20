@@ -2,8 +2,7 @@
 import React, { Component } from 'react';
 import { Tabs, Tab } from 'react-bootstrap';
 import AppConfig from '../../../AppConfig';
-
-const config = require('../../../../config.json');
+import { config } from '../../../index';
 
 
 class TaskLogs extends Component {
