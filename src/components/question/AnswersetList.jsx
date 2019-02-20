@@ -7,8 +7,6 @@ import SubGraphViewer from '../shared/SubGraphViewer';
 import AnswersetStore from './../../stores/messageAnswersetStore';
 import Loading from '../Loading';
 
-const _ = require('lodash');
-
 class AnswersetList extends React.Component {
   constructor(props) {
     super(props);
@@ -89,7 +87,12 @@ class AnswersetList extends React.Component {
     const height = this.getHeight();
     const width = this.getWidth();
     return (
-      <div id='answersetList' style={{ position: 'relative', minHeight: '200px', display: 'table', width: '100%' }}>
+      <div
+        id="answersetList"
+        style={{
+          position: 'relative', minHeight: '200px', display: 'table', width: '100%',
+        }}
+      >
         <div style={{
           position: 'absolute',
           top: 0,
@@ -109,8 +112,8 @@ class AnswersetList extends React.Component {
         </div>
         <div
           style={{
-            height: height,
-            width: width
+            height,
+            width,
           }}
         >
           {this.state.loadingAnswerset &&
