@@ -15,6 +15,7 @@ import 'react-table/react-table.css';
 
 import entityNameDisplay from './../util/entityNameDisplay';
 import SubGraphViewer from '../shared/SubGraphViewer';
+import Loading from '../Loading';
 
 const _ = require('lodash');
 
@@ -44,10 +45,17 @@ class AnswersetTableSubComponent extends React.Component {
     activeButton: answersetSubComponentEnum.graph,
     nodeId: null,
   };
-
+  
   constructor(props) {
     super(props);
+
+    this.state = {
+      graph: {},
+      loadingGraph: true,
+    };
+
     this.syncPropsWithState = this.syncPropsWithState.bind(this);
+    this.fetchGraphSupport = this.fetchGraphSupport.bind(this);
 
     // Set local state to correct button and nodeId if provided in props
     this.syncPropsWithState();
@@ -75,23 +83,37 @@ class AnswersetTableSubComponent extends React.Component {
     if (activeButtonKey) {
       this.updateActiveButton(activeButtonKey);
     }
-  }
-
-  renderSubGraph() {
     const rowData = _.cloneDeep(this.props.rowInfo.original);
     const ansId = rowData.id;
     this.props.store.updateActiveAnswerId(ansId);
     const graph = this.props.store.activeAnswerGraph;
+
+    this.setState({ graph }, this.fetchGraphSupport);
+  }
+
+  fetchGraphSupport() {
+    // Actually fetch support edges here
+    this.setState({ graph, loadingGraph: false });
+  }
+
+  renderSubGraph() {
     return (
-      <SubGraphViewer
-        subgraph={graph}
-        concepts={this.props.concepts}
-        layoutRandomSeed={Math.floor(Math.random() * 100)}
-        callbackOnGraphClick={() => {}}
-        showSupport
-        omitEdgeLabel={false}
-        height={350}
-      />
+      <div>
+        {this.state.loadingGraph &&
+          <Loading />
+        }
+        {!this.state.loadingGraph &&
+          <SubGraphViewer
+            subgraph={this.state.graph}
+            concepts={this.props.concepts}
+            layoutRandomSeed={Math.floor(Math.random() * 100)}
+            callbackOnGraphClick={() => {}}
+            showSupport
+            omitEdgeLabel={false}
+            height={350}
+          />
+        }
+      </div>
     );
   }
 
