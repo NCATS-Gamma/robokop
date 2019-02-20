@@ -14,7 +14,7 @@ const _ = require('lodash');
 
 // Filter method for table columns that is case-insensitive, and matches all rows that contain
 // provided sub-string
-const defaultFilterMethod = (filter, row, column) => {
+const defaultFilterMethod = (filter, row) => {
   const id = filter.pivotId || filter.id;
   return row[id] !== undefined ? String(row[id].toLowerCase()).includes(filter.value.toLowerCase()) : true;
 };
@@ -24,7 +24,10 @@ const subComponent = (rowInfo) => {
   const rowData = _.cloneDeep(rowInfo.original);
   // delete rowData.result_graph.edge_list;
   return (
-    <div style={{ margin: '20px', border: '1px solid #ededed', padding: '20px', boxShadow: '0px 0px 5px 0px #ececec' }}>
+    <div style={{
+      margin: '20px', border: '1px solid #ededed', padding: '20px', boxShadow: '0px 0px 5px 0px #ececec',
+      }}
+    >
       <ReactJson
         name={false}
         theme="rjv-default"
@@ -119,7 +122,7 @@ class AnswersetTable extends React.Component {
           width: 75,
           filterable: false,
           accessor: 'confidence',
-          Cell: d => <span className='number'>{parseFloat(Math.round(d.value * 1000) / 1000).toFixed(3)}</span>,
+          Cell: d => <span className="number">{parseFloat(Math.round(d.value * 1000) / 1000).toFixed(3)}</span>,
           className: 'center',
         });
         innerColumns.push({

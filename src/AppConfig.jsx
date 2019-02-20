@@ -41,6 +41,7 @@ class AppConfig {
       search: this.url('api/search/'), // POST for Bionames search
       viewData: id => this.url(`api/simple/view/${id}`),
       graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql`,
+      publications: (id1, id2) => this.url(`api/omnicorp/${id1}/${id2}`), // GET publications for one identifier or a pair of identifiers
     };
 
     this.url = this.url.bind(this);
@@ -67,6 +68,7 @@ class AppConfig {
     this.questionNewTranslate = this.questionNewTranslate.bind(this);
     this.questionNewSearch = this.questionNewSearch.bind(this);
     this.viewData = this.viewData.bind(this);
+    this.getPublications = this.getPublications.bind(this);
 
     // Read config parameters for enabling controls
     this.enableNewAnswersets = ((config.ui !== null) && (config.ui.enableNewAnswersets !== null)) ? config.ui.enableNewAnswersets : true;
@@ -290,6 +292,13 @@ class AppConfig {
   viewData(uploadId, successFun, failureFun) {
     this.getRequest(
       this.apis.viewData(uploadId),
+      successFun,
+      failureFun,
+    );
+  }
+  getPublications(id1, id2, successFun, failureFun) {
+    this.getRequest(
+      this.apis.publications(id1, id2),
       successFun,
       failureFun,
     );
