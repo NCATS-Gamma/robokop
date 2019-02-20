@@ -171,7 +171,7 @@ def answer_question(self, question_id, user_email=None):
             if user_email:
                 logger.info('Sending email notification')
                 # send completion email
-                question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question["id"]}/{answerset_id}'
+                question_url = f'http://{os.environ["ROBOKOP_HOST"]}/a/{question["id"]}_{answerset_id}'
                 nat_quest = question["natural_question"]
                 lines = [f'We have finished answering your question: <a href="{question_url}">"{nat_quest}"</a>.']
                 html = '<br />\n'.join(lines)
