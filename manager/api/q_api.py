@@ -165,8 +165,12 @@ class QuestionAPI(Resource):
         url = f'http://{os.environ["GRAPHQL_HOST"]}:{os.environ["GRAPHQL_PORT"]}/graphql'
         response = requests.post(url, json=request_body)
         graphql_out = response.json()
-        question_graph = json.loads(graphql_out['data']['question']['question_graph']['body'])
-        natural_question = json.loads(graphql_out['data']['question']['question_graph']['body'])
+        question = graphql_out['data']['question']
+        if not isinstance(question, dict):
+            return "Unknown question id", 402
+        logger.debug(graphql_out)
+        question_graph = json.loads(question['question_graph']['body'])
+        natural_question = question['naturalQuestion']
         message = {
             'natural_question': natural_question,
             'question_graph': question_graph

@@ -388,7 +388,7 @@ class TaskLog(Resource):
             remote_log = 'Error fetching log file.'
 
         try:
-            local_log_file = os.path.join(os.environ['ROBOKOP_HOME'], 'task_logs', f'{task_id}.log')
+            local_log_file = os.path.join(os.environ['ROBOKOP_HOME'], 'logs', 'manager_task_logs', f'{task_id}.log')
             if os.path.isfile(local_log_file):
                 with open(local_log_file, 'r') as log_file:
                     local_log = log_file.read()
