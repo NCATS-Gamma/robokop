@@ -4,7 +4,8 @@ import { graphStates } from '../components/shared/MachineQuestionViewContainer';
 import entityNameDisplay from '../components/util/entityNameDisplay';
 import AppConfig from '../AppConfig';
 
-const config = require('../../config.json');
+import { config } from '../index';
+
 const _ = require('lodash');
 
 configure({ enforceActions: 'always' }); // Prevent observable mutations in MobX outside of actions

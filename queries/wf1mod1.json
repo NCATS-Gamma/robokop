@@ -1,0 +1,36 @@
+{
+    "name": "WF1 Module 1 - $name1$ ($identifier1$)",
+    "natural_question": "WF1 Module 1 : $name1$ ($identifier1$) to gene to chemical substance.",
+    "machine_question": {
+      "nodes": [
+            {
+                "id": "n0",
+                "type": "disease",
+                "curie": [
+                  "$identifier1$"
+                ]
+            },
+            {
+                "id": "n1",
+                "type": "phenotypic_feature",
+                "set": true
+            },
+            {
+                "id": "n2",
+                "type": "genetic_condition"
+            }
+        ],
+        "edges": [
+            {
+                "id": "e0",
+                "source_id": "n0",
+                "target_id": "n1"
+            },
+            {
+                "id": "e1",
+                "source_id": "n1",
+                "target_id": "n2"
+            }
+        ]
+    }
+}

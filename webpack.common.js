@@ -1,4 +1,5 @@
 const path = require('path');
+const Dotenv = require('dotenv-webpack');
 
 const config = {
   entry: ['babel-polyfill', './src/index.jsx'],
@@ -55,6 +56,12 @@ const config = {
       'node_modules',
     ],
   },
+  plugins: [
+    new Dotenv({
+      path: '../shared/robokop.env',
+      systemvars: true, // load all the predefined 'process.env' variables which will trump anything local per dotenv specs.
+    }),
+  ],
 };
 
 module.exports = config;

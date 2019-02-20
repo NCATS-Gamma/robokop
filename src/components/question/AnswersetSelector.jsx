@@ -1,13 +1,8 @@
 import React from 'react';
-
-import { Row, Col, Button } from 'react-bootstrap';
-import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
+import { Button } from 'react-bootstrap';
 import GoArrowRight from 'react-icons/lib/go/arrow-right';
 import GoCircuitBoard from 'react-icons/lib/go/circuit-board';
-
-import Select from 'react-select';
 import { DropdownList } from 'react-widgets';
-import Loading from '../Loading';
 
 const _ = require('lodash');
 
@@ -18,7 +13,6 @@ class AnswersetSelector extends React.Component {
     this.state = {
       answersets: [],
       selectedId: null,
-      showOverlay: true,
     };
 
     // this.styles = {
@@ -31,17 +25,22 @@ class AnswersetSelector extends React.Component {
     //   },
     // };
 
+    this.initializeState = this.initializeState.bind(this);
     this.handleSelectorChange = this.handleSelectorChange.bind(this);
     this.getUpdatedState = this.getUpdatedState.bind(this);
   }
   componentDidMount() {
-    this.setState(this.getUpdatedState(this.props));
+    this.initializeState();
   }
 
-  componentWillReceiveProps(nextProps, prevState) {
+  componentWillReceiveProps(nextProps) {
     if (!_.isEqual(nextProps.answersets, this.props.answersets)) {
       this.setState(this.getUpdatedState(nextProps));
     }
+  }
+
+  initializeState() {
+    this.setState(this.getUpdatedState(this.props));
   }
 
   getUpdatedState(props) {
@@ -62,10 +61,10 @@ class AnswersetSelector extends React.Component {
 
       this.props.callbackOnSelect(answersets[0].id);
 
-      return { answersets, selectedId: answersets[0].id, showOverlay: false };
+      return { answersets, selectedId: answersets[0].id };
     }
 
-    return { answersets: [], selectedId: null, showOverlay: true };
+    return { answersets: [], selectedId: null };
   }
 
   handleSelectorChange(selectedOption) {
@@ -100,7 +99,13 @@ class AnswersetSelector extends React.Component {
             </div>
           </div>
           <div style={{ display: 'table-row' }}>
-            <div style={{ display: 'table-cell', width: '100%', textAlign: 'center', paddingTop: '10px' }}>
+            <div style={{
+                display: 'table-cell',
+                width: '100%',
+                textAlign: 'center',
+                paddingTop: '10px',
+              }}
+            >
               <Button
                 bsStyle="primary"
                 bsSize="large"
@@ -120,7 +125,7 @@ class AnswersetSelector extends React.Component {
 AnswersetSelector.defaultProps = {
   question: {},
   answersets: [],
-  callbackOnSelect: (selectedAnswersetId) => {},
+  callbackOnSelect: () => {},
 };
 
 export default AnswersetSelector;
