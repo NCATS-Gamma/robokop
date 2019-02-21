@@ -584,13 +584,4 @@ class Question extends React.Component {
   }
 }
 
-Question.propTypes = {
-  config: PropTypes.shape({
-    protocol: PropTypes.string,
-    clientHost: PropTypes.string,
-    port: PropTypes.number,
-  }).isRequired,
-  id: PropTypes.string.isRequired,
-};
-
 export default Question;
