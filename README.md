@@ -11,16 +11,9 @@ This repository is the main repository for the user interface and storage module
 ## Example Installation
 See an instance at http://robokop.renci.org
 
-* http://robokop.renci.org - The Robokop user interface
-* http://robokop.renci.org/apidocs/ - The Robokop user interface API
-* http://robokop.renci.org:6010/apidocs/ - The robokop-interfaces API
-* http://robokop.renci.org:6011/apidocs/ - The robokop-rank API
-* http://robokopdb.renci.org:7474 - NEO4j http interface
-* bolt://robokopdb.renci.org:7687 - NEO4j bolt interface
-
 ## Setup Instructions 
 
-### Installation 
+### Structure of source code
 
 We create a root robokop directory and clone the three repos into it: robokop, robokop-interfaces, and robokop-rank. 
 
@@ -41,9 +34,13 @@ robokop-root
 
 A few more folders will be created in this directory depending on which docker containers are in use.
 
+### Prerequisites
+
+Robokop requires docker, docker-compose and Node.js. These must be installed and configured correctly. For additional install notes for CentOS 7. See (here)[doc/centos_installation.md]
+
 ### Docker-Compose Files
 
-ROBOKOP uses a collection of docker containers managed through several instances of docker-compose. Both should be installed and configured properly on your host system. Independent docker-compose files are used to enable different parts of the system to be deployed on separate machines. 
+Robokop uses a collection of docker containers managed through several instances of docker-compose. Independent docker-compose files are used to enable different parts of the system to be deployed on separate machines. 
 
 * robokop/deploy/backend - Rabbit MQ message broker, Celery results redis backend, NLP machine
 * robokop/deploy/manager - Web UI, API server, UI storage, Graphql server

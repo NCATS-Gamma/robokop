@@ -1,4 +1,4 @@
-# ROBOKOP Prerequisit Installation on Centos7
+# ROBOKOP Prerequisite Installation on Centos7
 
 ## Requirements
 Robokop installations require docker, docker-compose and node.js. This is a collection of information for installing these items on Centos7.
