@@ -36,7 +36,7 @@ A few more folders will be created in this directory depending on which docker c
 
 ### Prerequisites
 
-Robokop requires docker, docker-compose and Node.js. These must be installed and configured correctly. For additional install notes for CentOS 7. See (here)[doc/centos_installation.md]
+Robokop requires docker, docker-compose and Node.js. These must be installed and configured correctly. For additional install notes for CentOS 7. See [here](./doc/centos_installation.md).
 
 ### Docker-Compose Files
 
