@@ -5,7 +5,7 @@ Robokop installations require docker, docker-compose and node.js. This is a coll
 
 
 ## Node.js
-Instructions for Node.js were found (here)[https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-a-centos-7-server].
+Instructions for Node.js were found [here](https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-a-centos-7-server).
 
 ## Docker
 Docker can be installed through Yum by adding a repository
@@ -23,7 +23,7 @@ sudo yum install docker-ce
 ```
 
 ## Post Docker Installation
-After docker is installed some group settings must be modified and the deamon must be started. See this (link)[https://docs.docker.com/install/linux/linux-postinstall/].
+After docker is installed some group settings must be modified and the deamon must be started. See this [link](https://docs.docker.com/install/linux/linux-postinstall/).
 
 ## docker-compose
 
