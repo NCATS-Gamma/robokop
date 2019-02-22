@@ -1,6 +1,6 @@
 {
-    "name": "WF1 Module 1 - $name1$ ($identifier1$)",
-    "natural_question": "WF1 Module 1 : $name1$ ($identifier1$) to phenotypes to genetic condition.",
+    "name": "WF1 Module 2 - $name1$ ($identifier1$)",
+    "natural_question": "WF1 Module 2 : $name1$ ($identifier1$) to gene to chemical substance.",
     "machine_question": {
       "nodes": [
             {
@@ -12,12 +12,11 @@
             },
             {
                 "id": "n1",
-                "type": "phenotypic_feature",
-                "set": true
+                "type": "gene"
             },
             {
                 "id": "n2",
-                "type": "genetic_condition"
+                "type": "chemical_substance"
             }
         ],
         "edges": [
