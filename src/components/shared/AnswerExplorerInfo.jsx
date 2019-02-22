@@ -16,6 +16,7 @@ class AnswerExplorerInfo extends React.Component {
 
     this.state = {
       selectedEdgeId: null,
+      clickedEdge: {},
       selectedNodeId: null,
       subgraph: { nodes: [], edges: [] },
       disbleGraphClick: false,
@@ -34,11 +35,8 @@ class AnswerExplorerInfo extends React.Component {
       return;
     }
 
-    // console.log(event)
-
     const newState = { selectedEdgeId: null, selectedNodeId: null };
     if (event.edges.length !== 0) { // Clicked on an Edge
-      // console.log('Updated the edge', event.edgeObjects)
       newState.selectedEdgeId = event.edgeObjects[0].edgeIdFromKG;
     } else if (event.nodes.length !== 0) { // Clicked on a node
       newState.selectedNodeId = event.nodes[0];
@@ -46,19 +44,18 @@ class AnswerExplorerInfo extends React.Component {
     this.setState(newState);
   }
   getPublicationsFrag() {
-    const somethingSelected = this.state.selectedEdgeId || this.state.selectedNodeId;
     let publicationListFrag = <div><p>Click on edge above to see a list of publications.</p></div>;
     let publicationsTitle = 'Publications';
 
     let publications = [];
-    if (somethingSelected && this.state.selectedEdgeId) {
+    if (this.state.selectedEdgeId !== null) {
       // Edge is selected
       let edge = this.state.subgraph.edges.find(e => e.id === this.state.selectedEdgeId);
       if (typeof edge === 'undefined') {
         edge = this.state.subgraph.edges.find(e => e.edgeIdFromKG === this.state.selectedEdgeId);
       }
       if (typeof edge === 'undefined') {
-        console.log('Couldnt find this edge', this.state.selectedEdgeId, this.state.subgraph.edges);
+        console.log('Couldn\'t find this edge', this.state.selectedEdgeId, this.state.subgraph.edges);
         return (
           <div>
             <h4 style={{ marginTop: '15px' }}>
@@ -71,17 +68,17 @@ class AnswerExplorerInfo extends React.Component {
       const sourceNode = this.state.subgraph.nodes.find(n => n.id === edge.source_id);
       const targetNode = this.state.subgraph.nodes.find(n => n.id === edge.target_id);
       if ('publications' in edge && Array.isArray(edge.publications)) {
-        publications = edge.publications;
+        ({ publications } = edge);
       }
-      publicationsTitle = `${publications.length} Publications for ${sourceNode.description} and ${targetNode.description}`;
+      publicationsTitle = `${publications.length} Publications for ${sourceNode.name} and ${targetNode.name}`;
       publicationListFrag = <PubmedList publications={publications} />;
-    } else if (somethingSelected && this.state.selectedNode) {
+    } else if (this.state.selectedNodeId) {
       // Node is selected
       const node = this.state.subgraph.nodes.find(n => n.id === this.state.selectedNodeId);
       if ('publications' in node && Array.isArray(node.publications)) {
-        publications = node.publications;
+        ({ publications } = node);
       }
-      publicationsTitle = `${publications.length} Publications for ${node.description}`;
+      publicationsTitle = `${publications.length} Publications for ${node.name}`;
       publicationListFrag = <PubmedList publications={publications} />;
     }
 
@@ -89,40 +86,31 @@ class AnswerExplorerInfo extends React.Component {
     const showDownload = publications.length >= 1;
 
     const cursor = this.state.downloadingPubs ? 'progress' : 'pointer';
-    const activeCallback = this.state.downloadingPubs ? () => {} : downloadCallback;
+    const activeCallback = this.state.downloadingPubs ? () => { } : downloadCallback;
     const downloadTitle = this.state.downloadingPubs ? 'Downloading Please Wait' : 'Download Publications';
     const downloadColor = this.state.downloadingPubs ? '#333' : '#000';
     return (
-      <div>
-        {somethingSelected &&
-        <Panel style={{ marginTop: '15px' }}>
-          <Panel.Heading>
-            <Panel.Title componentClass="h3">
-              {publicationsTitle}
-              <div className="pull-right">
-                <div style={{ position: 'relative' }}>
-                  {showDownload &&
-                    <div style={{ position: 'absolute', top: -3, right: -8 }}>
-                      <span style={{ fontSize: '22px', color: downloadColor }} title={downloadTitle}>
-                        <FaDownload onClick={activeCallback} style={{ cursor }} />
-                      </span>
-                    </div>
-                  }
-                </div>
+      <Panel style={{ marginTop: '15px' }}>
+        <Panel.Heading>
+          <Panel.Title componentClass="h3">
+            {publicationsTitle}
+            <div className="pull-right">
+              <div style={{ position: 'relative' }}>
+                {showDownload &&
+                  <div style={{ position: 'absolute', top: -3, right: -8 }}>
+                    <span style={{ fontSize: '22px', color: downloadColor }} title={downloadTitle}>
+                      <FaDownload onClick={activeCallback} style={{ cursor }} />
+                    </span>
+                  </div>
+                }
               </div>
-            </Panel.Title>
-          </Panel.Heading>
-          <Panel.Body style={{ padding: 0 }}>
-            {publicationListFrag}
-          </Panel.Body>
-        </Panel>
-        }
-        {!somethingSelected &&
-        <h4 style={{ marginTop: '15px' }}>
-          Select a node or edge in the graph above to browse relevant publications.
-        </h4>
-        }
-      </div>
+            </div>
+          </Panel.Title>
+        </Panel.Heading>
+        <Panel.Body style={{ padding: 0 }}>
+          {publicationListFrag}
+        </Panel.Body>
+      </Panel>
     );
   }
   getNodeInfoFrag(n) {
@@ -135,7 +123,7 @@ class AnswerExplorerInfo extends React.Component {
       <Panel>
         <Panel.Heading>
           <Panel.Title componentClass="h3">
-            {n.description}
+            {n.name}
           </Panel.Title>
         </Panel.Heading>
         <Panel.Body style={{ minHeight: '100px' }}>
@@ -160,11 +148,11 @@ class AnswerExplorerInfo extends React.Component {
     let origin = 'Unknown';
     const sourceToOriginString = source => source; // source.substr(0, source.indexOf('.'));
 
-    if ('provided_by' in edge) {
-      if (Array.isArray(edge.provided_by) && edge.provided_by.length > 0) {
-        origin = edge.provided_by.map(source => <span key={shortid.generate()}>{sourceToOriginString(source)} &nbsp; </span>);
+    if ('source_database' in edge) {
+      if (Array.isArray(edge.source_database) && edge.source_database.length > 0) {
+        origin = edge.source_database.map(source => <span key={shortid.generate()}>{sourceToOriginString(source)} &nbsp; </span>);
       } else {
-        origin = sourceToOriginString(edge.provided_by);
+        origin = sourceToOriginString(edge.source_database);
       }
     }
     return (
@@ -188,13 +176,23 @@ class AnswerExplorerInfo extends React.Component {
 
   syncPropsAndState(newProps) {
     const { graph, selectedEdge } = newProps;
-
-    const nodes = graph.nodes.filter(n => ((n.id === selectedEdge.source_id) || (n.id === selectedEdge.target_id)));
+    const nodes = graph.node_list.filter(n => ((n.id === selectedEdge.source_id) || (n.id === selectedEdge.target_id)));
     const nodeIds = nodes.map(n => n.id);
-    const edges = graph.edges.filter(e => (nodeIds.includes(e.source_id) && nodeIds.includes(e.target_id)));
+    const edges = graph.edge_list.filter(e => (nodeIds.includes(e.source_id) && nodeIds.includes(e.target_id)));
 
     const subgraph = { nodes, edges };
-    this.setState({ subgraph, selectedEdgeId: selectedEdge.id, selectedNodeId: null });
+    let clickedEdge = edges.find(e => e.id === selectedEdge.id);
+    if (typeof clickedEdge === 'undefined') {
+      clickedEdge = edges.find(e => e.id === selectedEdge.edgeIdFromKG);
+    }
+    if (typeof clickedEdge === 'undefined') {
+      console.log('The clicked edge could not be found', selectedEdge.id, subgraph);
+    }
+    this.setState({
+      subgraph, selectedEdgeId: selectedEdge.edgeIdFromKG, selectedNodeId: null, clickedEdge,
+    }, () => {
+      this.getPublicationsFrag();
+    });
 
     if (edges.length === 1) {
       this.setState({ disbleGraphClick: true });
@@ -238,7 +236,7 @@ class AnswerExplorerInfo extends React.Component {
       };
 
       return new Promise((resolve, reject) => $.post(postUrl, postData, response => resolve(response)).fail(response => reject(response)))
-        .then(info => getInfo(info.result, pmid, pmidNum)).catch((err) => {console.log(err); return defaultInfo;});
+        .then(info => getInfo(info.result, pmid, pmidNum)).catch((err) => { console.log(err); return defaultInfo; });
     };
 
     Promise.all(publications.map((p, i) => new Promise(resolve => setTimeout(resolve, (i * 100) + 1)).then(() => getPubmedInformation(p)))).then((data) => {
@@ -268,14 +266,6 @@ class AnswerExplorerInfo extends React.Component {
 
 
   render() {
-    let clickedEdge = this.state.subgraph.edges.find(e => e.id === this.state.selectedEdgeId);
-    if (typeof clickedEdge === 'undefined') {
-      clickedEdge = this.state.subgraph.edges.find(e => e.edgeIdFromKG === this.state.selectedEdgeId);
-    }
-    if (typeof clickedEdge === 'undefined') {
-      console.log('the render process clicked edge could not be found', this.state.selectedEdgeId, this.state.subgraph)
-    }
-
     return (
       <Row>
         <Col md={12}>
@@ -298,7 +288,7 @@ class AnswerExplorerInfo extends React.Component {
               {this.getNodeInfoFrag(this.state.subgraph.nodes[0])}
             </Col>
             <Col md={4}>
-              {this.getEdgeInfoFrag(clickedEdge)}
+              {this.getEdgeInfoFrag(this.state.clickedEdge)}
             </Col>
             <Col md={4}>
               {this.getNodeInfoFrag(this.state.subgraph.nodes[1])}

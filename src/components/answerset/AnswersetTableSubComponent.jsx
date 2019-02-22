@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Row, Col, ButtonGroup, Button } from 'react-bootstrap';
+import { Row, Col, ButtonGroup, Button, Modal } from 'react-bootstrap';
 import { observer } from 'mobx-react';
 import { observable, action } from 'mobx';
 import { DropdownList } from 'react-widgets';
@@ -17,9 +17,11 @@ import axios from 'axios';
 import entityNameDisplay from './../util/entityNameDisplay';
 import SubGraphViewer from '../shared/SubGraphViewer';
 import Loading from '../Loading';
+import AnswerExplorerInfo from '../shared/AnswerExplorerInfo';
 import { config } from '../../index';
 
 const _ = require('lodash');
+const shortid = require('shortid');
 
 const answersetSubComponentEnum = {
   graph: 1,
@@ -54,10 +56,14 @@ class AnswersetTableSubComponent extends React.Component {
     this.state = {
       graph: {},
       loadedGraph: false,
+      selectedEdge: {},
+      showModal: false,
     };
 
     this.syncPropsWithState = this.syncPropsWithState.bind(this);
     this.fetchGraphSupport = this.fetchGraphSupport.bind(this);
+    this.onGraphClick = this.onGraphClick.bind(this);
+    this.modalClose = this.modalClose.bind(this);
   }
 
   componentDidMount() {
@@ -137,6 +143,7 @@ class AnswersetTableSubComponent extends React.Component {
           source_database: 'omnicorp',
           source_id: nodes[index][0],
           target_id: nodes[index][1],
+          id: shortid.generate(),
         };
         edges.push(newEdge);
       }
@@ -150,19 +157,51 @@ class AnswersetTableSubComponent extends React.Component {
     return Promise.all(axiosCalls);
   }
 
+  modalClose() {
+    this.setState({ showModal: false });
+  }
+
+  onGraphClick(event) {
+    if (event.edges.length !== 0) { // Clicked on an Edge
+      this.setState({ selectedEdge: event.edgeObjects[0], showModal: true });
+    } else { // Reset things since something else was clicked
+      this.setState({ selectedEdge: null, showModal: false });
+    }
+  }
+
   renderSubGraph() {
     return (
       <div>
         {this.state.loadedGraph ?
-          <SubGraphViewer
-            subgraph={this.state.graph}
-            concepts={this.props.concepts}
-            layoutRandomSeed={Math.floor(Math.random() * 100)}
-            callbackOnGraphClick={() => { }}
-            showSupport
-            omitEdgeLabel={false}
-            height={350}
-          />
+          <div>
+            <SubGraphViewer
+              subgraph={this.state.graph}
+              concepts={this.props.concepts}
+              layoutRandomSeed={Math.floor(Math.random() * 100)}
+              callbackOnGraphClick={this.onGraphClick}
+              showSupport
+              omitEdgeLabel={false}
+              height={350}
+            />
+            <Modal
+              show={this.state.showModal}
+              onHide={this.modalClose}
+              container={this}
+              bsSize="large"
+              aria-labelledby="AnswerExplorerModal"
+            >
+              <Modal.Header closeButton>
+                <Modal.Title id="AnswerExplorerModalTitle">Edge Explorer</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <AnswerExplorerInfo
+                  graph={this.state.graph}
+                  selectedEdge={this.state.selectedEdge}
+                  concepts={this.props.concepts}
+                />
+              </Modal.Body>
+            </Modal>
+          </div>
           :
           <Loading />
         }
