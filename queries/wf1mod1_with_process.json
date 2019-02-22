@@ -1,0 +1,49 @@
+{
+    "name": "WF1 Module 1 (version 2) - $name1$ ($identifier1$)",
+    "natural_question": "WF1 Module 1 (version 2): $name1$ ($identifier1$) to phenotype feature to genetic condition with shared biological process.",
+    "machine_question": {
+        "nodes": [
+            {
+                "id": "n0",
+                "type": "disease",
+                "curie": "$identifier1$"
+            },
+            {
+                "id": "n1",
+                "type": "phenotypic_feature",
+                "set": true
+            },
+            {
+                "id": "n2",
+                "type": "genetic_condition"
+            },
+            {
+                "id": "n3",
+                "type": "biological_process_or_activity",
+                "set": true
+            }
+        ],
+        "edges": [
+            {
+                "id": "e0",
+                "source_id": "n0",
+                "target_id": "n1"
+            },
+            {
+                "id": "e1",
+                "source_id": "n1",
+                "target_id": "n2"
+            },
+            {
+                "id": "e2",
+                "source_id": "n0",
+                "target_id": "n3"
+            },
+            {
+                "id": "e3",
+                "source_id": "n3",
+                "target_id": "n2"
+            }
+        ]
+    }
+}

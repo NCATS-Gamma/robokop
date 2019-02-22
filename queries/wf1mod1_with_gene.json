@@ -1,6 +1,6 @@
 {
     "name": "WF1 Module 1 (version 2) - $name1$ ($identifier1$)",
-    "natural_question": "WF1 Module 1 (version 2): $name1$ ($identifier1$) to phenotype feature to genetic condition with biological process.",
+    "natural_question": "WF1 Module 1 (version 2): $name1$ ($identifier1$) to phenotype feature to genetic condition with shared gene.",
     "machine_question": {
         "nodes": [
             {
@@ -19,7 +19,7 @@
             },
             {
                 "id": "n3",
-                "type": "biological_process_or_activity",
+                "type": "gene",
                 "set": true
             }
         ],

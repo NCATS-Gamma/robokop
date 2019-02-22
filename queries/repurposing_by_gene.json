@@ -1,0 +1,51 @@
+{
+    "name": "Repurposing by Gene - $name1$ ($identifier1$)",
+    "natural_question": "Find a drug to treat $name1$ ($identifier1$) by finding treatable diseases sharing genetics.",
+    "machine_question": {
+      "nodes": [
+            {
+                "id": "n0",
+                "type": "disease",
+                "curie": [
+                  "$identifier1$"
+                ]
+            },
+            {
+                "id": "n1",
+                "type": "gene"
+            },
+            {
+                "id": "n2",
+                "type": "disease"
+            },
+            {
+                "id": "n3",
+                "type": "chemical_substance"
+            }
+        ],
+        "edges": [
+            {
+                "id": "e0",
+                "source_id": "n0",
+                "target_id": "n1"
+            },
+            {
+                "id": "e1",
+                "source_id": "n1",
+                "target_id": "n2"
+            },
+            {
+                "id": "e2",
+                "source_id": "n1",
+                "target_id": "n3"
+            },
+            {
+                "id": "e3",
+                "source_id": "n3",
+                "target_id": "n2",
+                "type": "treats"
+            }
+
+        ]
+    }
+}
