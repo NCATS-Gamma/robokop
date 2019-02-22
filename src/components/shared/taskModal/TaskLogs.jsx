@@ -23,6 +23,8 @@ class TaskLogs extends Component {
   }
 
   render() {
+    const { managerLogs, rankerLogs, logType } = this.props;
+    const rankerTitle = logType.endsWith('update_kg') ? 'Builder' : 'Ranker';
     return (
       <Tabs
         activeKey={this.state.selectedLog}
@@ -36,21 +38,29 @@ class TaskLogs extends Component {
           title="Manager Logs"
         >
           <div style={{ height: 250, overflow: 'scroll' }}>
-            {this.props.managerLogs.substring(1, this.props.managerLogs.length - 1).split('\\n').map((log, index) => {
-              const logDelimiter = log.indexOf(']') + 1;
-              return <div key={`manager-${index}`}><b>{log.substring(0, logDelimiter)}</b>{log.substring(logDelimiter)}</div>;
-            })}
+            {managerLogs.indexOf('[') !== -1 ?
+              managerLogs.substring(1, managerLogs.length - 1).split('\\n').map((log, index) => {
+                const logDelimiter = log.indexOf(']') + 1;
+                return <div key={`manager-${index}`}><b>{log.substring(0, logDelimiter)}</b>{log.substring(logDelimiter)}</div>;
+              })
+            :
+              <h3>No Manager Logs Were Found</h3>
+            }
           </div>
         </Tab>
         <Tab
           eventKey="ranker"
-          title="Ranker Logs"
+          title={`${rankerTitle} Logs`}
         >
           <div style={{ height: 250, overflow: 'scroll' }}>
-            {this.props.rankerLogs.substring(1, this.props.rankerLogs.length - 1).split('\\n').map((log, index) => {
-              const logDelimiter = log.indexOf(']') + 1;
-              return <div key={`ranker-${index}`}><b>{log.substring(0, logDelimiter)}</b>{log.substring(logDelimiter)}</div>;
-            })}
+            {rankerLogs.indexOf('[') !== -1 ?
+              rankerLogs.substring(1, rankerLogs.length - 1).split('\\n').map((log, index) => {
+                const logDelimiter = log.indexOf(']') + 1;
+                return <div key={`ranker-${index}`}><b>{log.substring(0, logDelimiter)}</b>{log.substring(logDelimiter)}</div>;
+              })
+            :
+              <h3>No {rankerTitle} Logs Were Found</h3>
+            }
           </div>
         </Tab>
       </Tabs>

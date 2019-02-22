@@ -62,6 +62,7 @@ class MessageAnswersetTable extends React.Component {
     this.getReactTableColumnSpec = this.getReactTableColumnSpec.bind(this);
     this.updateTableSubComponent = this.updateTableSubComponent.bind(this);
     this.subComponentFactory = this.subComponentFactory.bind(this);
+    this.clearExpanded = this.clearExpanded.bind(this);
   }
 
   // SubComponent displayed when expanding a Node column in table that represents a Set
@@ -153,6 +154,10 @@ class MessageAnswersetTable extends React.Component {
     this.setState({ tableSubComponent: newSubComponent, expanded });
   }
 
+  clearExpanded() {
+    this.setState({ expanded: {} });
+  }
+
   renderError() {
     console.log('Interactive Viewer Error Message', this.state.error);
     return (
@@ -200,6 +205,8 @@ class MessageAnswersetTable extends React.Component {
           filterable
           className="-highlight"
           collapseOnDataChange={false}
+          onPageChange={() => this.clearExpanded()}
+          onSortedChange={() => this.clearExpanded()}
           SubComponent={this.state.tableSubComponent}
           expanded={this.state.expanded}
           defaultSorted={[
