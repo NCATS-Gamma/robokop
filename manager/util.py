@@ -21,17 +21,17 @@ def getAuthData():
     #   This property should return True if this is an active user - in addition to being authenticated, they also have activated their account, not been suspended, or any condition your application has for rejecting an account. Inactive accounts may not log in (without being forced of course).
     # is_anonymous
     #   This property should return True if this is an anonymous user. (Actual users should return False instead.)
-
-    is_authenticated = current_user.is_authenticated
-    is_active = current_user.is_active
-    is_anonymous = current_user.is_anonymous
-    user_id = current_user.get_id()
+    cu = current_user
+    is_authenticated = cu.is_authenticated
+    is_active = cu.is_active
+    is_anonymous = cu.is_anonymous
+    user_id = cu.get_id()
     if is_anonymous:
         username = "Anonymous"
         is_admin = False
     else:
-        username = current_user.email
-        is_admin = current_user.has_role('admin')
+        username = cu.email
+        is_admin = cu.has_role('admin')
 
     return {'is_authenticated': is_authenticated,\
             'is_active': is_active,\
