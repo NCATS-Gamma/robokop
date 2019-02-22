@@ -158,7 +158,7 @@ def answer_question(self, question_id, user_email=None):
         message = response.json()
         # logger.info(message)
 
-        if not message["answers"]:
+        if not isinstance(message, dict) or not message["answers"]:
             logger.info(f'No answers found')
             raise NoAnswersException()
 
