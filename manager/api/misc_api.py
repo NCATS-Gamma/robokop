@@ -29,10 +29,6 @@ except Exception as e:
         'misc_api.py:: Could not '
         f'find/read concept_map.json - {e}')
 
-def log_qpool_status():
-    status = engine.pool.status()
-    logger.debug(status)
-
 class TaskStatus(Resource):
     def get(self, task_id):
         """Get status for task
@@ -146,8 +142,6 @@ class Concepts(Resource):
         concepts = [c for c in concepts if not c in bad_concepts]
         concepts.sort()
 
-        logger.debug('Fetched concepts')
-        log_qpool_status()
         return concepts
 
 api.add_resource(Concepts, '/concepts/')
@@ -337,8 +331,7 @@ class User(Resource):
                                     example: me@mydomain.edu
         """
         user = getAuthData()
-        logger.debug('Fetched user')
-        log_qpool_status()
+
         return user
 
 api.add_resource(User, '/user/')

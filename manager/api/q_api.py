@@ -27,11 +27,6 @@ from manager.celery_monitor import get_messages
 
 logger = logging.getLogger(__name__)
 
-
-def log_qpool_status():
-    status = engine.pool.status()
-    logger.debug(status)
-
 class AnswersetAPI(Resource):
 
     def get(self, qid_aid):
@@ -111,7 +106,6 @@ class AnswersetAPI(Resource):
                 return 'Trouble contacting the ranker, there is probably a problem with the neo4j database', 500
 
             message['knowledge_graph'] = response.json()
-        log_qpool_status()
         return message, 200
 
 api.add_resource(AnswersetAPI, '/a/<qid_aid>/')
@@ -175,7 +169,7 @@ class QuestionAPI(Resource):
             'natural_question': natural_question,
             'question_graph': question_graph
         }
-        log_qpool_status()
+
         return message, 200
 
     @auth_required('session', 'basic')
@@ -259,7 +253,7 @@ class QuestionAPI(Resource):
             mods['natural_question'] = request.json['natural_question']
         
         modify_question_by_id(question_id, mods)
-        log_qpool_status()
+
         return "SUCCESS", 200
 
     @auth_required('session', 'basic')
