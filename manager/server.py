@@ -79,6 +79,6 @@ if __name__ == '__main__':
     app.run(
         host=server_host,
         port=server_port,
-        debug=True,
+        debug=False,
         use_reloader=True
     )
