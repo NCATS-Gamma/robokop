@@ -14,7 +14,6 @@ from flask_security import auth_required
 from flask_restful import Resource
 
 from manager.tables_accessors import get_question_by_id, delete_question_by_id, modify_question_by_id
-from manager.task import Task
 from manager.user import get_user_by_email
 from manager.tasks import answer_question, update_kg
 from manager.util import getAuthData
