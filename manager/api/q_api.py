@@ -11,7 +11,6 @@ from datetime import datetime
 import requests
 from flask import jsonify, request
 from flask_security import auth_required
-from flask_security.core import current_user
 from flask_restful import Resource
 
 from manager.tables_accessors import get_question_by_id, delete_question_by_id, modify_question_by_id
@@ -232,16 +231,18 @@ class QuestionAPI(Resource):
         if auth:
             user_email = auth.username
             user = get_user_by_email(user_email)
+            user_id = user['id']
         else:
-            user = current_user
-            user_email = user.email
+            user = getAuthData()
+            user_id = user['id']
+            user_email = user['email']
         
         try:
             question = get_question_by_id(question_id)
         except Exception as err:
             return "Invalid question id.", 404
         
-        if not (user_email == question['owner_email'] or user.has_role('admin')):
+        if not (user_email == question['owner_email'] or user['is_admin']):
             return "UNAUTHORIZED", 401 # not authorized
 
         # User is authorized
@@ -293,16 +294,18 @@ class QuestionAPI(Resource):
         if auth:
             user_email = auth.username
             user = get_user_by_email(user_email)
+            user_id = user['id']
         else:
-            user = current_user
-            user_email = user.email
+            user = getAuthData()
+            user_id = user['id']
+            user_email = user['email']
         
         try:
             question = get_question_by_id(question_id)
         except Exception as err:
             return "Invalid question id.", 404
         
-        if not (user_email == question['owner_email'] or user.has_role('admin')):
+        if not (user_email == question['owner_email'] or user['is_admin']):
             return "UNAUTHORIZED", 401 # not authorized
 
         # User is authoriced
@@ -348,9 +351,10 @@ class AnswerQuestion(Resource):
             user = get_user_by_email(user_email)
             user_id = user['id']
         else:
-            user_id = current_user.id
-            user_email = current_user.email
-        
+            user = getAuthData()
+            user_id = user['id']
+            user_email = user['email']
+
         logger.info(f'Adding answer task for question {question_id} for user {user_email} to the queue')
         # Answer a question
         task = answer_question.apply_async(
@@ -394,10 +398,11 @@ class RefreshKG(Resource):
         if auth:
             user_email = auth.username
             user = get_user_by_email(user_email)
-            # user_id = user['id']
+            user_id = user['id']
         else:
-            user_id = current_user.id
-            user_email = current_user.email
+            user = getAuthData()
+            user_id = user['id']
+            user_email = user['email']
         
         # Update the knowledge graph for a question
         logger.info(f'Adding update task for question {question_id} for user {user_email} to the queue')

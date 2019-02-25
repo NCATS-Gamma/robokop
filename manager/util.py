@@ -8,37 +8,51 @@ import logging
 
 import json
 import requests
-from flask_security.core import current_user
+from flask import session
 from celery.task.control import inspect
+
+from manager.user import get_user_by_id
 
 from manager.logging_config import logger
 
 def getAuthData():
-    """ Return relevant information from flask-login current_user"""
+    """ Return relevant information from flask session"""
     # is_authenticated
     #   This property should return True if the user is authenticated, i.e. they have provided valid credentials. (Only authenticated users will fulfill the criteria of login_required.)
     # is_active
     #   This property should return True if this is an active user - in addition to being authenticated, they also have activated their account, not been suspended, or any condition your application has for rejecting an account. Inactive accounts may not log in (without being forced of course).
     # is_anonymous
     #   This property should return True if this is an anonymous user. (Actual users should return False instead.)
-    cu = current_user
-    is_authenticated = cu.is_authenticated
-    is_active = cu.is_active
-    is_anonymous = cu.is_anonymous
-    user_id = cu.get_id()
-    if is_anonymous:
-        username = "Anonymous"
-        is_admin = False
+    
+    session_user_id = session.get('user_id')
+    if session_user_id:
+        logger.debug(f'Got session_user_id {session_user_id} ')
+        # We have an authenticated user
+        user = get_user_by_id(session_user_id)
+        logger.debug(f'Got user {user} ')
+        
+        is_authenticated = True
+        is_active = user['active']
+        is_anonymous = False
+        is_admin = any(role['name'] == 'admin' for role in user['roles'])
+        username = user['email']
+        user_id = user['id']
     else:
-        username = cu.email
-        is_admin = cu.has_role('admin')
+        is_authenticated = False
+        is_active = False
+        is_anonymous = True
+        is_admin = False
+        username = "Anonymous"
+        user_id = None
 
     return {'is_authenticated': is_authenticated,\
             'is_active': is_active,\
             'is_anonymous': is_anonymous,\
             'is_admin': is_admin,\
             'username': username,\
-            'user_id': user_id}
+            'email': username,\
+            'user_id': user_id,
+            'id': user_id}
 
 class DictLikeMixin():
     def init_from_args(self, *args, **kwargs):
