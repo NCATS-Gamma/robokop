@@ -26,10 +26,10 @@ def getAuthData():
     
     session_user_id = session.get('user_id')
     if session_user_id:
-        logger.debug(f'Got session_user_id {session_user_id} ')
+        # logger.debug(f'Got session_user_id {session_user_id} ')
         # We have an authenticated user
         user = get_user_by_id(session_user_id)
-        logger.debug(f'Got user {user} ')
+        # logger.debug(f'Got user {user} ')
         
         is_authenticated = True
         is_active = user['active']

@@ -7,10 +7,12 @@ from manager.setup import app
 from manager.setup_db import init_db, db
 from manager.user import User, Role
 
+
+# with app.app_context():
+
 # Create any database tables that don't exist yet.
 init_db()
 
-# with app.app_context():
 user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
 security = Security(app, user_datastore)  # this sets some app.config
 

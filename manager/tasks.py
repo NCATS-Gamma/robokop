@@ -150,7 +150,13 @@ def answer_question(self, question_id, user_email=None):
                 # We didn't get a 200. This is because of server error or sometimes a dropped task
                 raise RuntimeError('Ranker did not return a 200 when requesting task status.')
         else:
-            raise RuntimeError("Question answering has not completed after 1 day. It will continue working, but we will stop polling.")
+            # We couldn't complete the task in a day!? That's a problem.
+            #
+            # We should cancel the ranker task, otherwise it will run for a long while and no one will listen to the answer.
+            # To delete the ranker task we send a delete request to the polling_url
+            response = requests.delete(polling_url)
+            # We could check the response here, but there is nothing really that the user can do
+            raise RuntimeError("Question answering has not completed after 1 day. The task has been canceled")
 
         logger.info('Ranking reported as SUCCESS. Requesting answers:')
         response = requests.get(f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/task/{remote_task_id}/result')
@@ -158,9 +164,27 @@ def answer_question(self, question_id, user_email=None):
         message = response.json()
         # logger.info(message)
 
-        if not message["answers"]:
+        if not isinstance(message, dict) or not message["answers"]:
             logger.info(f'No answers found')
-            raise NoAnswersException()
+            try:
+                if user_email:
+                    logger.info('Sending email notification')
+                    # send completion email
+                    question_url = f'http://{os.environ["ROBOKOP_HOST"]}/q/{question["id"]}'
+                    nat_quest = question["natural_question"]
+                    lines = [f'We are sorry but we did not find any answers for your question: <a href="{question_url}">"{nat_quest}"</a>.']
+                    html = '<br />\n'.join(lines)
+                    with app.app_context():
+                        msg = Message(
+                            "ROBOKOP: Question Answering Found No Answers",
+                            sender=os.environ["ROBOKOP_DEFAULT_MAIL_SENDER"],
+                            recipients=[user_email],
+                            html=html)
+                        mail.send(msg)
+            except Exception as err:
+                logger.warning(f"Failed to send 'no answers' email: {err}")
+                
+            return "NORESULTS"
 
         logger.info(f'{len(message["answers"])} answers were found')
 

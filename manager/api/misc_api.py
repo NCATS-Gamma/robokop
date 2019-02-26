@@ -7,7 +7,6 @@ import sys
 import json
 import time
 
-import redis
 import requests
 from flask import request, Response
 from flask_restful import Resource, abort
@@ -16,7 +15,7 @@ from manager.setup import app, api
 from manager.logging_config import logger
 from manager.util import getAuthData
 from manager.tasks import celery
-from manager.task import get_task_by_id, TASK_TYPES
+from manager.task import get_task_by_id, TASK_TYPES, save_task_result, save_revoked_task_result
 from manager.setup_db import engine
 
 concept_map = {}
@@ -28,10 +27,6 @@ except Exception as e:
     logger.error(
         'misc_api.py:: Could not '
         f'find/read concept_map.json - {e}')
-
-def log_qpool_status():
-    status = engine.pool.status()
-    logger.debug(status)
 
 class TaskStatus(Resource):
     def get(self, task_id):
@@ -81,7 +76,35 @@ class TaskStatus(Resource):
                             type: string
         """
         
-        celery.control.revoke(task_id, terminate=True)
+        try:
+            task = get_task_by_id(task_id)
+        except:
+            return 'No such task', 404
+
+        try:
+            celery.control.revoke(task_id, terminate=True)
+        except Exception as err:
+            return 'We failed to revoke the task', 500
+
+        # We have a valid task in celery, we need to find the task in sql
+        # try:
+            # Update its stored status to deleted
+        save_revoked_task_result(task_id)
+
+        # If it's a ranker task, we will find it and delete it
+        # If it's a builder task, let's just let it go
+        task = get_task_by_id(task_id)
+        request_url = ''
+        if task['type'] == TASK_TYPES['answer']:
+            request_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{task['remote_task_id']}"
+            response = requests.delete(request_url)
+                # We could check the reponses, but there is nothing we would tell the user either way
+            # elif task['type'] == TASK_TYPES['update']:
+            #     request_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{task['remote_task_id']}/log"
+            # else: 
+            #     raise Exception('Invalid task type')
+        # except:
+        #     return 'Task not found', 404
 
         return '', 204
 
@@ -146,8 +169,6 @@ class Concepts(Resource):
         concepts = [c for c in concepts if not c in bad_concepts]
         concepts.sort()
 
-        logger.debug('Fetched concepts')
-        log_qpool_status()
         return concepts
 
 api.add_resource(Concepts, '/concepts/')
@@ -156,7 +177,7 @@ api.add_resource(Concepts, '/concepts/')
 class Omnicorp(Resource):
     def get(self, id1, id2):
         """
-        Get publications for one identifier or a pair of identifiers
+        Get publications for a pair of identifiers
         ---
         tags: [util]
         parameters:
@@ -189,6 +210,37 @@ class Omnicorp(Resource):
         return r.json()
 
 api.add_resource(Omnicorp, '/omnicorp/<id1>/<id2>')
+
+
+class Omnicorp1(Resource):
+    def get(self, id1):
+        """
+        Get publications for one identifier
+        ---
+        tags: [util]
+        parameters:
+          - in: path
+            name: id1
+            description: "curie of first term"
+            schema:
+                type: string
+            required: true
+            default: "MONDO:0005737"
+        responses:
+            200:
+                description: publications
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: string
+        """
+
+        r = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/omnicorp/{id1}")
+        return r.json()
+
+api.add_resource(Omnicorp1, '/omnicorp/<id1>')
 
 
 class Connections(Resource):
@@ -236,6 +288,25 @@ class Operations(Resource):
         return operations
 
 api.add_resource(Operations, '/operations/')
+
+class Properties(Resource):
+    def get(self):
+        """
+        Get a machine readable list of potential node proeprties in the knowledge graph
+        ---
+        tags: [util]
+        responses:
+            200:
+                description: concepts
+                content:
+                    application/json:
+        """
+        r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/properties")
+        props = r.json()
+
+        return props
+
+api.add_resource(Properties, '/properties/')
 
 class Search(Resource):
     def get(self, term, category):
@@ -337,8 +408,7 @@ class User(Resource):
                                     example: me@mydomain.edu
         """
         user = getAuthData()
-        logger.debug('Fetched user')
-        log_qpool_status()
+
         return user
 
 api.add_resource(User, '/user/')

@@ -13,7 +13,6 @@ from datetime import datetime
 import requests
 from flask import jsonify, request
 from flask_security import auth_required
-from flask_security.core import current_user
 from flask_restful import Resource
 
 from manager.setup import api
@@ -263,10 +262,11 @@ class Quick(Resource):
 
             if not isinstance(response.json(), dict):
                 logger.debug(f'Builder failure: {response.json()}')
-                raise RuntimeError("The robokop builder could not correctly initiate the task.")
+                raise RuntimeError("The robokop knowledge graph builder could not correctly initiate the task.")
 
-            logger.debug(f'   Builder acknowledged with task_id {response.json()["task_id"]}')
-            polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{response.json()['task_id']}"
+            builder_task_id = response.json()['task_id']
+            logger.debug(f'   Builder acknowledged with task_id {builder_task_id}')
+            polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{builder_task_id}"
 
             for _ in range(60 * 60):  # wait up to 1 hour
                 time.sleep(1)
@@ -276,11 +276,18 @@ class Quick(Resource):
                     if response.json()['status'] == 'FAILURE':
                         raise RuntimeError('Builder failed.')
                     if response.json()['status'] == 'REVOKED':
-                        raise RuntimeError('Task terminated by admin.')
+                        raise RuntimeError('Building task was terminated.')
                     if response.json()['status'] == 'SUCCESS':
                         break
+                else: 
+                    # We didn't get a 200 during polling... this is bad
+                    # We should probably assume that something has gone wrong
+                    raise RuntimeError('The robokop knowledge graph builder failed to return a response reguarding the status of the task.')
             else:
-                raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
+                # We may want to cancel the builder task, but I think we should let it go.
+                # It took a while, let it run, it will finish eventually.
+                # builder_task_id
+                raise RuntimeError("Knowledge source querying has not completed after 1 hour. Building will continue, after some time in the future you may wish to try again without the rebuild option.")
 
             logger.info('   Done updating KG.')
         
@@ -299,8 +306,9 @@ class Quick(Resource):
             logger.debug(response.json())
             raise RuntimeError("The robokop ranker could not correctly initiate the task.")
 
-        logger.debug(f'   Ranker acknowledged with task_id {response.json()["task_id"]}')
-        polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}"
+        ranker_task_id = response.json()['task_id']
+        logger.debug(f'   Ranker acknowledged with task_id {ranker_task_id}')
+        polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{ranker_task_id}"
 
         for _ in range(60 * 60):  # wait up to 1 hour
             time.sleep(1)
@@ -309,15 +317,24 @@ class Quick(Resource):
             # logger.info(response.text)
             if response.status_code == 200:
                 if response.json()['status'] == 'FAILURE':
-                    raise RuntimeError('Question answering failed.')
+                    raise RuntimeError(f'Question answering failed. Ranker ID {ranker_task_id}.')
                 if response.json()['status'] == 'REVOKED':
-                    raise RuntimeError('Task terminated by admin.')
+                    raise RuntimeError('Ranking task was terminated.')
                 if response.json()['status'] == 'SUCCESS':
                     break
+            else: 
+                # We didn't get a 200 during polling... this is bad
+                # We should probably assume that something has gone wrong
+                raise RuntimeError('The robokop ranker failed to return a response reguarding the status of the task.')
         else:
+            # We should cancel the ranker task, otherwise it will run for a long while and no one will listen to the answer.
+            # ranker_task_id
+            # To delete the ranker task we send a delete request to the polling_url
+            response = requests.delete(polling_url)
+            # We could check the response here, but there is nothing really that the user can do
             raise RuntimeError("Question answering has not completed after 1 hour. You may want to try with the non-blocking API.")
 
-        answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{response.json()['task_id']}/result")
+        answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{ranker_task_id}/result")
         logger.info('   Returning response')
         # logger.info(answerset_json)
 
@@ -528,9 +545,16 @@ class SimilaritySearch(Resource):
                         if response.json()['status'] == 'REVOKED':
                             raise RuntimeError('Task terminated by admin.')
                         if response.json()['status'] == 'SUCCESS':
-                            break
+                                break
+                    else: 
+                        # We didn't get a 200 during polling... this is bad
+                        # We should probably assume that something has gone wrong
+                        raise RuntimeError('The robokop knowledge graph builder failed to return a response reguarding the status of the task.')
                 else:
-                    raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
+                    # We may want to cancel the builder task, but I think we should let it go.
+                    # It took a while, let it run, it will finish eventually.
+                    # builder_task_id
+                    raise RuntimeError("Knowledge source querying has not completed after 1 hour. Building will continue, after some time in the future you may wish to try again without the rebuild option.")
 
                 logger.info(f'Rebuild completed, status: {response.json()["status"]}')
             except Exception as e:
@@ -675,8 +699,16 @@ class EnrichedExpansion(Resource):
                                 raise RuntimeError('Task terminated by admin.')
                             if response.json()['status'] == 'SUCCESS':
                                 break
+                        else: 
+                            # We didn't get a 200 during polling... this is bad
+                            # We should probably assume that something has gone wrong
+                            raise RuntimeError('The robokop knowledge graph builder failed to return a response reguarding the status of the task.')
                     else:
-                        raise RuntimeError("Knowledge source querying has not completed after 1 hour. You may wish to try again later.")
+                        # We may want to cancel the builder task, but I think we should let it go.
+                        # It took a while, let it run, it will finish eventually.
+                        # builder_task_id
+                        raise RuntimeError("Knowledge source querying has not completed after 1 hour. Building will continue, after some time in the future you may wish to try again without the rebuild option.")
+                        
 
                     logger.info(f'Rebuild completed, status {response.json()["status"]}')
                 except Exception as e:
@@ -821,7 +853,7 @@ class Template(Resource):
         try:
             question = load_and_complete_template(template_id, **template_args)
         except Exception as e:
-            return str(e), 500
+            return str(e), 404
 
         return json.loads(question), 200
 
@@ -920,7 +952,12 @@ class TemplateRun(Resource):
             if arg not in quick_args:
                 template_args[arg] = request.args[arg]
     
-        question = json.loads(load_and_complete_template(template_id, **template_args))
+        try:
+            question_text = load_and_complete_template(template_id, **template_args)
+        except Exception as e:
+            return str(e), 404
+
+        question = json.loads(question_text)
         
         max_results = parse_args_max_results(request.args)
         output_format = parse_args_output_format(request.args)
@@ -934,7 +971,8 @@ class TemplateRun(Resource):
             f'http://manager:{os.environ["MANAGER_PORT"]}/api/simple/quick/?max_results={max_results}&max_connectivity={max_connectivity}&output_format={output_format}',
             json=question)
         if response.status_code >= 300:
-            return "Bad response from the question answering service."
+            return "Bad response from the question answering service. " + response.text, response.status_code
+        
         answerset = response.json()
 
         return answerset
