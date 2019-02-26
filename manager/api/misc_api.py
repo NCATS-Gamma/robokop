@@ -289,6 +289,25 @@ class Operations(Resource):
 
 api.add_resource(Operations, '/operations/')
 
+class Properties(Resource):
+    def get(self):
+        """
+        Get a machine readable list of potential node proeprties in the knowledge graph
+        ---
+        tags: [util]
+        responses:
+            200:
+                description: concepts
+                content:
+                    application/json:
+        """
+        r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/properties")
+        props = r.json()
+
+        return props
+
+api.add_resource(Properties, '/properties/')
+
 class Search(Resource):
     def get(self, term, category):
         """
