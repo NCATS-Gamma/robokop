@@ -92,7 +92,12 @@ class TasksModal extends Component {
     const initialTime = task.timestamp && timestampToDate(task.timestamp).toLocaleString();
     const startTime = task.startingTimestamp && timestampToDate(task.startingTimestamp).toLocaleString();
     const endTime = task.endTimestamp && timestampToDate(task.endTimestamp).toLocaleString();
-    const result = JSON.parse(task.result).status;
+    const taskResult = JSON.parse(task.result);
+    let result = taskResult.status;
+    if (result === 'SUCCESS') {
+      // A successfull task may have additional information.
+      result = taskResult.result;
+    }
     return (
       <button key={key} className={`taskListTask${this.state.activeTask === index ? ' active' : ''}`} style={style} onClick={() => this.getTaskLogs(task.id, index)}>
         <div className="taskListItem">{taskType || 'N/A'}</div>

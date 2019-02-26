@@ -92,11 +92,15 @@ class QuestionHeader extends React.Component {
   }
 
   syncPropsAndState(newProps) {
+    let { notes } = newProps.question;
+    if (!notes) {
+      notes = '';
+    }
     this.setState({
       editedNatural: false,
       editedNotes: false,
       natural: newProps.question.natural_question,
-      notes: newProps.question.notes,
+      notes,
     });
   }
 
