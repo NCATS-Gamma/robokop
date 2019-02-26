@@ -317,7 +317,7 @@ class Quick(Resource):
             # logger.info(response.text)
             if response.status_code == 200:
                 if response.json()['status'] == 'FAILURE':
-                    raise RuntimeError('Question answering failed.')
+                    raise RuntimeError(f'Question answering failed. Ranker ID {ranker_task_id}.')
                 if response.json()['status'] == 'REVOKED':
                     raise RuntimeError('Ranking task was terminated.')
                 if response.json()['status'] == 'SUCCESS':
