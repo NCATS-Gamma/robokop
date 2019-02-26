@@ -88,8 +88,8 @@ class AnswersetStore {
     this.message.question_graph.nodes.forEach((n) => {
       headerInfo.push({
         Header: `${n.id}: ${entityNameDisplay(n.type)}`,
-        id: n.id, // `nodes.${n.id}.name`,
-        isSet: n.set ? true : false, // eslint-disable-line no-unneeded-ternary
+        id: n.id,
+        isSet: n.set,
         type: n.type,
       });
       qNodeIds.push(n.id);
@@ -100,7 +100,9 @@ class AnswersetStore {
     });
     const answers = [];
     this.message.answers.forEach((ans) => {
-      const ansObj = { score: ans.score, nodes: {}, edges: {}, id: ans.id };
+      const ansObj = {
+        score: ans.score, nodes: {}, edges: {}, id: ans.id,
+      };
       qNodeIds.forEach((qNodeId) => {
         const qNode = this.getQNode(qNodeId);
         let nodeListObj = { type: qNode.type, isSet: false };
@@ -157,7 +159,7 @@ class AnswersetStore {
           const qNodeIndex = qNodeCounts.indexOf(maxCounts);
 
           // Use that Q Nodes Type
-          n.type = qNodes[qNodeIndex].type;
+          n.type = qNodes[qNodeIndex].type; // eslint-disable-line no-param-reassign
         }
       });
     }
@@ -245,7 +247,7 @@ class AnswersetStore {
         edgeObj.forEach(eObj => graph.edge_list.push(_.cloneDeep(toJS(eObj))));
       }
     });
-    return graph;
+    return toJS(graph);
   }
 
   @action updateActiveAnswerId(ansId) {

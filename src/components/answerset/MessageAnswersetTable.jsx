@@ -4,26 +4,14 @@ import { Row, Col } from 'react-bootstrap';
 import { observer } from 'mobx-react';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
+import { DropdownList } from 'react-widgets';
 
 import AnswersetTableSubComponent, { answersetSubComponentEnum } from './AnswersetTableSubComponent';
 import entityNameDisplay from './../util/entityNameDisplay';
 import getNodeTypeColorMap from './../util/colorUtils';
+// import AnswerSearch from '../shared/AnswerSearch';
 
 const _ = require('lodash');
-
-// Filter method for table columns that is case-insensitive, and matches all rows that contain
-// provided sub-string
-const defaultFilterMethod = (filter, row, column) => { // eslint-disable-line no-unused-vars
-  // console.log('filter, row, column', filter, row, column);
-  const id = filter.pivotId || filter.id;
-  return row[id] !== undefined ? String(row[id].toLowerCase()).includes(filter.value.toLowerCase()) : true;
-};
-
-const setFilterMethod = (filter, row, column) => { // eslint-disable-line no-unused-vars
-  const id = filter.pivotId || filter.id;
-  const combined = row[id].map(subNode => (subNode.name ? subNode.name : subNode.id)).join(' ');
-  return String(combined.toLowerCase()).includes(filter.value.toLowerCase());
-};
 
 /**
  * Function to calculate sane column widths
@@ -44,7 +32,7 @@ const getColumnWidth = (data, accessor, headerText, accessorPostProcFn = x => x)
   const cellLength = Math.max(
     ...data.map(row => (`${accessorPostProcFn(accessor(row))}` || '').length),
     headerText.length,
-  );
+  ) + 4;
   return Math.min(maxWidth, cellLength * magicSpacing);
 };
 
@@ -54,16 +42,36 @@ class MessageAnswersetTable extends React.Component {
     super(props);
 
     this.state = {
+      columnHeaders: [],
+      answers: [],
       tableSubComponent: this.subComponentFactory(),
       expanded: {},
-      isError: false,
-      error: null,
+      filter: {},
+      selectedFilter: [],
     };
+
+    this.reactTable = '';
+
     this.getReactTableColumnSpec = this.getReactTableColumnSpec.bind(this);
     this.updateTableSubComponent = this.updateTableSubComponent.bind(this);
     this.subComponentFactory = this.subComponentFactory.bind(this);
     this.clearExpanded = this.clearExpanded.bind(this);
+    this.getFiltered = this.getFiltered.bind(this);
   }
+
+  componentWillMount() {
+    const { store } = this.props;
+    const answerTables = store.answerSetTableData;
+    const { headerInfo: columnHeaders, answers } = answerTables;
+    this.initializeState(columnHeaders, answers);
+  }
+
+  // componentDidMount() {
+  //   const { store } = this.props;
+  //   const answerTables = store.answerSetTableData;
+  //   const { headerInfo: columnHeaders, answers } = answerTables;
+  //   this.initializeState(columnHeaders, answers);
+  // }
 
   // SubComponent displayed when expanding a Node column in table that represents a Set
   subComponentFactory = ({nodeId = null, activeButtonKey = answersetSubComponentEnum.graph} = {}) => (rowInfo) => { // eslint-disable-line
@@ -81,10 +89,36 @@ class MessageAnswersetTable extends React.Component {
 
   isSelected = rowInfo => Boolean(this.state.expanded[rowInfo.viewIndex]);
 
-  getReactTableColumnSpec(columnHeaders, data, concepts) {
+  // Filter method for table columns that is case-insensitive, and matches all rows that contain
+  // provided sub-string
+  defaultFilterMethod = (filter, row, column) => { // eslint-disable-line no-unused-vars
+    // console.log('filter, row, column', filter, row, column);
+    if (filter.value.name === 'clear all') {
+      return true;
+    }
+    const id = filter.pivotId || filter.id;
+    return row[id] !== undefined ? String(row[id].toLowerCase()).includes(filter.value.name.toLowerCase()) : true;
+  };
+
+  setFilterMethod = (filter, row, column) => { // eslint-disable-line no-unused-vars
+    const id = filter.pivotId || filter.id;
+    const combined = row[id].map(subNode => (subNode.name ? subNode.name : subNode.id)).join(' ');
+    return String(combined.toLowerCase()).includes(filter.value.toLowerCase());
+  };
+
+  initializeState(columnHeaders, answers) {
+    const filter = this.filter(columnHeaders, answers);
+    this.setState({ columnHeaders, answers, filter });
+  }
+
+  getReactTableColumnSpec() {
+    const {
+      columnHeaders, answers: data, filter, selectedFilter,
+    } = this.state;
+    const { concepts } = this.props;
     const bgColorMap = getNodeTypeColorMap(concepts);
     // Take columnHeaders from store and update it as needed
-    columnHeaders = columnHeaders.map((col) => { // eslint-disable-line no-param-reassign
+    const colHeaders = columnHeaders.map((col) => { // eslint-disable-line no-param-reassign
       const colSpecObj = _.cloneDeep(col);
       const nodeId = colSpecObj.id;
       if (colSpecObj.isSet) {
@@ -116,10 +150,36 @@ class MessageAnswersetTable extends React.Component {
           data, colSpecObj.accessor, colSpecObj.Header,
           setNodes => `${cellTextFn(setNodes).join(' ')}   `,
         );
-        colSpecObj.filterMethod = setFilterMethod;
+        colSpecObj.filterMethod = this.setFilterMethod;
       } else {
         colSpecObj.accessor = d => (d.nodes[nodeId].name ? d.nodes[nodeId].name : d.nodes[nodeId].id);
         colSpecObj.width = getColumnWidth(data, colSpecObj.accessor, colSpecObj.Header);
+        const filterArray = [{ name: '', score: '', clear: true }, ...filter[nodeId]];
+        const filterItem = ({ item }) => (
+          <span>
+            {item.clear && <div>Clear Filter</div>}
+            <strong>{item.name}</strong>
+            <div className="score">{item.score && parseFloat(Math.round(item.score * 1000) / 1000).toFixed(3)}</div>
+          </span>
+        );
+        let defaultValue = '';
+        if (selectedFilter.length) {
+          selectedFilter.forEach((selected) => {
+            if (selected.id === nodeId) {
+              defaultValue = selected.value.name;
+            }
+          });
+        }
+        colSpecObj.Filter = props =>
+          (<DropdownList
+            {...props}
+            data={filterArray}
+            textField="name"
+            valueField="name"
+            defaultValue={defaultValue}
+            itemComponent={filterItem}
+            filter
+          />);
       }
       const backgroundColor = bgColorMap(colSpecObj.type);
       const columnHeader = colSpecObj.Header;
@@ -129,7 +189,7 @@ class MessageAnswersetTable extends React.Component {
       return colSpecObj;
     });
     // Add Score column at the end
-    columnHeaders.push({
+    colHeaders.push({
       Header: 'Rank',
       id: 'score',
       // width: 75,
@@ -138,7 +198,7 @@ class MessageAnswersetTable extends React.Component {
       Cell: d => <span className="number">{parseFloat(Math.round(d.value * 1000) / 1000).toFixed(3)}</span>,
       className: 'center',
     });
-    return columnHeaders;
+    return colHeaders;
   }
 
   /**
@@ -158,123 +218,109 @@ class MessageAnswersetTable extends React.Component {
     this.setState({ expanded: {} });
   }
 
-  renderError() {
-    console.log('Interactive Viewer Error Message', this.state.error);
-    return (
-      <Row>
-        <Col md={12}>
-          <h4>
-            {'Sorry but we ran in to problems setting up the interactive viewer for this answer set.'}
-          </h4>
-          <p>
-            Error Message:
-          </p>
-          <pre>
-            {this.state.error.message}
-          </pre>
-        </Col>
-      </Row>
-    );
+  getFiltered(filter) {
+    const filteredAnswers = this.reactTable.getResolvedState().sortedData;
+    const setFilter = this.filter(this.state.columnHeaders, filteredAnswers);
+    const selectedFilter = filter;
+    this.setState({ filter: setFilter, expanded: {}, selectedFilter });
   }
-  renderNoAnswers() {
-    return (
-      <Row>
-        <Col md={12}>
-          {'There does not appear to be any answers for this question.'}
-        </Col>
-      </Row>
-    );
-  }
-  renderValid() {
-    const { store } = this.props;
-    const answerTables = store.answerSetTableData;
-    const { headerInfo: columnHeaders, answers } = answerTables;
-    const columns = [{
-      Header: 'Answer Set',
-      columns: this.getReactTableColumnSpec(columnHeaders, answers, this.props.concepts),
-    }];
-    return (
-      <div style={{ marginBottom: '10px', padding: '0 15px' }}>
-        <ReactTable
-          data={answers}
-          columns={columns}
-          defaultPageSize={10}
-          defaultFilterMethod={defaultFilterMethod}
-          pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
-          minRows={5}
-          filterable
-          className="-highlight"
-          collapseOnDataChange={false}
-          onPageChange={() => this.clearExpanded()}
-          onSortedChange={() => this.clearExpanded()}
-          SubComponent={this.state.tableSubComponent}
-          expanded={this.state.expanded}
-          defaultSorted={[
-            {
-              id: 'score',
-              desc: true,
-            },
-          ]}
-          getTdProps={(state, rowInfo, column, instance) => { // eslint-disable-line
-            return {
-              onClick: (e, handleOriginal) => {
-                // console.log('A Td Element was clicked!');
-                // console.log('it produced this event:', e);
-                // console.log('It was in this column:', column);
-                console.log('It was in this row:', rowInfo);
-                // console.log('It was in this table instance:', instance);
-                // console.log('It has the following state:', state);
-                // IMPORTANT! React-Table uses onClick internally to trigger
-                // events like expanding SubComponents and pivots.
-                // By default a custom 'onClick' handler will override this functionality.
-                // If you want to fire the original onClick handler, call the
-                // 'handleOriginal' function.
-                if (handleOriginal) {
-                  handleOriginal();
-                }
-                // Trigger appropriate subcomponent depending on where user clicked
-                if (column.isSet) { // Handle user clicking on a "Set" element in a row
-                  const newSubComponent = this.subComponentFactory({
-                    nodeId: column.id,
-                    activeButtonKey: answersetSubComponentEnum.metadata,
-                  });
-                  this.updateTableSubComponent(rowInfo.viewIndex, newSubComponent);
-                } else if (column.expander) { // Handle user clicking on the row Expander element (1st column)
-                  this.updateTableSubComponent(rowInfo.viewIndex, this.subComponentFactory());
-                }
-              },
-            };
-          }}
-          getTrProps={(state, rowInfo) => ({
-              className: rowInfo ? (this.isSelected(rowInfo) ? 'selected-row' : '') : '', // eslint-disable-line no-nested-ternary
-            })
+  filter(columns, answers) {
+    const filter = {};
+    columns.forEach((col) => {
+      filter[col.id] = [];
+      answers.forEach((ans) => {
+        for (let i = 0; i < filter[col.id].length; i += 1) {
+          if ((ans.nodes && (ans.nodes[col.id].name || ans.nodes[col.id].id) === filter[col.id][i].name) || ans[col.id] === filter[col.id][i].name) {
+            if (ans.score > filter[col.id].score) {
+              filter[col.id][i].score = ans.score;
+            }
+            return filter;
           }
-          // style={{ height: '480px' }}
-        />
-      </div>
-    );
+        }
+        filter[col.id].push({ name: (ans.nodes && (ans.nodes[col.id].name || ans.nodes[col.id].id)) || ans[col.id], score: ans.score });
+        return filter;
+      });
+    });
+    return filter;
   }
 
-  renderGroup() {
-    return (
-      <Row>
-        <Col md={12}>
-          <Row style={{ marginTop: '10px' }}>
-            {this.renderValid()}
-          </Row>
-        </Col>
-      </Row>
-    );
-  }
   render() {
-    const { isError } = this.state;
-    const { store } = this.props;
-    const hasAnswers = (store.message.answers && store.message.answers.length > 0);
+    const {
+      answers,
+    } = this.state;
+    const columns = [{
+      Header: 'Answer Set',
+      columns: this.getReactTableColumnSpec(),
+    }];
     return (
       <div>
-        {isError && this.renderError()}
-        {!isError && hasAnswers && this.renderGroup()}
-        {!isError && !hasAnswers && this.renderNoAnswers()}
+        {Object.keys(answers).length ?
+          <Row>
+            <Col md={12}>
+              <Row style={{ marginTop: '10px' }}>
+                <div style={{ marginBottom: '10px', padding: '0 15px' }}>
+                  <ReactTable
+                    ref={(r) => { this.reactTable = r; }}
+                    data={answers}
+                    columns={columns}
+                    defaultPageSize={10}
+                    defaultFilterMethod={this.defaultFilterMethod}
+                    pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
+                    minRows={7}
+                    filterable
+                    onFilteredChange={this.getFiltered}
+                    className="-highlight"
+                    collapseOnDataChange={false}
+                    onPageChange={this.clearExpanded}
+                    onSortedChange={this.clearExpanded}
+                    SubComponent={this.state.tableSubComponent}
+                    expanded={this.state.expanded}
+                    defaultSorted={[
+                      {
+                        id: 'score',
+                        desc: true,
+                      },
+                    ]}
+                    getTdProps={(state, rowInfo, column, instance) => { // eslint-disable-line
+                      return {
+                        onClick: (e, handleOriginal) => {
+                          // IMPORTANT! React-Table uses onClick internally to trigger
+                          // events like expanding SubComponents and pivots.
+                          // By default a custom 'onClick' handler will override this functionality.
+                          // If you want to fire the original onClick handler, call the
+                          // 'handleOriginal' function.
+                          if (handleOriginal) {
+                            handleOriginal();
+                          }
+                          // Trigger appropriate subcomponent depending on where user clicked
+                          if (column.isSet) { // Handle user clicking on a "Set" element in a row
+                            const newSubComponent = this.subComponentFactory({
+                              nodeId: column.id,
+                              activeButtonKey: answersetSubComponentEnum.metadata,
+                            });
+                            this.updateTableSubComponent(rowInfo.viewIndex, newSubComponent);
+                          } else if (column.expander) { // Handle user clicking on the row Expander element (1st column)
+                            this.updateTableSubComponent(rowInfo.viewIndex, this.subComponentFactory());
+                          }
+                        },
+                      };
+                    }}
+                    getTrProps={(state, rowInfo) => ({
+                          className: rowInfo ? (this.isSelected(rowInfo) ? 'selected-row' : '') : '', // eslint-disable-line no-nested-ternary
+                        })
+                      }
+                  />
+                </div>
+              </Row>
+            </Col>
+          </Row>
+          :
+          <Row>
+            <Col md={12}>
+              {'There does not appear to be any answers for this question.'}
+            </Col>
+          </Row>
+        }
       </div>
     );
   }

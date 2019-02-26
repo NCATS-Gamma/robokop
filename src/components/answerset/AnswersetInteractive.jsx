@@ -112,6 +112,7 @@ function initializeStructureGroup(ans) {
             }
           });
         });
+        // eslint-disable-next-line no-param-reassign
         a.result_graph.node_list = newNodeList;
       });
 
@@ -269,7 +270,7 @@ class AnswersetInteractive extends React.Component {
     }
 
     let nodeSelection = [];
-    
+
     if (Number.isSafeInteger(answerWithinIndex)) {
       nodeSelection = group.answers[answerWithinIndex].result_graph.node_list.map(n => n.id);
     } else {
@@ -343,7 +344,7 @@ class AnswersetInteractive extends React.Component {
     return (
       <Row>
         <Col md={12}>
-          {"There does not appear to be any answers for this question."}
+          {'There does not appear to be any answers for this question.'}
         </Col>
       </Row>
     );
