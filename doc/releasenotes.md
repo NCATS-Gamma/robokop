@@ -1,7 +1,9 @@
-
 # Release Notes
 
 These are general release notes that highlight a batch of ongoing updates. Across three repositories. The batches are marked when they were deployed to robokop.renci.org.
+
+## 2018-02-27
+- Better browsing and search within the answerset viewer
 
 
 ## 2018-02-26
