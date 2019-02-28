@@ -119,7 +119,13 @@ class AnswersetTableSubComponent extends React.Component {
     const axiosArray = [];
     const nodePairs = [];
     for (let i = 0; i < nodes.length; i += 1) {
+      if (('isSet' in nodes[i]) && nodes[i].isSet) {
+        continue;
+      }
       for (let m = i + 1; m < nodes.length; m += 1) {
+        if (('isSet' in nodes[m]) && nodes[m].isSet) {
+          continue;
+        }
         // builds the api call address and pushes it into an array for the promises
         const addr = `${config.protocol}://${config.host}:${config.port}/api/omnicorp/${nodes[i].id}/${nodes[m].id}`;
         axiosArray.push(axios.get(addr));

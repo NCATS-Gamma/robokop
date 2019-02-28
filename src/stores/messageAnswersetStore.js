@@ -198,8 +198,10 @@ class AnswersetStore {
       const newNodes = [];
       const qNode = this.getQNode(keyId);
       let nodeIds = toJS(val);
+      let isSet = true;
       if (!Array.isArray(nodeIds)) {
         nodeIds = [nodeIds];
+        isSet = false;
         // Node is not a set
         // We will make it an array so we can follow the same code path
       }
@@ -208,6 +210,8 @@ class AnswersetStore {
         // Get the type from the qNode
         if (kgNode) {
           kgNode.type = qNode.type;
+          kgNode.isSet = isSet;
+          kgNode.binding = keyId;
           newNodes.push(kgNode);
         }
       });
@@ -228,13 +232,13 @@ class AnswersetStore {
         const kgEdge = this.getKgEdge(edgeId);
         // Get the type from the qNode
         if (kgEdge) {
+          kgEdge.binding = keyId;
           newEdges.push(kgEdge);
         }
       });
       newEdges.forEach(e => graph.edge_list.push(_.cloneDeep(toJS(e))));
     });
 
-    console.log(toJS(answer), graph)
     return graph;
   }
 
