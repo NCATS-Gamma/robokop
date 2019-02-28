@@ -214,6 +214,7 @@ class SubGraphViewer extends React.Component {
     });
 
     // Separate out support and regular edges to modify things differently
+    console.log('graph edges', g.edges);
     const edgesRegular = g.edges.filter(e => e.type !== 'literature_co-occurrence');
     const edgesSupport = g.edges.filter(e => e.type === 'literature_co-occurrence');
 

@@ -97,6 +97,7 @@ class AnswersetTableSubComponent extends React.Component {
     const ansId = rowData.id;
     this.props.store.updateActiveAnswerId(ansId);
     let graph = this.props.store.activeAnswerGraph;
+    console.log(graph);
     // returns the array of calls to make, and an array of node pairs
     const { calls, nodes } = this.makeNodePairs(graph.node_list);
     // async calls for omnicorp publications
@@ -109,10 +110,11 @@ class AnswersetTableSubComponent extends React.Component {
         graph = this.addSupportEdges(graph, pubs, nodes);
         // this signifies that the graph is updated and to display the SubGraphViewer
         this.setState({ graph, loadedGraph: true });
-      })
-      .catch((error) => {
-        console.log('Error: ', error);
       });
+    // TODO: uncomment this
+    // .catch((error) => {
+    //   console.log('Error: ', error);
+    // });
   }
 
   makeNodePairs(nodes) {

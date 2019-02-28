@@ -170,6 +170,7 @@ class AnswersetStore {
   // Returns subgraphViewer compatible format graph spec { node_list: {}, edge_list: {} }
   @computed get activeAnswerGraph() {
     const answer = this.message.answers[this.ansIdToIndMap.get(this.activeAnswerId)];
+    console.log(answer);
     const graph = { node_list: [], edge_list: [] };
     const bindingsMap = new Map(Object.entries(answer.node_bindings));
     const qNodeIdsToSquash = [];
@@ -211,6 +212,7 @@ class AnswersetStore {
     });
 
     const bindingsMapEdges = new Map(Object.entries(answer.edge_bindings));
+    console.log(bindingsMapEdges);
     // Process all Edges in answer after nodes
     bindingsMapEdges.forEach((val, keyId) => {
       if (this.qEdgeIdToIndMap.has(keyId)) { // This is an edge
@@ -238,16 +240,19 @@ class AnswersetStore {
           }
         } else {
           // Process all the edges (no squashing required)
+          console.log(val);
           edgeObj = val.map(kgEdgeId => this.getKgEdge(kgEdgeId));
+          console.log(edgeObj);
         }
         // Update edge_list in the graph datastructure
         if (!isObservableArray(edgeObj) && !Array.isArray(edgeObj)) {
           edgeObj = [edgeObj];
         }
+        console.log(edgeObj);
         edgeObj.forEach(eObj => graph.edge_list.push(_.cloneDeep(toJS(eObj))));
       }
     });
-    return toJS(graph);
+    return graph;
   }
 
   @action updateActiveAnswerId(ansId) {

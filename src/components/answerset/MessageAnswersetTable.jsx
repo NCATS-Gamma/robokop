@@ -47,7 +47,7 @@ class MessageAnswersetTable extends React.Component {
       tableSubComponent: this.subComponentFactory(),
       expanded: {},
       filter: {},
-      selectedFilter: [],
+      tableFilter: [],
     };
 
     this.reactTable = '';
@@ -113,12 +113,12 @@ class MessageAnswersetTable extends React.Component {
 
   getReactTableColumnSpec() {
     const {
-      columnHeaders, answers: data, filter, selectedFilter,
+      columnHeaders, answers: data, filter, tableFilter,
     } = this.state;
     const { concepts } = this.props;
     const bgColorMap = getNodeTypeColorMap(concepts);
     // Take columnHeaders from store and update it as needed
-    const colHeaders = columnHeaders.map((col) => { // eslint-disable-line no-param-reassign
+    const colHeaders = columnHeaders.map((col) => {
       const colSpecObj = _.cloneDeep(col);
       const nodeId = colSpecObj.id;
       if (colSpecObj.isSet) {
@@ -156,15 +156,15 @@ class MessageAnswersetTable extends React.Component {
         colSpecObj.width = getColumnWidth(data, colSpecObj.accessor, colSpecObj.Header);
         const filterArray = [{ name: '', score: '', clear: true }, ...filter[nodeId]];
         const filterItem = ({ item }) => (
-          <span>
+          <div style={{ width: '100%', textAlign: 'left' }}>
             {item.clear && <div>Clear Filter</div>}
             <strong>{item.name}</strong>
-            <div className="score">{item.score && parseFloat(Math.round(item.score * 1000) / 1000).toFixed(3)}</div>
-          </span>
+            <div className="pull-right">{item.score && parseFloat(Math.round(item.score * 1000) / 1000).toFixed(3)}</div>
+          </div>
         );
         let defaultValue = '';
-        if (selectedFilter.length) {
-          selectedFilter.forEach((selected) => {
+        if (tableFilter.length) {
+          tableFilter.forEach((selected) => {
             if (selected.id === nodeId) {
               defaultValue = selected.value.name;
             }
@@ -175,7 +175,7 @@ class MessageAnswersetTable extends React.Component {
             {...props}
             data={filterArray}
             textField="name"
-            valueField="name"
+            placeholder="Filter"
             defaultValue={defaultValue}
             itemComponent={filterItem}
             filter
@@ -218,36 +218,49 @@ class MessageAnswersetTable extends React.Component {
     this.setState({ expanded: {} });
   }
 
-  getFiltered(filter) {
+  getFiltered(tableFilter) {
+    // this gets the actual filtered answers directly from the table. this.reactTable is a ref set below in the component
     const filteredAnswers = this.reactTable.getResolvedState().sortedData;
-    const setFilter = this.filter(this.state.columnHeaders, filteredAnswers);
-    const selectedFilter = filter;
-    this.setState({ filter: setFilter, expanded: {}, selectedFilter });
+    const filter = this.filter(this.state.columnHeaders, filteredAnswers, tableFilter);
+    this.setState({ filter, tableFilter, expanded: {} });
   }
-  filter(columns, answers) {
+
+  filter(columns, currentAnswers, tableFilter) {
+    const { answers } = this.state;
     const filter = {};
     columns.forEach((col) => {
+      // create an empty array in the filter object for each column
       filter[col.id] = [];
-      answers.forEach((ans) => {
+      // initially look at only the filtered answers for the dropdown
+      let allAnswers = currentAnswers;
+      // if the filter has a value, then show the whole list.
+      if (tableFilter) {
+        tableFilter.forEach((tableId) => {
+          if (tableId.id === col.id && tableId.value.name) {
+            allAnswers = answers;
+          }
+        });
+      }
+      allAnswers.forEach((ans) => {
+        // loop over each array in the filter and check to see if the answer is already in there
         for (let i = 0; i < filter[col.id].length; i += 1) {
           if ((ans.nodes && (ans.nodes[col.id].name || ans.nodes[col.id].id) === filter[col.id][i].name) || ans[col.id] === filter[col.id][i].name) {
+            // if the answer is already there, set the highest score
             if (ans.score > filter[col.id].score) {
               filter[col.id][i].score = ans.score;
             }
-            return filter;
+            return;
           }
         }
+        // if the answer wasn't already there, push it in with its score
         filter[col.id].push({ name: (ans.nodes && (ans.nodes[col.id].name || ans.nodes[col.id].id)) || ans[col.id], score: ans.score });
-        return filter;
       });
     });
     return filter;
   }
 
   render() {
-    const {
-      answers,
-    } = this.state;
+    const { answers } = this.state;
     const columns = [{
       Header: 'Answer Set',
       columns: this.getReactTableColumnSpec(),
