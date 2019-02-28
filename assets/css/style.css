@@ -360,7 +360,3 @@ button.taskListTask {
 .rw-popup-container {
   min-width: 300px;
 }
-.rw-list-option {
-  display: flex;
-  justify-content: space-between;
-}

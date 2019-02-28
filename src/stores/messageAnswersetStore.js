@@ -2,7 +2,7 @@ import { observable, action, computed, configure, runInAction, isObservableArray
 // import Fuse from 'fuse-js-latest';
 
 import entityNameDisplay from '../components/util/entityNameDisplay';
-import { boolean } from 'mobx-state-tree/dist/internal';
+// import { boolean } from 'mobx-state-tree/dist/internal';
 // import AppConfig from '../AppConfig';
 
 // const config = require('../../config.json');
@@ -240,7 +240,8 @@ class AnswersetStore {
       });
       newEdges.forEach(e => graph.edge_list.push(_.cloneDeep(toJS(e))));
     });
-    return toJS(graph);
+
+    return graph;
   }
 
   @action updateActiveAnswerId(ansId) {
