@@ -2,6 +2,7 @@ import { observable, action, computed, configure, runInAction, isObservableArray
 // import Fuse from 'fuse-js-latest';
 
 import entityNameDisplay from '../components/util/entityNameDisplay';
+// import { boolean } from 'mobx-state-tree/dist/internal';
 // import AppConfig from '../AppConfig';
 
 // const config = require('../../config.json');
@@ -13,7 +14,6 @@ configure({ enforceActions: 'always' }); // Prevent observable mutations in MobX
 class AnswersetStore {
   @observable message = {}; // Message object supplied to store on init
   @observable activeAnswerId = null; // Currently 'selected' answer
-  @observable setSquashThresh = 5; // If more than these many nodes in a set, squash it in activeAnswerGraph
 
   constructor(message) {
     runInAction(() => {
@@ -24,6 +24,13 @@ class AnswersetStore {
           a.id = i; // eslint-disable-line no-param-reassign
         }
       });
+      // this.message.answers.filter((a) => {
+      //   for (qnodeId in a.node_bindings) {
+      //     const knodeId = a.node_bindings[qnodeId];
+      //     this.message.nodes.some(n => n.id === knodeId);
+      //     return boolean(node)
+      //   }
+      // })
       this.activeAnswerId = this.message.answers[0].id;
     });
   }
@@ -143,12 +150,24 @@ class AnswersetStore {
 
       graph.nodes.forEach((n) => {
         if (!('type' in n)) {
+          // if a graph node doesn't have a type
+          // We will look through all answers
+          // We will count the number of times is used in each qNode
+          // Then take the max to pick the best one
+          // The type is then the type of that qNode
           const qNodeCounts = qNodeBindings.map(() => 0);
 
           this.message.answers.forEach((a) => {
             // Go through answers and look for this node
             Object.keys(a.node_bindings).forEach((key) => {
-              if (a.node_bindings[key] === n.id) {
+              const theseIds = toJS(a.node_bindings[key]);
+              if (Array.isArray(theseIds)) {
+                // This answer has a set of nodes for this binding
+                if (theseIds.includes(n.id)) {
+                  // The set contains this id
+                  qNodeCounts[qNodeBindings.indexOf(key)] += 1;
+                }
+              } else if (theseIds === n.id) {
                 // This answer lists this node as qNode: key
                 qNodeCounts[qNodeBindings.indexOf(key)] += 1;
               }
@@ -170,88 +189,58 @@ class AnswersetStore {
   // Returns subgraphViewer compatible format graph spec { node_list: {}, edge_list: {} }
   @computed get activeAnswerGraph() {
     const answer = this.message.answers[this.ansIdToIndMap.get(this.activeAnswerId)];
-    console.log(answer);
     const graph = { node_list: [], edge_list: [] };
-    const bindingsMap = new Map(Object.entries(answer.node_bindings));
-    const qNodeIdsToSquash = [];
-    const squashedKgNodeIdToQnodeId = new Map(); // Store mapping from kgNodeId to qNodeId for all squashed nodes
-    // Process all Nodes in answer first. NOTE: nodeId is always kgNodeId except if it is squashed
-    // in which case it is set to qNodeId for the squashed node
-    bindingsMap.forEach((val, keyId) => {
-      if (this.qNodeIdToIndMap.has(keyId)) { // This is a node
-        const qNode = this.getQNode(keyId);
-        let nodeObj = { type: qNode.type, id: val, qNodeId: keyId };
-        if (!isObservableArray(val)) { // This node is not a Set
-          const kgNode = this.getKgNode(val);
-          nodeObj.name = kgNode.name;
-        } else {
-          // Handle multiple nodes for sets
-          if (val.length > this.setSquashThresh) { // eslint-disable-line no-lonely-if
-            qNodeIdsToSquash.push(keyId);
-            val.forEach(kgNodeId => squashedKgNodeIdToQnodeId.set(kgNodeId, keyId)); // Update map of kgNodeId -> qNodeId
-            nodeObj.name = nodeObj.type;
-            nodeObj.id = keyId; // Map node for a squashed set to the corresponding questionGraph node id
-            nodeObj.isSquashed = true;
-            nodeObj.unsquashedNodes = val.map(kgNodeId => this.getKgNode(kgNodeId));
-          } else {
-            const setNodes = val;
-            nodeObj = setNodes.map(setNodeKgId => ({
-              type: qNode.type,
-              id: setNodeKgId,
-              name: this.getKgNode(setNodeKgId).name,
-              qNodeId: keyId,
-            }));
-          }
-        }
-        // Update node_list in the graph datastructure
-        if (!isObservableArray(nodeObj) && !Array.isArray(nodeObj)) {
-          nodeObj = [nodeObj];
-        }
-        nodeObj.forEach(nObj => graph.node_list.push(_.cloneDeep(toJS(nObj))));
+
+    // We could loop through the qNodes to find out what nodes are in this answer
+    // But there might be extra nodes or edges in this answer
+    // This happens with literature edges, they aren't in qgraph but they are in answers
+    const nodeBindingsMap = new Map(Object.entries(answer.node_bindings));
+    // So we loop through the keys in node_bindings
+    nodeBindingsMap.forEach((val, keyId) => {
+      const newNodes = [];
+      const qNode = this.getQNode(keyId);
+      let nodeIds = toJS(val);
+      let isSet = true;
+      if (!Array.isArray(nodeIds)) {
+        nodeIds = [nodeIds];
+        isSet = false;
+        // Node is not a set
+        // We will make it an array so we can follow the same code path
       }
+      nodeIds.forEach((nodeId) => {
+        const kgNode = this.getKgNode(nodeId);
+        // Get the type from the qNode
+        if (kgNode) {
+          kgNode.type = qNode.type;
+          kgNode.isSet = isSet;
+          kgNode.binding = keyId;
+          newNodes.push(kgNode);
+        }
+      });
+      newNodes.forEach(n => graph.node_list.push(_.cloneDeep(toJS(n))));
     });
 
-    const bindingsMapEdges = new Map(Object.entries(answer.edge_bindings));
-    console.log(bindingsMapEdges);
-    // Process all Edges in answer after nodes
-    bindingsMapEdges.forEach((val, keyId) => {
-      if (this.qEdgeIdToIndMap.has(keyId)) { // This is an edge
-        const qEdge = this.getQEdge(keyId);
-        // Force kgEdgeIds in answer to always be a list of kgEdgeId(s)
-        if (!isObservableArray(val)) {
-          val = [val]; // eslint-disable-line no-param-reassign
-        }
-        let edgeObj = {};
-        if ((qNodeIdsToSquash.indexOf(qEdge.source_id) !== -1) || (qNodeIdsToSquash.indexOf(qEdge.target_id) !== -1)) {
-          // This edge should be squashed. Need to examine underlying source/target ids at kgNodeId
-          // level since bi-directional answers possible so source/target from question_graph may not
-          // map with directionality of the edges in the answers
-          const firstEdge = this.getKgEdge(val[0]); // Only need to examine one of the edges in the group
-          edgeObj = {
-            id: qEdge.id,
-            source_id: squashedKgNodeIdToQnodeId.has(firstEdge.source_id) ? squashedKgNodeIdToQnodeId.get(firstEdge.source_id) : firstEdge.source_id,
-            target_id: squashedKgNodeIdToQnodeId.has(firstEdge.target_id) ? squashedKgNodeIdToQnodeId.get(firstEdge.target_id) : firstEdge.target_id,
-            isSquashed: true,
-            unsquashedEdges: val.map(kgEdgeId => this.getKgEdge(kgEdgeId)),
-          };
-          // Copy type specified in question (if specified) for squashed edge
-          if (Object.prototype.hasOwnProperty.call(qEdge, 'type')) {
-            edgeObj.type = qEdge.type;
-          }
-        } else {
-          // Process all the edges (no squashing required)
-          console.log(val);
-          edgeObj = val.map(kgEdgeId => this.getKgEdge(kgEdgeId));
-          console.log(edgeObj);
-        }
-        // Update edge_list in the graph datastructure
-        if (!isObservableArray(edgeObj) && !Array.isArray(edgeObj)) {
-          edgeObj = [edgeObj];
-        }
-        console.log(edgeObj);
-        edgeObj.forEach(eObj => graph.edge_list.push(_.cloneDeep(toJS(eObj))));
+    const edgeBindingsMap = new Map(Object.entries(answer.edge_bindings));
+    // So we loop through the keys in node_bindings
+    edgeBindingsMap.forEach((val, keyId) => {
+      const newEdges = [];
+      let edgeIds = toJS(val);
+      if (!Array.isArray(edgeIds)) {
+        edgeIds = [edgeIds];
+        // Edge is not an array
+        // We will make it an array so we can follow the same code path
       }
+      edgeIds.forEach((edgeId) => {
+        const kgEdge = this.getKgEdge(edgeId);
+        // Get the type from the qNode
+        if (kgEdge) {
+          kgEdge.binding = keyId;
+          newEdges.push(kgEdge);
+        }
+      });
+      newEdges.forEach(e => graph.edge_list.push(_.cloneDeep(toJS(e))));
     });
+
     return graph;
   }
 
@@ -261,10 +250,6 @@ class AnswersetStore {
     } else {
       console.error('Invalid answerId supplied to `updateActiveAnswerId()` method. Ignoring...');
     }
-  }
-
-  @action updateSetSquashThresh(thresh) {
-    this.setSquashThresh = thresh;
   }
 
   @action updateMessage(newMessage) {

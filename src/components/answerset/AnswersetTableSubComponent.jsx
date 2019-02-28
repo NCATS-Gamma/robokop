@@ -97,7 +97,6 @@ class AnswersetTableSubComponent extends React.Component {
     const ansId = rowData.id;
     this.props.store.updateActiveAnswerId(ansId);
     let graph = this.props.store.activeAnswerGraph;
-    console.log(graph);
     // returns the array of calls to make, and an array of node pairs
     const { calls, nodes } = this.makeNodePairs(graph.node_list);
     // async calls for omnicorp publications
@@ -110,23 +109,26 @@ class AnswersetTableSubComponent extends React.Component {
         graph = this.addSupportEdges(graph, pubs, nodes);
         // this signifies that the graph is updated and to display the SubGraphViewer
         this.setState({ graph, loadedGraph: true });
+      })
+      .catch((error) => {
+        console.log('Error: ', error);
       });
-    // TODO: uncomment this
-    // .catch((error) => {
-    //   console.log('Error: ', error);
-    // });
   }
 
   makeNodePairs(nodes) {
     const axiosArray = [];
     const nodePairs = [];
     for (let i = 0; i < nodes.length; i += 1) {
-      for (let m = i + 1; m < nodes.length; m += 1) {
-        // builds the api call address and pushes it into an array for the promises
-        const addr = `${config.protocol}://${config.host}:${config.port}/api/omnicorp/${nodes[i].id}/${nodes[m].id}`;
-        axiosArray.push(axios.get(addr));
-        // putting the node pairs as an array into an array for when we make the edges
-        nodePairs.push([nodes[i].id, nodes[m].id]);
+      if (('isSet' in nodes[i]) && nodes[i].isSet) {
+        for (let m = i + 1; m < nodes.length; m += 1) {
+          if (('isSet' in nodes[m]) && nodes[m].isSet) {
+            // builds the api call address and pushes it into an array for the promises
+            const addr = `${config.protocol}://${config.host}:${config.port}/api/omnicorp/${nodes[i].id}/${nodes[m].id}`;
+            axiosArray.push(axios.get(addr));
+            // putting the node pairs as an array into an array for when we make the edges
+            nodePairs.push([nodes[i].id, nodes[m].id]);
+          }
+        }
       }
     }
     const results = { calls: axiosArray, nodes: nodePairs };
@@ -282,19 +284,16 @@ class AnswersetTableSubComponent extends React.Component {
               {
                 Header: 'Id',
                 accessor: 'id',
-                width: 75,
               },
               {
                 Header: 'Name',
                 id: 'name',
                 accessor: d => (d.name ? d.name : ''),
-                width: 150,
               },
               {
                 Header: 'Type',
                 id: 'type',
                 accessor: d => entityNameDisplay(d.type),
-                width: 75,
               },
             ],
           }]}
@@ -318,19 +317,16 @@ class AnswersetTableSubComponent extends React.Component {
               {
                 Header: 'Id',
                 accessor: 'id',
-                maxWidth: 175,
               },
               {
                 Header: 'Name',
                 id: 'name',
                 accessor: d => (d.name ? d.name : ''),
-                maxWidth: 300,
               },
               {
                 Header: 'Type',
                 id: 'type',
                 accessor: d => entityNameDisplay(d.type),
-                maxWidth: 175,
               },
             ],
           }]}

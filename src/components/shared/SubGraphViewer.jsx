@@ -201,6 +201,25 @@ class SubGraphViewer extends React.Component {
 
     const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts); // We could put standardized concepts here
 
+    // remove all duplicate nodes
+    const nodeIds = new Set();
+    g.nodes = g.nodes.filter((unique) => {
+      if (nodeIds.has(unique.id)) {
+        return false;
+      }
+      nodeIds.add(unique.id);
+      return true;
+    });
+    // remove all duplicate edges
+    const edgeIds = new Set();
+    g.edges = g.edges.filter((unique) => {
+      if (edgeIds.has(unique.id)) {
+        return false;
+      }
+      edgeIds.add(unique.id);
+      return true;
+    });
+
     g.nodes.forEach((n) => {
       const backgroundColor = nodeTypeColorMap(n.type);
       n.color = {
@@ -214,13 +233,12 @@ class SubGraphViewer extends React.Component {
     });
 
     // Separate out support and regular edges to modify things differently
-    console.log('graph edges', g.edges);
     const edgesRegular = g.edges.filter(e => e.type !== 'literature_co-occurrence');
     const edgesSupport = g.edges.filter(e => e.type === 'literature_co-occurrence');
 
     edgesSupport.forEach((e) => {
       // Make sure support edges actually have publications
-      e.duplicateEdge = false; // Also by default do not delete support edges unles duplicate
+      e.duplicateEdge = false; // Also by default do not delete support edges unless duplicate
       if (('publications' in e && Array.isArray(e.publications))) {
         // Everything is good
       } else if (('publications' in e && !Array.isArray(e.publications))) {
@@ -381,7 +399,6 @@ class SubGraphViewer extends React.Component {
       if (e.id) {
         e.edgeIdFromKG = e.id;
       }
-      e.id = i;
 
       const defaultParams = {
         label,
