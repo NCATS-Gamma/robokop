@@ -283,9 +283,23 @@ class AnswersetTableSubComponent extends React.Component {
           columns={[{
             Header: `Nodes for the ${this.activeState.nodeId} - ${entityNameDisplay(rowData.nodes[this.activeState.nodeId].type)} Set`,
             columns: [
-              { Header: 'Id', accessor: 'id' },
-              { Header: 'Name', id: 'name', accessor: d => (d.name ? d.name : '') },
-              { Header: 'Type', id: 'type', accessor: d => entityNameDisplay(d.type) },
+              {
+                Header: 'Id',
+                accessor: 'id',
+                width: 75,
+              },
+              {
+                Header: 'Name',
+                id: 'name',
+                accessor: d => (d.name ? d.name : ''),
+                width: 150,
+              },
+              {
+                Header: 'Type',
+                id: 'type',
+                accessor: d => entityNameDisplay(d.type),
+                width: 75,
+              },
             ],
           }]}
           defaultPageSize={5}
@@ -305,9 +319,23 @@ class AnswersetTableSubComponent extends React.Component {
           columns={[{
             Header: `Metadata for ${this.activeState.nodeId} - ${entityNameDisplay(rowData.nodes[this.activeState.nodeId].type)}`,
             columns: [
-              { Header: 'Id', accessor: 'id' },
-              { Header: 'Name', id: 'name', accessor: d => (d.name ? d.name : '') },
-              { Header: 'Type', id: 'type', accessor: d => entityNameDisplay(d.type) },
+              {
+                Header: 'Id',
+                accessor: 'id',
+                maxWidth: 175,
+              },
+              {
+                Header: 'Name',
+                id: 'name',
+                accessor: d => (d.name ? d.name : ''),
+                maxWidth: 300,
+              },
+              {
+                Header: 'Type',
+                id: 'type',
+                accessor: d => entityNameDisplay(d.type),
+                maxWidth: 175,
+              },
             ],
           }]}
           minRows={1}
@@ -336,6 +364,7 @@ class AnswersetTableSubComponent extends React.Component {
         style={{
           padding: '20px',
           backgroundColor: '#fafafa',
+          width: '100%',
         }}
       >
         <div
@@ -345,6 +374,7 @@ class AnswersetTableSubComponent extends React.Component {
             padding: '20px',
             boxShadow: '0px 0px 5px 0px #ececec',
             minHeight: '200px',
+            width: '900px',
           }}
         >
           <Row>

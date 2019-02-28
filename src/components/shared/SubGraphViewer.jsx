@@ -252,7 +252,7 @@ class SubGraphViewer extends React.Component {
         }
 
         // Find a corresponding support edge
-        const sameNodesSupportEdge = edgesSupport.find(s => (((e.source_id === s.source_id) && (e.target_id === s.target_id)) || ((e.source_id === s.target_id) && (e.target_id === s.source_id))) );
+        const sameNodesSupportEdge = edgesSupport.find(s => (((e.source_id === s.source_id) && (e.target_id === s.target_id)) || ((e.source_id === s.target_id) && (e.target_id === s.source_id))));
         if (sameNodesSupportEdge) {
           // We have a repeated edge
           sameNodesSupportEdge.duplicateEdge = true; // Mark for deletion
@@ -310,7 +310,7 @@ class SubGraphViewer extends React.Component {
         }
       }
     }
-    // Remove any straggler duplicate edges (Fix me)
+    // TODO: Remove any straggler duplicate edges (Fix me)
     // const fromTo = [];
     // const deleteMe = g.edges.map((e) => {
     //   const thisFromTo = `${e.source_id}_${e.target_id}`;
@@ -372,7 +372,7 @@ class SubGraphViewer extends React.Component {
         smooth = { enabled: true, type: 'dynamic' };
       }
       if (this.props.varyEdgeSmoothRoundness) {
-        smooth = e.smooth;
+        ({ smooth } = e);
       }
       e.from = e.source_id;
       e.to = e.target_id;
