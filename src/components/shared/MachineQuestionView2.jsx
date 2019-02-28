@@ -90,10 +90,16 @@ function defaultNodePreProc(n) {
 }
 
 function defaultEdgePreProc(e) {
-  let label = ('predicate' in e) ? e.predicate : '';
+  let label = '';
+  if ('predicate' in e) {
+    label = e.predicate;
+  } else if ('type' in e) {
+    label = e.type;
+  }
   if (Array.isArray(label)) {
     label = label.join(', ');
   }
+
   const smooth = { forceDirection: 'none' };
 
   e.from = e.source_id;
