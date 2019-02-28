@@ -219,24 +219,24 @@ class MachineQuestionView2 extends React.Component {
       },
     };
 
-    // // Switch to a simple quick spring layout without overlap
-    // if ((graph.nodes.length > 10) || (graph.edges.length >= graph.nodes.length)) {
-    //   physics = {
-    //     minVelocity: 0.75,
-    //     barnesHut: {
-    //       gravitationalConstant: -1000,
-    //       centralGravity: 0.3,
-    //       springLength: 200,
-    //       springConstant: 0.05,
-    //       damping: 0.95,
-    //       avoidOverlap: 1,
-    //     },
-    //   };
-    //   layout = {
-    //     randomSeed: 0,
-    //     improvedLayout: true,
-    //   };
-    // }
+    // Switch to a simple quick spring layout without overlap
+    if ((graph.nodes.length > 10) || (graph.edges.length >= graph.nodes.length)) {
+      physics = {
+        minVelocity: 0.75,
+        barnesHut: {
+          gravitationalConstant: -1000,
+          centralGravity: 0.3,
+          springLength: 200,
+          springConstant: 0.05,
+          damping: 0.95,
+          avoidOverlap: 1,
+        },
+      };
+      layout = {
+        randomSeed: 0,
+        improvedLayout: true,
+      };
+    }
 
     return ({
       height,
