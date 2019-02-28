@@ -250,6 +250,11 @@ class Quick(Resource):
         logger.info('Answering question quickly')
         question = request.json
         
+        possible_args = ['rebuild', 'output_format', 'max_connectivity', 'max_results']
+        bad_args = [key for key in request.args.keys() if key not in possible_args]
+        if bad_args:
+            return f'Invalid parmeters provide {bad_args}. Valid parameters are {possible_args}', 400
+
         if not ('rebuild' in question):
             question['rebuild'] = parse_args_rebuild(request.args)
 
