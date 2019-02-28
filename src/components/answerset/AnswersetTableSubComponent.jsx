@@ -119,12 +119,16 @@ class AnswersetTableSubComponent extends React.Component {
     const axiosArray = [];
     const nodePairs = [];
     for (let i = 0; i < nodes.length; i += 1) {
-      for (let m = i + 1; m < nodes.length; m += 1) {
-        // builds the api call address and pushes it into an array for the promises
-        const addr = `${config.protocol}://${config.host}:${config.port}/api/omnicorp/${nodes[i].id}/${nodes[m].id}`;
-        axiosArray.push(axios.get(addr));
-        // putting the node pairs as an array into an array for when we make the edges
-        nodePairs.push([nodes[i].id, nodes[m].id]);
+      if (('isSet' in nodes[i]) && nodes[i].isSet) {
+        for (let m = i + 1; m < nodes.length; m += 1) {
+          if (('isSet' in nodes[m]) && nodes[m].isSet) {
+            // builds the api call address and pushes it into an array for the promises
+            const addr = `${config.protocol}://${config.host}:${config.port}/api/omnicorp/${nodes[i].id}/${nodes[m].id}`;
+            axiosArray.push(axios.get(addr));
+            // putting the node pairs as an array into an array for when we make the edges
+            nodePairs.push([nodes[i].id, nodes[m].id]);
+          }
+        }
       }
     }
     const results = { calls: axiosArray, nodes: nodePairs };
@@ -277,9 +281,20 @@ class AnswersetTableSubComponent extends React.Component {
           columns={[{
             Header: `Nodes for the ${this.activeState.nodeId} - ${entityNameDisplay(rowData.nodes[this.activeState.nodeId].type)} Set`,
             columns: [
-              { Header: 'Id', accessor: 'id' },
-              { Header: 'Name', id: 'name', accessor: d => (d.name ? d.name : '') },
-              { Header: 'Type', id: 'type', accessor: d => entityNameDisplay(d.type) },
+              {
+                Header: 'Id',
+                accessor: 'id',
+              },
+              {
+                Header: 'Name',
+                id: 'name',
+                accessor: d => (d.name ? d.name : ''),
+              },
+              {
+                Header: 'Type',
+                id: 'type',
+                accessor: d => entityNameDisplay(d.type),
+              },
             ],
           }]}
           defaultPageSize={5}
@@ -299,9 +314,20 @@ class AnswersetTableSubComponent extends React.Component {
           columns={[{
             Header: `Metadata for ${this.activeState.nodeId} - ${entityNameDisplay(rowData.nodes[this.activeState.nodeId].type)}`,
             columns: [
-              { Header: 'Id', accessor: 'id' },
-              { Header: 'Name', id: 'name', accessor: d => (d.name ? d.name : '') },
-              { Header: 'Type', id: 'type', accessor: d => entityNameDisplay(d.type) },
+              {
+                Header: 'Id',
+                accessor: 'id',
+              },
+              {
+                Header: 'Name',
+                id: 'name',
+                accessor: d => (d.name ? d.name : ''),
+              },
+              {
+                Header: 'Type',
+                id: 'type',
+                accessor: d => entityNameDisplay(d.type),
+              },
             ],
           }]}
           minRows={1}
@@ -330,6 +356,7 @@ class AnswersetTableSubComponent extends React.Component {
         style={{
           padding: '20px',
           backgroundColor: '#fafafa',
+          width: '100%',
         }}
       >
         <div
@@ -339,6 +366,7 @@ class AnswersetTableSubComponent extends React.Component {
             padding: '20px',
             boxShadow: '0px 0px 5px 0px #ececec',
             minHeight: '200px',
+            width: '900px',
           }}
         >
           <Row>
