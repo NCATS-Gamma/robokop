@@ -330,7 +330,7 @@ class Quick(Resource):
         for _ in range(60 * 60 * 3):  # wait up to 3 hours
             time.sleep(status_request_timedelay)
             response = requests.get(polling_url)
-            logger.info('   Ranker polled for status')
+            logger.info(f'   Ranker polled for status of ranker task {ranker_task_id}')
             # logger.info(response.text)
             if response.status_code == 200:
                 consecutive_failures = 0
