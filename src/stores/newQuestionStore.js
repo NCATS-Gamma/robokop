@@ -678,18 +678,20 @@ class NewQuestionStore {
       console.log('Loading machineQuestionJson -', machineQuestionInp);
       this.resetQuestion();
       const machineQuestionInput = _.cloneDeep(machineQuestionInp);
-      this.questionName = machineQuestionInput.natural_question ? machineQuestionInput.natural_question : '';
+      this.questionName = machineQuestionInput.natural_question || '';
 
       // Store mapping of original node/edge ids to internal representation and update panelState
       // with NodePanel and EdgePanel objects
       const nodeIdMap = new Map();
-      machineQuestionInput.machine_question.nodes.forEach((node) => {
+      const { nodes } = (machineQuestionInput.machine_question.nodes && machineQuestionInput.machine_question) || JSON.parse(machineQuestionInput.machine_question.body);
+      const { edges } = (machineQuestionInput.machine_question.edges && machineQuestionInput.machine_question) || JSON.parse(machineQuestionInput.machine_question.body);
+      nodes.forEach((node) => {
         const { id, ...nodeContents } = node;
         const newNodePanel = new NodePanel(this, nodeContents);
         nodeIdMap.set(id, newNodePanel.id);
         this.panelState.push(newNodePanel);
       });
-      machineQuestionInput.machine_question.edges.forEach((edge, i) => {
+      edges.forEach((edge, i) => {
         const edgeObj = Object.assign({}, edge, { id: i });
         if (edgeObj.type) { // Convert external `type` representation to internal `predicate` representation
           edgeObj.predicate = edgeObj.type;
@@ -725,7 +727,7 @@ class NewQuestionStore {
   @computed get graphValidationState() {
     let isValid = true;
     let isValidGraph = true;
-    let errorList = [];
+    const errorList = [];
     if (!this.nodePanels.reduce((prev, panel) => prev && panel.isValid, true)) {
       isValidGraph = false;
       errorList.push('One or more invalid nodes');
@@ -928,8 +930,8 @@ class NewQuestionStore {
       }))();
       console.log('Question template returned:', data);
       this.machineQuestionSpecToPanelState({
-        natural_question: data.question.natural_question,
-        machine_question: data.question.machine_question,
+        natural_question: data.data.question.natural_question,
+        machine_question: data.data.question.machine_question,
       });
       this.dataReady = true;
     } catch (e) {

@@ -8,7 +8,7 @@ import Loading from './components/Loading';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ActivityPres from './components/activity/ActivityPres';
-import TasksModal from './components/shared/taskModal/TasksModal';
+import TasksModal from './components/shared/modals/TasksModal';
 
 class Activity extends React.Component {
   constructor(props) {
