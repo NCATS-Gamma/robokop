@@ -273,26 +273,35 @@ class Quick(Resource):
             logger.debug(f'   Builder acknowledged with task_id {builder_task_id}')
             polling_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/task/{builder_task_id}"
 
-            for _ in range(60 * 60):  # wait up to 1 hour
-                time.sleep(1)
+            status_request_timedelay = 5 
+            consecutive_failure_tolerance = 60 / status_request_timedelay # one minute
+            consecutive_failures = 0
+            for _ in range(60 * 60 * 3):  # wait up to 3 hour
+                time.sleep(status_request_timedelay)
                 response = requests.get(polling_url)
-                logger.info('   Builder polled for status')
+                logger.info(f'   Builder polled for status of builder task {builder_task_id}')
                 if response.status_code == 200:
+                    consecutive_failures = 0
                     if response.json()['status'] == 'FAILURE':
-                        raise RuntimeError('Builder failed.')
+                        raise RuntimeError(f'Builder failed for task {builder_task_id}.')
                     if response.json()['status'] == 'REVOKED':
-                        raise RuntimeError('Building task was terminated.')
+                        raise RuntimeError(f'Builder task {builder_task_id} was terminated.')
                     if response.json()['status'] == 'SUCCESS':
                         break
                 else: 
                     # We didn't get a 200 during polling... this is bad
                     # We should probably assume that something has gone wrong
-                    raise RuntimeError('The robokop knowledge graph builder failed to return a response reguarding the status of the task.')
+                    # But maybe not just yet
+                    # Let's just not fail too many times in a row
+                    consecutive_failures += 1
+                    logger.warning(f'   Builder failed to give a good status ({consecutive_failures}) for {builder_task_id}, Response: {response.status_code}.')
+                    if consecutive_failures > consecutive_failure_tolerance:
+                        raise RuntimeError(f'The robokop knowledge graph builder failed to return a response reguarding the status of the builder task {builder_task_id}.')
             else:
                 # We may want to cancel the builder task, but I think we should let it go.
                 # It took a while, let it run, it will finish eventually.
                 # builder_task_id
-                raise RuntimeError("Knowledge source querying has not completed after 1 hour. Building will continue, after some time in the future you may wish to try again without the rebuild option.")
+                raise RuntimeError("Knowledge source querying has not completed after 3 hours. Building will continue, after some time you may wish to try again without the rebuild option.")
 
             logger.info('   Done updating KG.')
         
@@ -315,29 +324,38 @@ class Quick(Resource):
         logger.debug(f'   Ranker acknowledged with task_id {ranker_task_id}')
         polling_url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{ranker_task_id}"
 
-        for _ in range(60 * 60):  # wait up to 1 hour
-            time.sleep(1)
+        status_request_timedelay = 5 
+        consecutive_failure_tolerance = 60 / status_request_timedelay # one minute
+        consecutive_failures = 0
+        for _ in range(60 * 60 * 3):  # wait up to 3 hours
+            time.sleep(status_request_timedelay)
             response = requests.get(polling_url)
             logger.info('   Ranker polled for status')
             # logger.info(response.text)
             if response.status_code == 200:
+                consecutive_failures = 0
                 if response.json()['status'] == 'FAILURE':
                     raise RuntimeError(f'Question answering failed. Ranker ID {ranker_task_id}.')
                 if response.json()['status'] == 'REVOKED':
-                    raise RuntimeError('Ranking task was terminated.')
+                    raise RuntimeError(f'Ranking task {ranker_task_id} was terminated.')
                 if response.json()['status'] == 'SUCCESS':
                     break
             else: 
                 # We didn't get a 200 during polling... this is bad
                 # We should probably assume that something has gone wrong
-                raise RuntimeError('The robokop ranker failed to return a response reguarding the status of the task.')
+                # But maybe not just yet
+                # Let's just not fail too many times in a row
+                consecutive_failures += 1
+                logger.warning(f'   Ranker failed to give a good status ({consecutive_failures}) for {ranker_task_id}, Response: {response.status_code}.')
+                if consecutive_failures > consecutive_failure_tolerance:
+                    raise RuntimeError(f'The robokop ranker failed to return a response reguarding the status of the answering task {ranker_task_id}.')
         else:
             # We should cancel the ranker task, otherwise it will run for a long while and no one will listen to the answer.
             # ranker_task_id
             # To delete the ranker task we send a delete request to the polling_url
             response = requests.delete(polling_url)
             # We could check the response here, but there is nothing really that the user can do
-            raise RuntimeError("Question answering has not completed after 1 hour. You may want to try with the non-blocking API.")
+            raise RuntimeError("Question answering has not completed after 3 hours. You may want to try with the non-blocking API.")
 
         answerset_json = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/task/{ranker_task_id}/result")
         logger.info('   Returning response')
