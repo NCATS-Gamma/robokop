@@ -7,7 +7,7 @@ import os
 from flask import render_template
 
 from manager.setup import app
-import initialize_manager
+# import initialize_manager
 import manager.logging_config
 from manager.questions_blueprint import questions
 from manager.q_blueprint import q
@@ -26,6 +26,7 @@ import manager.api.flowbokop_api
 @app.before_first_request
 def init():
     """Initialize Flask app."""
+    import initialize_manager
     pass
 
 app.register_blueprint(questions, url_prefix='/questions')
@@ -78,6 +79,6 @@ if __name__ == '__main__':
     app.run(
         host=server_host,
         port=server_port,
-        debug=True,
+        debug=False,
         use_reloader=True
     )

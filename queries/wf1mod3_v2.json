@@ -6,7 +6,7 @@
         "id": "n0",
         "type": "disease",
         "curie": [
-          "$identifier1"
+          "$identifier1$"
         ]
       },
       {
@@ -19,7 +19,8 @@
       },
       {
         "id": "n3",
-        "type": "chemical_substance"
+        "type": "chemical_substance",
+	"drug": true
       }
     ],
     "edges": [{

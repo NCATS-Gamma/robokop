@@ -51,7 +51,7 @@ def add_task_id_based_handler(logger, task_id):
     """Adds a file handler with task_id as file name to the logger."""
     formatter = logging.Formatter("[%(asctime)s: %(levelname)s/%(name)s(%(processName)s)]: %(message)s")
     # create file handler and set level to debug
-    file_handler = logging.handlers.RotatingFileHandler(f"{os.environ['ROBOKOP_HOME']}/task_logs/{task_id}.log",
+    file_handler = logging.handlers.RotatingFileHandler(f"{os.environ['ROBOKOP_HOME']}/logs/manager_task_logs/{task_id}.log",
         mode="a",
         encoding="utf-8",
         maxBytes=1e6,

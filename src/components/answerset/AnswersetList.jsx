@@ -1,8 +1,8 @@
 import React from 'react';
 import { Row, Col, Panel, FormControl } from 'react-bootstrap';
 import { AutoSizer, List } from 'react-virtualized';
-import Fuse from 'fuse-js-latest';
-import { toJS, observable, action, runInAction, computed } from 'mobx';
+// import Fuse from 'fuse-js-latest';
+import { toJS/* , observable, action, runInAction, computed */ } from 'mobx';
 import { observer } from 'mobx-react';
 
 import AnswerExplorer from '../shared/AnswerExplorer';
@@ -87,7 +87,6 @@ class AnswersetList extends React.Component {
 
   rowRenderer({
     index,
-    isScrolling,
     key,
     style,
   }) {

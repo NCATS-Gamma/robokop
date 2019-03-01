@@ -32,6 +32,12 @@ class Role(Base, RoleMixin):
     name = Column(String, unique=True)
     description = Column(String)
 
+    def to_json(self):
+        """Generate json representation of role."""
+        keys = [str(column).split('.')[-1] for column in self.__table__.columns]
+        struct = {key: getattr(self, key) for key in keys}
+        return struct
+
 
 class User(Base, UserMixin):
     """User class."""
@@ -58,8 +64,9 @@ class User(Base, UserMixin):
 
     def to_json(self):
         """Generate json representation of user."""
-        keys = [str(column).split('.')[-1] for column in self.__table__.columns]
+        keys = [str(column).split('.')[-1] for column in self.__table__.columns] + ['roles']
         struct = {key: getattr(self, key) for key in keys}
+        struct['roles'] = [role.to_json() for role in struct['roles']]
         return struct
 
 

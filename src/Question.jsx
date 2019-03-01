@@ -209,12 +209,20 @@ class Question extends React.Component {
       // console.log('Notify Answers', data);
       const success = ('status' in data.result) && (data.result.status === 'SUCCESS');
       const revoked = ('status' in data.result) && (data.result.status === 'REVOKED');
-      // const failure = data.status === 'FAILURE'; // Assume failure
-      if (success) {
+      const noAnswers = success && ('result' in data.result) && (data.result.result === 'NORESULTS');
+      if (success && !noAnswers) {
         this.notificationSystem.addNotification({
           title: 'New Answers are Available',
           message: 'We finished finding new answers for this question. Go check them out!',
           level: 'success',
+          dismissible: 'click',
+          position: 'tr',
+        });
+      } else if (noAnswers) {
+        this.notificationSystem.addNotification({
+          title: 'No Answers Were Found',
+          message: 'We were not able to find any answers to this question. You may want to request a knowledge graph update.',
+          level: 'warning',
           dismissible: 'click',
           position: 'tr',
         });
@@ -583,14 +591,5 @@ class Question extends React.Component {
     );
   }
 }
-
-Question.propTypes = {
-  config: PropTypes.shape({
-    protocol: PropTypes.string,
-    clientHost: PropTypes.string,
-    port: PropTypes.number,
-  }).isRequired,
-  id: PropTypes.string.isRequired,
-};
 
 export default Question;

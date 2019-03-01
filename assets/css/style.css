@@ -350,3 +350,13 @@ button.taskListTask {
   cursor: pointer;
   margin: 0px 10px;
 }
+/* Show filter dropdown in React Table component */
+.ReactTable .rt-th {
+  overflow: visible;
+}
+#answerDropdown {
+  position: absolute;
+}
+.rw-popup-container {
+  min-width: 300px;
+}

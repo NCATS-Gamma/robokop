@@ -146,6 +146,13 @@ def save_task_result(task_id):
         task.result = task.get_result()
         session.commit()
 
+def save_revoked_task_result(task_id):
+    with session_scope() as session:
+        task = session.query(Task).filter(Task.id == task_id).first()
+        task.result = {"status": "REVOKED", "result": None, "traceback": None, "children": [], "task_id": task_id}
+        task.end_timestamp = datetime.datetime.utcnow()
+        session.commit()
+
 def save_remote_task_info(task_id, remote_task_id):
     """ Updates the endtime of task when task is done"""
     with session_scope() as session:

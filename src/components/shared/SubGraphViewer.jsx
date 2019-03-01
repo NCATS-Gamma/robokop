@@ -13,15 +13,16 @@ class SubGraphViewer extends React.Component {
       supportEdgeColors: {
         color: '#aaa',
         hover: '#aaa',
+        opacity: 0.5,
       },
     };
     this.graphOptions = {
       autoResize: true,
       height: '500px',
       physics: {
-        minVelocity: 0.75,
+        minVelocity: 1,
         barnesHut: {
-          gravitationalConstant: -1000,
+          gravitationalConstant: 0,
           centralGravity: 0.3,
           springLength: 200,
           springConstant: 0.05,
@@ -58,6 +59,10 @@ class SubGraphViewer extends React.Component {
         selectable: true,
         tooltipDelay: 50,
       },
+      // configure: {
+      //   enabled: true,
+      //   showButton: true,
+      // },
     };
 
     this.state = {
@@ -112,7 +117,7 @@ class SubGraphViewer extends React.Component {
       this.network.physics.physicsEnabled = false;
     };
     const afterDraw = () => {
-      setTimeout(() => { stopLayout(); this.network.fit(); }, 1000);
+      setTimeout(() => { stopLayout(); this.network.fit(); }, 2500);
     };
     const startLayout = () => {
       this.network.once('afterDrawing', afterDraw);
@@ -201,6 +206,25 @@ class SubGraphViewer extends React.Component {
 
     const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts); // We could put standardized concepts here
 
+    // remove all duplicate nodes
+    const nodeIds = new Set();
+    g.nodes = g.nodes.filter((unique) => {
+      if (nodeIds.has(unique.id)) {
+        return false;
+      }
+      nodeIds.add(unique.id);
+      return true;
+    });
+    // remove all duplicate edges
+    const edgeIds = new Set();
+    g.edges = g.edges.filter((unique) => {
+      if (edgeIds.has(unique.id)) {
+        return false;
+      }
+      edgeIds.add(unique.id);
+      return true;
+    });
+
     g.nodes.forEach((n) => {
       const backgroundColor = nodeTypeColorMap(n.type);
       n.color = {
@@ -219,7 +243,7 @@ class SubGraphViewer extends React.Component {
 
     edgesSupport.forEach((e) => {
       // Make sure support edges actually have publications
-      e.duplicateEdge = false; // Also by default do not delete support edges unles duplicate
+      e.duplicateEdge = false; // Also by default do not delete support edges unless duplicate
       if (('publications' in e && Array.isArray(e.publications))) {
         // Everything is good
       } else if (('publications' in e && !Array.isArray(e.publications))) {
@@ -252,7 +276,7 @@ class SubGraphViewer extends React.Component {
         }
 
         // Find a corresponding support edge
-        const sameNodesSupportEdge = edgesSupport.find(s => (((e.source_id === s.source_id) && (e.target_id === s.target_id)) || ((e.source_id === s.target_id) && (e.target_id === s.source_id))) );
+        const sameNodesSupportEdge = edgesSupport.find(s => (((e.source_id === s.source_id) && (e.target_id === s.target_id)) || ((e.source_id === s.target_id) && (e.target_id === s.source_id))));
         if (sameNodesSupportEdge) {
           // We have a repeated edge
           sameNodesSupportEdge.duplicateEdge = true; // Mark for deletion
@@ -281,6 +305,7 @@ class SubGraphViewer extends React.Component {
 
     // Remove the duplicated support edges
     g.edges = [].concat(edgesSupport.filter(s => !s.duplicateEdge && !s.selfEdge), edgesRegular);
+    // g.edges = [].concat(edgesRegular, edgesSupport.filter(s => !s.duplicateEdge && !s.selfEdge));
 
     if (this.props.varyEdgeSmoothRoundness) {
       // For each node pair
@@ -310,7 +335,7 @@ class SubGraphViewer extends React.Component {
         }
       }
     }
-    // Remove any straggler duplicate edges (Fix me)
+    // TODO: Remove any straggler duplicate edges (Fix me)
     // const fromTo = [];
     // const deleteMe = g.edges.map((e) => {
     //   const thisFromTo = `${e.source_id}_${e.target_id}`;
@@ -326,7 +351,10 @@ class SubGraphViewer extends React.Component {
     g.edges = g.edges.map((e, i) => {
       let typeDependentParams = {};
       let label = e.type;
-      const nPublications = e.publications ? e.publications.length : 0;
+      let nPublications = e.publications ? e.publications.length : 0;
+      if (nPublications === 0 && 'nPublications' in e) {
+        nPublications = e.nPublications;
+      }
       if (nPublications > 0) {
         label = `${e.type} (${nPublications})`;
       }
@@ -372,7 +400,7 @@ class SubGraphViewer extends React.Component {
         smooth = { enabled: true, type: 'dynamic' };
       }
       if (this.props.varyEdgeSmoothRoundness) {
-        smooth = e.smooth;
+        ({ smooth } = e);
       }
       e.from = e.source_id;
       e.to = e.target_id;
@@ -380,7 +408,6 @@ class SubGraphViewer extends React.Component {
       if (e.id) {
         e.edgeIdFromKG = e.id;
       }
-      e.id = i;
 
       const defaultParams = {
         label,
@@ -436,7 +463,6 @@ class SubGraphViewer extends React.Component {
 SubGraphViewer.defaultProps = {
   layoutRandomSeed: 0,
   layoutStyle: 'auto',
-  varyEdgeSmoothRoundness: false,
   height: 500,
   showSupport: false,
   omitEdgeLabel: false,

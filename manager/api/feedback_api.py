@@ -3,9 +3,10 @@ Blueprint for /api/feedback endpoints
 '''
 
 from flask import request
-from flask_security import auth_required, current_user
+from flask_security import auth_required
 from flask_restful import Resource
 
+from manager.util import getAuthData
 from manager.feedback import Feedback
 from manager.setup import api
 
@@ -37,11 +38,12 @@ class FeedbackAPI(Resource):
         # auth = request.authorization
         # if auth:
         #     user_email = auth.username
-        #     user = get_user_by_email(user_email, session=db.session)
+        #     user = get_user_by_email(user_email)
         #     user_id = user['id']
         # else:
-        #     user_id = current_user.id
-        #     user = get_user_by_id(user_id, session=db.session)
+        #     user = getAuthData()
+        #     user_id = user['id']
+        #     user_email = user['email']
         
         # answer = get_answer_by_id(request.json['answer_id'], session=db.session)
         # question = get_question_by_id(request.json['question_id'], session=db.session)

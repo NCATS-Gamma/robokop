@@ -90,10 +90,16 @@ function defaultNodePreProc(n) {
 }
 
 function defaultEdgePreProc(e) {
-  let label = ('predicate' in e) ? e.predicate : '';
+  let label = '';
+  if ('predicate' in e) {
+    label = e.predicate;
+  } else if ('type' in e) {
+    label = e.type;
+  }
   if (Array.isArray(label)) {
     label = label.join(', ');
   }
+
   const smooth = { forceDirection: 'none' };
 
   e.from = e.source_id;
@@ -219,24 +225,24 @@ class MachineQuestionView2 extends React.Component {
       },
     };
 
-    // // Switch to a simple quick spring layout without overlap
-    // if ((graph.nodes.length > 10) || (graph.edges.length >= graph.nodes.length)) {
-    //   physics = {
-    //     minVelocity: 0.75,
-    //     barnesHut: {
-    //       gravitationalConstant: -1000,
-    //       centralGravity: 0.3,
-    //       springLength: 200,
-    //       springConstant: 0.05,
-    //       damping: 0.95,
-    //       avoidOverlap: 1,
-    //     },
-    //   };
-    //   layout = {
-    //     randomSeed: 0,
-    //     improvedLayout: true,
-    //   };
-    // }
+    // Switch to a simple quick spring layout without overlap
+    if ((graph.nodes.length > 10) || (graph.edges.length >= graph.nodes.length)) {
+      physics = {
+        minVelocity: 0.75,
+        barnesHut: {
+          gravitationalConstant: -1000,
+          centralGravity: 0.3,
+          springLength: 200,
+          springConstant: 0.05,
+          damping: 0.95,
+          avoidOverlap: 1,
+        },
+      };
+      layout = {
+        randomSeed: 0,
+        improvedLayout: true,
+      };
+    }
 
     return ({
       height,

@@ -1,29 +1,30 @@
-// -- colors --
-// #fbb4ae - Red
-// #b3cde3 - Blue
-// #ccebc5 - Green
-// #decbe4 - Purple
-// #fed9a6 - Orange
-// #ffffcc - Yellow
-// #e5d8bd - Brown
-// #fddaec - Pink
-// #f2f2f2 - Silver
-// #b3de69 - Darker green
+// Check out https://html-color.codes to pick new colors
+// This is hard to have this many contrasting colors that are within families leave text readable.
+// This should be periodically updated as new node types are introduced to give them consistent colors
 const undefinedColor = '#cccccc';
 
 const conceptColorMap = {
   anatomical_entity: '#e5d8bd', // Brown
+  biological_entity: '#c1a25a', // Darker Brown
   biological_process: '#b3cde3', // Blue
   biological_process_or_activity: '#b3cde3', // same as biological_process
-  gene: '#ccebc5', // Green
-  genetic_condition: '#ffffcc', // Yellow
   cell: '#fddaec', // Pink
-  chemical_substance: '#b3de69', // Blue
+  cellular_component: '#ead6e0', // Gray-Pink
+  chemical_substance: '#8787ff', // Blue
   disease: '#fbb4ae', // Red
+  disease_or_phenotypic_feature: '#fbb4ae', // Red, same as disease
+  drug: '#8787ff', // Purply blue, same as chemical_substance
+  gene: '#ccebc5', // Green
+  gene_family: '#68c357', // Darker Green
+  genetic_condition: '#ffffcc', // Yellow
+  gross_anatomical_structure: '#f1ebe0', // Lighter brown to go with anatomical_entity
   molecular_function: '#fed9a6', // Orange
+  molecular_entity: '#a6a6d9', // Gray Purple
+  molecular_activity: '#bae2d1', // Green Cyan
+  metabolite: '#cad2b2', // Yellow Green
   pathway: '#decbe4', // Purple
-  phenotypic_feature: '#00c4e6', // Light teal'
-  extra: '#f2f2f2', // Silver, extra?
+  phenotypic_feature: '#f56657', // Darker red, to go with disease
+  sequence_variant: '#00c4e6', // Light teal'
 };
 
 export default function getNodeTypeColorMap(types) {

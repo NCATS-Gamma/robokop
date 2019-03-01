@@ -121,7 +121,7 @@ class CurieSelector extends React.Component {
             <InputGroup>
               <DropdownList
                 filter
-                dropUp
+                // dropUp
                 disabled={disableType}
                 style={{ display: 'table-cell', verticalAlign: 'middle', width: '200px' }}
                 data={dropDownObjList}

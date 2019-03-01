@@ -23,6 +23,7 @@ class TasksModal extends Component {
     super(props);
 
     this.state = {
+      logType: '',
       managerLogs: '',
       rankerLogs: '',
       showLogs: false,
@@ -64,6 +65,7 @@ class TasksModal extends Component {
       taskId,
       (logs) => {
         this.setState({
+          logType: logs.task_type,
           managerLogs: JSON.stringify(logs.task_log),
           rankerLogs: JSON.stringify(logs.remote_task_log),
           showLogs: true,
@@ -90,7 +92,12 @@ class TasksModal extends Component {
     const initialTime = task.timestamp && timestampToDate(task.timestamp).toLocaleString();
     const startTime = task.startingTimestamp && timestampToDate(task.startingTimestamp).toLocaleString();
     const endTime = task.endTimestamp && timestampToDate(task.endTimestamp).toLocaleString();
-    const result = JSON.parse(task.result).status;
+    const taskResult = JSON.parse(task.result);
+    let result = taskResult.status;
+    if (result === 'SUCCESS') {
+      // A successfull task may have additional information.
+      result = taskResult.result;
+    }
     return (
       <button key={key} className={`taskListTask${this.state.activeTask === index ? ' active' : ''}`} style={style} onClick={() => this.getTaskLogs(task.id, index)}>
         <div className="taskListItem">{taskType || 'N/A'}</div>
@@ -167,7 +174,9 @@ class TasksModal extends Component {
   // }
 
   render() {
-    const { activeTask } = this.state;
+    const {
+      activeTask, managerLogs, rankerLogs, logType,
+    } = this.state;
     const {
       header, showModal, toggleModal, task, tasks,
     } = this.props;
@@ -202,8 +211,8 @@ class TasksModal extends Component {
                     rowCount={rowCount}
                     rowHeight={50}
                     rowRenderer={this.renderTasks}
-                    activeTask={this.state.activeTask}
-                    tasks={this.props.tasks}
+                    activeTask={activeTask}
+                    tasks={tasks}
                   />
                 )}
               </AutoSizer>
@@ -229,7 +238,7 @@ class TasksModal extends Component {
                 </Panel.Title>
               </Panel.Heading>
               <Panel.Body>
-                <TaskLogs managerLogs={this.state.managerLogs} rankerLogs={this.state.rankerLogs} />
+                <TaskLogs managerLogs={managerLogs} rankerLogs={rankerLogs} logType={logType} />
               </Panel.Body>
             </Panel>
           }

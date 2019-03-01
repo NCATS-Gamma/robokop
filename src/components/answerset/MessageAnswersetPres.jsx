@@ -226,7 +226,7 @@ class MessageAnswersetPres extends React.Component {
               concepts={this.props.concepts}
               // callbackAnswerSelected={this.props.callbackAnswerSelected}
               store={this.answersetStore}
-              handleTabSelect={this.handleTabSelect}
+              // handleTabSelect={this.handleTabSelect}
             />
           </Tab>
           <Tab
