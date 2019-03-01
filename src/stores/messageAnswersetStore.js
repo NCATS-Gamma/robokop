@@ -208,7 +208,7 @@ class AnswersetStore {
         // We will make it an array so we can follow the same code path
       }
       nodeIds.forEach((nodeId) => {
-        const kgNode = this.getKgNode(nodeId);
+        const kgNode = toJS(this.getKgNode(nodeId));
         // Get the type from the qNode
         if (kgNode) {
           kgNode.type = qNode.type;
@@ -217,7 +217,7 @@ class AnswersetStore {
           newNodes.push(kgNode);
         }
       });
-      newNodes.forEach(n => graph.node_list.push(_.cloneDeep(toJS(n))));
+      newNodes.forEach(n => graph.node_list.push(_.cloneDeep(n)));
     });
 
     const edgeBindingsMap = new Map(Object.entries(answer.edge_bindings));
@@ -231,17 +231,17 @@ class AnswersetStore {
         // We will make it an array so we can follow the same code path
       }
       edgeIds.forEach((edgeId) => {
-        const kgEdge = this.getKgEdge(edgeId);
+        const kgEdge = toJS(this.getKgEdge(edgeId));
         // Get the type from the qNode
         if (kgEdge) {
           kgEdge.binding = keyId;
           newEdges.push(kgEdge);
         }
       });
-      newEdges.forEach(e => graph.edge_list.push(_.cloneDeep(toJS(e))));
+      newEdges.forEach(e => graph.edge_list.push(_.cloneDeep(e)));
     });
 
-    return graph;
+    return toJS(graph);
   }
 
   @action updateActiveAnswerId(ansId) {
