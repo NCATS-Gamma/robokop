@@ -291,64 +291,55 @@ class AnswersetTableSubComponent extends React.Component {
     );
     const getColumnSpecs = (nodes) => {
       const blacklist = ['isSet'];
+      const whitelist = ['name', 'id', 'type'];
       const columnHeaders = [];
+      let keys;
       if (nodes.length > 1) {
         // if the nodes passed in are a set
-        nodes.map((node, index) => {
-          const columnHeaderObj = _.cloneDeep(node);
-          columnHeaderObj.Header = Object.keys(node)[index];
-          columnHeaderObj.accessor = columnHeaderObj.Header;
-          columnHeaderObj.width = getColumnWidth(nodes, columnHeaderObj.accessor, columnHeaderObj.Header);
-          columnHeaderObj.Cell = (row) => {
-            // if the value is an array, show each one on a new line, otherwise, just display the single value
-            if (Array.isArray(row.value) && row.value.length > 1) {
-              const arrayPopover = (
-                <Popover id={shortid.generate()}>
-                  {row.value.map(value => <p key={shortid.generate()}>{value}</p>)}
-                </Popover>
-              );
-              return (
-                <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={arrayPopover}>
-                  <FaEllipsisH size={25} />
-                </OverlayTrigger>
-              );
-            }
-            return <div>{row.value}</div>;
-          };
-          return columnHeaders.push(columnHeaderObj);
-        });
+        let setKeys = new Set();
+        // map over every key in all the set objects and make a list of all unique keys
+        nodes.forEach(node => Object.keys(node).map(key => setKeys.add(key)));
+        setKeys = [...setKeys].filter(key => !blacklist.includes(key));
+        let firstKeys = setKeys.filter(key => whitelist.includes(key));
+        firstKeys = firstKeys.sort();
+        keys = firstKeys.concat(setKeys.filter(key => !whitelist.includes(key)));
       } else {
         // if the nodes are just a single node
-        Object.keys(nodes[0]).map((key) => {
-          if (!blacklist.includes(key)) {
-            const columnHeaderObj = {};
-            if (typeof nodes[0][key] === 'boolean') {
-              nodes[0][key] = nodes[0][key] ? 'Yes' : 'No';
-            }
-            columnHeaderObj.Header = key;
-            columnHeaderObj.accessor = key;
-            columnHeaderObj.width = getColumnWidth(nodes, columnHeaderObj.accessor, columnHeaderObj.Header);
-            columnHeaderObj.Cell = (row) => {
-              // if the value is an array, show each one on a new line, otherwise, just display the single value
-              if (Array.isArray(row.value) && row.value.length > 1) {
-                const arrayPopover = (
-                  <Popover id={shortid.generate()}>
-                    {row.value.map(value => <p key={shortid.generate()}>{value}</p>)}
-                  </Popover>
-                );
-                return (
-                  <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={arrayPopover} style={{ cursor: 'pointer' }}>
-                    <FaEllipsisH size={15} />
-                  </OverlayTrigger>
-                );
-              }
-              return <div>{row.value}</div>;
-            };
-            return columnHeaders.push(columnHeaderObj);
+        const node = Object.keys(nodes[0]).filter(key => !blacklist.includes(key));
+        let firstKeys = node.filter(key => whitelist.includes(key));
+        firstKeys = firstKeys.sort();
+        keys = firstKeys.concat(node.filter(key => !whitelist.includes(key)));
+        node.forEach((key) => {
+          // true or false aren't showing up in react table, just making them more readable
+          if (typeof nodes[0][key] === 'boolean') {
+            nodes[0][key] = nodes[0][key] ? 'Yes' : 'No';
           }
-          return false;
         });
       }
+      keys.forEach((key) => {
+        // loop over all the keys and make the columns and headers
+        const columnHeaderObj = {};
+        columnHeaderObj.Header = key;
+        columnHeaderObj.accessor = key;
+        columnHeaderObj.width = getColumnWidth(nodes, columnHeaderObj.accessor, columnHeaderObj.Header);
+        columnHeaderObj.Cell = (row) => {
+          // if the value is an array, show each one on a new line, otherwise, just display the single value
+          if (Array.isArray(row.value) && row.value.length > 1) {
+            const arrayPopover = (
+              <Popover id={shortid.generate()}>
+                {row.value.map(value => <p key={shortid.generate()}>{value}</p>)}
+              </Popover>
+            );
+            return (
+              <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={arrayPopover} style={{ cursor: 'pointer' }}>
+                <div style={{ width: '100%', textAlign: 'center' }}><FaEllipsisH size={25} /></div>
+              </OverlayTrigger>
+            );
+          }
+          return <div>{row.value}</div>;
+        };
+        columnHeaders.push(columnHeaderObj);
+      });
       return columnHeaders;
     };
     const { isSet } = rowData.nodes[this.activeState.nodeId];
