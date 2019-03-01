@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Row, Col, ButtonGroup, Button, Modal } from 'react-bootstrap';
+import { Row, Col, ButtonGroup, Button, Modal, OverlayTrigger, Popover } from 'react-bootstrap';
 import { observer } from 'mobx-react';
 import { observable, action } from 'mobx';
 import { DropdownList } from 'react-widgets';
@@ -8,6 +8,7 @@ import FaThList from 'react-icons/lib/fa/th-list';
 import FaClone from 'react-icons/lib/fa/clone';
 import FaFileText from 'react-icons/lib/fa/file-text';
 import IoNetwork from 'react-icons/lib/io/network';
+import FaEllipsisH from 'react-icons/lib/fa/ellipsis-h';
 // import IoCodeWorking from 'react-icons/lib/io/code-working'
 import ReactJson from 'react-json-view';
 import ReactTable from 'react-table';
@@ -15,6 +16,7 @@ import 'react-table/react-table.css';
 import axios from 'axios';
 
 import entityNameDisplay from './../util/entityNameDisplay';
+import getColumnWidth from '../util/rtColumnWidth';
 import SubGraphViewer from '../shared/SubGraphViewer';
 import Loading from '../Loading';
 import AnswerExplorerInfo from '../shared/AnswerExplorerInfo';
@@ -287,74 +289,81 @@ class AnswersetTableSubComponent extends React.Component {
         />
       </div>
     );
-
-    const isSet = rowData.nodes[this.activeState.nodeId].isSet; // eslint-disable-line prefer-destructuring
-    let tableFragment;
-    if (isSet) {
-      const setData = rowData.nodes[this.activeState.nodeId].setNodes;
-      tableFragment = (
-        <ReactTable
-          data={setData}
-          columns={[{
-            Header: `Nodes for the ${this.activeState.nodeId} - ${entityNameDisplay(rowData.nodes[this.activeState.nodeId].type)} Set`,
-            columns: [
-              {
-                Header: 'Id',
-                accessor: 'id',
-              },
-              {
-                Header: 'Name',
-                id: 'name',
-                accessor: d => (d.name ? d.name : ''),
-              },
-              {
-                Header: 'Type',
-                id: 'type',
-                accessor: d => entityNameDisplay(d.type),
-              },
-            ],
-          }]}
-          defaultPageSize={5}
-          defaultFilterMethod={defaultFilterMethod}
-          pageSizeOptions={[5, 10, 15, 20]}
-          minRows={1}
-          filterable={setData.length > 5}
-          showPagination={setData.length > 5}
-          className="-highlight"
-        />
-      );
-    } else {
-      const metadata = [rowData.nodes[this.activeState.nodeId]];
-      tableFragment = (
-        <ReactTable
-          data={metadata}
-          columns={[{
-            Header: `Metadata for ${this.activeState.nodeId} - ${entityNameDisplay(rowData.nodes[this.activeState.nodeId].type)}`,
-            columns: [
-              {
-                Header: 'Id',
-                accessor: 'id',
-              },
-              {
-                Header: 'Name',
-                id: 'name',
-                accessor: d => (d.name ? d.name : ''),
-              },
-              {
-                Header: 'Type',
-                id: 'type',
-                accessor: d => entityNameDisplay(d.type),
-              },
-            ],
-          }]}
-          minRows={1}
-          filterable={false}
-          showPagination={false}
-          sortable={false}
-          className="-highlight"
-        />
-      );
-    }
+    const getColumnSpecs = (nodes) => {
+      const blacklist = ['isSet'];
+      const whitelist = ['name', 'id', 'type'];
+      const columnHeaders = [];
+      let keys;
+      if (nodes.length > 1) {
+        // if the nodes passed in are a set
+        let setKeys = new Set();
+        // map over every key in all the set objects and make a list of all unique keys
+        nodes.forEach(node => Object.keys(node).map(key => setKeys.add(key)));
+        setKeys = [...setKeys].filter(key => !blacklist.includes(key));
+        let firstKeys = setKeys.filter(key => whitelist.includes(key));
+        firstKeys = firstKeys.sort();
+        keys = firstKeys.concat(setKeys.filter(key => !whitelist.includes(key)));
+      } else {
+        // if the nodes are just a single node
+        const node = Object.keys(nodes[0]).filter(key => !blacklist.includes(key));
+        let firstKeys = node.filter(key => whitelist.includes(key));
+        firstKeys = firstKeys.sort();
+        keys = firstKeys.concat(node.filter(key => !whitelist.includes(key)));
+        node.forEach((key) => {
+          // true or false aren't showing up in react table, just making them more readable
+          if (typeof nodes[0][key] === 'boolean') {
+            nodes[0][key] = nodes[0][key] ? 'Yes' : 'No';
+          }
+        });
+      }
+      keys.forEach((key) => {
+        // loop over all the keys and make the columns and headers
+        const columnHeaderObj = {};
+        columnHeaderObj.Header = key;
+        columnHeaderObj.accessor = key;
+        columnHeaderObj.width = getColumnWidth(nodes, columnHeaderObj.accessor, columnHeaderObj.Header);
+        columnHeaderObj.Cell = (row) => {
+          // if the value is an array, show each one on a new line, otherwise, just display the single value
+          if (Array.isArray(row.value) && row.value.length > 1) {
+            const arrayPopover = (
+              <Popover id={shortid.generate()}>
+                {row.value.map(value => <p key={shortid.generate()}>{value}</p>)}
+              </Popover>
+            );
+            return (
+              <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={arrayPopover} style={{ cursor: 'pointer' }}>
+                <div style={{ width: '100%', textAlign: 'center' }}><FaEllipsisH size={25} /></div>
+              </OverlayTrigger>
+            );
+          }
+          return <div>{row.value}</div>;
+        };
+        columnHeaders.push(columnHeaderObj);
+      });
+      return columnHeaders;
+    };
+    const { isSet } = rowData.nodes[this.activeState.nodeId];
+    const metadata = isSet ? rowData.nodes[this.activeState.nodeId].setNodes : [rowData.nodes[this.activeState.nodeId]];
+    const headerTitle = (
+      isSet ? `Nodes for the ${this.activeState.nodeId} - ${entityNameDisplay(rowData.nodes[this.activeState.nodeId].type)} Set` :
+        `Metadata for ${this.activeState.nodeId} - ${entityNameDisplay(rowData.nodes[this.activeState.nodeId].type)}`
+    );
+    const tableFragment = (
+      <ReactTable
+        data={metadata}
+        columns={[{
+          Header: headerTitle,
+          columns: getColumnSpecs(metadata),
+        }]}
+        defaultPageSize={5}
+        defaultFilterMethod={defaultFilterMethod}
+        pageSizeOptions={[5, 10, 15, 20]}
+        minRows={1}
+        filterable={metadata.length > 5}
+        showPagination={metadata.length > 5}
+        className="-highlight"
+      />
+    );
     return (
       <div style={{ padding: '0px 20px 0px 0px' }}>
         {dropDownComponent}

@@ -9,32 +9,9 @@ import { DropdownList } from 'react-widgets';
 import AnswersetTableSubComponent, { answersetSubComponentEnum } from './AnswersetTableSubComponent';
 import entityNameDisplay from './../util/entityNameDisplay';
 import getNodeTypeColorMap from './../util/colorUtils';
-// import AnswerSearch from '../shared/AnswerSearch';
+import getColumnWidth from '../util/rtColumnWidth';
 
 const _ = require('lodash');
-
-/**
- * Function to calculate sane column widths
- * @param {Array of objects} data Each object element in array corresponds to a row
- * @param {Function || String} accessor Accessor to access field value for the column
- * @param {String} headerText Header label for this column (used for max width calc)
- * @param {Function} accessorPostProcFn If provided, can post-process output of `accessor`
- *    on the data object of a row prior to width calc for the field. This is useful if
- *    a custom Cell renderer is used for a column and the accessorPostProcFn logic would
- *    mimic the custom Cell renderer logic closely to get identical length cell strings.
- */
-const getColumnWidth = (data, accessor, headerText, accessorPostProcFn = x => x) => {
-  if (typeof accessor === 'string' || accessor instanceof String) {
-    accessor = d => d[accessor]; // eslint-disable-line no-param-reassign
-  }
-  const maxWidth = 600;
-  const magicSpacing = 9;
-  const cellLength = Math.max(
-    ...data.map(row => (`${accessorPostProcFn(accessor(row))}` || '').length),
-    headerText.length,
-  ) + 4;
-  return Math.min(maxWidth, cellLength * magicSpacing);
-};
 
 @observer
 class MessageAnswersetTable extends React.Component {
@@ -93,7 +70,7 @@ class MessageAnswersetTable extends React.Component {
   // provided sub-string
   defaultFilterMethod = (filter, row, column) => { // eslint-disable-line no-unused-vars
     // console.log('filter, row, column', filter, row, column);
-    if (filter.value.name === 'clear all') {
+    if (filter.value.clear) {
       return true;
     }
     const id = filter.pivotId || filter.id;
@@ -101,9 +78,12 @@ class MessageAnswersetTable extends React.Component {
   };
 
   setFilterMethod = (filter, row, column) => { // eslint-disable-line no-unused-vars
+    if (filter.value.clear) {
+      return true;
+    }
     const id = filter.pivotId || filter.id;
     const combined = row[id].map(subNode => (subNode.name ? subNode.name : subNode.id)).join(' ');
-    return String(combined.toLowerCase()).includes(filter.value.toLowerCase());
+    return String(combined.toLowerCase()).includes(filter.value.name.toLowerCase());
   };
 
   initializeState(columnHeaders, answers) {
@@ -151,10 +131,36 @@ class MessageAnswersetTable extends React.Component {
           setNodes => `${cellTextFn(setNodes).join(' ')}   `,
         );
         colSpecObj.filterMethod = this.setFilterMethod;
+        const filterArray = [{ name: null, score: null, clear: true }, ...filter[nodeId]];
+        const filterItem = ({ item }) => (
+          <div style={{ width: '100%', textAlign: 'left' }}>
+            {item.clear && <div>Clear Filter</div>}
+            <strong>{item.name}</strong>
+            <div className="pull-right">{item.score && parseFloat(Math.round(item.score * 1000) / 1000).toFixed(3)}</div>
+          </div>
+        );
+        let defaultValue = '';
+        if (tableFilter.length) {
+          tableFilter.forEach((selected) => {
+            if (selected.id === nodeId) {
+              defaultValue = selected.value.name;
+            }
+          });
+        }
+        colSpecObj.Filter = props =>
+          (<DropdownList
+            {...props}
+            data={filterArray}
+            textField="name"
+            placeholder="Filter"
+            defaultValue={defaultValue}
+            itemComponent={filterItem}
+            filter
+          />);
       } else {
         colSpecObj.accessor = d => (d.nodes[nodeId].name ? d.nodes[nodeId].name : d.nodes[nodeId].id);
         colSpecObj.width = getColumnWidth(data, colSpecObj.accessor, colSpecObj.Header);
-        const filterArray = [{ name: '', score: '', clear: true }, ...filter[nodeId]];
+        const filterArray = [{ name: null, score: null, clear: true }, ...filter[nodeId]];
         const filterItem = ({ item }) => (
           <div style={{ width: '100%', textAlign: 'left' }}>
             {item.clear && <div>Clear Filter</div>}
@@ -242,18 +248,35 @@ class MessageAnswersetTable extends React.Component {
         });
       }
       allAnswers.forEach((ans) => {
-        // loop over each array in the filter and check to see if the answer is already in there
-        for (let i = 0; i < filter[col.id].length; i += 1) {
-          if ((ans.nodes && (ans.nodes[col.id].name || ans.nodes[col.id].id) === filter[col.id][i].name) || ans[col.id] === filter[col.id][i].name) {
-            // if the answer is already there, set the highest score
-            if (ans.score > filter[col.id].score) {
-              filter[col.id][i].score = ans.score;
+        // if the node we're looking at is a set
+        if ((ans.nodes && ans.nodes[col.id].isSet) || (Array.isArray(ans[col.id]))) {
+          const nodeArray = (ans.nodes && ans.nodes[col.id].setNodes) || ans[col.id];
+          // loop over all the set nodes
+          nodeArray.forEach((setNode) => {
+            for (let i = 0; i < filter[col.id].length; i += 1) {
+              // if the set node name is in the filter, don't do anything
+              if (filter[col.id][i].name === setNode.name) {
+                return;
+              }
             }
-            return;
+            // push any unique names into the filter
+            filter[col.id].push({ name: setNode.name });
+          });
+        } else {
+          // if the node is not a set
+          // loop over each array in the filter and check to see if the answer is already in there
+          for (let i = 0; i < filter[col.id].length; i += 1) {
+            if ((ans.nodes && (ans.nodes[col.id].name || ans.nodes[col.id].id) === filter[col.id][i].name) || ans[col.id] === filter[col.id][i].name) {
+              // if the answer is already there, set the highest score
+              if (ans.score > filter[col.id].score) {
+                filter[col.id][i].score = ans.score;
+              }
+              return;
+            }
           }
+          // if the answer wasn't already there, push it in with its score
+          filter[col.id].push({ name: (ans.nodes && (ans.nodes[col.id].name || ans.nodes[col.id].id)) || ans[col.id], score: ans.score });
         }
-        // if the answer wasn't already there, push it in with its score
-        filter[col.id].push({ name: (ans.nodes && (ans.nodes[col.id].name || ans.nodes[col.id].id)) || ans[col.id], score: ans.score });
       });
     });
     return filter;

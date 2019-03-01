@@ -15,8 +15,8 @@ class AnswerExplorerInfo extends React.Component {
     super(props);
 
     this.state = {
+      selectedEdge: {},
       selectedEdgeId: null,
-      clickedEdge: {},
       selectedNodeId: null,
       subgraph: { nodes: [], edges: [] },
       disbleGraphClick: false,
@@ -35,9 +35,10 @@ class AnswerExplorerInfo extends React.Component {
       return;
     }
 
-    const newState = { selectedEdgeId: null, selectedNodeId: null };
+    const newState = { selectedEdgeId: null, selectedNodeId: null, selectedEdge: {} };
     if (event.edges.length !== 0) { // Clicked on an Edge
       newState.selectedEdgeId = event.edgeObjects[0].edgeIdFromKG;
+      newState.selectedEdge = event.edgeObjects[0];
     } else if (event.nodes.length !== 0) { // Clicked on a node
       newState.selectedNodeId = event.nodes[0];
     }
@@ -181,15 +182,8 @@ class AnswerExplorerInfo extends React.Component {
     const edges = graph.edge_list.filter(e => (nodeIds.includes(e.source_id) && nodeIds.includes(e.target_id)));
 
     const subgraph = { nodes, edges };
-    let clickedEdge = edges.find(e => e.id === selectedEdge.id);
-    if (typeof clickedEdge === 'undefined') {
-      clickedEdge = edges.find(e => e.id === selectedEdge.edgeIdFromKG);
-    }
-    if (typeof clickedEdge === 'undefined') {
-      console.log('The clicked edge could not be found', selectedEdge.id, subgraph);
-    }
     this.setState({
-      subgraph, selectedEdgeId: selectedEdge.edgeIdFromKG, selectedNodeId: null, clickedEdge,
+      subgraph, selectedEdgeId: selectedEdge.edgeIdFromKG, selectedNodeId: null, selectedEdge,
     }, () => {
       this.getPublicationsFrag();
     });
@@ -289,7 +283,7 @@ class AnswerExplorerInfo extends React.Component {
               {this.getNodeInfoFrag(this.state.subgraph.nodes[0])}
             </Col>
             <Col md={4}>
-              {this.getEdgeInfoFrag(this.state.clickedEdge)}
+              {this.getEdgeInfoFrag(this.state.selectedEdge)}
             </Col>
             <Col md={4}>
               {this.getNodeInfoFrag(this.state.subgraph.nodes[1])}

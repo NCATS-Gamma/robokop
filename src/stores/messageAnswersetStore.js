@@ -241,7 +241,7 @@ class AnswersetStore {
       newEdges.forEach(e => graph.edge_list.push(_.cloneDeep(e)));
     });
 
-    return graph;
+    return toJS(graph);
   }
 
   @action updateActiveAnswerId(ansId) {

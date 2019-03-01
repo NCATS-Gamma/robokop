@@ -97,7 +97,6 @@ class SubGraphViewer extends React.Component {
     const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'node_list'));
     if (isValid) {
       graph = this.addTagsToGraph(graph);
-      console.log(graph)
     }
     const graphOptions = this.getGraphOptions(graph);
 
