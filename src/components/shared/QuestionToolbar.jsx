@@ -11,21 +11,16 @@ import GoTrashcan from 'react-icons/lib/go/trashcan';
 
 const shortid = require('shortid');
 
-class QuestionToolbar extends React.Component {
-  constructor(props) {
-    super(props);
-
-  }
-
+class QuestionToolbar extends React.PureComponent {
   render() {
     return (
       <DropdownButton
         bsStyle="default"
         title={<GoGear />}
         key={shortid.generate()}
-        id={`question-toolbar`}
+        id="question-toolbar"
         pullRight
-        style={{padding: '3px 6px 3px 6px', marginRight: '15px'}}
+        style={{ padding: '3px 6px 3px 6px', marginRight: '15px' }}
       >
         <MenuItem
           eventKey="1"
@@ -48,12 +43,12 @@ class QuestionToolbar extends React.Component {
         >
           <GoRepoForked /> Ask a New Question Like this One
         </MenuItem>
-          <MenuItem
-            eventKey="4"
-            onSelect={this.props.callbackTaskStatus}
-          >
-            <GoMilestone /> Tasks
-          </MenuItem>
+        <MenuItem
+          eventKey="4"
+          onSelect={this.props.callbackTaskStatus}
+        >
+          <GoMilestone /> Tasks
+        </MenuItem>
         <MenuItem divider />
         <MenuItem
           eventKey="5"
@@ -66,7 +61,6 @@ class QuestionToolbar extends React.Component {
     );
   }
 }
-
 
 QuestionToolbar.defaultProps = {
   enableQuestionRefresh: true,

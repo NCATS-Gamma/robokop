@@ -5,7 +5,7 @@ import Loading from './components/Loading';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import QuestionListPres from './components/questionList/QuestionListPres';
-import TasksModal from './components/shared/taskModal/TasksModal';
+import TasksModal from './components/shared/modals/TasksModal';
 
 class QuestionList extends React.Component {
   constructor(props) {
