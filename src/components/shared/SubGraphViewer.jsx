@@ -13,15 +13,16 @@ class SubGraphViewer extends React.Component {
       supportEdgeColors: {
         color: '#aaa',
         hover: '#aaa',
+        opacity: 0.5,
       },
     };
     this.graphOptions = {
       autoResize: true,
       height: '500px',
       physics: {
-        minVelocity: 0.75,
+        minVelocity: 1,
         barnesHut: {
-          gravitationalConstant: -1000,
+          gravitationalConstant: 0,
           centralGravity: 0.3,
           springLength: 200,
           springConstant: 0.05,
@@ -58,6 +59,10 @@ class SubGraphViewer extends React.Component {
         selectable: true,
         tooltipDelay: 50,
       },
+      // configure: {
+      //   enabled: true,
+      //   showButton: true,
+      // },
     };
 
     this.state = {
@@ -92,6 +97,7 @@ class SubGraphViewer extends React.Component {
     const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'node_list'));
     if (isValid) {
       graph = this.addTagsToGraph(graph);
+      console.log(graph)
     }
     const graphOptions = this.getGraphOptions(graph);
 
@@ -112,7 +118,7 @@ class SubGraphViewer extends React.Component {
       this.network.physics.physicsEnabled = false;
     };
     const afterDraw = () => {
-      setTimeout(() => { stopLayout(); this.network.fit(); }, 1000);
+      setTimeout(() => { stopLayout(); this.network.fit(); }, 2500);
     };
     const startLayout = () => {
       this.network.once('afterDrawing', afterDraw);
@@ -300,6 +306,7 @@ class SubGraphViewer extends React.Component {
 
     // Remove the duplicated support edges
     g.edges = [].concat(edgesSupport.filter(s => !s.duplicateEdge && !s.selfEdge), edgesRegular);
+    // g.edges = [].concat(edgesRegular, edgesSupport.filter(s => !s.duplicateEdge && !s.selfEdge));
 
     if (this.props.varyEdgeSmoothRoundness) {
       // For each node pair
@@ -345,7 +352,10 @@ class SubGraphViewer extends React.Component {
     g.edges = g.edges.map((e, i) => {
       let typeDependentParams = {};
       let label = e.type;
-      const nPublications = e.publications ? e.publications.length : 0;
+      let nPublications = e.publications ? e.publications.length : 0;
+      if (nPublications === 0 && 'nPublications' in e) {
+        nPublications = e.nPublications;
+      }
       if (nPublications > 0) {
         label = `${e.type} (${nPublications})`;
       }
@@ -454,7 +464,6 @@ class SubGraphViewer extends React.Component {
 SubGraphViewer.defaultProps = {
   layoutRandomSeed: 0,
   layoutStyle: 'auto',
-  varyEdgeSmoothRoundness: false,
   height: 500,
   showSupport: false,
   omitEdgeLabel: false,

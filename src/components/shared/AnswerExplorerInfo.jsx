@@ -271,6 +271,7 @@ class AnswerExplorerInfo extends React.Component {
                 layoutStyle="auto"
                 layoutRandomSeed={1}
                 showSupport
+                omitEdgeLabel={false}
                 varyEdgeSmoothRoundness
                 callbackOnGraphClick={this.onGraphClick}
                 concepts={this.props.concepts}

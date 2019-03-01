@@ -17,7 +17,7 @@
             {
                 "id": "n2",
                 "type": "chemical_substance",
-                "drug": true
+		"drug": true
             }
         ],
         "edges": [

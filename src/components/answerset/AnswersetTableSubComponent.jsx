@@ -121,9 +121,11 @@ class AnswersetTableSubComponent extends React.Component {
     const axiosArray = [];
     const nodePairs = [];
     for (let i = 0; i < nodes.length; i += 1) {
-      if (('isSet' in nodes[i]) && nodes[i].isSet) {
+      if (!(('isSet' in nodes[i]) && nodes[i].isSet)) {
         for (let m = i + 1; m < nodes.length; m += 1) {
-          if (('isSet' in nodes[m]) && nodes[m].isSet) {
+          if (!(('isSet' in nodes[m]) && nodes[m].isSet)) {
+            // Both i and m are not from a set.
+
             // builds the api call address and pushes it into an array for the promises
             const addr = `${config.protocol}://${config.host}:${config.port}/api/omnicorp/${nodes[i].id}/${nodes[m].id}`;
             axiosArray.push(axios.get(addr));
@@ -143,15 +145,30 @@ class AnswersetTableSubComponent extends React.Component {
     edgePubs.forEach((pubs, index) => {
       // we only want to add the edge if it has any publications
       if (pubs.length) {
-        const newEdge = {
-          publications: pubs,
-          type: 'literature_co-occurrence',
-          source_database: 'omnicorp',
-          source_id: nodes[index][0],
-          target_id: nodes[index][1],
-          id: shortid.generate(),
-        };
-        edges.push(newEdge);
+        // We found some pubs to put on the edge
+        // There could already be an edge to which we want to add the edges
+        const thisEdge = edges.find((e) => {
+          const matchesForward = (e.source_id === nodes[index][0]) && (e.target_id === nodes[index][1]);
+          const matchesBackward = (e.target_id === nodes[index][0]) && (e.source_id === nodes[index][1]);
+          const isSupport = (e.type === 'literature_co-occurrence');
+
+          return isSupport && (matchesForward || matchesBackward);
+        });
+
+        if (thisEdge) {
+          // We fould an edge
+          thisEdge.publications = pubs;
+        } else {
+          const newEdge = {
+            publications: pubs,
+            type: 'literature_co-occurrence',
+            source_database: 'omnicorp',
+            source_id: nodes[index][0],
+            target_id: nodes[index][1],
+            id: shortid.generate(),
+          };
+          edges.push(newEdge);
+        }
       }
     });
     updatedGraph.edge_list = edges;
