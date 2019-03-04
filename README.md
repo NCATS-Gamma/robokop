@@ -36,7 +36,7 @@ A few more folders will be created in this directory depending on which docker c
 
 ### Prerequisites
 
-Robokop requires docker, docker-compose and Node.js. These must be installed and configured correctly. For additional install notes for CentOS 7. See [here](./doc/centos_installation.md).
+Robokop requires docker, docker-compose and Node.js. These must be installed and configured correctly. For additional install notes for CentOS 7. See [here](./doc/centos_installation.md). For installation on Windows, please refer to the section on [Windows installation](#windows)
 
 ### Docker-Compose Files
 
@@ -50,11 +50,11 @@ Robokop uses a collection of docker containers managed through several instances
 * robokop-rank/deploy/omnicorp - Postgres storage for omnicorp pairs
 * robokop-interfaces/deploy - API server for knowledge graph construction service
 
-Each of these docker-compose files will control one or more docker containers. Some of these containers such as the Neo4j database (robokop/deploy/graph) and the Omnicorp (robokop-rank/deploy/omnicorp) can be rather resource intensive. It may be advantageous to place those containers on different machines.  Communications between all of these containers can then be done using a commoon Docker network or WAN these settings are configurable through environmental variables.
+Each of these docker-compose files will control one or more docker containers. Some of these containers such as the Neo4j database (robokop/deploy/graph) and the Omnicorp (robokop-rank/deploy/omnicorp) can be rather resource intensive. It may be advantageous to place those containers on different machines.  Communications between all of these containers can then be done using a common Docker network or WAN. These settings are configurable through environmental variables.
 
 ### Environment settings
 
-robokop-root/shared/robokop.env needs to hold a variety of configuration parameters. These parameters specify public ports and the location of other components of the system. 
+`robokop-root/shared/robokop.env` needs to hold a variety of configuration parameters. These parameters specify public ports and the location of other components of the system. 
 
 ```
 #################### ROBOKOP Environmental Variables ####################
@@ -240,3 +240,17 @@ With all containers started you can now monitor each component using the urls be
 * http://127.0.0.1:9001 - Manager supervisord interface
 * http://127.0.0.1:9002 - Builder supervisord interface
 * http://127.0.0.1:9003 - Ranker supervisord interface
+
+## <a name="windows"></a>Windows Installation
+To install on Windows, we recommend utilizing the Windows subsystem for Linux (WSL). 
+1. First, you will need to install Docker for Windows. Then follow the instructions [here](https://nickjanetakis.com/blog/setting-up-docker-for-windows-and-wsl-to-work-flawlessly) to get docker working on WSL.
+
+2. Install Node.js in WSL
+
+3. Docker does not correctly follow the symlinks in the `.env` file in each of the "Docker-Compose Files" section when executed on Windows / WSL. To get `docker-compose build` and `docker-compose up` to work correctly, you will need to do the following in any given bash session prior to executing any docker commands. These will ensure that the env variables defined in `/shared/robokop.env` are correctly exported when executing the docker commands
+    1. `set -a`
+    2. `source ../../../shared/robokop.env`
+
+4. You can add the 2 commands above to your `.bashrc` file in WSL to ensure that these env variables are always available and correctly exported and made available to docker. Note that the relative path to the `/shared/robokop.env` file will differ based on your current working directory in your bash session.
+
+5. Run the steps outlined in the "Web Interface Compilation" section
