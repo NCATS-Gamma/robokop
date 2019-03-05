@@ -18,6 +18,7 @@ from manager.tasks import celery
 from manager.task import get_task_by_id, TASK_TYPES, save_task_result, save_revoked_task_result
 from manager.setup_db import engine
 
+
 concept_map = {}
 try:
     with app.open_resource('api/concept_map.json') as map_file:
@@ -303,10 +304,35 @@ class Predicates(Resource):
                         schema:
                             type: object
         """
-        r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/predicates")
+        get_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/predicates"
+        r = requests.get(get_url)
         operations = r.json()
 
         return operations
+
+    def post(self):
+        """
+        Force update of source-target predicate list from neo4j database
+        ---
+        tags: [util]
+        responses:
+            200:
+                description: "Here's your updated source-target predicate list"
+                content:
+                    application/json:
+                        schema:
+                            type: object
+            400:
+                description: "Something went wrong. Old predicate list will be retained"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
+        """
+        post_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/predicates"
+        logger.debug(f'Predicates:post:: Trying to post to: {post_url}')
+        response = requests.post(post_url)
+        return Response(response.content, response.status_code)
 
 api.add_resource(Predicates, '/predicates/')
 
