@@ -116,6 +116,8 @@ class AnswersetStore {
         if (!isObservableArray(ans.node_bindings[qNodeId])) {
           // This is not a set node
           nodeListObj = { ...nodeListObj, ...toJS(this.getKgNode(ans.node_bindings[qNodeId])) };
+        } else if (ans.node_bindings[qNodeId].length === 1) {
+          nodeListObj = { ...nodeListObj, ...toJS(this.getKgNode(ans.node_bindings[qNodeId][0])) };
         } else {
           // Set
           nodeListObj = { type: qNode.type, name: `Set: ${entityNameDisplay(qNode.type)}`, isSet: true };
@@ -130,9 +132,9 @@ class AnswersetStore {
         } else { // we already have an array.
           cEdgeIds = ans.edge_bindings[qEdgeId];
         }
-
         ansObj.edges[qEdgeId] = cEdgeIds.map(eid => toJS(this.getKgEdge(eid)));
       });
+
       answers.push(ansObj);
     });
     return toJS({ answers, headerInfo });
@@ -149,7 +151,7 @@ class AnswersetStore {
       const qNodeBindings = qNodes.map(q => q.id);
 
       graph.nodes.forEach((n) => {
-        if (!('type' in n)) {
+        if ((('type' in n) && Array.isArray(n.type)) || ('labels' in n)) {
           // if a graph node doesn't have a type
           // We will look through all answers
           // We will count the number of times is used in each qNode
@@ -201,6 +203,7 @@ class AnswersetStore {
       const qNode = this.getQNode(keyId);
       let nodeIds = toJS(val);
       let isSet = true;
+
       if (!Array.isArray(nodeIds)) {
         nodeIds = [nodeIds];
         isSet = false;
