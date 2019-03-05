@@ -289,6 +289,27 @@ class Operations(Resource):
 
 api.add_resource(Operations, '/operations/')
 
+class Predicates(Resource):
+    def get(self):
+        """
+        Get a machine readable list of all predicates for a source-target pair
+        ---
+        tags: [util]
+        responses:
+            200:
+                description: predicates
+                content:
+                    application/json:
+                        schema:
+                            type: object
+        """
+        r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/predicates")
+        operations = r.json()
+
+        return operations
+
+api.add_resource(Predicates, '/predicates/')
+
 class Properties(Resource):
     def get(self):
         """
