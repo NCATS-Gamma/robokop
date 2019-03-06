@@ -116,7 +116,7 @@ class AnswersetStore {
         if (!isObservableArray(ans.node_bindings[qNodeId])) {
           // This is not a set node
           nodeListObj = { ...nodeListObj, ...toJS(this.getKgNode(ans.node_bindings[qNodeId])) };
-        } else if (ans.node_bindings[qNodeId].length === 1) {
+        } else if ((ans.node_bindings[qNodeId].length === 1) && ('set' in qNode) && !qNode.set) {
           nodeListObj = { ...nodeListObj, ...toJS(this.getKgNode(ans.node_bindings[qNodeId][0])) };
         } else {
           // Set
@@ -144,14 +144,16 @@ class AnswersetStore {
     // If they don't we need to figure out which qNodes they most like correspond to
     // Then check labels and use the corresponding type
 
-    const graph = this.message.knowledge_graph;
+    let graph = this.message.knowledge_graph;
 
     if (this.message.question_graph) {
       const qNodes = this.message.question_graph.nodes;
       const qNodeBindings = qNodes.map(q => q.id);
 
+      graph = toJS(graph);
+
       graph.nodes.forEach((n) => {
-        if ((('type' in n) && Array.isArray(n.type)) || ('labels' in n)) {
+        if ((('type' in n) && Array.isArray(n.type)) || (!('type' in n) && ('labels' in n))) {
           // if a graph node doesn't have a type
           // We will look through all answers
           // We will count the number of times is used in each qNode
@@ -224,6 +226,7 @@ class AnswersetStore {
     });
 
     const edgeBindingsMap = new Map(Object.entries(answer.edge_bindings));
+    
     // So we loop through the keys in node_bindings
     edgeBindingsMap.forEach((val, keyId) => {
       const newEdges = [];
