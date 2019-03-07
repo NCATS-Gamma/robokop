@@ -108,6 +108,9 @@ class MessageAnswersetTable extends React.Component {
         // in custom Cell renderer. This modularity is so that it can
         // be re-used in the getColumnWidth() method
         const cellTextFn = (setNodes) => {
+          if (!setNodes) {
+            return [];
+          }
           if (setNodes.length === 1) {
             return setNodes[0].name ? [setNodes[0].name] : [setNodes[0].id];
           }
