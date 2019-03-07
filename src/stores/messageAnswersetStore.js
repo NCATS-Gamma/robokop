@@ -113,10 +113,20 @@ class AnswersetStore {
       qNodeIds.forEach((qNodeId) => {
         const qNode = this.getQNode(qNodeId);
         let nodeListObj = { type: qNode.type, isSet: false };
-        if (!isObservableArray(ans.node_bindings[qNodeId])) {
+        const cNodes = toJS(ans.node_bindings[qNodeId]);
+        if (!Array.isArray(cNodes)) {
           // This is not a set node
-          nodeListObj = { ...nodeListObj, ...toJS(this.getKgNode(ans.node_bindings[qNodeId])) };
+          if (('set' in qNode) && qNode.set) {
+            // Actually a set but only has one element
+            nodeListObj = { type: qNode.type, name: `Set: ${entityNameDisplay(qNode.type)}`, isSet: true };
+            nodeListObj.setNodes = [cNodes].map(kgNodeId => toJS(this.getKgNode(kgNodeId)));
+          } else {
+            // for real, not a set
+            nodeListObj = { ...nodeListObj, ...toJS(this.getKgNode(ans.node_bindings[qNodeId])) };
+          }
         } else if ((ans.node_bindings[qNodeId].length === 1) && ('set' in qNode) && !qNode.set) {
+          // This is not a set node but, for some reason is an array
+
           nodeListObj = { ...nodeListObj, ...toJS(this.getKgNode(ans.node_bindings[qNodeId][0])) };
         } else {
           // Set
