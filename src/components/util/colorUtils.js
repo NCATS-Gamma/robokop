@@ -14,6 +14,7 @@ const conceptColorMap = {
   disease: '#fbb4ae', // Red
   disease_or_phenotypic_feature: '#fbb4ae', // Red, same as disease
   drug: '#8787ff', // Purply blue, same as chemical_substance
+  protein: '#ccebc5', // Green like gene
   gene: '#ccebc5', // Green
   gene_family: '#68c357', // Darker Green
   genetic_condition: '#ffffcc', // Yellow
@@ -31,9 +32,13 @@ export default function getNodeTypeColorMap(types) {
   return (type) => {
     let color = undefinedColor;
 
-    if ((type in conceptColorMap) && (types && Array.isArray(types) && (types.indexOf(type) >= 0))) {
+    if (type in conceptColorMap) {
       color = conceptColorMap[type];
+    } else if (types && Array.isArray(types) && (types.indexOf(type) >= 0)) {
+      // We are supposed to have a color for this.
+      console.log('No color is known for: ', type);
     }
+
     return color;
   };
 }
