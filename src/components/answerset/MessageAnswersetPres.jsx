@@ -236,6 +236,7 @@ class MessageAnswersetPres extends React.Component {
             <AnswersetGraph
               answersetGraph={answersetGraph}
               concepts={this.props.concepts}
+              title={this.answersetStore.isKgPruned() ? `Pruned aggregate graph (Top ${this.answersetStore.maxNumNodes} nodes)` : 'Aggregate Graph'}
             />
           </Tab>
         </Tabs>

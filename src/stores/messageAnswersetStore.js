@@ -197,6 +197,14 @@ class AnswersetStore {
     return toJS(graph);
   }
 
+  // Determines if annotatedPrunedKnowledgeGraph had to prune KG
+  isKgPruned() {
+    if (this.message.knowledge_graph) {
+      return this.message.knowledge_graph.nodes.length > this.maxNumNodes;
+    }
+    return false;
+  }
+
   @computed get annotatedPrunedKnowledgeGraph() {
     if (this.message.question_graph) {
       // KG nodes don't always have type
@@ -363,6 +371,7 @@ class AnswersetStore {
 
       return toJS(prunedGraph);
     }
+    return {};
   }
 
   // Returns subgraphViewer compatible format graph spec { node_list: {}, edge_list: {} }
