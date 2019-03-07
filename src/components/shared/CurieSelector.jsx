@@ -73,7 +73,12 @@ class CurieSelector extends React.Component {
     this.props.onSelect(this.props.type, term, curie);
   }
   handleSearch(input, nodeType) {
-    this.wrapSearch(input, nodeType).catch(() => this.setState({ options: [] })).then(data => this.setState({ options: data.options, loadingOptions: false }));
+    this.wrapSearch(input, nodeType).catch(() => this.setState({ options: [] }))
+      .then((data) => {
+        if (data.options) {
+          this.setState({ options: data.options, loadingOptions: false });
+        }
+      });
   }
   wrapSearch(input, nodeType) {
     if (!input || (input.length < 3)) {

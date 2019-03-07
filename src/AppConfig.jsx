@@ -6,6 +6,7 @@ class AppConfig {
     this.config = config;
 
     this.comms = axios.create();
+    this.questionNewSearchCancelToken = null; // Store cancelToken for get requests here (see https://github.com/axios/axios/issues/1361#issuecomment-366807250)
     axiosRetry(this.comms, { retries: 3 }); // Retry for request timeouts, help with spotty connections.
 
     // Valid urls we would go to
@@ -327,20 +328,27 @@ class AppConfig {
   }
 
   questionNewSearch(input, category) {
+    if (this.questionNewSearchCancelToken) {
+      this.questionNewSearchCancelToken.cancel();
+    }
+    // Inclusion of direct identifiers bypasses API lookup
+    if (input.includes(':')) {
+      return Promise.resolve({ options: [{ value: input, label: input }] });
+    }
+    this.questionNewSearchCancelToken = axios.CancelToken.source();
     const addr = `${this.apis.search}${encodeURIComponent(input)}/${encodeURIComponent(category)}`;
     // Because this method is called by react-select Async we must return a promise that will return the values
-    return this.comms.get(addr).then((result) => {
+    return this.comms.get(addr, { cancelToken: this.questionNewSearchCancelToken.token }).then((result) => {
       const options = result.data.map(d => ({ value: d.id, label: d.label }));
-
       // Allow the inclusion of direct identifiers incase the search doesn't have what you want.
       if (input.includes(':')) {
         options.push({ value: input, label: input });
       }
       return { options };
-    }, () => {
-      // Allow the inclusion of direct identifiers in case the search fails you
-      if (input.includes(':')) {
-        return Promise.resolve({ options: [{ value: input, label: input }] });
+    }, (thrown) => {
+      if (axios.isCancel(thrown)) {
+        console.log('questionNewSearch Request canceled', thrown.message);
+        return Promise.resolve({});
       }
       return Promise.resolve({ options: [] });
     });
