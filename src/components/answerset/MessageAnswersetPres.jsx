@@ -76,7 +76,7 @@ class MessageAnswersetPres extends React.Component {
     this.toggleGraphVisibility = this.toggleGraphVisibility.bind(this);
 
     this.answersetStore = new AnswersetStore(this.props.message);
-    // console.log('MobX Answerset Store:', this.answersetStore);
+    console.log('MobX Answerset Store:', this.answersetStore);
   }
   onDownload() {
     const data = this.props.message;
@@ -118,7 +118,7 @@ class MessageAnswersetPres extends React.Component {
     // const showOtherQuestions = this.props.otherQuestions.length > 0;
     // const showOtherAnswersets = this.props.otherQuestions.length > 0;
     const { message } = this.props;
-    const answersetGraph = this.answersetStore.annotatedKnowledgeGraph;
+    const answersetGraph = this.answersetStore.annotatedPrunedKnowledgeGraph;
     answersetGraph.node_list = answersetGraph.nodes;
     answersetGraph.edge_list = answersetGraph.edges;
     return (
