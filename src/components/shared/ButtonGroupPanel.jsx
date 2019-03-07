@@ -20,7 +20,7 @@ const ButtonGroupPanel = observer(({ store, openJsonEditor }) => {
   const atleastTwoNodes = store.panelState.filter(panel => store.isNode(panel) && !panel.deleted).length > 1;
   const isNewPanel = store.activePanelInd === store.panelState.length;
   return (
-    <div style={{ position: 'relative', float: 'right', margin: '10px 0px' }}>
+    <div style={{ position: 'relative', margin: '10px 0px' }}>
       <ButtonGroup>
         {!_.isEmpty(store.activePanelState) &&
           <Button
