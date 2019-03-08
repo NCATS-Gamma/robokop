@@ -327,6 +327,9 @@ class AppConfig {
     );
   }
 
+  // Requests curie from bionames and returns an object of form
+  // { options: [{ value, label }, ...] }. Returned object is an
+  // empty object {} if request is cancelled
   questionNewSearch(input, category) {
     if (this.questionNewSearchCancelToken) {
       this.questionNewSearchCancelToken.cancel();
@@ -340,14 +343,10 @@ class AppConfig {
     // Because this method is called by react-select Async we must return a promise that will return the values
     return this.comms.get(addr, { cancelToken: this.questionNewSearchCancelToken.token }).then((result) => {
       const options = result.data.map(d => ({ value: d.id, label: d.label }));
-      // Allow the inclusion of direct identifiers incase the search doesn't have what you want.
-      if (input.includes(':')) {
-        options.push({ value: input, label: input });
-      }
       return { options };
     }, (thrown) => {
       if (axios.isCancel(thrown)) {
-        console.log('questionNewSearch Request canceled', thrown.message);
+        // console.log('questionNewSearch Request canceled', thrown.message);
         return Promise.resolve({});
       }
       return Promise.resolve({ options: [] });
