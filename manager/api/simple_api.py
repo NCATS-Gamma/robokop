@@ -1019,14 +1019,17 @@ class Normalize(Resource):
                         $ref: '#/components/schemas/Message'
             required: true
         """
+        logger.info('Normalizing answerset')
         provided = request.json
         if not provided:
+            logger.info('   Invalid JSON input')
             return 'JSON post data is required', 400
 
         response = requests.post( f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/normalize', json=provided)
         if not response.ok:
+            logger.info(f'   Failed to normalize by calling the ranker {response.status_code}: {response.text}')
             return response.text, response.status_code
         
-        return response.json
+        return response.json, 200
 
 api.add_resource(Normalize, '/simple/normalize/')
