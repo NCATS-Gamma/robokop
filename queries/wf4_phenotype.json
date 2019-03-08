@@ -5,7 +5,7 @@
     "nodes": [
       {
         "id": "n0",
-        "type": "disease",
+        "type": "phenotypic_feature",
         "curie": [
           "$identifier1$"
         ]
