@@ -24,6 +24,7 @@ import NewQuestionButtons from './components/shared/NewQuestionButtons';
 import ButtonGroupPanel from './components/shared/ButtonGroupPanel';
 
 const _ = require('lodash');
+// const questionTemplate = require('../queries/wf1mod1.json');
 
 @inject(({ store }) => ({ store }))
 @observer
@@ -169,8 +170,14 @@ class QuestionNew extends React.Component {
   }
 
   // Loads the question template and updates the MobX store/UI
-  onQuestionTemplate(eventKey) {
-    this.props.store.machineQuestionSpecToPanelState(questions[eventKey]);
+  onQuestionTemplate(question) {
+    let q;
+    questions.forEach((ques) => {
+      if (ques.natural_question === question) {
+        q = ques;
+      }
+    });
+    this.props.store.machineQuestionSpecToPanelState(q);
   }
 
   // Prevent default form submit and make call to parse NLP question via store method

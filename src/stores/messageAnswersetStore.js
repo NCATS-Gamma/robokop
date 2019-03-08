@@ -2,6 +2,7 @@ import { observable, action, computed, configure, runInAction, isObservableArray
 // import Fuse from 'fuse-js-latest';
 
 import entityNameDisplay from '../components/util/entityNameDisplay';
+import { filter } from 'graphql-anywhere';
 // import { boolean } from 'mobx-state-tree/dist/internal';
 // import AppConfig from '../AppConfig';
 
@@ -14,6 +15,7 @@ configure({ enforceActions: 'always' }); // Prevent observable mutations in MobX
 class AnswersetStore {
   @observable message = {}; // Message object supplied to store on init
   @observable activeAnswerId = null; // Currently 'selected' answer
+  @observable filteredAnswers = []; // array of filtered answers
 
   constructor(message) {
     runInAction(() => {
@@ -254,6 +256,10 @@ class AnswersetStore {
 
   @action updateMessage(newMessage) {
     this.message = newMessage;
+  }
+
+  @action updateFilteredAnswers(filteredAnswers) {
+    this.filteredAnswers = filteredAnswers;
   }
 }
 

@@ -362,3 +362,21 @@ button.taskListTask {
 .rw-popup-container {
   min-width: 300px;
 }
+
+#answersetFilter {
+  min-width: 300px;
+  max-height: 200px;
+  overflow: scroll;
+  padding: 10px;
+  text-align: left;
+  position: absolute;
+  background-color: white;
+  border: 1px solid black;
+  z-index: 10;
+}
+#answersetFilter li {
+  list-style-type: none;
+}
+#answersetFilter hr {
+  margin: 0;
+}
