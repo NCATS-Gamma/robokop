@@ -1,13 +1,13 @@
 import React from 'react';
-import { DropdownButton, MenuItem } from 'react-bootstrap';
 import Dropzone from 'react-dropzone';
 
 import FaDownload from 'react-icons/lib/fa/download';
 import FaUpload from 'react-icons/lib/fa/upload';
 import FaPaperPlaneO from 'react-icons/lib/fa/paper-plane-o';
 import FaTrash from 'react-icons/lib/fa/trash';
+import FaFolder from 'react-icons/lib/fa/folder';
 
-const shortid = require('shortid');
+import QuestionTemplateModal from '../shared/modals/QuestionTemplate';
 
 /**
  * Header buttons for new question page
@@ -17,27 +17,41 @@ const shortid = require('shortid');
  * @param {function} onSubmitQuestion - function to load a question graph based on the question
  * @param {object} graphValidationState - object of booleans and an error array
  * @param {array} questionList - an array of questions for the question template dropdown
- * @param {function} onQuestionTemplate - function for when the user selects a pre-existing question template
+ * @param {function} onQuestionTemplate - function that loads a question based on the question object it is passed
  */
-class NewQuestionButtons extends React.PureComponent {
+class NewQuestionButtons extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      showModal: false,
+    };
+    this.toggleModal = this.toggleModal.bind(this);
+  }
+
+  toggleModal() {
+    this.setState(prevState => ({ showModal: !prevState.showModal }));
+  }
+
   render() {
     const {
       onDropFile, onDownloadQuestion, onResetQuestion,
       onSubmitQuestion, graphValidationState, questionList, onQuestionTemplate,
+      concepts,
     } = this.props;
     const buttonStyles = { padding: '5px', marginLeft: '10px' };
     const isValidQuestion = graphValidationState.isValid;
     const errorMsg = 'Error: '.concat(graphValidationState.errorList.join(',\n '));
     return (
       <div style={{ position: 'relative', float: 'right', margin: '20px 0px' }}>
-        <DropdownButton
-          bsStyle="default"
-          title="Load a question template"
-          key={1}
-          id="dropdown-question-template"
+        <button
+          onClick={this.toggleModal}
+          className="btn btn-default"
+          style={buttonStyles}
         >
-          {questionList.map((question, i) => <MenuItem key={shortid.generate()} eventKey={i} onSelect={onQuestionTemplate}>{question.natural_question}</MenuItem>)}
-        </DropdownButton>
+          <span>
+            Question Templates <span style={{ fontSize: '22px' }}><FaFolder style={{ cursor: 'pointer' }} /></span>
+          </span>
+        </button>
         <button
           style={buttonStyles}
           className="btn btn-default"
@@ -86,6 +100,13 @@ class NewQuestionButtons extends React.PureComponent {
             <FaTrash style={{ cursor: 'pointer' }} />
           </span>
         </button>
+        <QuestionTemplateModal
+          showModal={this.state.showModal}
+          toggleModal={this.toggleModal}
+          questions={questionList}
+          selectQuestion={onQuestionTemplate}
+          concepts={concepts}
+        />
       </div>
     );
   }

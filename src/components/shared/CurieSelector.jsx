@@ -119,6 +119,7 @@ class CurieSelector extends React.Component {
           position: 'relative',
           display: 'inline-block',
           width,
+          marginBottom: '50px',
         }}
       >
         <div>

@@ -16,12 +16,13 @@ import MachineQuestionEditor from './components/shared/MachineQuestionEditor';
 import EdgePanel from './components/shared/EdgePanel';
 import NodePanel from './components/shared/NodePanel';
 import MachineQuestionViewContainer, { graphStates } from './components/shared/MachineQuestionViewContainer';
-import questions from './components/util/questionTemplates';
+// import questions from './components/util/questionTemplates';
 import { panelTypes } from './stores/newQuestionStore';
 import { questionGraphPopover, nodePanelPopover, edgePanelPopover, questionNamePopover } from './components/shared/Popovers';
 import LoadingNlpQuestionModal from './components/shared/modals/LoadingNlpQuestion';
 import NewQuestionButtons from './components/shared/NewQuestionButtons';
 import ButtonGroupPanel from './components/shared/ButtonGroupPanel';
+import questionTemplates from '../queries/index';
 
 const _ = require('lodash');
 
@@ -169,8 +170,8 @@ class QuestionNew extends React.Component {
   }
 
   // Loads the question template and updates the MobX store/UI
-  onQuestionTemplate(eventKey) {
-    this.props.store.machineQuestionSpecToPanelState(questions[eventKey]);
+  onQuestionTemplate(question) {
+    this.props.store.machineQuestionSpecToPanelState(question);
   }
 
   // Prevent default form submit and make call to parse NLP question via store method
@@ -238,6 +239,7 @@ class QuestionNew extends React.Component {
     const ready = store.conceptsReady && store.dataReady && store.userReady;
     const { activePanelState } = store;
     const isNodePanel = activePanelState.panelType === panelTypes.node;
+    const questionList = _.cloneDeep(questionTemplates);
     return (
       <div>
         {ready ?
@@ -256,7 +258,8 @@ class QuestionNew extends React.Component {
                     onSubmitQuestion={this.onSubmitQuestion}
                     graphValidationState={store.graphValidationState}
                     onQuestionTemplate={this.onQuestionTemplate}
-                    questionList={questions}
+                    questionList={questionList}
+                    concepts={toJS(store.concepts)}
                   />
                 </Col>
                 <Col md={12}>
