@@ -262,7 +262,7 @@ def update_kg(self, question_id, user_email=None):
             if response.status_code == 200:
                 if response.json()['status'] == 'FAILURE':
                     logger.info('Builder reported the task as FAILURE. Aborting.')
-                    raise RuntimeError('Question answering failed.')
+                    raise RuntimeError('Knowledge graph building failed.')
                 if response.json()['status'] == 'REVOKED':
                     logger.info('Builder reported the task as REVOKED. Aborting.')
                     raise RuntimeError('Task terminated by admin.')

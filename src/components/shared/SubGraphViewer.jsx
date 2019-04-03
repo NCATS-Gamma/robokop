@@ -466,6 +466,7 @@ SubGraphViewer.defaultProps = {
   height: 500,
   showSupport: false,
   omitEdgeLabel: false,
+  varyEdgeSmoothRoundness: false,
   callbackOnGraphClick: () => {},
 };
 

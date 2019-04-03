@@ -83,7 +83,6 @@ class MessageAnswersetTable extends React.Component {
     Object.keys(filter.value.selectedFilter).forEach((key) => {
       columnInfo.forEach((setAns) => {
         if (show && !filter.value.selectedFilter[key].includes(String(setAns[key]))) {
-          console.log('false');
           show = false;
           return show;
         }
@@ -114,6 +113,9 @@ class MessageAnswersetTable extends React.Component {
         // in custom Cell renderer. This modularity is so that it can
         // be re-used in the getColumnWidth() method
         const cellTextFn = (setNodes) => {
+          if (!setNodes) {
+            return [];
+          }
           if (setNodes.length === 1) {
             return setNodes[0].name ? [setNodes[0].name] : [setNodes[0].id];
           }

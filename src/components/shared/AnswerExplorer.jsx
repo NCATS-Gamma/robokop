@@ -94,6 +94,7 @@ class AnswerExplorer extends React.Component {
             layoutRandomSeed={this.props.answerIndex}
             callbackOnGraphClick={this.onGraphClick}
             showSupport
+            varyEdgeSmoothRoundness
             concepts={this.props.concepts}
           />
           <Modal

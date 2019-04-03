@@ -36,6 +36,7 @@ class NewQuestionButtons extends React.Component {
     const {
       onDropFile, onDownloadQuestion, onResetQuestion,
       onSubmitQuestion, graphValidationState, questionList, onQuestionTemplate,
+      concepts,
     } = this.props;
     const buttonStyles = { padding: '5px', marginLeft: '10px' };
     const isValidQuestion = graphValidationState.isValid;
@@ -104,6 +105,7 @@ class NewQuestionButtons extends React.Component {
           toggleModal={this.toggleModal}
           questions={questionList}
           selectQuestion={onQuestionTemplate}
+          concepts={concepts}
         />
       </div>
     );

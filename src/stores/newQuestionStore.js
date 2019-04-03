@@ -671,7 +671,7 @@ class NewQuestionStore {
    * Note: This method overwrites all supplied node/edge ids to internal integer representation
    *
    * @param {JSON Object} machineQuestionInp - JSON Object satisfying MachineQuestion spec
-   *  of format { question: string, machineQuestion: { edges: [], nodes: [] }}
+   *  of format { natural_question: string, machine_question: { edges: [], nodes: [] }}
    */
   @action.bound machineQuestionSpecToPanelState(machineQuestionInp) {
     try {
@@ -888,7 +888,6 @@ class NewQuestionStore {
       const user = yield (() => new Promise((resolve, reject) => {
         this.appConfig.user(u => resolve(u), err => reject(err));
       }))();
-      console.log('User returned:', user);
       this.user = user;
       this.userReady = true;
     } catch (e) {
