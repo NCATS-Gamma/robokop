@@ -23,12 +23,12 @@ class SubGraphViewer extends React.Component {
       physics: {
         minVelocity: 1,
         barnesHut: {
-          gravitationalConstant: -2000,
-          centralGravity: 0.4,
-          springLength: 140,
-          springConstant: 0.15,
-          damping: 0.85,
-          avoidOverlap: 0.1,
+          gravitationalConstant: 0,
+          centralGravity: 0.3,
+          springLength: 200,
+          springConstant: 0.05,
+          damping: 0.95,
+          avoidOverlap: 0,
         },
       },
       layout: {
