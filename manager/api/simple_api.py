@@ -1002,3 +1002,34 @@ class TemplateRun(Resource):
 
 api.add_resource(TemplateRun, '/simple/quick/template/<template_id>/<identifier1>/', '/simple/quick/template/<template_id>/<identifier1>/<identifier2>/', '/simple/quick/template/<template_id>/<identifier1>/<identifier2>/<identifier3>/')
 
+
+
+class Normalize(Resource):
+    def post(self):
+        """
+        Normalize answers to a message format with common identifiers
+        ---
+        tags: [simple]
+        requestBody:
+            name: message
+            description: The machine-readable message
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Message'
+            required: true
+        """
+        logger.info('Normalizing answerset')
+        provided = request.json
+        if not provided:
+            logger.info('   Invalid JSON input')
+            return 'JSON post data is required', 400
+
+        response = requests.post( f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/normalize', json=provided)
+        if not response.ok:
+            logger.info(f'   Failed to normalize by calling the ranker {response.status_code}: {response.text}')
+            return response.text, response.status_code
+        
+        return response.json, 200
+
+api.add_resource(Normalize, '/simple/normalize/')

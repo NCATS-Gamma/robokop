@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<link rel="stylesheet" href="http://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css">
+<meta charset="utf-8">
+<title>0.9 Diff Visualizer</title>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" charset="utf-8"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js" charset="utf-8"></script>
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="http://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+<style>
+#chart rect {
+  fill: steelblue;
+}
+
+#chart text {
+  fill: black;
+  font: 10px Helvetica;
+  text-anchor: end;
+}
+
+#table_id text {
+  color: black;
+  font: 10px Helvetica;
+  text-anchor: end;
+}
+
+#exTab1 .tab-content {
+  color: black;
+  background-color: pink;
+  padding: 5px 15px;
+}
+
+#exTab2 h3 {
+  color: white;
+  background-color: #428bca;
+  padding: 5px 15px;
+}
+
+/* remove border radius for the tab */
+
+#exTab1 .nav-pills>li>a {
+  border-radius: 0;
+}
+
+th {
+  color: black;
+}
+tr {
+  color: black;
+}
+
+/* change border radius for the tab , apply corners on top*/
+
+#exTab3 .nav-pills>li>a {
+  border-radius: 4px 4px 0 0;
+}
+
+#exTab3 .tab-content {
+  color: white;
+  background-color: #428bca;
+  padding: 5px 15px;
+}
+
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <h1>0.9 Diff Visualizer</h1>
+    <form enctype="multipart/form-data">
+        <input name="file" type="file" />
+    </form>
+    <select id="key_select">
+    </select>
+  
+  </div>
+  <div id="exTab1" class="container">
+    <ul class="nav nav-pills">
+      <li class="active">
+        <a class="xyz" id="xyz" href="#1a" data-toggle="tab">Tables</a>
+      </li>
+      <li><a class="hello" href="#2a" data-toggle="tab">Bar Graphs</a>
+      </li>
+      <li><a href="#3a" data-toggle="tab">Intersection</a>
+      </li>
+      <li><a href="#4a" data-toggle="tab">g1-g2 Graph</a>
+      </li>
+      <li><a href="#5a" data-toggle="tab">g2-g1 Graph</a>
+      </li>
+    </ul>
+
+    <div class="tab-content clearfix">
+      <div class="tab-pane active" id="1a">
+        <h3><div class="col-xs-12">Please upload your json file.</div>
+        <div class="col-xs-4">
+        <table id="table_id1" class="display">
+    <thead>
+        <tr>
+            <th>g1</th>
+             </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td>Row 1 Data 1</td>
+    </tr>
+    <tr>
+      <td>Row 2 Data 1</td>
+    </tr>
+    </tbody>
+    </table>
+    </div>
+    <div class="col-xs-4">
+    <table id="table_id2" class="display">
+    <thead>
+        <tr>
+            <th>Intersection</th>
+             </tr>
+
+    </thead>
+    <tbody>
+    <tr>
+      <td>Row 1 Data 1</td>
+    </tr>
+    <tr>
+      <td>Row 2 Data 1</td>
+    </tr>
+    </tbody>
+    </table></div>
+    <div class="col-xs-4">
+        <table id="table_id3" class="display">
+    <thead>
+        <tr>
+            <th>g2</th>
+             </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td>Row 1 Data 1</td>
+    </tr>
+    <tr>
+      <td>Row 2 Data 1</td>
+    </tr>
+    </tbody>
+    </table>
+    </div>
+</h3>
+      </div>
+      <div class="tab-pane" id="2a">
+
+        <h3> <svg id="chart"></svg> </h3>
+      </div>
+      <div class="tab-pane" style="background-color: rgba(255,0,0,0.1);" id="3a">
+        <h3 >Intersection Graph</h3><div class="col-xl-12" id="mynetwork1"  style="height: 2000px; background-color: rgba(255,0,0,0.1);"></div>
+      </div>
+      <div class="tab-pane" id="4a">
+        <h3>g1-g2</h3><div class="col-xl-12" id="mynetwork2"  style="height: 2000px; background-color: rgba(255,0,0,0.1);"></div>
+      </div>
+        <div class="tab-pane" id="5a">
+        <h3>g2-g1</h3><div class="col-xl-12" id="mynetwork3"  style="height: 2000px; background-color: rgba(255,0,0,0.1);"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <svg id="chart"></svg>
+</body>
+
+<script>
+//var data = [4, 5, 10, 16, 23, 35];
+var left;
+var right;
+var midpoint;
+var colors = ["Aqua", "yellow", "GreenYellow", "#d9d574", "b33040", "steelblue"];
+var width = 500;
+var barHeight = 50;
+
+//var x = d3.scale.linear()
+//  .domain([0, 100])
+//  .range([0, width]);
+var x;
+var chart = d3.select('#chart')
+  .attr('width', width + 100)
+  .attr('height', barHeight * 10);//data.length);
+function makeChart(g1,intersection,g2){
+  x = d3.scale.linear()
+  .domain([0, g1+intersection+g2])
+  .range([0, width]);
+  d3.selectAll("#chart > *").remove();
+  left = x(g1);
+  right = x(g1+intersection);
+  midpoint = (right + left)/2;
+  z = chart.append('svg');
+  if(g1 > 0){
+  z.append('text')
+  .attr('x', left/2+15)
+  .attr('y',barHeight/2)
+//  .attr('dy', '.35em')
+  .text('g1-g2');}
+  if(intersection > 0){
+  z.append('text')
+  .attr('x', midpoint+16)
+  .attr('y', barHeight/2)
+  .text('intersection');}
+  if(g2 > 0){
+  z.append('text')
+  .attr('x', width/2 + right/2)
+  .attr('y',barHeight/2)
+  .text('g2-g1');}
+}
+
+function drawChart(row_num, g1,intersection,g2,tx){
+var data = [g1,intersection,g2];
+var trans = [left - x(g1), midpoint-x(intersection)/2, right ]
+
+z = chart.append('svg');
+var bar = z.selectAll('g')
+  .data(data)
+  .enter()
+  .append('g')
+  .attr('transform', function(d, i) {
+    return 'translate(' + (trans[i]) + ','+  row_num * barHeight +')';
+  })
+  .on("mouseover", function() {
+    //tooltip.select("text").text("hi");
+    
+})
+  .on("mouseout", function() {
+			//tooltip.style("display", "none");
+// tooltip.attr("transform", "translate(" + -100 + "," + -100 + ")");
+  })
+  
+  .on("mousemove", function(d, i) {
+//      tooltip.style("display", null);
+  var xPosition = (d3.mouse(this)[0] + trans[i] - 5);
+
+    var yPosition = d3.mouse(this)[1] - 10;
+ //   tooltip.attr("transform", "translate(" + xPosition + "," + yPosition + ")");
+  });
+
+bar.append('rect')
+  .attr('width', x)
+  .attr('height', barHeight - 1)
+  .style("fill", function(d, i) {
+    return colors[i];
+  });
+
+var text_trans = [left/2,midpoint,width-3*right/4 ];
+
+bar.append('text')
+  .attr('x', function(d,i) {
+    if(d==1){ return 5; }
+    return x(d)/2;
+  })
+  .attr('y', barHeight / 2)
+  .attr('dy', '.35em')
+  .text(function(d) {
+    if(d==0){ return null; }
+    else {return d;}
+  });
+  //chart.append(bar);
+  z.append('text')
+  .attr('x', 600)
+  .attr('y', row_num * barHeight + barHeight / 2)
+  .attr('dy', '.35em')
+  .text(tx);
+}
+//drawChart(2,5,15,50);
+//drawChart(1,5,25,50);
+var tooltip = chart.append("g")
+  .attr("class", "tooltip")
+  .style("display", "none");
+
+tooltip.append("rect")
+  .attr("width", 30)
+  .attr("height", 20)
+  .attr("fill", "white")
+  .style("opacity", 1);
+
+tooltip.append("text")
+  .attr("x", 15)
+  .attr("dy", "1.2em")
+  .style("text-anchor", "middle")
+  .attr("font-size", "12px")
+  .attr("font-weight", "bold");
+
+//alert($('key_select'));
+
+function buildDefault(){
+var $el = $("#key_select");
+$el.empty(); // remove old options
+//$.each(newOptions, function(key,value) {
+for (var key in j ){
+  $el.append($("<option></option>")
+     .attr("value", key).text(key));
+}
+  function makeGraph(graph_key){
+  var node_id = 1;
+  var node_ids = {}
+  var nodesx =[];
+  var edgesx = [];
+  for (var key in graph[graph_key]['nodes']){
+    var name = graph[graph_key]['nodes'][key]["name"];
+    var idx = graph[graph_key]['nodes'][key]["id"];
+    nodesx.push({id:node_id, label:name});
+    node_ids[idx] = node_id;
+    node_id++;
+  }
+  for (var key in graph[graph_key]['edges']){
+    var from1 = node_ids[graph[graph_key]['edges'][key]['source_id']];
+    var to1 = node_ids[graph[graph_key]['edges'][key]['target_id']];
+    edgesx.push({from:from1,to:to1});
+  }
+  var nodes = new vis.DataSet(nodesx);
+
+  // create an array with edges
+  var edges = new vis.DataSet(edgesx);
+
+  // create a network
+
+  var data = {
+    nodes: nodes,
+    edges: edges
+  };
+  return data;
+  }
+  var data1 = makeGraph('intersection');
+  var container = document.getElementById('mynetwork1');
+  var options = {};
+  var network1 = new vis.Network(container, data1, options);
+  var data2 = makeGraph('g1-g2');
+  container = document.getElementById('mynetwork2');
+  var options = {};
+  var network2 = new vis.Network(container, data2, options);
+  var data3 = makeGraph('g2-g1');
+  container = document.getElementById('mynetwork3');
+  var options = {};
+  var network2 = new vis.Network(container, data3, options);
+}
+
+
+function optionChanged(){
+var selected_key = $("#key_select").val();
+makeChart(j[selected_key]['g1-g2'].length,j[selected_key]['intersection'].length,j[selected_key]['g2-g1'].length);
+drawChart(1,j[selected_key]['g1-g2'].length,j[selected_key]['intersection'].length,j[selected_key]['g2-g1'].length,"ALL");
+//var max = Math.max(j[selected_key]['g1-g2'].length,j[selected_key]['intersection'].length,j[selected_key]['g2-g1'].length);
+data1 = []
+data2 = []
+data3 = []
+//for ( var i=0 ; i<max ; i++ ) {
+//    d.push( [ null,null,null ] );
+//}
+
+for ( var i=0; i<j[selected_key]['g1-g2'].length; i++){
+  data1.push(null);
+  data1[i] = [j[selected_key]['g1-g2'][i]["name"],  j[selected_key]['g1-g2'][i]["type"]];
+  //data1.push(""+j[selected_key]['g1-g2'][i]["name"]);
+}
+for ( var i=0; i<j[selected_key]['intersection'].length; i++){
+  data2.push(null);
+  data2[i]=[j[selected_key]['intersection'][i]["name"],j[selected_key]['intersection'][i]["type"]];
+}
+for ( var i=0; i<j[selected_key]['g2-g1'].length; i++){
+  data3.push(null);
+  data3[i]=[j[selected_key]['g2-g1'][i]["name"],j[selected_key]['g2-g1'][i]["type"]];
+}
+//key_num = 0/
+//for (var key in j[selected_key]){
+
+//  for (var i=0; i< j[selected_key][key].length; i++){
+//    d[i][key_num] = j[selected_key][key][i]["name"];
+//  }
+//  key_num++;
+//}
+///table.row.add( new Person( 'Airi Satou',     33, 'Accountant' ) );
+$('#table_id1').DataTable({
+  destroy: true,
+  "searching": false,
+  data:data1});
+$('#table_id2').DataTable({
+  destroy: true,
+  "searching": false,
+ //   "columns": [
+//    { "width": "80%" },
+//    {"width":"20%"}],
+  data:data2});
+$('#table_id3').DataTable({
+  destroy: true,
+  "searching": false,
+  data:data3});
+
+function makeBlank(){
+  return {'g1-g2':new Set(),'g2-g1':new Set(),'intersection':new Set()}
+}
+set1 = {"phenotypic_feature":makeBlank()};
+//set1 = {};
+//!('myKey' in myObject)
+//set1 = new Set();
+l = [selected_key]
+//for (var key1 in l){
+key1 = selected_key;
+   for (var key2 in j[key1]){
+   //  alert(key2);
+  for (var i=0; i< j[key1][key2].length; i++){
+      var t = j[key1][key2][i]["type"];
+      var name =  j[key1][key2][i]["name"];
+      if(Array.isArray(t)){
+        for (var k=0; k<t.length;k++ ){
+          a = t[k];
+          if(!(a in set1)){ set1[a] = makeBlank();}
+          set1[a][key2].add(name); }
+      }
+      else {
+        if(!(t in set1)){ set1[t] = makeBlank();}
+        set1[t][key2].add(name);}
+      if(set1["phenotypic_feature"]["g1-g2"].size > 500){
+        console.log('hi'); }
+    }
+  }
+//}
+makeChart(j[selected_key]['g1-g2'].length,j[selected_key]['intersection'].length,j[selected_key]['g2-g1'].length);
+drawChart(1,j[selected_key]['g1-g2'].length,j[selected_key]['intersection'].length,j[selected_key]['g2-g1'].length,"ALL");
+
+//drawChart(1,lens[0],lens[2],lens[1],"ALL");
+key_num = 2
+for (var key in set1){
+  g1 = set1[key]['g1-g2'].size;
+  g2 = set1[key]['g2-g1'].size;
+  inter = set1[key]['intersection'].size;
+  drawChart(key_num,g1,inter,g2,key)
+  key_num++;
+}
+
+}
+$('#key_select').on('change', function() {
+//  alert( this.value );
+//  table = $('#table_id').DataTable;
+//  table.destroy();
+  optionChanged();
+});
+//$("#key_select").change();
+//buildDefault();
+//optionChanged();
+var graph;
+  
+$(':file').on('change', function() {
+    var file = this.files[0];
+    //if (file.size > 1024) {
+    //    alert('max upload size is 1k')
+    //}
+    var reader = new FileReader();
+
+    reader.onload = function(e) {
+//      j = JSON.parse(reader.result);
+//      buildDefault();
+      var json = JSON.parse(reader.result);
+      j = json['node_diff'];
+      graph = json['graph_diff']
+      buildDefault();
+      optionChanged();
+
+    }
+    
+    reader.readAsText(file);
+    // Also see .name, .type
+});
+</script>
+</html>

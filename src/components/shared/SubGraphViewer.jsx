@@ -1,5 +1,6 @@
 import React from 'react';
 import getNodeTypeColorMap from '../util/colorUtils';
+import entityNameDisplay from '../util/entityNameDisplay';
 
 const Graph = require('react-graph-vis').default;
 const shortid = require('shortid');
@@ -42,6 +43,10 @@ class SubGraphViewer extends React.Component {
         },
         hoverWidth: 1,
         selectionWidth: 1,
+        smooth: {
+          enabled: true,
+          type: 'dynamic',
+        },
       },
       nodes: {
         shape: 'box',
@@ -154,6 +159,7 @@ class SubGraphViewer extends React.Component {
       modifiedOptions = {
         layout: {
           randomSeed: this.props.layoutRandomSeed,
+          // improvedLayout: true,
         },
       };
     }
@@ -234,7 +240,15 @@ class SubGraphViewer extends React.Component {
         hover: { background: backgroundColor, border: '#000000' },
       };
 
-      n.label = n.name;
+      // Set shortened node labels and tool-tip for each node
+      n.label = n.name.length > 15 ? `${n.name.substring(0, 13)}...` : n.name;
+      n.title = (`
+        <div class="vis-tooltip-inner">
+          <div><span class="title">${n.name}</span></div>
+          <div><span class="field-name">id: </span>${n.id}</div>
+          <div><span class="field-name">type: </span>${entityNameDisplay(n.type)}</div>
+        </div>`
+      );
     });
 
     // Separate out support and regular edges to modify things differently
@@ -440,6 +454,7 @@ class SubGraphViewer extends React.Component {
 
   render() {
     const graph = this.state.displayGraph;
+    console.log('SubgraphViewer graph:', graph);
     const isValid = !(graph == null);
     return (
       <div>
@@ -463,7 +478,7 @@ class SubGraphViewer extends React.Component {
 SubGraphViewer.defaultProps = {
   layoutRandomSeed: 0,
   layoutStyle: 'auto',
-  height: 500,
+  height: 600,
   showSupport: false,
   omitEdgeLabel: false,
   varyEdgeSmoothRoundness: false,

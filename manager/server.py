@@ -68,6 +68,11 @@ def viewer_file(upload_id):
     """Answerset Browser from uploaded file"""
     return render_template('simpleView.html', upload_id=upload_id)
 
+@app.route('/compare/')
+def compare():
+    """Search for biomedical concept identifiers"""
+    return render_template('compare.html')
+
 
 # Run Webserver
 if __name__ == '__main__':

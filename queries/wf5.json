@@ -1,10 +1,10 @@
 {
   "name": "WF5 - $name1$ ($identifier1$)",
-  "natural_question": "WF5 - $name1$ ($identifier1$) to gene to pathway to gene to drug",
+  "natural_question": "WF5 - $name1$ ($identifier1$) to gene to biological process or activity to phenotypic feature",
   "machine_question": {
     "nodes": [{
         "id": "n0",
-        "type": "disease",
+        "type": "chemical_substance",
         "curie": [
           "$identifier1$"
         ]
@@ -19,11 +19,7 @@
       },
       {
         "id": "n3",
-        "type": "gene"
-      },
-      {
-        "id": "n4",
-        "type": "drug"
+        "type": "phenotypic_feature"
       }
     ],
     "edges": [{
