@@ -143,9 +143,7 @@ class AnswersetFilter extends React.Component {
             }
           });
         } else {
-          console.log('keys array', keysArray);
-          console.log('all answers', allAnswers);
-          console.log('checked', checked);
+          console.log('ans', ans);
           if (checked) {
             selectedFilter[key].delete(String((ans.nodes && ans.nodes[columnId][key]) || ans));
           } else {
@@ -268,6 +266,7 @@ class AnswersetFilter extends React.Component {
                     })}
                   </div>);
               }
+              return null;
             })}
           </ul>
         }
