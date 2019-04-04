@@ -25,11 +25,9 @@ class Answerset extends React.Component {
       user: {},
       answerId: [],
       concepts: [],
-      owner: null,
       message: {},
       question: {},
       questionId: null,
-      answersets: [],
       answersetFeedback: [], // Currently unused
     };
 
@@ -67,14 +65,13 @@ class Answerset extends React.Component {
       qid,
       (data) => {
         const { question } = data.data;
-        question.machine_question = JSON.parse(question.machine_question.body);
-        const { answersets } = question.question_graph;
-
+        if ('body' in question.machine_question) {
+          question.machine_question = JSON.parse(question.machine_question.body);
+        }
+        
         this.setState({
           questionId: qid,
-          owner: question.ownerId,
           question,
-          answersets,
           questionReady: true,
         });
       },
