@@ -382,3 +382,8 @@ button.taskListTask {
 #answersetFilter hr {
   margin: 0;
 }
+
+#questionTempButton:disabled {
+  cursor: not-allowed;
+  background-color: darkgray;
+}

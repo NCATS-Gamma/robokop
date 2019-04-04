@@ -454,7 +454,6 @@ class SubGraphViewer extends React.Component {
 
   render() {
     const graph = this.state.displayGraph;
-    console.log('SubgraphViewer graph:', graph);
     const isValid = !(graph == null);
     return (
       <div>

@@ -8,6 +8,7 @@ import { filter } from 'graphql-anywhere';
 
 // const config = require('../../config.json');
 const _ = require('lodash');
+const hash = require('object-hash');
 
 
 configure({ enforceActions: 'always' }); // Prevent observable mutations in MobX outside of actions
@@ -16,6 +17,7 @@ class AnswersetStore {
   @observable message = {}; // Message object supplied to store on init
   @observable activeAnswerId = null; // Currently 'selected' answer
   @observable filteredAnswers = []; // array of filtered answers
+  @observable filterHash = ''; // hash of filtered answers object for checking if we need to get available answers
   @observable maxNumNodes = 35; // Number of nodes (approx) for pruned annotated KG. Null results in all nodes
 
   constructor(message) {
@@ -28,16 +30,16 @@ class AnswersetStore {
         }
       });
       // this.message.answers.filter((a) => {
-      //   for (qnodeId in a.node_bindings) {
-      //     const knodeId = a.node_bindings[qnodeId];
-      //     this.message.nodes.some(n => n.id === knodeId);
-      //     return boolean(node)
-      //   }
-      // })
-      this.activeAnswerId = this.message.answers[0].id;
-    });
-  }
-
+        //   for (qnodeId in a.node_bindings) {
+          //     const knodeId = a.node_bindings[qnodeId];
+          //     this.message.nodes.some(n => n.id === knodeId);
+          //     return boolean(node)
+          //   }
+          // })
+          this.activeAnswerId = this.message.answers[0].id;
+        });
+      }
+      
   // Return number of question nodes in message
   @computed get numQNodes() {
     return this.message.question_graph ? this.message.question_graph.nodes.length : 0;
@@ -469,6 +471,7 @@ class AnswersetStore {
 
   @action updateFilteredAnswers(filteredAnswers) {
     this.filteredAnswers = filteredAnswers;
+    this.filterHash = hash(filteredAnswers);
   }
 
   @action updateMaxNumNodes(numNodes) {
