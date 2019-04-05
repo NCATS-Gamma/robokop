@@ -55,7 +55,7 @@ class SimpleViewer extends React.Component {
           this.parseMessage(object); // This will set state
         },
         (err) => {
-          this.setState({ isReading: false, hasError: true, errorMessage: JSON.stringify(err) });
+          this.setState({ isReading: false, hasError: true, errorMessage: 'There was a problem fetching the stored file from the server. This may be an invalid identifier.' });
         },
       );
     } else {
@@ -69,7 +69,7 @@ class SimpleViewer extends React.Component {
     const hasQGraph = hasMessage && 'question_graph' in message;
     const hasKG = hasMessage && 'knowledge_graph' in message;
     const hasAnswers = hasMessage && 'answers' in message && Array.isArray(message.answers) && message.answers.length > 0;
-    
+
     const allOk = hasQGraph && hasKG && hasAnswers;
 
     if (allOk) {
