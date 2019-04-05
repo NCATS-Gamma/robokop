@@ -191,7 +191,7 @@ class QuestionTemplateModal extends React.Component {
           ))}
         </Modal.Body>
         <Modal.Footer>
-          <button onClick={this.submitTemplate} disabled={disableSubmit}>Load Question</button>
+          <button id="questionTempButton" onClick={this.submitTemplate} disabled={disableSubmit}>Load Question</button>
         </Modal.Footer>
       </Modal>
     );

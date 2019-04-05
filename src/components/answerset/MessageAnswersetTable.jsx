@@ -196,7 +196,9 @@ class MessageAnswersetTable extends React.Component {
   }
 
   render() {
-    const { answers, columns } = this.state;
+    const {
+      answers, columns, expanded, tableSubComponent,
+    } = this.state;
     const column = [{
       Header: 'Answer Set',
       columns,
@@ -222,8 +224,8 @@ class MessageAnswersetTable extends React.Component {
                     collapseOnDataChange={false}
                     onPageChange={this.clearExpanded}
                     onSortedChange={this.clearExpanded}
-                    SubComponent={this.state.tableSubComponent}
-                    expanded={this.state.expanded}
+                    SubComponent={tableSubComponent}
+                    expanded={expanded}
                     defaultSorted={[
                       {
                         id: 'score',

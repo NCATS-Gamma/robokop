@@ -366,6 +366,7 @@ button.taskListTask {
 
 #answersetFilter {
   min-width: 300px;
+  max-width: 600px;
   max-height: 200px;
   overflow: scroll;
   padding: 10px;
@@ -380,4 +381,9 @@ button.taskListTask {
 }
 #answersetFilter hr {
   margin: 0;
+}
+
+#questionTempButton:disabled {
+  cursor: not-allowed;
+  background-color: darkgray;
 }

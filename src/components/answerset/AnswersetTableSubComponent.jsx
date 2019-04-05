@@ -341,6 +341,8 @@ class AnswersetTableSubComponent extends React.Component {
         columnHeaderObj.Cell = (row) => {
           // if the value is an array, show each one on a new line, otherwise, just display the single value
           if (Array.isArray(row.value) && row.value.length > 1) {
+            // TODO: turning off filter doesn't seem to be working, but this is what needs to happen.
+            columnHeaderObj.filterable = false;
             const arrayPopover = (
               <Popover id={shortid.generate()}>
                 {row.value.map(value => <p key={shortid.generate()}>{value}</p>)}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react';
-import { toJS } from 'mobx';
+// import { toJS } from 'mobx';
 import FaFilter from 'react-icons/lib/fa/filter';
 import FaCheck from 'react-icons/lib/fa/check';
 
@@ -22,7 +22,7 @@ class AnswersetFilter extends React.Component {
     };
 
     this.blacklist = ['isSet', 'labels', 'equivalent_identifiers', 'type', 'id'];
-    this.filtAnswer = {};
+    this.filtHash = '';
     this.filter = this.filter.bind(this);
     this.getKeyIntersection = this.getKeyIntersection.bind(this);
     this.toggleDropdown = this.toggleDropdown.bind(this);
@@ -39,7 +39,7 @@ class AnswersetFilter extends React.Component {
 
   componentDidUpdate() {
     const { columnId, store } = this.props;
-    if (!_.isEqual(this.filtAnswer, toJS(store.filteredAnswers))) {
+    if (this.filtHash !== store.filterHash) {
       this.getAvailableAnswers(columnId, store.filteredAnswers);
     }
   }
@@ -47,20 +47,20 @@ class AnswersetFilter extends React.Component {
   getAvailableAnswers(columnId, filteredAns) {
     const { filterArray } = this.state;
     const { store, answers } = this.props;
-    this.filtAnswer = toJS(store.filteredAnswers);
+    this.filtHash = store.filterHash;
     const filteredAnswers = filteredAns || answers;
     const avail = {};
     filterArray.forEach((key) => {
       avail[key] = [];
       filteredAnswers.forEach((ans) => {
-        if (ans._original.nodes[columnId].isSet) {
+        if (ans._original && ans._original.nodes[columnId].isSet) {
           ans._original.nodes[columnId].setNodes.forEach((setAns) => {
             if (!avail[key].includes(String(setAns[key]))) {
               avail[key].push(String(setAns[key]));
             }
           });
-        } else if (!avail[key].includes(String((ans._original && ans._original.nodes[columnId][key]) || ans.nodes[columnId][key]))) {
-          avail[key].push(String((ans._original && ans._original.nodes[columnId][key]) || ans.nodes[columnId][key]));
+        } else if (!avail[key].includes(String((ans._original && String(ans._original.nodes[columnId][key])) || ans.nodes[columnId][key]))) {
+          avail[key].push(String((ans._original && String(ans._original.nodes[columnId][key])) || ans.nodes[columnId][key]));
         }
       });
     });
@@ -134,7 +134,7 @@ class AnswersetFilter extends React.Component {
     keys.forEach((key) => {
       selectedFilter[key] = new Set(selectedFilter[key]);
       answers.forEach((ans) => {
-        if (ans.nodes[columnId].isSet) {
+        if (ans.nodes && ans.nodes[columnId].isSet) {
           ans.nodes[columnId].setNodes.forEach((setAns) => {
             if (checked) {
               selectedFilter[key].delete(String((setAns[key])));
@@ -143,13 +143,10 @@ class AnswersetFilter extends React.Component {
             }
           });
         } else {
-          // console.log('keys array', keysArray);
-          // console.log('all answers', allAnswers);
-          // console.log('checked', checked);
           if (checked) {
-            selectedFilter[key].delete(String((ans.nodes && ans.nodes[columnId][key]) || ans));
+            selectedFilter[key].delete(String((ans.nodes && String(ans.nodes[columnId][key])) || ans));
           } else {
-            selectedFilter[key].add(String((ans.nodes && ans.nodes[columnId][key]) || ans));
+            selectedFilter[key].add(String((ans.nodes && String(ans.nodes[columnId][key])) || ans));
           }
         }
       });
@@ -268,6 +265,7 @@ class AnswersetFilter extends React.Component {
                     })}
                   </div>);
               }
+              return null;
             })}
           </ul>
         }
