@@ -55,7 +55,7 @@ class SimpleViewer extends React.Component {
           this.parseMessage(object); // This will set state
         },
         (err) => {
-          this.setState({ hasError: true, errorMessage: JSON.stringify(err) });
+          this.setState({ isReading: false, hasError: true, errorMessage: JSON.stringify(err) });
         },
       );
     } else {
@@ -78,6 +78,7 @@ class SimpleViewer extends React.Component {
         hasMessage: true,
         hasError: false,
         errorMessage: '',
+        isReading: false,
       });
       return;
     }
@@ -99,6 +100,7 @@ class SimpleViewer extends React.Component {
       message: {},
       hasMessage: false,
       hasError: true,
+      isReading: false,
       errorMessage,
     });
   }
