@@ -55,11 +55,12 @@ class SimpleViewer extends React.Component {
           this.parseMessage(object); // This will set state
         },
         (err) => {
-          this.setState({ isReading: false, hasError: true, errorMessage: 'There was a problem fetching the stored file from the server. This may be an invalid identifier.' });
+          console.log(err)
+          this.setState({ isReading: false, hasError: true, hasMessage: false, errorMessage: 'There was a problem fetching the stored file from the server. This may be an invalid identifier.' });
         },
       );
     } else {
-      this.setState({ isReading: false, hasError: false });
+      this.setState({ isReading: false, hasError: false, hasMessage: false, errorMessage: '' });
     }
   }
   parseMessage(object) {
