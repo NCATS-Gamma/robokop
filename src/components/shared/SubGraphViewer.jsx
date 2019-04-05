@@ -43,10 +43,10 @@ class SubGraphViewer extends React.Component {
         },
         hoverWidth: 1,
         selectionWidth: 1,
-        smooth: {
-          enabled: true,
-          type: 'dynamic',
-        },
+        // smooth: {
+        //   enabled: true,
+        //   type: 'dynamic',
+        // },
       },
       nodes: {
         shape: 'box',
