@@ -73,6 +73,11 @@ def enriched():
     """Get enriched answers."""
     return render_template('simpleEnriched.html')
 
+@app.route('/simple/similarity/')
+def similarity():
+    """Get similarity answers."""
+    return render_template('simpleSimilarity.html')
+
 @app.route('/compare/')
 def compare():
     """Search for biomedical concept identifiers."""

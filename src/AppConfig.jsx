@@ -43,6 +43,7 @@ class AppConfig {
       search: this.url('api/search/'), // POST for Bionames search
       viewData: id => this.url(`api/simple/view/${id}`),
       simpleEnriched: (type1, type2) => this.url(`api/simple/enriched/${type1}/${type2}`), // POST for simple enriched
+      simpleSimilarity: (type1, type2, id, simType) => this.url(`api/simple/similarity/${type1}/${id}/${type2}/${simType}`), // Get for simple similarity
       graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql`,
       publications: (id1, id2) => this.url(`api/omnicorp/${id1}/${id2}`), // GET publications for one identifier or a pair of identifiers
     };
@@ -309,6 +310,13 @@ class AppConfig {
         rebuild: false,
         threshold: 0.5,
       },
+      successFun,
+      failureFun,
+    );
+  }
+  simpleSimilarity(type1, type2, id, simType, successFun, failureFun) {
+    this.getRequest(
+      this.apis.simpleSimilarity(type1, type2, id, simType),
       successFun,
       failureFun,
     );

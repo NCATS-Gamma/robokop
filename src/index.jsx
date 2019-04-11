@@ -22,6 +22,7 @@ import Activity from './Activity';
 import MultiSearch from './MultiSearch';
 import SimpleViewer from './SimpleViewer';
 import SimpleEnriched from './SimpleEnriched';
+import SimpleSimilarity from './SimpleSimilarity';
 import NewQuestionStore from './stores/newQuestionStore';
 
 // Our actual CSS and other images etc.
@@ -143,6 +144,14 @@ const robokop = {
   simpleEnriched: () => {
     ReactDOM.render(
       <SimpleEnriched
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  simpleSimilarity: () => {
+    ReactDOM.render(
+      <SimpleSimilarity
         config={config}
       />,
       document.getElementById('reactEntry'),

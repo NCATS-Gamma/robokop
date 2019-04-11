@@ -15,7 +15,7 @@ import entityNameDisplay from './components/util/entityNameDisplay';
 const shortid = require('shortid');
 
 
-class SimpleEnriched extends React.Component {
+class SimpleSimilarity extends React.Component {
   constructor(props) {
     super(props);
     // We only read the communications config on creation
@@ -26,7 +26,8 @@ class SimpleEnriched extends React.Component {
       concepts: [],
       type1: '',
       type2: '',
-      identifiers: [''],
+      identifier: '',
+      simType: '',
       results: [],
       resultsLoading: false,
       resultsReady: false,
@@ -38,8 +39,6 @@ class SimpleEnriched extends React.Component {
     this.handleCurieChange = this.handleCurieChange.bind(this);
     this.getResults = this.getResults.bind(this);
     this.getTableColumns = this.getTableColumns.bind(this);
-    this.addIdentifier = this.addIdentifier.bind(this);
-    this.deleteIdentifier = this.deleteIdentifier.bind(this);
   }
 
   componentDidMount() {
@@ -66,35 +65,23 @@ class SimpleEnriched extends React.Component {
     return this.appConfig.questionNewSearch(input, type);
   }
 
-  handleCurieChange(i, ty, te, cu) {
+  handleCurieChange(ty, te, cu) {
     if (cu || !te) {
-      const { identifiers } = this.state;
-      identifiers[i] = cu;
-      this.setState({ identifiers });
+      this.setState({ identifier: cu });
     }
-  }
-
-  addIdentifier() {
-    const { identifiers } = this.state;
-    identifiers.push('');
-    this.setState({ identifiers });
-  }
-
-  deleteIdentifier(i) {
-    const { identifiers } = this.state;
-    identifiers.splice(i, 1);
-    this.setState({ identifiers });
   }
 
   getResults(event) {
     event.preventDefault();
     this.setState({ resultsLoading: true, resultsReady: false });
-    const { type1, type2, identifiers } = this.state;
-    const iders = identifiers.filter(id => id && id);
-    this.appConfig.simpleEnriched(
+    const {
+      type1, type2, identifier, simType,
+    } = this.state;
+    this.appConfig.simpleSimilarity(
       type1,
       type2,
-      iders,
+      identifier,
+      simType,
       (data) => {
         this.setState({
           results: data, resultsReady: true, resultsLoading: false,
@@ -122,10 +109,10 @@ class SimpleEnriched extends React.Component {
   render() {
     const { config } = this.props;
     const {
-      user, concepts, type1, type2, identifiers, results, resultsReady, resultsLoading,
+      user, concepts, type1, type2, identifier, results, resultsReady, resultsLoading, simType,
     } = this.state;
     // if we don't have all the info, disable the submit.
-    const disableSubmit = !(type1 && type2 && identifiers[0]);
+    const disableSubmit = !(type1 && type2 && identifier && simType);
     const types = concepts.map(concept => ({ text: entityNameDisplay(concept), value: concept }));
     return (
       <div>
@@ -134,7 +121,7 @@ class SimpleEnriched extends React.Component {
           <Form>
             <Row>
               <Col md={6}>
-                <FormGroup controlId="enrichNode1">
+                <FormGroup controlId="similarityNode1">
                   <h3>
                     Node Type 1
                   </h3>
@@ -147,57 +134,30 @@ class SimpleEnriched extends React.Component {
                     onChange={value => this.updateType({ type1: value.value })}
                   />
                   {type1 &&
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div>
                       <h3>
-                        Node Curies
+                        Node Curie
                       </h3>
-                      {identifiers.map((curie, i) => (
-                        <div
-                          key={shortid.generate()}
-                          style={{ display: 'flex' }}
-                        >
-                          <div
-                            style={{
-                              padding: '5px 0px',
-                              flexBasis: '90%',
-                            }}
-                          >
-                            <CurieSelectorContainer
-                              concepts={concepts}
-                              search={this.onSearch}
-                              disableType
-                              initialInputs={{ type: type1, term: '', curie: identifiers[i] }}
-                              onChangeHook={(ty, te, cu) => this.handleCurieChange(i, ty, te, cu)}
-                            />
-                          </div>
-                          <div
-                            style={{
-                              width: '30px', verticalAlign: 'top', padding: '5px 10px',
-                            }}
-                          >
-                            {(i !== 0) &&
-                              <Button
-                                bsStyle="default"
-                                onClick={() => this.deleteIdentifier(i)}
-                                style={{ padding: '8px' }}
-                              >
-                                <Glyphicon glyph="trash" />
-                              </Button>
-                            }
-                          </div>
-                        </div>
-                      ))}
-                      <div style={{ display: 'table-row', textAlign: 'center' }}>
-                        <Button style={{ marginTop: '10px' }} onClick={this.addIdentifier}>
-                          <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Identifier'}
-                        </Button>
+                      <div
+                        style={{
+                            padding: '5px 0px',
+                            flexBasis: '90%',
+                        }}
+                      >
+                        <CurieSelectorContainer
+                          concepts={concepts}
+                          search={this.onSearch}
+                          disableType
+                          initialInputs={{ type: type1, term: '', curie: identifier }}
+                          onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu)}
+                        />
                       </div>
                     </div>
                   }
                 </FormGroup>
               </Col>
               <Col md={6}>
-                <FormGroup controlId="enrichNode2">
+                <FormGroup controlId="similarityNode2">
                   <h3>
                     Node Type 2
                   </h3>
@@ -208,6 +168,23 @@ class SimpleEnriched extends React.Component {
                     valueField="value"
                     value={type2}
                     onChange={value => this.updateType({ type2: value.value })}
+                  />
+                </FormGroup>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+                <FormGroup controlId="similarityType">
+                  <h3>
+                    Similarity Type
+                  </h3>
+                  <DropdownList
+                    filter
+                    data={types}
+                    textField="text"
+                    valueField="value"
+                    value={simType}
+                    onChange={value => this.updateType({ simType: value.value })}
                   />
                 </FormGroup>
               </Col>
@@ -233,7 +210,7 @@ class SimpleEnriched extends React.Component {
                 className="-striped -highlight"
                 defaultSorted={[
                   {
-                    id: 'p',
+                    id: 'similarity',
                     desc: true,
                   },
                 ]}
@@ -247,4 +224,4 @@ class SimpleEnriched extends React.Component {
   }
 }
 
-export default SimpleEnriched;
+export default SimpleSimilarity;
