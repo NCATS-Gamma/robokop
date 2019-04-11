@@ -1,8 +1,8 @@
 import React from 'react';
 import { observer } from 'mobx-react';
-// import { toJS } from 'mobx';
 import FaFilter from 'react-icons/lib/fa/filter';
 import FaCheck from 'react-icons/lib/fa/check';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
 
 const shortid = require('shortid');
 const _ = require('lodash');
@@ -18,14 +18,12 @@ class AnswersetFilter extends React.Component {
       avail: {},
       selectedFilter: {},
       filterArray: [],
-      showDropdown: false,
     };
 
     this.blacklist = ['isSet', 'labels', 'equivalent_identifiers', 'type', 'id'];
     this.filtHash = '';
     this.filter = this.filter.bind(this);
     this.getKeyIntersection = this.getKeyIntersection.bind(this);
-    this.toggleDropdown = this.toggleDropdown.bind(this);
     this.check = this.check.bind(this);
     this.checkAll = this.checkAll.bind(this);
     this.getAvailableAnswers = this.getAvailableAnswers.bind(this);
@@ -73,7 +71,9 @@ class AnswersetFilter extends React.Component {
     if (currentAnswers[0].nodes[columnId].isSet) {
       answers = currentAnswers.map(ans => ans.nodes[columnId].setNodes.map(anss => anss));
     }
+    // get only keys that are in every answer
     let filterArray = this.getKeyIntersection(answers, columnId);
+    // remove all unwanted keys
     filterArray = filterArray.filter(key => !this.blacklist.includes(key));
     filterArray.forEach((key) => {
       filter[key] = [];
@@ -107,6 +107,7 @@ class AnswersetFilter extends React.Component {
         ans.forEach((setAns) => {
           const answerKeys = Object.keys(setAns);
           answerKeys.forEach((key, index) => {
+            // for consistency, change all spaces to underscores
             answerKeys[index] = key.replace(/ /g, '_');
           });
           keys.push(answerKeys);
@@ -114,16 +115,24 @@ class AnswersetFilter extends React.Component {
       } else {
         const answerKeys = Object.keys(ans.nodes[columnId]);
         answerKeys.forEach((key, index) => {
+          // for consistency, change all spaces to underscores
           answerKeys[index] = key.replace(/ /g, '_');
         });
         keys.push(answerKeys);
       }
     });
+    // lodash intersection has some limitation. We need to batch the keys if they get too big.
+    const intersect = [];
+    while (keys.length > 500) {
+      intersect.push(_.intersection(...keys.splice(0, 500)));
+    }
+    // if we needed to batch, find the intersection with the remainder of the keys.
+    if (intersect.length) {
+      intersect.push(...keys);
+      return _.intersection(...intersect);
+    }
+    // We didn't need to batch, just find the intersection of the keys.
     return _.intersection(...keys);
-  }
-
-  toggleDropdown() {
-    this.setState(prevState => ({ showDropdown: !prevState.showDropdown }));
   }
 
   checkAll(keysArray, allAnswers, checked) {
@@ -160,7 +169,7 @@ class AnswersetFilter extends React.Component {
 
   shouldBeChecked(key) {
     const { selectedFilter, filter } = this.state;
-    return selectedFilter[key].length === filter[key].length;
+    return selectedFilter[key] && selectedFilter[key].length === filter[key].length;
   }
 
   check(event) {
@@ -195,7 +204,7 @@ class AnswersetFilter extends React.Component {
 
   render() {
     const {
-      showDropdown, searchedFilter, avail, search, selectedFilter, filter,
+      searchedFilter, avail, search, selectedFilter, filter,
     } = this.state;
     let filterApplied = false;
     Object.keys(filter).forEach((key) => {
@@ -205,70 +214,64 @@ class AnswersetFilter extends React.Component {
         }
       }
     });
-    return (
-      <div>
-        <button
-          onClick={this.toggleDropdown}
-          style={{ width: '100%' }}
-        >
-          <FaFilter />
-          {filterApplied &&
-            <FaCheck />
-          }
-        </button>
-        {showDropdown &&
-          <ul id="answersetFilter">
-            <input
-              value={search}
-              onChange={this.handleSearch}
-              placeholder="Search"
-              style={{ width: '100%', marginBottom: '10px' }}
-            />
-            <button style={{ display: 'block', margin: 'auto' }} onClick={this.checkAll}>Reset All</button>
-            {Object.keys(searchedFilter).map((key) => {
-              if (searchedFilter[key].length) {
-                return (
-                  <div key={shortid.generate()}>
-                    <h3 style={{ display: 'inline-block', marginTop: '0px' }}>{key}</h3>
-                    <div className="pull-right">
+    const filterPopover = (
+      <Popover id={shortid.generate()} className="answersetFilter" >
+        <input
+          value={search}
+          onChange={this.handleSearch}
+          placeholder="Search"
+          style={{ width: '100%', marginBottom: '10px' }}
+        />
+        <button style={{ display: 'block', margin: 'auto' }} onClick={this.checkAll}>Reset All</button>
+        {Object.keys(searchedFilter).map((key) => {
+          if (searchedFilter[key].length) {
+            return (
+              <div key={shortid.generate()}>
+                <h3 style={{ display: 'inline-block', marginTop: '0px', marginRight: '25px' }}>{key}</h3>
+                <div className="pull-right">
+                  <input
+                    type="checkbox"
+                    id={`${key}-select`}
+                    defaultChecked={this.shouldBeChecked(key)}
+                    onChange={() => this.checkAll([key], searchedFilter[key], this.shouldBeChecked(key))}
+                  />
+                  <label htmlFor={`${key}-select`}>Toggle All</label>
+                </div>
+                <hr />
+                {searchedFilter[key].map((option, i) => {
+                  const style = { fontWeight: 'normal', whiteSpace: 'nowrap' };
+                  if (avail[key] && avail[key].length && !avail[key].includes(option)) {
+                    style.color = 'lightgrey';
+                  }
+                  return (
+                    <div key={shortid.generate()} style={{ paddingLeft: '20px', display: 'flex' }}>
                       <input
                         type="checkbox"
-                        id={`${key}-select`}
-                        defaultChecked={this.shouldBeChecked(key)}
-                        onChange={() => this.checkAll([key], searchedFilter[key], this.shouldBeChecked(key))}
+                        id={`${key}-${i}`}
+                        value={option}
+                        defaultChecked={selectedFilter[key] && selectedFilter[key].indexOf(option) > -1}
+                        onChange={this.check}
+                        style={{ marginRight: '10px' }}
                       />
-                      <label htmlFor={`${key}-select`}>Toggle All</label>
-                    </div>
-                    <hr />
-                    {searchedFilter[key].map((option, i) => {
-                      const style = { fontWeight: 'normal' };
-                      if (avail[key].length && !avail[key].includes(option)) {
-                        style.color = 'lightgrey';
-                      }
-                      return (
-                        <li key={shortid.generate()} style={{ paddingLeft: '20px' }}>
-                          <input
-                            type="checkbox"
-                            id={`${key}-${i}`}
-                            value={option}
-                            defaultChecked={this.state.selectedFilter[key] && this.state.selectedFilter[key].indexOf(option) > -1}
-                            onChange={this.check}
-                            style={{ marginRight: '10px' }}
-                          />
-                          <label
-                            htmlFor={`${key}-${i}`}
-                            style={style}
-                          >
-                            {option}
-                          </label>
-                        </li>);
-                    })}
-                  </div>);
-              }
-              return null;
-            })}
-          </ul>
-        }
+                      <label
+                        htmlFor={`${key}-${i}`}
+                        style={style}
+                      >
+                        {option}
+                      </label>
+                    </div>);
+                })}
+              </div>);
+          }
+          return null;
+        })}
+      </Popover>
+    );
+    return (
+      <div>
+        <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={filterPopover}>
+          <div style={{ width: '100%', textAlign: 'center', cursor: 'pointer' }}><FaFilter /> {filterApplied && <FaCheck />}</div>
+        </OverlayTrigger>
       </div>
     );
   }

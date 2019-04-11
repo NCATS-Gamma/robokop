@@ -72,7 +72,7 @@ class NodePanel extends React.Component {
     }
     let curieList;
     if (toJS(activePanel.curie).length !== 0) {
-      curieList = toJS(activePanel.curie).map(curie => ({ curie, type: activePanel.type, label: activePanel.name }));
+      curieList = toJS(activePanel.curie).map(curie => ({ curie, type: activePanel.type, label: '' }));
     } else {
       curieList = [{ type: activePanel.type, curie: '', label: '' }];
     }

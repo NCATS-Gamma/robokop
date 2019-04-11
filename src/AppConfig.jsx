@@ -22,6 +22,7 @@ class AppConfig {
       about: this.url('about/'),
       search: this.url('search/'),
       view: this.url('simple/view/'),
+      enrich: this.url('simple/enriched/'),
     };
 
     // Other URLs that are primarily used for API calls
@@ -41,6 +42,7 @@ class AppConfig {
       feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
       search: this.url('api/search/'), // POST for Bionames search
       viewData: id => this.url(`api/simple/view/${id}`),
+      simpleEnriched: (type1, type2) => this.url(`api/simple/enriched/${type1}/${type2}`), // POST for simple enriched
       graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql`,
       publications: (id1, id2) => this.url(`api/omnicorp/${id1}/${id2}`), // GET publications for one identifier or a pair of identifiers
     };
@@ -293,6 +295,20 @@ class AppConfig {
   viewData(uploadId, successFun, failureFun) {
     this.getRequest(
       this.apis.viewData(uploadId),
+      successFun,
+      failureFun,
+    );
+  }
+  simpleEnriched(type1, type2, identifiers, successFun, failureFun) {
+    this.postRequest(
+      this.apis.simpleEnriched(type1, type2),
+      {
+        identifiers,
+        include_descendants: false,
+        max_results: 100,
+        rebuild: false,
+        threshold: 0.5,
+      },
       successFun,
       failureFun,
     );

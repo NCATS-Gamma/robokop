@@ -364,26 +364,25 @@ button.taskListTask {
   min-width: 300px;
 }
 
-#answersetFilter {
+.answersetFilter {
   min-width: 300px;
   max-width: 600px;
   max-height: 200px;
   overflow: scroll;
   padding: 10px;
-  text-align: left;
-  position: absolute;
   background-color: white;
-  border: 1px solid black;
   z-index: 10;
 }
-#answersetFilter li {
-  list-style-type: none;
-}
-#answersetFilter hr {
+.answersetFilter hr {
   margin: 0;
 }
 
 #questionTempButton:disabled {
+  cursor: not-allowed;
+  background-color: darkgray;
+}
+
+#submitEnrich:disabled {
   cursor: not-allowed;
   background-color: darkgray;
 }

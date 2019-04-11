@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Grid, Row, Col, Alert } from 'react-bootstrap';
+import { Grid, Row, Col } from 'react-bootstrap';
 import Dropzone from 'react-dropzone';
 import FaCloudUpload from 'react-icons/lib/fa/cloud-upload';
 
@@ -55,12 +55,22 @@ class SimpleViewer extends React.Component {
           this.parseMessage(object); // This will set state
         },
         (err) => {
-          console.log(err)
-          this.setState({ isReading: false, hasError: true, hasMessage: false, errorMessage: 'There was a problem fetching the stored file from the server. This may be an invalid identifier.' });
+          console.log(err);
+          this.setState({
+            isReading: false,
+            hasError: true,
+            hasMessage: false,
+            errorMessage: 'There was a problem fetching the stored file from the server. This may be an invalid identifier.',
+          });
         },
       );
     } else {
-      this.setState({ isReading: false, hasError: false, hasMessage: false, errorMessage: '' });
+      this.setState({
+        isReading: false,
+        hasError: false,
+        hasMessage: false,
+        errorMessage: '',
+      });
     }
   }
   parseMessage(object) {

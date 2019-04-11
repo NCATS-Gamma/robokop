@@ -21,6 +21,7 @@ import Answerset from './Answerset';
 import Activity from './Activity';
 import MultiSearch from './MultiSearch';
 import SimpleViewer from './SimpleViewer';
+import SimpleEnriched from './SimpleEnriched';
 import NewQuestionStore from './stores/newQuestionStore';
 
 // Our actual CSS and other images etc.
@@ -135,6 +136,14 @@ const robokop = {
       <SimpleViewer
         config={config}
         id={id}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  simpleEnriched: () => {
+    ReactDOM.render(
+      <SimpleEnriched
+        config={config}
       />,
       document.getElementById('reactEntry'),
     );
