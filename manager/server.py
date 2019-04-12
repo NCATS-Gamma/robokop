@@ -78,6 +78,11 @@ def similarity():
     """Get similarity answers."""
     return render_template('simpleSimilarity.html')
 
+@app.route('/simple/expand/')
+def expand():
+    """Get expanded answers."""
+    return render_template('simpleExpand.html')
+
 @app.route('/compare/')
 def compare():
     """Search for biomedical concept identifiers."""

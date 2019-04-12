@@ -1,18 +1,19 @@
 import React from 'react';
 
 import { DropdownList } from 'react-widgets';
-import ReactTable from 'react-table';
 import { Grid, Row, Col, Form, FormGroup } from 'react-bootstrap';
 
 import AppConfig from './AppConfig';
+import AnswersetStore from './stores/messageAnswersetStore';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Loading from './components/Loading';
+import MessageAnswersetTable from './components/answerset/MessageAnswersetTable';
 import CurieSelectorContainer from './components/shared/CurieSelectorContainer';
 import entityNameDisplay from './components/util/entityNameDisplay';
 
 
-class SimpleSimilarity extends React.Component {
+class SimpleExpand extends React.Component {
   constructor(props) {
     super(props);
     // We only read the communications config on creation
@@ -24,10 +25,9 @@ class SimpleSimilarity extends React.Component {
       type1: '',
       type2: '',
       identifier: '',
-      simType: '',
-      results: [],
       resultsLoading: false,
       resultsReady: false,
+      resultsFail: false,
     };
 
     this.initializeState = this.initializeState.bind(this);
@@ -35,7 +35,8 @@ class SimpleSimilarity extends React.Component {
     this.onSearch = this.onSearch.bind(this);
     this.handleCurieChange = this.handleCurieChange.bind(this);
     this.getResults = this.getResults.bind(this);
-    this.getTableColumns = this.getTableColumns.bind(this);
+
+    this.answersetStore = '';
   }
 
   componentDidMount() {
@@ -70,46 +71,33 @@ class SimpleSimilarity extends React.Component {
 
   getResults(event) {
     event.preventDefault();
-    this.setState({ resultsLoading: true, resultsReady: false });
-    const {
-      type1, type2, identifier, simType,
-    } = this.state;
-    this.appConfig.simpleSimilarity(
+    this.setState({ resultsLoading: true, resultsReady: false, resultsFail: false });
+    const { type1, type2, identifier } = this.state;
+    this.appConfig.simpleExpand(
       type1,
       type2,
       identifier,
-      simType,
       (data) => {
+        this.answersetStore = new AnswersetStore(data);
         this.setState({
-          results: data, resultsReady: true, resultsLoading: false,
+          resultsReady: true, resultsLoading: false,
         });
       },
-      () => { console.log('failure'); },
+      () => {
+        this.setState({
+          resultsFail: true, resultsLoading: false,
+        });
+      },
     );
-  }
-
-  getTableColumns(results) {
-    if (results.length === 0) {
-      return [{ Header: 'No data found', width: '100%', className: 'center' }];
-    }
-    const colHeaders = Object.keys(results[0]).map((col) => {
-      const colSpecObj = {};
-      colSpecObj.Header = entityNameDisplay(col);
-      colSpecObj.accessor = col;
-      colSpecObj.width = '33%';
-      colSpecObj.className = 'center';
-      return colSpecObj;
-    });
-    return colHeaders;
   }
 
   render() {
     const { config } = this.props;
     const {
-      user, concepts, type1, type2, identifier, results, resultsReady, resultsLoading, simType,
+      user, concepts, type1, type2, identifier, resultsReady, resultsLoading, resultsFail,
     } = this.state;
     // if we don't have all the info, disable the submit.
-    const disableSubmit = !(type1 && type2 && identifier && simType);
+    const disableSubmit = !(type1 && type2 && identifier);
     const types = concepts.map(concept => ({ text: entityNameDisplay(concept), value: concept }));
     return (
       <div>
@@ -118,7 +106,7 @@ class SimpleSimilarity extends React.Component {
           <Form>
             <Row>
               <Col md={6}>
-                <FormGroup controlId="similarityNode1">
+                <FormGroup controlId="enrichNode1">
                   <h3>
                     Node Type 1
                   </h3>
@@ -133,7 +121,7 @@ class SimpleSimilarity extends React.Component {
                   {type1 &&
                     <div>
                       <h3>
-                        Node Curie
+                        Node Curies
                       </h3>
                       <div
                         style={{
@@ -154,7 +142,7 @@ class SimpleSimilarity extends React.Component {
                 </FormGroup>
               </Col>
               <Col md={6}>
-                <FormGroup controlId="similarityNode2">
+                <FormGroup controlId="enrichNode2">
                   <h3>
                     Node Type 2
                   </h3>
@@ -169,23 +157,6 @@ class SimpleSimilarity extends React.Component {
                 </FormGroup>
               </Col>
             </Row>
-            <Row>
-              <Col md={6}>
-                <FormGroup controlId="similarityType">
-                  <h3>
-                    Similarity Type
-                  </h3>
-                  <DropdownList
-                    filter
-                    data={types}
-                    textField="text"
-                    valueField="value"
-                    value={simType}
-                    onChange={value => this.updateType({ simType: value.value })}
-                  />
-                </FormGroup>
-              </Col>
-            </Row>
             <Row style={{ textAlign: 'center' }}>
               <button id="submitEnrich" onClick={this.getResults} disabled={disableSubmit}>Submit</button>
             </Row>
@@ -195,23 +166,15 @@ class SimpleSimilarity extends React.Component {
               <Loading />
             }
             {resultsReady &&
-              <ReactTable
-                data={results}
-                columns={[{
-                  Header: 'Enriched Nodes',
-                  columns: this.getTableColumns(results),
-                }]}
-                defaultPageSize={10}
-                pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
-                minRows={7}
-                className="-striped -highlight"
-                defaultSorted={[
-                  {
-                    id: 'similarity',
-                    desc: true,
-                  },
-                ]}
+              <MessageAnswersetTable
+                concepts={types}
+                store={this.answersetStore}
               />
+            }
+            {resultsFail &&
+              <h3>
+                No results came back. Please try a different query.
+              </h3>
             }
           </Row>
         </Grid>
@@ -221,4 +184,4 @@ class SimpleSimilarity extends React.Component {
   }
 }
 
-export default SimpleSimilarity;
+export default SimpleExpand;

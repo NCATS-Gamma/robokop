@@ -2,7 +2,6 @@ import { observable, action, computed, configure, runInAction, isObservableArray
 // import Fuse from 'fuse-js-latest';
 
 import entityNameDisplay from '../components/util/entityNameDisplay';
-import { filter } from 'graphql-anywhere';
 // import { boolean } from 'mobx-state-tree/dist/internal';
 // import AppConfig from '../AppConfig';
 
@@ -30,16 +29,16 @@ class AnswersetStore {
         }
       });
       // this.message.answers.filter((a) => {
-        //   for (qnodeId in a.node_bindings) {
-          //     const knodeId = a.node_bindings[qnodeId];
-          //     this.message.nodes.some(n => n.id === knodeId);
-          //     return boolean(node)
-          //   }
-          // })
-          this.activeAnswerId = this.message.answers[0].id;
-        });
-      }
-      
+      //   for (qnodeId in a.node_bindings) {
+      //       const knodeId = a.node_bindings[qnodeId];
+      //       this.message.nodes.some(n => n.id === knodeId);
+      //       return boolean(node)
+      //     }
+      //   })
+      this.activeAnswerId = this.message.answers[0].id;
+    });
+  }
+
   // Return number of question nodes in message
   @computed get numQNodes() {
     return this.message.question_graph ? this.message.question_graph.nodes.length : 0;
@@ -234,13 +233,13 @@ class AnswersetStore {
       // Then check labels and use the corresponding type
 
       let graph = this.message.knowledge_graph;
-      let { answers } = toJS(this.message);
+      const { answers } = toJS(this.message);
       const N = this.maxNumNodes;
       const Q = this.numQNodes;
       const Nj = Math.round(N / Q);
 
       const makeEmptyArray = (len, init) => {
-        let array = new Array(len);
+        const array = new Array(len);
         for (let i = 0; i < len; i += 1) array[i] = init;
         return array;
       };
@@ -432,7 +431,7 @@ class AnswersetStore {
     });
 
     const edgeBindingsMap = new Map(Object.entries(answer.edge_bindings));
-    
+
     // So we loop through the keys in node_bindings
     edgeBindingsMap.forEach((val, keyId) => {
       const newEdges = [];

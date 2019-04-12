@@ -23,6 +23,8 @@ class AppConfig {
       search: this.url('search/'),
       view: this.url('simple/view/'),
       enrich: this.url('simple/enriched/'),
+      similarity: this.url('simple/similarity'),
+      expand: this.url('simple/expand'),
     };
 
     // Other URLs that are primarily used for API calls
@@ -44,6 +46,7 @@ class AppConfig {
       viewData: id => this.url(`api/simple/view/${id}`),
       simpleEnriched: (type1, type2) => this.url(`api/simple/enriched/${type1}/${type2}`), // POST for simple enriched
       simpleSimilarity: (type1, type2, id, simType) => this.url(`api/simple/similarity/${type1}/${id}/${type2}/${simType}`), // Get for simple similarity
+      simpleExpand: (type1, type2, id) => this.url(`api/simple/expand/${type1}/${id}/${type2}`), // Get for simple expand
       graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql`,
       publications: (id1, id2) => this.url(`api/omnicorp/${id1}/${id2}`), // GET publications for one identifier or a pair of identifiers
     };
@@ -317,6 +320,13 @@ class AppConfig {
   simpleSimilarity(type1, type2, id, simType, successFun, failureFun) {
     this.getRequest(
       this.apis.simpleSimilarity(type1, type2, id, simType),
+      successFun,
+      failureFun,
+    );
+  }
+  simpleExpand(type1, type2, id, successFun, failureFun) {
+    this.getRequest(
+      this.apis.simpleExpand(type1, type2, id),
       successFun,
       failureFun,
     );

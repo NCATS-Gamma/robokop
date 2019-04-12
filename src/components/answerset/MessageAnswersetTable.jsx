@@ -39,6 +39,7 @@ class MessageAnswersetTable extends React.Component {
     const { store } = this.props;
     const answerTables = store.answerSetTableData;
     const { headerInfo: columnHeaders, answers } = answerTables;
+    console.log('answers', answers);
     this.initializeState(columnHeaders, answers);
   }
 
