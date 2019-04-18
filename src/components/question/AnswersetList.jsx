@@ -16,6 +16,8 @@ class AnswersetList extends React.Component {
       loadedAnswersetId: null,
       loadedAnswerset: null,
       loadedKnowledgeGraph: null,
+      isKgPruned: false,
+      pruneMaxNumNodes: null,
     };
 
     this.onAnswersetSelect = this.onAnswersetSelect.bind(this);
@@ -46,7 +48,7 @@ class AnswersetList extends React.Component {
           const messagestore = new AnswersetStore(data);
 
           const answerset = data;
-          const kg = messagestore.annotatedKnowledgeGraph;
+          const kg = messagestore.annotatedPrunedKnowledgeGraph;
           kg.node_list = kg.nodes;
           kg.edge_list = kg.edges;
           delete kg.nodes;
@@ -57,6 +59,8 @@ class AnswersetList extends React.Component {
             loadedAnswerset: answerset,
             loadedKnowledgeGraph: kg,
             loadedAnswersetId: aid,
+            isKgPruned: messagestore.isKgPruned(),
+            pruneMaxNumNodes: messagestore.maxNumNodes,
           });
         },
         (err) => {
@@ -124,15 +128,18 @@ class AnswersetList extends React.Component {
             </div>
           }
           {this.state.loadedAnswerset && !this.state.loadingAnswerset &&
-            <SubGraphViewer
-              subgraph={this.state.loadedKnowledgeGraph}
-              concepts={this.props.concepts}
-              layoutRandomSeed={Math.floor(Math.random() * 100)}
-              showSupport={false}
-              height={height}
-              omitEdgeLabel
-              callbackOnGraphClick={() => {}}
-            />
+            <div>
+              {this.state.isKgPruned && <span style={{ float: 'right', padding: '0 10px' }}>{`Pruned graph showing top ${this.state.pruneMaxNumNodes} nodes`}</span>}
+              <SubGraphViewer
+                subgraph={this.state.loadedKnowledgeGraph}
+                concepts={this.props.concepts}
+                layoutRandomSeed={Math.floor(Math.random() * 100)}
+                showSupport={false}
+                height={height}
+                omitEdgeLabel
+                callbackOnGraphClick={() => {}}
+              />
+            </div>
           }
         </div>
       </div>

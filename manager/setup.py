@@ -7,6 +7,7 @@ import logging
 from flask import Flask, Blueprint
 from flask_mail import Mail
 from flask_restful import Api
+from flask_cors import CORS
 from flasgger import Swagger
 import werkzeug
 
@@ -81,3 +82,4 @@ def handle_error(ex):
 app.register_error_handler(500, handle_error)
 app.config['PROPAGATE_EXCEPTIONS'] = True
 app.url_map.strict_slashes = False
+CORS(app, resources=r'/api/*')

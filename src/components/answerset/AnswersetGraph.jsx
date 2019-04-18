@@ -1,6 +1,17 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Row, Col, Panel, Button } from 'react-bootstrap';
 import SubGraphViewer from '../shared/SubGraphViewer';
+
+const propTypes = {
+  concepts: PropTypes.arrayOf(PropTypes.string).isRequired,
+  answersetGraph: PropTypes.object.isRequired,
+  title: PropTypes.string,
+}
+
+const defaultProps = {
+  title: 'Aggregate Answer Graph',
+};
 
 class AnswersetGraph extends React.Component {
   constructor(props) {
@@ -18,7 +29,7 @@ class AnswersetGraph extends React.Component {
         <Col md={12}>
           <Panel style={{ marginTop: '10px' }}>
             <Panel.Heading>
-              <Panel.Title componentClass="h3">Aggregate Answer Graph</Panel.Title>
+              <Panel.Title componentClass="h3">{this.props.title}</Panel.Title>
             </Panel.Heading>
             <Panel.Body style={bodyStyle}>
               {this.state.renderGraph &&
@@ -43,5 +54,8 @@ class AnswersetGraph extends React.Component {
     );
   }
 }
+
+AnswersetGraph.propTypes = propTypes;
+AnswersetGraph.defaultProps = defaultProps;
 
 export default AnswersetGraph;

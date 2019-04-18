@@ -12,6 +12,8 @@ import LabeledFormGroup from './../shared/LabeledFormGroup';
 import CurieSelectorContainer from './../shared/CurieSelectorContainer';
 import entityNameDisplay from '../util/entityNameDisplay';
 
+const shortid = require('shortid');
+
 const classNames = {
   formLabel: 'col-md-2 form-label',
   formControl: 'col-md-10',
@@ -70,7 +72,7 @@ class NodePanel extends React.Component {
     }
     let curieList;
     if (toJS(activePanel.curie).length !== 0) {
-      curieList = toJS(activePanel.curie).map(curie => ({ curie, type: activePanel.type, label: '' }));
+      curieList = toJS(activePanel.curie).map(curie => ({ curie, type: activePanel.type, label: activePanel.name }));
     } else {
       curieList = [{ type: activePanel.type, curie: '', label: '' }];
     }
@@ -81,7 +83,7 @@ class NodePanel extends React.Component {
       const curieSelectorElement = (
         <div
           style={{ display: 'table-row' }}
-          key={i}
+          key={shortid.generate()}
         >
           <div
             style={{ display: 'table-cell', padding: '5px 0px' }}

@@ -7,6 +7,7 @@ flask-security
 flask-sqlalchemy
 flask-restful
 flask-graphql
+flask_cors
 graphene-sqlalchemy
 flasgger
 gunicorn

@@ -139,6 +139,7 @@ div.vis-tooltip .invalid-node {
 }
 .vis-tooltip .field-name {
   font-weight: bold;
+  padding-right: 5px;
 }
 
 #answersetSelect .Select-value {
@@ -224,9 +225,11 @@ div.vis-tooltip .invalid-node {
 /* Form Validation Color for MultiSelect component from react-widgets*/
 .rw-widget-container.valid {
   border-color: #3c763d;
+  margin: 0px 10px;
 }
 .rw-widget-container.invalid {
   border-color: #a94442;
+  margin: 0px 10px;
 }
 
 /* Remove bold control labels */
@@ -359,4 +362,28 @@ button.taskListTask {
 }
 .rw-popup-container {
   min-width: 300px;
+}
+
+#answersetFilter {
+  min-width: 300px;
+  max-width: 600px;
+  max-height: 200px;
+  overflow: scroll;
+  padding: 10px;
+  text-align: left;
+  position: absolute;
+  background-color: white;
+  border: 1px solid black;
+  z-index: 10;
+}
+#answersetFilter li {
+  list-style-type: none;
+}
+#answersetFilter hr {
+  margin: 0;
+}
+
+#questionTempButton:disabled {
+  cursor: not-allowed;
+  background-color: darkgray;
 }

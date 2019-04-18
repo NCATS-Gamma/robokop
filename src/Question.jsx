@@ -1,6 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-
 import { Grid, Row, Col, Button } from 'react-bootstrap';
 import Dialog from 'react-bootstrap-dialog';
 import NotificationSystem from 'react-notification-system';
@@ -9,7 +7,7 @@ import AppConfig from './AppConfig';
 import Loading from './components/Loading';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import TasksModal from './components/shared/taskModal/TasksModal';
+import TasksModal from './components/shared/modals/TasksModal';
 import QuestionPres from './components/question/QuestionPres';
 
 import runningTaskFilter from './components/util/runningTaskFilter';
