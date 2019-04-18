@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { DropdownList } from 'react-widgets';
-import { Grid, Row, Col, Form, FormGroup } from 'react-bootstrap';
+import { Grid, Row, Col, Form, FormGroup, Button } from 'react-bootstrap';
 
 import AppConfig from './AppConfig';
 import AnswersetStore from './stores/messageAnswersetStore';
@@ -103,12 +103,13 @@ class SimpleExpand extends React.Component {
       <div>
         <Header config={config} user={user} />
         <Grid>
+          <h1 style={{ textAlign: 'center' }}>Expanded Nodes</h1>
           <Form>
             <Row>
               <Col md={6}>
-                <FormGroup controlId="enrichNode1">
+                <FormGroup controlId="node1">
                   <h3>
-                    Node Type 1
+                    Node 1 Type
                   </h3>
                   <DropdownList
                     filter
@@ -118,33 +119,12 @@ class SimpleExpand extends React.Component {
                     value={type1}
                     onChange={value => this.updateType({ type1: value.value })}
                   />
-                  {type1 &&
-                    <div>
-                      <h3>
-                        Node Curies
-                      </h3>
-                      <div
-                        style={{
-                            padding: '5px 0px',
-                            flexBasis: '90%',
-                        }}
-                      >
-                        <CurieSelectorContainer
-                          concepts={concepts}
-                          search={this.onSearch}
-                          disableType
-                          initialInputs={{ type: type1, term: '', curie: identifier }}
-                          onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu)}
-                        />
-                      </div>
-                    </div>
-                  }
                 </FormGroup>
               </Col>
               <Col md={6}>
-                <FormGroup controlId="enrichNode2">
+                <FormGroup controlId="node2">
                   <h3>
-                    Node Type 2
+                    Node 2 Type
                   </h3>
                   <DropdownList
                     filter
@@ -157,8 +137,32 @@ class SimpleExpand extends React.Component {
                 </FormGroup>
               </Col>
             </Row>
-            <Row style={{ textAlign: 'center' }}>
-              <button id="submitEnrich" onClick={this.getResults} disabled={disableSubmit}>Submit</button>
+            <Row>
+              <Col md={12}>
+                {type1 &&
+                  <div>
+                    <h3>
+                      Node Curies
+                    </h3>
+                    <div
+                      style={{
+                          padding: '5px 0px',
+                      }}
+                    >
+                      <CurieSelectorContainer
+                        concepts={concepts}
+                        search={this.onSearch}
+                        disableType
+                        initialInputs={{ type: type1, term: '', curie: identifier }}
+                        onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu)}
+                      />
+                    </div>
+                  </div>
+                }
+              </Col>
+            </Row>
+            <Row style={{ textAlign: 'right', margin: '20px' }}>
+              <Button id="submitAPI" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
             </Row>
           </Form>
           <Row style={{ marginBottom: '20px' }}>

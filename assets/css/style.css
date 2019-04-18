@@ -56,6 +56,7 @@ body :focus {
 .footer p {
   font-size: 0.75em;
   margin-top: 5px;
+  text-align: center;
 }
 
 
@@ -365,9 +366,9 @@ button.taskListTask {
 }
 
 .answersetFilter {
-  min-width: 300px;
-  max-width: 600px;
-  max-height: 200px;
+  min-width: 30%;
+  max-width: 50%;
+  max-height: 30%;
   overflow: scroll;
   padding: 10px;
   background-color: white;
@@ -379,10 +380,14 @@ button.taskListTask {
 
 #questionTempButton:disabled {
   cursor: not-allowed;
-  background-color: darkgray;
+  background-color: #eee;
+}
+/* Submit button on api pages. greyed out when disabled. */
+#submitAPI:disabled {
+  cursor: not-allowed;
+  background-color: #eee;
 }
 
-#submitEnrich:disabled {
-  cursor: not-allowed;
-  background-color: darkgray;
+.curieSelectorInput:focus {
+  border: 1px solid black !important;
 }

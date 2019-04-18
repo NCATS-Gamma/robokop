@@ -2,7 +2,7 @@ import React from 'react';
 
 import { DropdownList } from 'react-widgets';
 import ReactTable from 'react-table';
-import { Grid, Row, Col, Form, FormGroup } from 'react-bootstrap';
+import { Grid, Row, Col, Form, FormGroup, Button } from 'react-bootstrap';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
@@ -28,6 +28,7 @@ class SimpleSimilarity extends React.Component {
       results: [],
       resultsLoading: false,
       resultsReady: false,
+      resultsFail: false,
     };
 
     this.initializeState = this.initializeState.bind(this);
@@ -84,7 +85,11 @@ class SimpleSimilarity extends React.Component {
           results: data, resultsReady: true, resultsLoading: false,
         });
       },
-      () => { console.log('failure'); },
+      () => {
+        this.setState({
+          resultsFail: true, resultsLoading: false,
+        });
+      },
     );
   }
 
@@ -106,7 +111,7 @@ class SimpleSimilarity extends React.Component {
   render() {
     const { config } = this.props;
     const {
-      user, concepts, type1, type2, identifier, results, resultsReady, resultsLoading, simType,
+      user, concepts, type1, type2, identifier, results, resultsReady, resultsLoading, simType, resultsFail,
     } = this.state;
     // if we don't have all the info, disable the submit.
     const disableSubmit = !(type1 && type2 && identifier && simType);
@@ -115,12 +120,13 @@ class SimpleSimilarity extends React.Component {
       <div>
         <Header config={config} user={user} />
         <Grid>
+          <h1 style={{ textAlign: 'center' }}>Similar Nodes</h1>
           <Form>
             <Row>
               <Col md={6}>
-                <FormGroup controlId="similarityNode1">
+                <FormGroup controlId="node1">
                   <h3>
-                    Node Type 1
+                    Node 1 Type
                   </h3>
                   <DropdownList
                     filter
@@ -130,33 +136,12 @@ class SimpleSimilarity extends React.Component {
                     value={type1}
                     onChange={value => this.updateType({ type1: value.value })}
                   />
-                  {type1 &&
-                    <div>
-                      <h3>
-                        Node Curie
-                      </h3>
-                      <div
-                        style={{
-                            padding: '5px 0px',
-                            flexBasis: '90%',
-                        }}
-                      >
-                        <CurieSelectorContainer
-                          concepts={concepts}
-                          search={this.onSearch}
-                          disableType
-                          initialInputs={{ type: type1, term: '', curie: identifier }}
-                          onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu)}
-                        />
-                      </div>
-                    </div>
-                  }
                 </FormGroup>
               </Col>
               <Col md={6}>
-                <FormGroup controlId="similarityNode2">
+                <FormGroup controlId="node2">
                   <h3>
-                    Node Type 2
+                    Node 2 Type
                   </h3>
                   <DropdownList
                     filter
@@ -167,6 +152,31 @@ class SimpleSimilarity extends React.Component {
                     onChange={value => this.updateType({ type2: value.value })}
                   />
                 </FormGroup>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={12}>
+                {type1 &&
+                  <div>
+                    <h3>
+                      Node 1 Curie
+                    </h3>
+                    <div
+                      style={{
+                          padding: '5px 0px',
+                          flexBasis: '90%',
+                      }}
+                    >
+                      <CurieSelectorContainer
+                        concepts={concepts}
+                        search={this.onSearch}
+                        disableType
+                        initialInputs={{ type: type1, term: '', curie: identifier }}
+                        onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu)}
+                      />
+                    </div>
+                  </div>
+                }
               </Col>
             </Row>
             <Row>
@@ -186,8 +196,8 @@ class SimpleSimilarity extends React.Component {
                 </FormGroup>
               </Col>
             </Row>
-            <Row style={{ textAlign: 'center' }}>
-              <button id="submitEnrich" onClick={this.getResults} disabled={disableSubmit}>Submit</button>
+            <Row style={{ textAlign: 'right', margin: '20px' }}>
+              <Button id="submitAPI" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
             </Row>
           </Form>
           <Row style={{ marginBottom: '20px' }}>
@@ -198,7 +208,7 @@ class SimpleSimilarity extends React.Component {
               <ReactTable
                 data={results}
                 columns={[{
-                  Header: 'Enriched Nodes',
+                  Header: 'Similar Nodes',
                   columns: this.getTableColumns(results),
                 }]}
                 defaultPageSize={10}
@@ -212,6 +222,11 @@ class SimpleSimilarity extends React.Component {
                   },
                 ]}
               />
+            }
+            {resultsFail &&
+              <h3>
+                No results came back. Please try a different query.
+              </h3>
             }
           </Row>
         </Grid>

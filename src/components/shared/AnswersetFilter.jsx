@@ -2,7 +2,11 @@ import React from 'react';
 import { observer } from 'mobx-react';
 import FaFilter from 'react-icons/lib/fa/filter';
 import FaCheck from 'react-icons/lib/fa/check';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { OverlayTrigger, Popover, Button, Panel } from 'react-bootstrap';
+import FaPlus from 'react-icons/lib/fa/plus';
+import FaMinus from 'react-icons/lib/fa/minus';
+
+import entityNameDisplay from '../util/entityNameDisplay';
 
 const shortid = require('shortid');
 const _ = require('lodash');
@@ -28,6 +32,7 @@ class AnswersetFilter extends React.Component {
     this.checkAll = this.checkAll.bind(this);
     this.getAvailableAnswers = this.getAvailableAnswers.bind(this);
     this.handleSearch = this.handleSearch.bind(this);
+    this.togglePanel = this.togglePanel.bind(this);
   }
 
   componentWillMount() {
@@ -51,14 +56,15 @@ class AnswersetFilter extends React.Component {
     filterArray.forEach((key) => {
       avail[key] = [];
       filteredAnswers.forEach((ans) => {
-        if (ans._original && ans._original.nodes[columnId].isSet) {
-          ans._original.nodes[columnId].setNodes.forEach((setAns) => {
+        const originalAnswers = ans._original;
+        if (originalAnswers && originalAnswers.nodes[columnId].isSet) {
+          originalAnswers.nodes[columnId].setNodes.forEach((setAns) => {
             if (!avail[key].includes(String(setAns[key]))) {
               avail[key].push(String(setAns[key]));
             }
           });
-        } else if (!avail[key].includes(String((ans._original && String(ans._original.nodes[columnId][key])) || ans.nodes[columnId][key]))) {
-          avail[key].push(String((ans._original && String(ans._original.nodes[columnId][key])) || ans.nodes[columnId][key]));
+        } else if (!avail[key].includes(String((originalAnswers && String(originalAnswers.nodes[columnId][key])) || ans.nodes[columnId][key]))) {
+          avail[key].push(String((originalAnswers && String(originalAnswers.nodes[columnId][key])) || ans.nodes[columnId][key]));
         }
       });
     });
@@ -67,6 +73,7 @@ class AnswersetFilter extends React.Component {
 
   filter(columnId, currentAnswers) {
     const filter = {};
+    const openPanel = [];
     let answers = currentAnswers;
     if (currentAnswers[0].nodes[columnId].isSet) {
       answers = currentAnswers.map(ans => ans.nodes[columnId].setNodes.map(anss => anss));
@@ -76,6 +83,7 @@ class AnswersetFilter extends React.Component {
     // remove all unwanted keys
     filterArray = filterArray.filter(key => !this.blacklist.includes(key));
     filterArray.forEach((key) => {
+      openPanel.push(false);
       filter[key] = [];
       if (Array.isArray(answers[0])) {
         answers.forEach((set) => {
@@ -94,7 +102,7 @@ class AnswersetFilter extends React.Component {
       }
     });
     this.setState({
-      filter, searchedFilter: filter, filterArray,
+      filter, searchedFilter: filter, filterArray, openPanel,
     }, () => {
       this.checkAll();
     });
@@ -151,12 +159,11 @@ class AnswersetFilter extends React.Component {
               selectedFilter[key].add(String((setAns[key])));
             }
           });
+        // else it's not a set, we check if it's checked or not and do the opposite.
+        } else if (checked) {
+          selectedFilter[key].delete(String((ans.nodes && String(ans.nodes[columnId][key])) || ans));
         } else {
-          if (checked) {
-            selectedFilter[key].delete(String((ans.nodes && String(ans.nodes[columnId][key])) || ans));
-          } else {
-            selectedFilter[key].add(String((ans.nodes && String(ans.nodes[columnId][key])) || ans));
-          }
+          selectedFilter[key].add(String((ans.nodes && String(ans.nodes[columnId][key])) || ans));
         }
       });
     });
@@ -202,6 +209,14 @@ class AnswersetFilter extends React.Component {
     this.setState({ search: value, searchedFilter });
   }
 
+  togglePanel(index) {
+    this.setState((state) => {
+      const { openPanel } = state;
+      openPanel[index] = !state.openPanel[index];
+      return { openPanel };
+    });
+  }
+
   render() {
     const {
       searchedFilter, avail, search, selectedFilter, filter,
@@ -220,47 +235,56 @@ class AnswersetFilter extends React.Component {
           value={search}
           onChange={this.handleSearch}
           placeholder="Search"
-          style={{ width: '100%', marginBottom: '10px' }}
+          style={{ width: '100%', padding: '5px' }}
         />
-        <button style={{ display: 'block', margin: 'auto' }} onClick={this.checkAll}>Reset All</button>
-        {Object.keys(searchedFilter).map((key) => {
+        <Button style={{ display: 'block', margin: '10px auto' }} onClick={this.checkAll}>Reset</Button>
+        {Object.keys(searchedFilter).map((key, index) => {
           if (searchedFilter[key].length) {
             return (
               <div key={shortid.generate()}>
-                <h3 style={{ display: 'inline-block', marginTop: '0px', marginRight: '25px' }}>{key}</h3>
-                <div className="pull-right">
-                  <input
-                    type="checkbox"
-                    id={`${key}-select`}
-                    defaultChecked={this.shouldBeChecked(key)}
-                    onChange={() => this.checkAll([key], searchedFilter[key], this.shouldBeChecked(key))}
-                  />
-                  <label htmlFor={`${key}-select`}>Toggle All</label>
-                </div>
-                <hr />
-                {searchedFilter[key].map((option, i) => {
-                  const style = { fontWeight: 'normal', whiteSpace: 'nowrap' };
-                  if (avail[key] && avail[key].length && !avail[key].includes(option)) {
-                    style.color = 'lightgrey';
-                  }
-                  return (
-                    <div key={shortid.generate()} style={{ paddingLeft: '20px', display: 'flex' }}>
-                      <input
-                        type="checkbox"
-                        id={`${key}-${i}`}
-                        value={option}
-                        defaultChecked={selectedFilter[key] && selectedFilter[key].indexOf(option) > -1}
-                        onChange={this.check}
-                        style={{ marginRight: '10px' }}
-                      />
-                      <label
-                        htmlFor={`${key}-${i}`}
-                        style={style}
-                      >
-                        {option}
+                <Panel expanded={this.state.openPanel[index]} onToggle={() => {}}>
+                  <Panel.Heading>
+                    <Panel.Title>
+                      <button onClick={() => this.togglePanel(index)}>{this.state.openPanel[index] ? <FaMinus /> : <FaPlus />}</button>
+                      <span style={{ display: 'inline-block', marginLeft: '10px', fontWeight: 'bold' }}>{entityNameDisplay(key)}</span>
+                      <label htmlFor={`${key}-select`} className="pull-right">
+                        <input
+                          type="checkbox"
+                          id={`${key}-select`}
+                          defaultChecked={this.shouldBeChecked(key)}
+                          onChange={() => this.checkAll([key], searchedFilter[key], this.shouldBeChecked(key))}
+                          style={{ marginRight: '10px' }}
+                        />
+                        Toggle All
                       </label>
-                    </div>);
-                })}
+                    </Panel.Title>
+                  </Panel.Heading>
+                  <Panel.Body collapsible>
+                    {searchedFilter[key].map((option, i) => {
+                      const style = { fontWeight: 'normal', whiteSpace: 'nowrap', overflow: 'auto' };
+                      if (avail[key] && avail[key].length && !avail[key].includes(option)) {
+                        style.color = 'lightgrey';
+                      }
+                      return (
+                        <div key={shortid.generate()} style={{ paddingLeft: '20px', display: 'flex' }}>
+                          <label
+                            htmlFor={`${key}-${i}`}
+                            style={style}
+                          >
+                            <input
+                              type="checkbox"
+                              id={`${key}-${i}`}
+                              value={option}
+                              defaultChecked={selectedFilter[key] && selectedFilter[key].indexOf(option) > -1}
+                              onChange={this.check}
+                              style={{ marginRight: '10px' }}
+                            />
+                            {option}
+                          </label>
+                        </div>);
+                    })}
+                  </Panel.Body>
+                </Panel>
               </div>);
           }
           return null;
@@ -270,7 +294,7 @@ class AnswersetFilter extends React.Component {
     return (
       <div>
         <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={filterPopover}>
-          <div style={{ width: '100%', textAlign: 'center', cursor: 'pointer' }}><FaFilter /> {filterApplied && <FaCheck />}</div>
+          <Button style={{ width: '100%', textAlign: 'center', cursor: 'pointer' }}><FaFilter /> {filterApplied && <FaCheck />}</Button>
         </OverlayTrigger>
       </div>
     );

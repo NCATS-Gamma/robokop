@@ -30,6 +30,7 @@ class SimpleEnriched extends React.Component {
       results: [],
       resultsLoading: false,
       resultsReady: false,
+      resultsFail: false,
     };
 
     this.initializeState = this.initializeState.bind(this);
@@ -100,7 +101,11 @@ class SimpleEnriched extends React.Component {
           results: data, resultsReady: true, resultsLoading: false,
         });
       },
-      () => { console.log('failure'); },
+      () => {
+        this.setState({
+          resultsFail: true, resultsLoading: false,
+        });
+      },
     );
   }
 
@@ -122,7 +127,7 @@ class SimpleEnriched extends React.Component {
   render() {
     const { config } = this.props;
     const {
-      user, concepts, type1, type2, identifiers, results, resultsReady, resultsLoading,
+      user, concepts, type1, type2, identifiers, results, resultsReady, resultsLoading, resultsFail,
     } = this.state;
     // if we don't have all the info, disable the submit.
     const disableSubmit = !(type1 && type2 && identifiers[0]);
@@ -131,12 +136,13 @@ class SimpleEnriched extends React.Component {
       <div>
         <Header config={config} user={user} />
         <Grid>
+          <h1 style={{ textAlign: 'center' }}>Enriched Nodes</h1>
           <Form>
             <Row>
               <Col md={6}>
-                <FormGroup controlId="enrichNode1">
+                <FormGroup controlId="node1">
                   <h3>
-                    Node Type 1
+                    Node 1 Type
                   </h3>
                   <DropdownList
                     filter
@@ -146,60 +152,12 @@ class SimpleEnriched extends React.Component {
                     value={type1}
                     onChange={value => this.updateType({ type1: value.value })}
                   />
-                  {type1 &&
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <h3>
-                        Node Curies
-                      </h3>
-                      {identifiers.map((curie, i) => (
-                        <div
-                          key={shortid.generate()}
-                          style={{ display: 'flex' }}
-                        >
-                          <div
-                            style={{
-                              padding: '5px 0px',
-                              flexBasis: '90%',
-                            }}
-                          >
-                            <CurieSelectorContainer
-                              concepts={concepts}
-                              search={this.onSearch}
-                              disableType
-                              initialInputs={{ type: type1, term: '', curie: identifiers[i] }}
-                              onChangeHook={(ty, te, cu) => this.handleCurieChange(i, ty, te, cu)}
-                            />
-                          </div>
-                          <div
-                            style={{
-                              width: '30px', verticalAlign: 'top', padding: '5px 10px',
-                            }}
-                          >
-                            {(i !== 0) &&
-                              <Button
-                                bsStyle="default"
-                                onClick={() => this.deleteIdentifier(i)}
-                                style={{ padding: '8px' }}
-                              >
-                                <Glyphicon glyph="trash" />
-                              </Button>
-                            }
-                          </div>
-                        </div>
-                      ))}
-                      <div style={{ display: 'table-row', textAlign: 'center' }}>
-                        <Button style={{ marginTop: '10px' }} onClick={this.addIdentifier}>
-                          <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Identifier'}
-                        </Button>
-                      </div>
-                    </div>
-                  }
                 </FormGroup>
               </Col>
               <Col md={6}>
-                <FormGroup controlId="enrichNode2">
+                <FormGroup controlId="node2">
                   <h3>
-                    Node Type 2
+                    Node 2 Type
                   </h3>
                   <DropdownList
                     filter
@@ -212,8 +170,60 @@ class SimpleEnriched extends React.Component {
                 </FormGroup>
               </Col>
             </Row>
-            <Row style={{ textAlign: 'center' }}>
-              <button id="submitEnrich" onClick={this.getResults} disabled={disableSubmit}>Submit</button>
+            <Row>
+              <Col md={12}>
+                {type1 &&
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <h3>
+                      Node 1 Curies
+                    </h3>
+                    {identifiers.map((curie, i) => (
+                      <div
+                        key={shortid.generate()}
+                        style={{ display: 'flex' }}
+                      >
+                        <div
+                          style={{
+                            padding: '5px 0px',
+                            flexBasis: '100%',
+                          }}
+                        >
+                          <CurieSelectorContainer
+                            concepts={concepts}
+                            search={this.onSearch}
+                            disableType
+                            initialInputs={{ type: type1, term: '', curie: identifiers[i] }}
+                            onChangeHook={(ty, te, cu) => this.handleCurieChange(i, ty, te, cu)}
+                          />
+                        </div>
+                        <div
+                          style={{
+                            width: '30px', verticalAlign: 'top', padding: '5px 10px',
+                          }}
+                        >
+                          {(i !== 0) &&
+                            <Button
+                              bsStyle="default"
+                              onClick={() => this.deleteIdentifier(i)}
+                              style={{ padding: '8px' }}
+                            >
+                              <Glyphicon glyph="trash" />
+                            </Button>
+                          }
+                        </div>
+                      </div>
+                    ))}
+                    <div style={{ display: 'table-row', textAlign: 'center' }}>
+                      <Button style={{ marginTop: '10px' }} onClick={this.addIdentifier}>
+                        <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Curie'}
+                      </Button>
+                    </div>
+                  </div>
+                }
+              </Col>
+            </Row>
+            <Row style={{ textAlign: 'right', margin: '20px' }}>
+              <Button id="submitAPI" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
             </Row>
           </Form>
           <Row style={{ marginBottom: '20px' }}>
@@ -238,6 +248,11 @@ class SimpleEnriched extends React.Component {
                   },
                 ]}
               />
+            }
+            {resultsFail &&
+              <h3>
+                No results came back. Please try a different query.
+              </h3>
             }
           </Row>
         </Grid>

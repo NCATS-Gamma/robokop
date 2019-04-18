@@ -138,8 +138,10 @@ class CurieSelector extends React.Component {
               />
               <FormControl
                 type="text"
+                className="curieSelectorInput"
                 bsSize={size}
                 style={{ borderLeft: 0, borderRight: 0 }}
+                placeholder="Start typing to search."
                 value={term}
                 inputRef={(ref) => {
                   this.input = ref;

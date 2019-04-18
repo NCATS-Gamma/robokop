@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, DropdownButton, MenuItem } from 'react-bootstrap';
+import { Modal, DropdownButton, MenuItem, Button } from 'react-bootstrap';
 
 import CurieSelectorContainter from '../CurieSelectorContainer';
 import AppConfig from '../../../AppConfig';
@@ -30,35 +30,59 @@ class QuestionTemplateModal extends React.Component {
     this.handleCurieChange = this.handleCurieChange.bind(this);
     this.handleCurieSearch = this.handleCurieSearch.bind(this);
     this.extractDetails = this.extractDetails.bind(this);
+    this.setFocus = this.setFocus.bind(this);
+    this.displayQuestion = this.displayQuestion.bind(this);
   }
 
   selectQuestion(event) {
     const questionTemplate = _.cloneDeep(event);
     let questionName = questionTemplate.natural_question;
-    questionName = this.replaceName(questionName);
     const { types, labels, curies } = this.extractDetails(questionTemplate);
+    questionName = this.replaceName(questionName, types);
     this.setState({
       questionTemplate, questionName, types, labels, curies,
     });
   }
 
-  replaceName(qName) {
+  replaceName(qName, types) {
     const nameList = [];
     let question = qName;
     question = question.split(/\s|\?/g);
-    let num = 0;
+    let num = 1;
     for (let i = 0; i < question.length; i += 1) {
-      if (question[i].match(/\$name\d\$/)) {
-        question[i] = question[i].replace(/\$name\d\$/, '_______');
-        question[i + 1] = question[i + 1].replace(/\$identifier\d\$/, '_____________');
+      const nameRegex = `$name${num}$`;
+      const idRegex = `($identifier${num}$)`;
+      if (question[i] === nameRegex) {
+        // onClick=this[curie${num - 1}].refs.curieSelector.refs.input.focus()
+        const refNum = num - 1;
+        question[i] = (
+          <button
+            style={{
+              textDecoration: 'underline', color: 'grey', border: 'none', backgroundColor: 'white',
+            }}
+            onClick={() => this.setFocus(refNum)}
+            key={shortid.generate()}
+          >
+            {types[refNum]}
+          </button>
+        );
         nameList.push({
-          nameIndex: i, idIndex: i + 1, name: '', id: '', ider: num,
+          nameIndex: i, name: '', id: '', ider: refNum,
         });
+        for (let j = i; j < question.length; j += 1) {
+          if (question[j] === idRegex) {
+            question.splice(j, 1);
+          }
+        }
         num += 1;
       }
     }
     this.setState({ nameList });
     return question;
+  }
+
+  setFocus(num) {
+    this[`curie${num}`].curieSelector.input.focus();
   }
 
   extractDetails(questionTemplate) {
@@ -67,7 +91,18 @@ class QuestionTemplateModal extends React.Component {
     const curies = [];
     questionTemplate.machine_question.nodes.forEach((node) => {
       if (node.curie) {
-        types.push(node.type);
+        // we're going to grab the number of the identifier from the curie and add that node's type to the list of types in its correct spot.
+        if (Array.isArray(node.curie)) {
+          node.curie.forEach((curie) => {
+            // find the indentifier's number
+            const i = curie.match(/\d/);
+            // minus one because index starts at 0
+            types[i - 1] = node.type;
+          });
+        } else {
+          const i = node.curie.match(/\d/);
+          types[i - 1] = node.type;
+        }
         labels.push('');
         curies.push('');
       }
@@ -75,29 +110,51 @@ class QuestionTemplateModal extends React.Component {
     return { types, labels, curies };
   }
 
+  displayQuestion(questionName) {
+    if (questionName.length > 0) {
+      // here we just add a space in between each word.
+      for (let i = 0; i < questionName.length; i += 2) {
+        questionName.splice(i, 0, ' ');
+      }
+    } else {
+      return 'Please select a question template to get started.';
+    }
+    return questionName;
+  }
+
   handleCurieChange(index, type, label, curie) {
     const {
-      questionName, nameList, curies, labels,
+      questionName, nameList, curies, labels, types,
     } = this.state;
-    nameList.forEach((name) => {
+    nameList.forEach((name, i) => {
       if (name.ider === index && label && curie) {
-        questionName[name.nameIndex] = label;
-        name.name = label;
+        questionName[name.nameIndex] = `${label} (${curie})`;
+        nameList[i].name = label;
+        nameList[i].id = curie;
         labels[index] = label;
-        questionName[name.idIndex] = '(' + curie + ')'; // eslint-disable-line
-        name.id = curie;
         curies[index] = curie;
         this.setState({
           questionName, nameList, labels, curies,
         }, () => {
-          if (questionName.indexOf('____') === -1) {
+          // check to see if all entries in nameList have a label and curie and update question template if they do.
+          const update = nameList.every(nameObj => nameObj.name && nameObj.id);
+          if (update) {
             this.updateQuestionTemplate();
           }
         });
       } else if (name.ider === index && !label && !curie) {
         // we delete whatever was there before. Disable the submit button.
-        questionName[name.nameIndex] = '_______';
-        questionName[name.idIndex] = '(_____________)';
+        questionName[name.nameIndex] = (
+          <button
+            style={{
+              textDecoration: 'underline', color: 'grey', border: 'none', backgroundColor: 'white',
+            }}
+            onClick={() => this.setFocus(name.ider)}
+            key={shortid.generate()}
+          >
+            {types[name.ider]}
+          </button>
+        );
         labels[name.ider] = '';
         curies[name.ider] = '';
         this.setState({
@@ -111,18 +168,18 @@ class QuestionTemplateModal extends React.Component {
     const { nameList, questionTemplate, questionName } = this.state;
     questionTemplate.natural_question = questionName.join(' ');
     let num = 0;
-    questionTemplate.machine_question.nodes.forEach((node) => {
+    questionTemplate.machine_question.nodes.forEach((node, index) => {
       if (node.curie) {
         if (Array.isArray(node.curie)) {
           node.curie.forEach((curie, i) => {
             // TODO: num only works if there's only one curie in the array. So far, that's the only case.
-            node.curie[i] = nameList[num].id;
-            node.name = nameList[num].name;
+            questionTemplate.machine_question.nodes[index].curie[i] = nameList[num].id;
+            questionTemplate.machine_question.nodes[index].name = nameList[num].name;
             num += 1;
           });
         } else {
-          node.curie = nameList[0].id;
-          node.name = nameList[0].name;
+          questionTemplate.machine_question.nodes[index].curie = nameList[0].id;
+          questionTemplate.machine_question.nodes[index].name = nameList[0].name;
         }
       }
     });
@@ -136,6 +193,15 @@ class QuestionTemplateModal extends React.Component {
   submitTemplate() {
     this.props.toggleModal();
     this.props.selectQuestion(this.state.questionTemplate);
+    this.setState({
+      questionTemplate: {},
+      questionName: [],
+      disableSubmit: true,
+      nameList: [],
+      types: [],
+      labels: [],
+      curies: [],
+    });
   }
 
   render() {
@@ -145,6 +211,7 @@ class QuestionTemplateModal extends React.Component {
     const {
       disableSubmit, nameList, curies, labels, types, questionName,
     } = this.state;
+    const questionDisplay = this.displayQuestion(_.cloneDeep(questionName));
     return (
       <Modal
         show={showModal}
@@ -157,7 +224,7 @@ class QuestionTemplateModal extends React.Component {
         <Modal.Body>
           <DropdownButton
             bsStyle="default"
-            title="Load a question template"
+            title={questionName.length > 0 ? 'Change templates' : 'Select a question template'}
             key={1}
             id="dropdown-question-template"
           >
@@ -171,17 +238,20 @@ class QuestionTemplateModal extends React.Component {
               </MenuItem>))
             }
           </DropdownButton>
-          <input
-            value={questionName.join(' ')}
-            disabled
-            placeholder="Please select a question template to get started."
+          <h4
             style={{
-              display: 'block', width: '100%', margin: '20px 0px', height: '45px', fontSize: '20px',
+              display: 'block', width: '100%', margin: '20px 0px', height: '45px', fontSize: '20px', textAlign: 'center', cursor: 'default',
             }}
-          />
+          >
+            { questionDisplay }
+          </h4>
+          {questionName.length > 0 &&
+            <p>Choose curies below to fill out the template.</p>
+          }
           {nameList.map((name, i) => (
             <CurieSelectorContainter
               key={shortid.generate()}
+              ref={(type) => { this[`curie${i}`] = type; }}
               concepts={concepts}
               onChangeHook={(ty, te, cu) => this.handleCurieChange(i, ty, te, cu)}
               initialInputs={{ curie: curies[i], term: labels[i], type: types[i] }}
@@ -191,7 +261,7 @@ class QuestionTemplateModal extends React.Component {
           ))}
         </Modal.Body>
         <Modal.Footer>
-          <button id="questionTempButton" onClick={this.submitTemplate} disabled={disableSubmit}>Load Question</button>
+          <Button id="questionTempButton" onClick={this.submitTemplate} disabled={disableSubmit}>Load Question</Button>
         </Modal.Footer>
       </Modal>
     );
