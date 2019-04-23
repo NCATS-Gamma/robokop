@@ -23,6 +23,7 @@ import LoadingNlpQuestionModal from './components/shared/modals/LoadingNlpQuesti
 import NewQuestionButtons from './components/shared/NewQuestionButtons';
 import ButtonGroupPanel from './components/shared/ButtonGroupPanel';
 import questionTemplates from '../queries/index';
+import getNodeTypeColorMap from './components/util/colorUtils';
 
 const _ = require('lodash');
 
@@ -44,7 +45,9 @@ class QuestionNew extends React.Component {
     this.onQuestionTemplate = this.onQuestionTemplate.bind(this);
     this.getNlpParsedQuestion = this.getNlpParsedQuestion.bind(this);
 
-    this.state = { showJsonEditor: false };
+    this.state = {
+      showJsonEditor: false,
+    };
   }
 
   componentDidMount() {
@@ -236,10 +239,13 @@ class QuestionNew extends React.Component {
 
   render() {
     const { store } = this.props;
-    const ready = store.conceptsReady && store.dataReady && store.userReady;
+    const ready = store.conceptsReady && store.dataReady && store.userReady && store.predicatesReady;
     const { activePanelState } = store;
     const isNodePanel = activePanelState.panelType === panelTypes.node;
     const questionList = _.cloneDeep(questionTemplates);
+    // set the color of the node/edge panel header
+    const nodeColorMap = getNodeTypeColorMap(store.concepts);
+    const backgroundColor = nodeColorMap(activePanelState.type);
     return (
       <div>
         {ready ?
@@ -316,10 +322,10 @@ class QuestionNew extends React.Component {
                 <Col md={12}>
                   <ButtonGroupPanel store={store} openJsonEditor={this.openJsonEditor} />
                 </Col>
-                <Col md={12}>
+                <Col md={12} style={{ marginBottom: '20px' }}>
                   {!_.isEmpty(activePanelState) &&
                     <Panel style={{ marginBottom: '5px' }}>
-                      <Panel.Heading>
+                      <Panel.Heading style={{ backgroundColor }}>
                         <Panel.Title>
                           {`${isNodePanel ? 'Node' : 'Edge'} ${activePanelState.panelName} `}
                           <OverlayTrigger
