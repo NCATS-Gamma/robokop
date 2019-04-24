@@ -7,7 +7,7 @@ import Loading from './components/Loading';
 import Header from './components/Header';
 import Footer from './components/Footer';
 
-class About extends React.Component {
+class Help extends React.Component {
   constructor(props) {
     super(props);
     // We only read the communications config on creation
@@ -144,4 +144,4 @@ class About extends React.Component {
   }
 }
 
-export default About;
+export default Help;

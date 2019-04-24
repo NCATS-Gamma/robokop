@@ -71,8 +71,8 @@ class Header extends React.Component {
             }
           </Nav>
           <Nav pullRight>
-            <NavItem eventKey={0} href={this.appConfig.urls.about}>
-              About
+            <NavItem eventKey={0} href={this.appConfig.urls.help}>
+              Help
             </NavItem>
             {showApps &&
             <NavDropdown eventKey={3} title="Apps" id="basic-nav-dropdown">

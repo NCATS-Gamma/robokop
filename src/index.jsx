@@ -12,7 +12,8 @@ import 'react-widgets/dist/css/react-widgets.css';
 import 'babel-polyfill'; // For IE Promises
 
 import Landing from './Landing';
-import About from './About';
+import Help from './Help';
+import TermsofService from './TermsofService';
 import QuestionNew from './QuestionNew';
 import QuestionNewLinear from './QuestionNewLinear';
 import Question from './Question';
@@ -62,9 +63,17 @@ const robokop = {
       document.getElementById('reactEntry'),
     );
   },
-  about: () => {
+  help: () => {
     ReactDOM.render(
-      <About
+      <Help
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  termsofservice: () => {
+    ReactDOM.render(
+      <TermsofService
         config={config}
       />,
       document.getElementById('reactEntry'),

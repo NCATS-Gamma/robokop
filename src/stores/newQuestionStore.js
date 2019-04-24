@@ -359,6 +359,8 @@ class NewQuestionStore {
   @observable predicateList = [];
   @observable predicatesReady = false;
 
+  @observable showPanelModal = false;
+
   @observable nlpFetching = false;
 
   constructor() {
@@ -693,7 +695,8 @@ class NewQuestionStore {
     let isValid = true;
     let isValidGraph = true;
     const errorList = [];
-    if (!this.nodePanels.reduce((prev, panel) => prev && panel.isValid, true)) {
+    // need to make sure there's at least one valid node
+    if (!this.nodePanels.length || !this.nodePanels.reduce((prev, panel) => prev && panel.isValid, true)) {
       isValidGraph = false;
       errorList.push('One or more invalid nodes');
     }
@@ -743,13 +746,14 @@ class NewQuestionStore {
     if (panelType === panelTypes.edge) {
       // If a node was previously selected when clicking "New Edge", the source-id
       // for the new edge is pre-populated with a reference to the initially selected node
-      if (this.isNode(this.panelState[this.activePanelInd])) {
+      if ((this.panelState.length > this.activePanelInd) && this.isNode(this.panelState[this.activePanelInd])) {
         this.activePanelState = new EdgePanel(this, { source_id: this.panelState[this.activePanelInd].id });
       } else {
         this.activePanelState = new EdgePanel(this);
       }
     }
     this.activePanelInd = this.panelState.length;
+    this.togglePanelModal();
   }
 
   // Revert any unsaved changes in a panel for an existing node
@@ -777,6 +781,7 @@ class NewQuestionStore {
     }
     // Update activePanelInd and activePanelState accordingly
     this.syncActivePanelToClosestNonDeletedPanelInd();
+    this.togglePanelModal();
   }
 
   // Sets this.activePanelInd to closest ind that is not deleted or an edge. Also
@@ -797,8 +802,10 @@ class NewQuestionStore {
     // if curies aren't enabled, delete all curies
     if (this.activePanelState.panelType === 'node' && !this.activePanelState.curieEnabled) {
       this.activePanelState.curie = [];
+      this.activePanelState.name = '';
     }
     this.panelState[this.activePanelInd] = this.activePanelState.clone();
+    this.togglePanelModal();
     if (this.isEdge(this.panelState[this.activePanelInd])) {
       // Saving an edge means it has to be valid, so `broken` param must be false
       this.panelState[this.activePanelInd].broken = false;
@@ -816,6 +823,7 @@ class NewQuestionStore {
     if (nodePanelInd !== null) { // TODO: Consider updating only if activePanelInd differs from nodePanelInd
       this.activePanelInd = nodePanelInd;
       this.activePanelState = this.panelState[nodePanelInd].clone();
+      this.togglePanelModal();
     }
   }
 
@@ -829,7 +837,13 @@ class NewQuestionStore {
     if (edgePanelInd !== null) {
       this.activePanelInd = edgePanelInd;
       this.activePanelState = this.panelState[edgePanelInd].clone();
+      this.togglePanelModal();
     }
+  }
+
+  @action.bound togglePanelModal() {
+    const showModal = this.showPanelModal;
+    this.showPanelModal = !showModal;
   }
 
   // Async action to update concepts list and conceptsReady flag in store

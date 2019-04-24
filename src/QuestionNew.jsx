@@ -4,7 +4,7 @@ import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import {
   Grid, Row, Col, Panel, OverlayTrigger,
-  Form, FormControl, FormGroup, ControlLabel, Modal,
+  Form, FormControl, FormGroup,
 } from 'react-bootstrap';
 import FaInfoCircle from 'react-icons/lib/fa/info-circle';
 
@@ -12,18 +12,12 @@ import AppConfig from './AppConfig';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Loading from './components/Loading';
-import MachineQuestionEditor from './components/shared/MachineQuestionEditor';
-import EdgePanel from './components/shared/EdgePanel';
-import NodePanel from './components/shared/NodePanel';
 import MachineQuestionViewContainer, { graphStates } from './components/shared/MachineQuestionViewContainer';
-// import questions from './components/util/questionTemplates';
-import { panelTypes } from './stores/newQuestionStore';
-import { questionGraphPopover, nodePanelPopover, edgePanelPopover, questionNamePopover } from './components/shared/Popovers';
+import { questionGraphPopover, questionNamePopover } from './components/shared/Popovers';
 import LoadingNlpQuestionModal from './components/shared/modals/LoadingNlpQuestion';
 import NewQuestionButtons from './components/shared/NewQuestionButtons';
-import ButtonGroupPanel from './components/shared/ButtonGroupPanel';
 import questionTemplates from '../queries/index';
-import getNodeTypeColorMap from './components/util/colorUtils';
+import QuestionTemplateModal from './components/shared/modals/QuestionTemplate';
 
 const _ = require('lodash');
 
@@ -39,14 +33,12 @@ class QuestionNew extends React.Component {
     this.onDownloadQuestion = this.onDownloadQuestion.bind(this);
     this.onDropFile = this.onDropFile.bind(this);
     this.onSubmitQuestion = this.onSubmitQuestion.bind(this);
-    this.saveJsonEditor = this.saveJsonEditor.bind(this);
-    this.closeJsonEditor = this.closeJsonEditor.bind(this);
-    this.openJsonEditor = this.openJsonEditor.bind(this);
     this.onQuestionTemplate = this.onQuestionTemplate.bind(this);
     this.getNlpParsedQuestion = this.getNlpParsedQuestion.bind(this);
+    this.toggleModal = this.toggleModal.bind(this);
 
     this.state = {
-      showJsonEditor: false,
+      showQuestionTemplateModal: false,
     };
   }
 
@@ -115,7 +107,9 @@ class QuestionNew extends React.Component {
   }
 
   onResetQuestion() {
-    this.props.store.resetQuestion();
+    if (window.confirm('Are you sure you want to reset this question? This action cannot be undone.')) {
+      this.props.store.resetQuestion();
+    }
   }
 
   onCreate({ questionText, machineQuestion }) {
@@ -146,35 +140,13 @@ class QuestionNew extends React.Component {
     );
   }
 
-  saveJsonEditor({ data }) { // { data: this.state.data, isValid: this.state.isValid }
-    const { store } = this.props;
-    try {
-      store.machineQuestionSpecToPanelState(data);
-      this.closeJsonEditor();
-    } catch (err) {
-      console.error(err);
-      this.dialogMessage({
-        title: 'Trouble Parsing Manually edited JSON',
-        text: 'We ran in to problems parsing the user provided JSON. Please ensure that it is a valid MachineQuestion spec JSON file',
-        buttonText: 'OK',
-        buttonAction: () => {},
-      });
-      // window.alert('Failed to load m Question template. Are you sure this is valid?');
-      store.setGraphState(graphStates.error);
-    }
-  }
-
-  closeJsonEditor() {
-    this.setState({ showJsonEditor: false });
-  }
-
-  openJsonEditor() {
-    this.setState({ showJsonEditor: true });
-  }
-
   // Loads the question template and updates the MobX store/UI
   onQuestionTemplate(question) {
     this.props.store.machineQuestionSpecToPanelState(question);
+  }
+
+  toggleModal() {
+    this.setState(prevState => ({ showQuestionTemplateModal: !prevState.showQuestionTemplateModal }));
   }
 
   // Prevent default form submit and make call to parse NLP question via store method
@@ -240,12 +212,8 @@ class QuestionNew extends React.Component {
   render() {
     const { store } = this.props;
     const ready = store.conceptsReady && store.dataReady && store.userReady && store.predicatesReady;
-    const { activePanelState } = store;
-    const isNodePanel = activePanelState.panelType === panelTypes.node;
     const questionList = _.cloneDeep(questionTemplates);
-    // set the color of the node/edge panel header
-    const nodeColorMap = getNodeTypeColorMap(store.concepts);
-    const backgroundColor = nodeColorMap(activePanelState.type);
+    const { showQuestionTemplateModal } = this.state;
     return (
       <div>
         {ready ?
@@ -262,52 +230,39 @@ class QuestionNew extends React.Component {
                     onDropFile={this.onDropFile}
                     onResetQuestion={this.onResetQuestion}
                     onSubmitQuestion={this.onSubmitQuestion}
+                    toggleModal={this.toggleModal}
                     graphValidationState={store.graphValidationState}
-                    onQuestionTemplate={this.onQuestionTemplate}
-                    questionList={questionList}
-                    concepts={toJS(store.concepts)}
                   />
                 </Col>
                 <Col md={12}>
-                  <Panel>
-                    <Panel.Heading>
-                      <Panel.Title>
-                        {'Question '}
-                        <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={questionNamePopover}>
-                          <FaInfoCircle size={10} />
-                        </OverlayTrigger>
-                      </Panel.Title>
-                    </Panel.Heading>
-                    <Panel.Body>
-                      <Form horizontal onSubmit={e => e.preventDefault()}>
-                        <FormGroup
-                          bsSize="large"
-                          controlId="formHorizontalNodeIdName"
-                          validationState={store.questionName.length > 0 ? 'success' : 'error'}
-                          style={{ margin: '0' }}
-                        >
-                          {/* <InputGroup> */}
-                          <FormControl
-                            type="text"
-                            value={store.questionName}
-                            onChange={e => store.updateQuestionName(e.target.value)}
-                          />
-                          {/* <InputGroup.Button>
-                            <Button type="submit" bsSize="large" onClick={this.getNlpParsedQuestion}>Try NLP Engine</Button>
-                          </InputGroup.Button> */}
-                          {/* </InputGroup> */}
-                        </FormGroup>
-                      </Form>
-                    </Panel.Body>
-                  </Panel>
+                  <h3 style={{ display: 'inline-block' }}>
+                    {'Question '}
+                    <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={questionNamePopover}>
+                      <FaInfoCircle size={17} />
+                    </OverlayTrigger>
+                  </h3>
+                  <Form horizontal onSubmit={e => e.preventDefault()}>
+                    <FormGroup
+                      bsSize="large"
+                      controlId="formHorizontalNodeIdName"
+                      validationState={store.questionName.length > 0 ? 'success' : 'error'}
+                      style={{ margin: '0' }}
+                    >
+                      <FormControl
+                        type="text"
+                        value={store.questionName}
+                        onChange={e => store.updateQuestionName(e.target.value)}
+                      />
+                    </FormGroup>
+                  </Form>
                 </Col>
                 <Col md={12}>
                   <Panel>
                     <Panel.Heading>
-                      <Panel.Title>
+                      <Panel.Title style={{ height: '6%' }}>
                         {'Machine Question Editor - Question Graph '}
                         <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={questionGraphPopover}>
-                          <FaInfoCircle size={12} />
+                          <FaInfoCircle size={17} />
                         </OverlayTrigger>
                       </Panel.Title>
                     </Panel.Heading>
@@ -319,53 +274,18 @@ class QuestionNew extends React.Component {
                     </Panel.Body>
                   </Panel>
                 </Col>
-                <Col md={12}>
-                  <ButtonGroupPanel store={store} openJsonEditor={this.openJsonEditor} />
-                </Col>
-                <Col md={12} style={{ marginBottom: '20px' }}>
-                  {!_.isEmpty(activePanelState) &&
-                    <Panel style={{ marginBottom: '5px' }}>
-                      <Panel.Heading style={{ backgroundColor }}>
-                        <Panel.Title>
-                          {`${isNodePanel ? 'Node' : 'Edge'} ${activePanelState.panelName} `}
-                          <OverlayTrigger
-                            trigger={['hover', 'focus']}
-                            overlay={isNodePanel ? nodePanelPopover : edgePanelPopover}
-                            placement="right"
-                          >
-                            <FaInfoCircle size={12} />
-                          </OverlayTrigger>
-                        </Panel.Title>
-                      </Panel.Heading>
-                      <Panel.Body>
-                        {isNodePanel && <NodePanel activePanel={activePanelState} /> }
-                        {!isNodePanel && <EdgePanel activePanel={activePanelState} /> }
-                      </Panel.Body>
-                    </Panel>
-                  }
-                </Col>
               </Row>
             </Grid>
             <Footer config={this.props.config} />
             <Dialog ref={(el) => { this.dialog = el; }} />
-            <Modal
-              bsSize="large"
-              aria-labelledby="contained-modal-title-lg"
-              show={this.state.showJsonEditor}
-              dialogClassName="question-editor-modal"
-            >
-              <Modal.Body>
-                <MachineQuestionEditor
-                  height={700}
-                  concepts={toJS(store.concepts)}
-                  question={store.questionName}
-                  machineQuestion={toJS(store.getMachineQuestionSpecJson.machine_question)}
-                  callbackSave={this.saveJsonEditor}
-                  callbackCancel={this.closeJsonEditor}
-                />
-              </Modal.Body>
-            </Modal>
             {store.nlpFetching && <LoadingNlpQuestionModal />}
+            <QuestionTemplateModal
+              showModal={showQuestionTemplateModal}
+              toggleModal={this.toggleModal}
+              questions={questionList}
+              selectQuestion={this.onQuestionTemplate}
+              concepts={toJS(store.concepts)}
+            />
           </div>
           :
           <Loading />

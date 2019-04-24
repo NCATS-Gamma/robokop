@@ -43,10 +43,15 @@ def landing():
     return render_template('landing.html')
 
 
-@app.route('/about/')
-def start():
+@app.route('/help/')
+def help():
     """Get starting guide."""
-    return render_template('about.html')
+    return render_template('help.html')
+
+@app.route('/termsofservice/')
+def termsofservice():
+    """Get terms of service."""
+    return render_template('termsofService.html')
 
 @app.route('/activity/')
 def activity():

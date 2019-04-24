@@ -17,7 +17,7 @@ const classNames = {
 const propTypes = {
   activePanel: PropTypes.shape({
     id: PropTypes.number.isRequired,
-    source_id: PropTypes.number.isRequired,
+    source_id: PropTypes.number,
     target_id: PropTypes.number,
     predicate: mobxPropTypes.observableArrayOf(PropTypes.string),
   }).isRequired,
@@ -109,9 +109,10 @@ class EdgePanel extends React.Component {
                 </Col>
                 <Col sm={6}>
                   <Multiselect
-                    allowCreate="onFilter"
+                    allowCreate={false}
                     onCreate={name => activePanel.updatePredicate(name)}
                     data={toJS(predicateList)}
+                    // disabled={disablePredicates}
                     busySpinner={<FaSpinner className="icon-spin" />}
                     placeholder={predicateInputMsg}
                     value={toJS(activePanel.predicate)}
@@ -119,8 +120,7 @@ class EdgePanel extends React.Component {
                     onChange={value => activePanel.updateField('predicate', value)}
                     containerClassName={activePanel.isValidPredicate ? 'valid' : 'invalid'}
                     messages={{
-                      emptyList: 'Enter predicate tag',
-                      createOption: props => <span>{'Create new predicate tag '}<strong>{`"${props.searchTerm}"`}</strong></span>,
+                      emptyList: 'No predicates were found',
                     }}
                   />
                 </Col>
