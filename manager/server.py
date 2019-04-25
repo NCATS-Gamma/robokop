@@ -39,14 +39,19 @@ app.register_blueprint(a, url_prefix='/a')
 
 @app.route('/')
 def landing():
-    """Initial contact. Give the initial page."""
+    """Give the initial page."""
     return render_template('landing.html')
 
 
-@app.route('/about/')
-def start():
-    """Getting started guide"""
-    return render_template('about.html')
+@app.route('/help/')
+def help():
+    """Get starting guide."""
+    return render_template('help.html')
+
+@app.route('/termsofservice/')
+def termsofservice():
+    """Get terms of service."""
+    return render_template('termsofService.html')
 
 @app.route('/activity/')
 def activity():
@@ -55,22 +60,42 @@ def activity():
 
 @app.route('/search/')
 def search():
-    """Search for biomedical concept identifiers"""
+    """Search for biomedical concept identifiers."""
     return render_template('search.html')
 
 @app.route('/simple/view/')
 def viewer_blank():
-    """Answerset Browser with upload capablitiy"""
+    """Answerset Browser with upload capablitiy."""
     return render_template('simpleView.html', upload_id='')
 
 @app.route('/simple/view/<upload_id>/')
 def viewer_file(upload_id):
-    """Answerset Browser from uploaded file"""
+    """Answerset Browser from uploaded file."""
     return render_template('simpleView.html', upload_id=upload_id)
+
+@app.route('/simple/enriched/')
+def enriched():
+    """Get enriched answers."""
+    return render_template('simpleEnriched.html')
+
+@app.route('/simple/similarity/')
+def similarity():
+    """Get similarity answers."""
+    return render_template('simpleSimilarity.html')
+
+@app.route('/simple/expand/')
+def expand():
+    """Get expanded answers."""
+    return render_template('simpleExpand.html')
+
+@app.route('/simple/synonymize/')
+def synonymize():
+    """Get synonymous curie identifiers."""
+    return render_template('synonymize.html')
 
 @app.route('/compare/')
 def compare():
-    """Search for biomedical concept identifiers"""
+    """Search for biomedical concept identifiers."""
     return render_template('compare.html')
 
 

@@ -24,8 +24,9 @@ class EdgePanel {
 
   @observable broken = false; // If source_id or target_id refer to a deleted node
 
-  @observable awaitingPredicateList = false; // True when requesting end-point for predicates for source/target pairing
+  @observable predicatesReady = false; // True when requesting end-point for predicates for source/target pairing
   @observable predicateList = [];
+  @observable disablePredicates = false;
 
   panelType = panelTypes.edge;
 
@@ -42,6 +43,7 @@ class EdgePanel {
         }
       });
     });
+    this.getPredicateList();
   }
 
   // Returns lowest non-zero integer id not already used
@@ -51,9 +53,35 @@ class EdgePanel {
     return _.difference(candidateIds, currentIds).sort()[0];
   }
 
+  // Loads specific array of predicates based on soure and target ids
+  getPredicateList() {
+    if (this.store.predicatesReady) {
+      if (this.source_id === null || this.target_id === null) {
+        this.predicates = [];
+        this.disablePredicates = true;
+        return;
+      }
+      let type1;
+      let type2;
+      this.store.panelState.forEach((panel) => {
+        if (panel.panelType === 'node') {
+          if (panel.id === this.source_id) {
+            type1 = panel.type;
+          } else if (panel.id === this.target_id) {
+            type2 = panel.type;
+          }
+        }
+      });
+      this.predicateList = [...new Set(this.store.predicateList[type1][type2])];
+      this.predicatesReady = true;
+      this.disablePredicates = false;
+    }
+  }
+
   @action.bound updateField(field, value) { // eslint-disable-line consistent-return
     if (this._publicFields.indexOf(field) > -1) {
       this[field] = value;
+      this.getPredicateList();
     } else {
       console.error(`Invalid field - ${field} supplied to EdgePanel.updateField action`);
     }
@@ -89,10 +117,8 @@ class EdgePanel {
   }
 
   @computed get isValidPredicate() {
-    return true; // TODO: Replace with code below when predicate endpoint is implemented
-    // return !this.store.awaitingPredicateList &&
-    //   !this.store.predicateFetchError &&
-    //   (_.difference(this.predicate, this.store.predicateList).length === 0);
+    return this.store.predicatesReady &&
+      !this.disablePredicates;
   }
 
   @computed get isValid() {
@@ -154,10 +180,12 @@ class NodePanel {
   @observable curie = [];
   @observable curieEnabled = false;
   @observable set = false;
+  @observable regular = false;
   @observable deleted = false;
   panelType = panelTypes.node;
 
-  _publicFields = ['id', 'name', 'type', 'curie', 'set'];
+  _publicFields = ['id', 'name', 'type', 'curie', 'set', 'curieEnabled', 'regular'];
+  _nodeFunctionTypes = ['curieEnabled', 'set', 'regular'];
 
   constructor(store, userObj = {}) {
     this.store = store;
@@ -175,17 +203,22 @@ class NodePanel {
       }
       if (this.curie.length !== 0) {
         this.curieEnabled = true;
+        this.nodeFunction = 'curieEnabled';
+      }
+      if (this.set) {
+        this.nodeFunction = 'set';
+      }
+      if (!this.set && !this.curieEnabled) {
+        this.regular = true;
+        this.nodeFunction = 'regular';
       }
     });
   }
 
-  @action.bound toggleCurieEnable() {
-    if (this.curieEnabled) {
-      this.curieEnabled = false;
-      this.curie = [];
-    } else {
-      this.curieEnabled = true;
-    }
+  @action.bound changeNodeFunction(field) {
+    this._nodeFunctionTypes.forEach((node) => {
+      this[node] = field === node;
+    });
   }
 
   // Returns lowest non-zero integer id not already used
@@ -226,8 +259,12 @@ class NodePanel {
     this.curie.splice(i, 1);
   }
 
-  @action.bound updateCurie(i, type, label, curie) {
-    this.curie[i] = curie;
+  @action.bound updateCurie(type, label, curie) {
+    // only update the panel once a curie is selected.
+    if (curie) {
+      this.curie[0] = curie;
+      this.name = label;
+    }
   }
 
   @action.bound resetCurie() {
@@ -245,6 +282,8 @@ class NodePanel {
   @computed get isValidCurieList() {
     if (!this.curieEnabled) {
       return true; // If curie not enabled, this should return true
+    } else if (this.curie.length === 0) {
+      return false; // if there are no curies and curies are enabled, disable the button. it should be red, not grey, meaning there's an error
     }
     let curieList = toJS(this.curie);
     if (_.isPlainObject(curieList)) {
@@ -318,10 +357,9 @@ class NewQuestionStore {
   @observable activePanelState = {};
 
   @observable predicateList = [];
-  @observable awaitingPredicateList = false;
-  @observable predicateFetchError = null;
-  predicateCache = new Map();
-  predicateFetchPromise = null;
+  @observable predicatesReady = false;
+
+  @observable showPanelModal = false;
 
   @observable nlpFetching = false;
 
@@ -329,6 +367,7 @@ class NewQuestionStore {
     this.appConfig = new AppConfig(config);
     this.updateConcepts();
     this.updateUser();
+    this.updatePredicates();
 
     // Reaction to auto remove any nodes flagged for deletion if no edges link to it
     this.disposeDeleteUnlinkedNodes = reaction(
@@ -346,47 +385,10 @@ class NewQuestionStore {
     this.disposeGraphStateEmpty = reaction(
       () => this.panelState.length === 0,
       (isGraphEmpty) => {
-        console.log('Running reaction - Check Empty Graph');
         if (isGraphEmpty) {
           this.setGraphState(graphStates.empty);
         }
       },
-    );
-
-    // Fetch and store list of predicates that are available for the source-target
-    // type pairing any time the pairing changes.
-    this.disposeAutoFetchPredicateList = reaction(
-      () => ({
-        source: {
-          type: this.activePanelState.sourceNode ? this.activePanelState.sourceNode.type : '',
-          deleted: this.activePanelState.sourceNode ? this.activePanelState.sourceNode.deleted : false,
-        },
-        target: {
-          type: this.activePanelState.targetNode ? this.activePanelState.targetNode.type : '',
-          deleted: this.activePanelState.targetNode ? this.activePanelState.targetNode.deleted : false,
-        },
-      }),
-      async (nodeInfo) => {
-        // Cancel old request if it is still pending
-        if (this.predicateFetchPromise) {
-          await this.predicateFetchPromise.cancel();
-        }
-        // Make a new async request to get predicate list
-        this.predicateFetchPromise = this.getPredicateListFAKE(nodeInfo);
-        this.predicateFetchPromise.catch((err) => { // Need this since this promise is rejected with FLOW_CANCELLED error
-          if (err.message === 'FLOW_CANCELLED') {
-            console.log('Successfully cancelled stale predicateFetchPromise');
-          } else {
-            console.error('Error in predicateFetchPromise', err);
-            runInAction(() => {
-              this.predicateList = [];
-              this.awaitingPredicateList = false;
-              this.predicateFetchError = 'Error retrieving predicate options!';
-            });
-          }
-        });
-      },
-      { compareStructural: true },
     );
 
     // Demo code to seed UI with an initial graph
@@ -454,40 +456,6 @@ class NewQuestionStore {
       });
     }
   }
-
-  // Async action to mimic request to determine list of predicates
-  // that can be selected for the source-target type pairing
-  // Predicate lists are memoized and stored in predicateCache
-  getPredicateListFAKE = flow(function* getPredicateList(nodeInfo) {
-    console.log('in getPredicateListFake reaction', nodeInfo.source.type, nodeInfo.target.type);
-    let errorMsg = null;
-    if ((nodeInfo.source.type === '') || (nodeInfo.target.type === '')) {
-      errorMsg = 'Source and/or Target Node type needs to be specified...';
-    }
-    if (nodeInfo.source.deleted || nodeInfo.target.deleted) {
-      errorMsg = 'Source and/or Target Node references a deleted node...';
-    }
-    if (errorMsg) {
-      this.predicateList = [];
-      this.predicateFetchError = errorMsg;
-      this.awaitingPredicateList = false;
-      return;
-    }
-    const key = `${nodeInfo.source.type}:${nodeInfo.target.type}`;
-    if (this.predicateCache.has(key)) {
-      this.predicateList = this.predicateCache.get(key);
-    } else {
-      this.awaitingPredicateList = true;
-      // const fakePredicateList = ['increases', 'decreases', 'cures', 'other'];
-      const fakePredicateList = [];
-      const predicateList = yield new Promise((resolve, reject) => setTimeout(() => resolve(fakePredicateList), 10));
-      this.predicateCache.set(key, predicateList);
-      this.predicateList = predicateList;
-    }
-    this.predicateFetchError = null;
-    this.awaitingPredicateList = false;
-    // console.log(`getPredicateListFake returned for (${nodeInfo.source.type}, ${nodeInfo.target.type}):`, this.predicateList);
-  });
 
   // Get list of panels of specific type from panelState
   getPanelsByType(panelType) {
@@ -675,7 +643,6 @@ class NewQuestionStore {
    */
   @action.bound machineQuestionSpecToPanelState(machineQuestionInp) {
     try {
-      console.log('Loading machineQuestionJson -', machineQuestionInp);
       this.resetQuestion();
       const machineQuestionInput = _.cloneDeep(machineQuestionInp);
       this.questionName = machineQuestionInput.natural_question || '';
@@ -728,7 +695,8 @@ class NewQuestionStore {
     let isValid = true;
     let isValidGraph = true;
     const errorList = [];
-    if (!this.nodePanels.reduce((prev, panel) => prev && panel.isValid, true)) {
+    // need to make sure there's at least one valid node
+    if (!this.nodePanels.length || !this.nodePanels.reduce((prev, panel) => prev && panel.isValid, true)) {
       isValidGraph = false;
       errorList.push('One or more invalid nodes');
     }
@@ -769,9 +737,6 @@ class NewQuestionStore {
     this.panelState = [];
     this.activePanelInd = 0;
     this.activePanelState = {};
-    this.predicateList = [];
-    this.awaitingPredicateList = false;
-    this.predicateFetchError = null;
   }
 
   @action.bound newActivePanel(panelType) {
@@ -781,13 +746,14 @@ class NewQuestionStore {
     if (panelType === panelTypes.edge) {
       // If a node was previously selected when clicking "New Edge", the source-id
       // for the new edge is pre-populated with a reference to the initially selected node
-      if (this.isNode(this.panelState[this.activePanelInd])) {
+      if ((this.panelState.length > this.activePanelInd) && this.isNode(this.panelState[this.activePanelInd])) {
         this.activePanelState = new EdgePanel(this, { source_id: this.panelState[this.activePanelInd].id });
       } else {
         this.activePanelState = new EdgePanel(this);
       }
     }
     this.activePanelInd = this.panelState.length;
+    this.togglePanelModal();
   }
 
   // Revert any unsaved changes in a panel for an existing node
@@ -815,6 +781,7 @@ class NewQuestionStore {
     }
     // Update activePanelInd and activePanelState accordingly
     this.syncActivePanelToClosestNonDeletedPanelInd();
+    this.togglePanelModal();
   }
 
   // Sets this.activePanelInd to closest ind that is not deleted or an edge. Also
@@ -832,7 +799,13 @@ class NewQuestionStore {
   }
 
   @action.bound saveActivePanel() {
+    // if curies aren't enabled, delete all curies
+    if (this.activePanelState.panelType === 'node' && !this.activePanelState.curieEnabled) {
+      this.activePanelState.curie = [];
+      this.activePanelState.name = '';
+    }
     this.panelState[this.activePanelInd] = this.activePanelState.clone();
+    this.togglePanelModal();
     if (this.isEdge(this.panelState[this.activePanelInd])) {
       // Saving an edge means it has to be valid, so `broken` param must be false
       this.panelState[this.activePanelInd].broken = false;
@@ -850,6 +823,7 @@ class NewQuestionStore {
     if (nodePanelInd !== null) { // TODO: Consider updating only if activePanelInd differs from nodePanelInd
       this.activePanelInd = nodePanelInd;
       this.activePanelState = this.panelState[nodePanelInd].clone();
+      this.togglePanelModal();
     }
   }
 
@@ -863,8 +837,13 @@ class NewQuestionStore {
     if (edgePanelInd !== null) {
       this.activePanelInd = edgePanelInd;
       this.activePanelState = this.panelState[edgePanelInd].clone();
-      console.log('In updateActivePanelFromEdgeId - Updated activePanelState');
+      this.togglePanelModal();
     }
+  }
+
+  @action.bound togglePanelModal() {
+    const showModal = this.showPanelModal;
+    this.showPanelModal = !showModal;
   }
 
   // Async action to update concepts list and conceptsReady flag in store
@@ -895,6 +874,19 @@ class NewQuestionStore {
     }
   }).bind(this);
 
+  // Async action to update predicates list and predicatesReady flag in store
+  updatePredicates = flow(function* () { // eslint-disable-line func-names
+    try {
+      const predicates = yield (() => new Promise((resolve, reject) => {
+        this.appConfig.predicates(c => resolve(c), err => reject(err));
+      }))();
+      this.predicateList = predicates;
+      this.predicatesReady = true;
+    } catch (e) {
+      console.error('Failed to retrieve and update MobX store predicates entry', e);
+    }
+  }).bind(this);
+
   // Async action to submit natural language question to NLP parser and
   // obtain the corresponding machine-question from the NLP engine
   nlpParseQuestion = flow(function* () { // eslint-disable-line func-names
@@ -904,7 +896,6 @@ class NewQuestionStore {
       const machineQuestion = yield (() => new Promise((resolve, reject) => {
         this.appConfig.questionNewTranslate(question, mq => resolve(mq), err => reject(err));
       }))();
-      console.log('NLP Engine returned:', machineQuestion);
       this.machineQuestionSpecToPanelState({ natural_question: question, machine_question: machineQuestion });
       this.nlpFetching = false;
     } catch (e) {
@@ -927,7 +918,6 @@ class NewQuestionStore {
       const data = yield (() => new Promise((resolve, reject) => {
         this.appConfig.questionData(id, u => resolve(u), err => reject(err));
       }))();
-      console.log('Question template returned:', data);
       this.machineQuestionSpecToPanelState({
         natural_question: data.data.question.natural_question,
         machine_question: data.data.question.machine_question,
@@ -941,7 +931,6 @@ class NewQuestionStore {
   // Dispose all reactions so they are garbage collected when store is
   // destroyed (invoke in componentWillUnmount of root React component)
   cleanup() {
-    this.disposeAutoFetchPredicateList();
     this.disposeDeleteUnlinkedNodes();
     this.disposeGraphStateEmpty();
   }

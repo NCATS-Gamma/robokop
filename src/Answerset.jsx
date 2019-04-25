@@ -68,7 +68,7 @@ class Answerset extends React.Component {
         if ('body' in question.machine_question) {
           question.machine_question = JSON.parse(question.machine_question.body);
         }
-        
+
         this.setState({
           questionId: qid,
           question,

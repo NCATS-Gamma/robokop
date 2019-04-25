@@ -56,6 +56,7 @@ body :focus {
 .footer p {
   font-size: 0.75em;
   margin-top: 5px;
+  text-align: center;
 }
 
 
@@ -225,11 +226,9 @@ div.vis-tooltip .invalid-node {
 /* Form Validation Color for MultiSelect component from react-widgets*/
 .rw-widget-container.valid {
   border-color: #3c763d;
-  margin: 0px 10px;
 }
 .rw-widget-container.invalid {
   border-color: #a94442;
-  margin: 0px 10px;
 }
 
 /* Remove bold control labels */
@@ -364,26 +363,29 @@ button.taskListTask {
   min-width: 300px;
 }
 
-#answersetFilter {
-  min-width: 300px;
-  max-width: 600px;
-  max-height: 200px;
+.answersetFilter {
+  min-width: 30%;
+  max-width: 50%;
+  max-height: 30%;
   overflow: scroll;
   padding: 10px;
-  text-align: left;
-  position: absolute;
   background-color: white;
-  border: 1px solid black;
   z-index: 10;
 }
-#answersetFilter li {
-  list-style-type: none;
-}
-#answersetFilter hr {
+.answersetFilter hr {
   margin: 0;
 }
 
 #questionTempButton:disabled {
   cursor: not-allowed;
-  background-color: darkgray;
+  background-color: #eee;
+}
+/* Submit button on api pages. greyed out when disabled. */
+#submitAPI:disabled {
+  cursor: not-allowed;
+  background-color: #eee;
+}
+
+.curieSelectorInput:focus {
+  border: 1px solid black !important;
 }

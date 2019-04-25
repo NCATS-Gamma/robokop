@@ -217,7 +217,7 @@ class MessageAnswersetTable extends React.Component {
                     defaultPageSize={10}
                     defaultFilterMethod={this.defaultFilterMethod}
                     pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
-                    minRows={7}
+                    minRows={10}
                     filterable
                     onFilteredChange={this.getFiltered}
                     className="-highlight"

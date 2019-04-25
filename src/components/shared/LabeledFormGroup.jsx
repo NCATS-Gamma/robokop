@@ -10,7 +10,7 @@ const propTypes = {
   validateForm: PropTypes.func,
   validationHookFn: PropTypes.func, // This provides validation string as input arg when values change in field
   children: PropTypes.element.isRequired,
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 const defaultProps = {
@@ -18,6 +18,7 @@ const defaultProps = {
   validationHookFn: (validationStatus) => {}, // eslint-disable-line
   styles: {},
   classNames: {},
+  value: '',
 };
 
 class LabeledFormGroup extends React.Component {

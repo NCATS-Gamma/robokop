@@ -108,6 +108,7 @@ class CurieSelectorContainter extends React.Component {
     const { type, term, curie } = this.state;
     return (
       <CurieSelector
+        ref={(ref) => { this.curieSelector = ref; }}
         type={type}
         term={term}
         curie={curie}

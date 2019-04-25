@@ -19,15 +19,21 @@ class AppConfig {
       question: questionId => this.url(`q/${questionId}/`),
       answerset: (questionId, answersetId) => this.url(`a/${questionId}_${answersetId}/`),
       answer: (questionId, answersetId, answerId) => this.url(`a/${questionId}_${answersetId}/${answerId}/`),
-      about: this.url('about/'),
+      help: this.url('help/'),
       search: this.url('search/'),
       view: this.url('simple/view/'),
+      enrich: this.url('simple/enriched/'),
+      similarity: this.url('simple/similarity'),
+      expand: this.url('simple/expand'),
+      synonymize: this.url('simple/synonymize'),
+      termsofservice: this.url('termsofservice'),
     };
 
     // Other URLs that are primarily used for API calls
     this.apis = {
       user: this.url('api/user/'), // GET current user credentials
       concepts: this.url('api/concepts/'), // GET concepts contained in the global potential KG
+      predicates: this.url('api/predicates'), // GET predicates for edges
       operations: this.url('api/operations/'), // GET operations contained in global potential KG
       questions: this.url('api/questions/'), // POST to store a new question
       question: questionId => this.url(`api/q/${questionId}/`), // POST to update meta data, DELETE to delete the question
@@ -41,6 +47,10 @@ class AppConfig {
       feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
       search: this.url('api/search/'), // POST for Bionames search
       viewData: id => this.url(`api/simple/view/${id}`),
+      simpleEnriched: (type1, type2) => this.url(`api/simple/enriched/${type1}/${type2}`), // POST for simple enriched
+      simpleSimilarity: (type1, type2, id, simType) => this.url(`api/simple/similarity/${type1}/${id}/${type2}/${simType}`), // Get for simple similarity
+      simpleExpand: (type1, type2, id) => this.url(`api/simple/expand/${type1}/${id}/${type2}`), // Get for simple expand
+      simpleSynonymize: (id, type) => this.url(`api/simple/synonymize/${id}/${type}/`), // POST for synonyms of curie from Builder API
       graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql`,
       publications: (id1, id2) => this.url(`api/omnicorp/${id1}/${id2}`), // GET publications for one identifier or a pair of identifiers
     };
@@ -94,6 +104,7 @@ class AppConfig {
   concepts(fun, fail = () => {}) { this.getRequest(`${this.apis.concepts}`, fun, fail); }
   operations(fun) { this.getRequest(`${this.apis.operations}`, fun); }
   user(successFun, failureFun) { this.getRequest(`${this.apis.user}`, successFun, failureFun); }
+  predicates(successFun, failureFun) { this.getRequest(`${this.apis.predicates}`, successFun, failureFun); }
   answersetData(qid_aid, successFun, failureFun) { this.getRequest(`${this.apis.answersetData(qid_aid)}`, successFun, failureFun); }
 
   questionData(qid, successFun, failureFun) {
@@ -293,6 +304,41 @@ class AppConfig {
   viewData(uploadId, successFun, failureFun) {
     this.getRequest(
       this.apis.viewData(uploadId),
+      successFun,
+      failureFun,
+    );
+  }
+  simpleEnriched(type1, type2, identifiers, successFun, failureFun) {
+    this.postRequest(
+      this.apis.simpleEnriched(type1, type2),
+      {
+        identifiers,
+        include_descendants: false,
+        max_results: 100,
+        rebuild: false,
+        threshold: 0.5,
+      },
+      successFun,
+      failureFun,
+    );
+  }
+  simpleSimilarity(type1, type2, id, simType, successFun, failureFun) {
+    this.getRequest(
+      this.apis.simpleSimilarity(type1, type2, id, simType),
+      successFun,
+      failureFun,
+    );
+  }
+  simpleExpand(type1, type2, id, successFun, failureFun) {
+    this.getRequest(
+      this.apis.simpleExpand(type1, type2, id),
+      successFun,
+      failureFun,
+    );
+  }
+  simpleSynonymize(id, type, successFun, failureFun) {
+    this.getRequest(
+      this.apis.simpleSynonymize(id, type),
       successFun,
       failureFun,
     );

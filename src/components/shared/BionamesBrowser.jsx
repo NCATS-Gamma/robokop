@@ -122,21 +122,18 @@ class BionamesBrowser extends React.Component {
   renderEmpty() {
     const hasData = Array.isArray(this.props.data);
     return (
-      <div
-        style={{
-          color: '#ccc',
-          padding: '10px',
-        }}
-      >
+      <div>
         {hasData &&
-          <span>
-            No results found.
-          </span>
-        }
-        {!hasData &&
-          <span>
-            Start typing to search.
-          </span>
+          <div
+            style={{
+              color: '#ccc',
+              padding: '10px',
+            }}
+          >
+            <span>
+              No results found.
+            </span>
+          </div>
         }
       </div>
     );

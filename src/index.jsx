@@ -12,7 +12,8 @@ import 'react-widgets/dist/css/react-widgets.css';
 import 'babel-polyfill'; // For IE Promises
 
 import Landing from './Landing';
-import About from './About';
+import Help from './Help';
+import TermsofService from './TermsofService';
 import QuestionNew from './QuestionNew';
 import QuestionNewLinear from './QuestionNewLinear';
 import Question from './Question';
@@ -21,6 +22,10 @@ import Answerset from './Answerset';
 import Activity from './Activity';
 import MultiSearch from './MultiSearch';
 import SimpleViewer from './SimpleViewer';
+import SimpleEnriched from './SimpleEnriched';
+import SimpleSimilarity from './SimpleSimilarity';
+import SimpleExpand from './SimpleExpand';
+import Synonymize from './Synonymize';
 import NewQuestionStore from './stores/newQuestionStore';
 
 // Our actual CSS and other images etc.
@@ -59,9 +64,17 @@ const robokop = {
       document.getElementById('reactEntry'),
     );
   },
-  about: () => {
+  help: () => {
     ReactDOM.render(
-      <About
+      <Help
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  termsofservice: () => {
+    ReactDOM.render(
+      <TermsofService
         config={config}
       />,
       document.getElementById('reactEntry'),
@@ -135,6 +148,38 @@ const robokop = {
       <SimpleViewer
         config={config}
         id={id}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  simpleEnriched: () => {
+    ReactDOM.render(
+      <SimpleEnriched
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  simpleSimilarity: () => {
+    ReactDOM.render(
+      <SimpleSimilarity
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  simpleExpand: () => {
+    ReactDOM.render(
+      <SimpleExpand
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  synonymize: () => {
+    ReactDOM.render(
+      <Synonymize
+        config={config}
       />,
       document.getElementById('reactEntry'),
     );

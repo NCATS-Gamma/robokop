@@ -1,12 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Form, FormControl, FormGroup, Col, Checkbox, Button, Glyphicon, ControlLabel } from 'react-bootstrap';
-import FaPlus from 'react-icons/lib/fa/plus';
+import { Form } from 'react-bootstrap';
 import { toJS } from 'mobx';
-import { inject, observer, PropTypes as mobxPropTypes } from 'mobx-react';
-import { Multiselect, DropdownList } from 'react-widgets';
+import { observer, PropTypes as mobxPropTypes } from 'mobx-react';
+import { DropdownList } from 'react-widgets';
 
-// import AppConfig from './../../AppConfig';
 import Loading from './../Loading';
 import LabeledFormGroup from './../shared/LabeledFormGroup';
 import CurieSelectorContainer from './../shared/CurieSelectorContainer';
@@ -29,7 +27,6 @@ const propTypes = {
   }).isRequired,
 };
 
-// @inject(({ store }) => ({ store }))
 @observer
 class NodePanel extends React.Component {
   constructor(props) {
@@ -37,7 +34,6 @@ class NodePanel extends React.Component {
 
     this.onSearch = this.onSearch.bind(this);
     this.validateFormElement = this.validateFormElement.bind(this);
-    // this.onChangeInputLabel = this.onChangeInputLabel.bind(this);
   }
 
   /**
@@ -63,166 +59,88 @@ class NodePanel extends React.Component {
     return this.props.activePanel.store.appConfig.questionNewSearch(input, nodeType);
   }
 
-  getCurieSelectorElements() {
-    const { activePanel } = this.props;
-    // Note:
-    const isTypeSelected = activePanel.type !== '';
-    if (!isTypeSelected) { // Don't display a Curie selection dialog if type has not been selected yet
-      return null;
-    }
-    let curieList;
-    if (toJS(activePanel.curie).length !== 0) {
-      curieList = toJS(activePanel.curie).map(curie => ({ curie, type: activePanel.type, label: activePanel.name }));
-    } else {
-      curieList = [{ type: activePanel.type, curie: '', label: '' }];
-    }
-    const curieSelectorElements = curieList.map((aCurie, i) => {
-      const singleCurie = toJS(aCurie);
-      singleCurie.term = singleCurie.label; // TODO: Maybe refactor CurieSelectorContainer to not use `term`
-      delete singleCurie.label;
-      const curieSelectorElement = (
-        <div
-          style={{ display: 'table-row' }}
-          key={shortid.generate()}
-        >
-          <div
-            style={{ display: 'table-cell', padding: '5px 0px' }}
-          >
-            <CurieSelectorContainer
-              concepts={toJS(activePanel.store.concepts)}
-              search={this.onSearch}
-              disableType
-              initialInputs={singleCurie}
-              onChangeHook={(ty, te, cu) => activePanel.updateCurie(i, ty, te, cu)}
-            />
-          </div>
-          <div
-            style={{
-              display: 'table-cell', width: '30px', verticalAlign: 'middle', paddingLeft: '10px',
-            }}
-          >
-            {(i !== 0) &&
-              <Button
-                bsStyle="default"
-                onClick={() => activePanel.deleteCurie(i)}
-                style={{ padding: '8px' }}
-              >
-                <Glyphicon glyph="trash" />
-              </Button>
-            }
-          </div>
-        </div>
-      );
-      return curieSelectorElement;
-    });
-    return curieSelectorElements;
-  }
-
-  renderLoading() {
-    return (
-      <Loading />
-    );
-  }
-
-  renderLoaded() {
-    const { activePanel } = this.props;
-    const { isValidType, curieEnabled } = activePanel;
-    const dropDownObjList = activePanel.store.concepts.map(c => ({ text: entityNameDisplay(c), value: c }));
-    return (
-      <div>
-        <Form horizontal>
-          <FormGroup controlId="formHorizontalNodeIdName">
-            <Col componentClass={ControlLabel} sm={2}>
-              Node Id
-            </Col>
-            <Col sm={1}>
-              <FormControl
-                type="text"
-                value={activePanel.id}
-                disabled
-              />
-            </Col>
-            <Col componentClass={ControlLabel} sm={2}>
-              Node Name
-            </Col>
-            <Col sm={4}>
-              <FormControl
-                type="text"
-                value={activePanel.name}
-                onChange={e => activePanel.updateField('name', e.target.value)}
-              />
-            </Col>
-            <Col componentClass={ControlLabel} sm={2}>
-              Is Node a Set?
-            </Col>
-            <Col sm={1}>
-              <Checkbox
-                checked={activePanel.set}
-                onChange={e => activePanel.updateField('set', e.target.checked)}
-              />
-            </Col>
-          </FormGroup>
-          <LabeledFormGroup
-            formLabel={
-              <span>{'Node Type  '}
-              </span>
-            }
-            value={activePanel.type}
-            validateForm={() => this.validateFormElement('type')}
-            classNames={classNames}
-          >
-            <DropdownList
-              filter
-              // dropUp
-              // disabled={disableType}
-              // style={{ display: 'table-cell', verticalAlign: 'middle', width: '200px' }}
-              data={dropDownObjList}
-              textField="text"
-              valueField="value"
-              value={activePanel.type}
-              onChange={value => activePanel.updateField('type', value.value)}
-            />
-          </LabeledFormGroup>
-          <LabeledFormGroup
-            formLabel={<span>{'Enable Curies  '}</span>}
-            value={activePanel.type}
-            validateForm={() => this.validateFormElement('type')}
-            classNames={classNames}
-          >
-            <Checkbox
-              checked={curieEnabled}
-              disabled={!isValidType}
-              onChange={() => activePanel.toggleCurieEnable()}
-            />
-          </LabeledFormGroup>
-        </Form>
-        {isValidType && curieEnabled &&
-          <div style={{ display: 'table', width: '100%' }}>
-            {this.getCurieSelectorElements()}
-            <div style={{ display: 'table-row', textAlign: 'center' }}>
-              <Button style={{ marginTop: '10px' }} onClick={activePanel.addCurie}>
-                <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Curie'}
-              </Button>
-            </div>
-          </div>
-        }
-      </div>
-    );
-  }
-
   render() {
     const { store } = this.props.activePanel;
     const ready = store.dataReady && store.conceptsReady && store.userReady;
+    const { activePanel } = this.props;
+    const { isValidType, curieEnabled } = activePanel;
+    const dropDownObjList = activePanel.store.concepts.map(c => ({ text: entityNameDisplay(c), value: c }));
+    const nodeInfo = [
+      { text: 'Specific Entry', value: 'curieEnabled' },
+      { text: 'Single Unspecified Entry', value: 'regular' },
+      { text: 'Collection of Unspecified Entries', value: 'set' },
+    ];
+    const nodeTypeText = nodeInfo.find(nodeType => activePanel[nodeType.value]).text;
+    let curie;
+    if (toJS(activePanel.curie).length !== 0) {
+      curie = { curie: activePanel.curie[0], type: activePanel.type, term: activePanel.name };
+    } else {
+      curie = { type: activePanel.type, curie: '', term: '' };
+    }
     return (
       <div>
-        {!ready && this.renderLoading()}
-        {ready && this.renderLoaded()}
+        {ready ?
+          <div>
+            <Form horizontal>
+              <LabeledFormGroup
+                formLabel={<span>Node Type</span>}
+                value={activePanel.type}
+                validateForm={() => this.validateFormElement('type')}
+                classNames={classNames}
+              >
+                <DropdownList
+                  filter
+                  data={dropDownObjList}
+                  textField="text"
+                  valueField="value"
+                  value={activePanel.type}
+                  onChange={value => activePanel.updateField('type', value.value)}
+                />
+              </LabeledFormGroup>
+              <LabeledFormGroup
+                formLabel={<span>Treat as:</span>}
+                value={activePanel.type}
+                validateForm={() => this.validateFormElement('type')}
+                classNames={classNames}
+              >
+                <DropdownList
+                  data={nodeInfo}
+                  textField="text"
+                  valueField="value"
+                  value={nodeTypeText}
+                  onChange={value => activePanel.changeNodeFunction(value.value, value.text)}
+                />
+              </LabeledFormGroup>
+            </Form>
+            {isValidType && curieEnabled &&
+              <div style={{ display: 'table', width: '100%' }}>
+                <div
+                  style={{ display: 'table-row' }}
+                  key={shortid.generate()}
+                >
+                  <div
+                    style={{ display: 'table-cell', padding: '5px 0px' }}
+                  >
+                    <CurieSelectorContainer
+                      concepts={toJS(activePanel.store.concepts)}
+                      search={this.onSearch}
+                      disableType
+                      initialInputs={curie}
+                      onChangeHook={(ty, te, cu) => activePanel.updateCurie(ty, te, cu)}
+                    />
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+          :
+          <Loading />
+        }
       </div>
     );
   }
 }
 
 NodePanel.propTypes = propTypes;
-// FlowbokopOperationBuilder.defaultProps = defaultProps;
 
 export default NodePanel;
