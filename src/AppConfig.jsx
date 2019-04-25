@@ -25,6 +25,7 @@ class AppConfig {
       enrich: this.url('simple/enriched/'),
       similarity: this.url('simple/similarity'),
       expand: this.url('simple/expand'),
+      synonymize: this.url('simple/synonymize'),
       termsofservice: this.url('termsofservice'),
     };
 
@@ -49,6 +50,7 @@ class AppConfig {
       simpleEnriched: (type1, type2) => this.url(`api/simple/enriched/${type1}/${type2}`), // POST for simple enriched
       simpleSimilarity: (type1, type2, id, simType) => this.url(`api/simple/similarity/${type1}/${id}/${type2}/${simType}`), // Get for simple similarity
       simpleExpand: (type1, type2, id) => this.url(`api/simple/expand/${type1}/${id}/${type2}`), // Get for simple expand
+      simpleSynonymize: (id, type) => this.url(`api/simple/synonymize/${id}/${type}/`), // POST for synonyms of curie from Builder API
       graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql`,
       publications: (id1, id2) => this.url(`api/omnicorp/${id1}/${id2}`), // GET publications for one identifier or a pair of identifiers
     };
@@ -330,6 +332,13 @@ class AppConfig {
   simpleExpand(type1, type2, id, successFun, failureFun) {
     this.getRequest(
       this.apis.simpleExpand(type1, type2, id),
+      successFun,
+      failureFun,
+    );
+  }
+  simpleSynonymize(id, type, successFun, failureFun) {
+    this.getRequest(
+      this.apis.simpleSynonymize(id, type),
       successFun,
       failureFun,
     );

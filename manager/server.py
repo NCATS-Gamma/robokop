@@ -88,6 +88,11 @@ def expand():
     """Get expanded answers."""
     return render_template('simpleExpand.html')
 
+@app.route('/simple/synonymize/')
+def synonymize():
+    """Get synonymous curie identifiers."""
+    return render_template('synonymize.html')
+
 @app.route('/compare/')
 def compare():
     """Search for biomedical concept identifiers."""

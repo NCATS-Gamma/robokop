@@ -27,6 +27,7 @@ class SimpleEnriched extends React.Component {
       type1: '',
       type2: '',
       identifiers: [''],
+      terms: [''],
       results: [],
       resultsLoading: false,
       resultsReady: false,
@@ -39,8 +40,8 @@ class SimpleEnriched extends React.Component {
     this.handleCurieChange = this.handleCurieChange.bind(this);
     this.getResults = this.getResults.bind(this);
     this.getTableColumns = this.getTableColumns.bind(this);
-    this.addIdentifier = this.addIdentifier.bind(this);
-    this.deleteIdentifier = this.deleteIdentifier.bind(this);
+    this.addCuries = this.addCuries.bind(this);
+    this.deleteCuries = this.deleteCuries.bind(this);
   }
 
   componentDidMount() {
@@ -69,22 +70,25 @@ class SimpleEnriched extends React.Component {
 
   handleCurieChange(i, ty, te, cu) {
     if (cu || !te) {
-      const { identifiers } = this.state;
+      const { identifiers, terms } = this.state;
       identifiers[i] = cu;
-      this.setState({ identifiers });
+      terms[i] = te;
+      this.setState({ identifiers, terms });
     }
   }
 
-  addIdentifier() {
-    const { identifiers } = this.state;
+  addCuries() {
+    const { identifiers, terms } = this.state;
     identifiers.push('');
-    this.setState({ identifiers });
+    terms.push('');
+    this.setState({ identifiers, terms });
   }
 
-  deleteIdentifier(i) {
-    const { identifiers } = this.state;
+  deleteCuries(i) {
+    const { identifiers, terms } = this.state;
     identifiers.splice(i, 1);
-    this.setState({ identifiers });
+    terms.splice(i, 1);
+    this.setState({ identifiers, terms });
   }
 
   getResults(event) {
@@ -127,7 +131,7 @@ class SimpleEnriched extends React.Component {
   render() {
     const { config } = this.props;
     const {
-      user, concepts, type1, type2, identifiers, results, resultsReady, resultsLoading, resultsFail,
+      user, concepts, type1, type2, identifiers, results, resultsReady, resultsLoading, resultsFail, terms,
     } = this.state;
     // if we don't have all the info, disable the submit.
     const disableSubmit = !(type1 && type2 && identifiers[0]);
@@ -192,7 +196,7 @@ class SimpleEnriched extends React.Component {
                             concepts={concepts}
                             search={this.onSearch}
                             disableType
-                            initialInputs={{ type: type1, term: '', curie: identifiers[i] }}
+                            initialInputs={{ type: type1, term: terms[i], curie: identifiers[i] }}
                             onChangeHook={(ty, te, cu) => this.handleCurieChange(i, ty, te, cu)}
                           />
                         </div>
@@ -204,7 +208,7 @@ class SimpleEnriched extends React.Component {
                           {(i !== 0) &&
                             <Button
                               bsStyle="default"
-                              onClick={() => this.deleteIdentifier(i)}
+                              onClick={() => this.deleteCuries(i)}
                               style={{ padding: '8px' }}
                             >
                               <Glyphicon glyph="trash" />
@@ -214,7 +218,7 @@ class SimpleEnriched extends React.Component {
                       </div>
                     ))}
                     <div style={{ display: 'table-row', textAlign: 'center' }}>
-                      <Button style={{ marginTop: '10px' }} onClick={this.addIdentifier}>
+                      <Button style={{ marginTop: '10px' }} onClick={this.addCuries}>
                         <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Curie'}
                       </Button>
                     </div>

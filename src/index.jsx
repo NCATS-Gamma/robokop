@@ -25,6 +25,7 @@ import SimpleViewer from './SimpleViewer';
 import SimpleEnriched from './SimpleEnriched';
 import SimpleSimilarity from './SimpleSimilarity';
 import SimpleExpand from './SimpleExpand';
+import Synonymize from './Synonymize';
 import NewQuestionStore from './stores/newQuestionStore';
 
 // Our actual CSS and other images etc.
@@ -170,6 +171,14 @@ const robokop = {
   simpleExpand: () => {
     ReactDOM.render(
       <SimpleExpand
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  synonymize: () => {
+    ReactDOM.render(
+      <Synonymize
         config={config}
       />,
       document.getElementById('reactEntry'),

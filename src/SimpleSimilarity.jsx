@@ -24,6 +24,7 @@ class SimpleSimilarity extends React.Component {
       type1: '',
       type2: '',
       identifier: '',
+      term: '',
       simType: '',
       results: [],
       resultsLoading: false,
@@ -65,7 +66,7 @@ class SimpleSimilarity extends React.Component {
 
   handleCurieChange(ty, te, cu) {
     if (cu || !te) {
-      this.setState({ identifier: cu });
+      this.setState({ identifier: cu, term: te });
     }
   }
 
@@ -111,7 +112,7 @@ class SimpleSimilarity extends React.Component {
   render() {
     const { config } = this.props;
     const {
-      user, concepts, type1, type2, identifier, results, resultsReady, resultsLoading, simType, resultsFail,
+      user, concepts, type1, type2, identifier, results, resultsReady, resultsLoading, simType, resultsFail, term,
     } = this.state;
     // if we don't have all the info, disable the submit.
     const disableSubmit = !(type1 && type2 && identifier && simType);
@@ -171,7 +172,7 @@ class SimpleSimilarity extends React.Component {
                         concepts={concepts}
                         search={this.onSearch}
                         disableType
-                        initialInputs={{ type: type1, term: '', curie: identifier }}
+                        initialInputs={{ type: type1, term, curie: identifier }}
                         onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu)}
                       />
                     </div>

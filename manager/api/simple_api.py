@@ -440,6 +440,57 @@ class ViewResources(Resource):
 
 api.add_resource(ViewResources, '/simple/view/<uid>/')
 
+
+class Synonymize(Resource):
+    def get(self, id1, type1):
+        """
+        Find synonymous identifiers for a given curie.
+        ---
+        tags: [simple]
+        parameters:
+          - in: path
+            name: id1
+            description: "curie of query node"
+            schema:
+                type: string
+            required: true
+            default: "MONDO:0005737"
+          - in: path
+            name: type1
+            description: "type of query node"
+            schema:
+                type: string
+            required: true
+            default: "disease"
+        responses:
+            200:
+                description: Synonymized node
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                id:
+                                    type: string
+                                name:
+                                    type: string
+                                synonyms:
+                                    type: array
+                                    items: string
+                                type:
+                                    type: string
+        """
+        logger.info('Synonymizing node')
+        response = requests.post( f'http://{os.environ["BUILDER_HOST"]}:{os.environ["BUILDER_PORT"]}/api/synonymize/{id1}/{type1}/' )
+        if not response.ok:
+            logger.info(f'   Failed to synonymize by calling the builder {response.status_code}: {response.text}')
+            return response.text, response.status_code
+        
+        return response.json(), 200
+
+
+api.add_resource(Synonymize, '/simple/synonymize/<id1>/<type1>/')
+
 class SimilaritySearch(Resource):
     def get(self, type1, id1, type2, by_type):
         """

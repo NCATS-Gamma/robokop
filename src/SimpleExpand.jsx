@@ -25,6 +25,7 @@ class SimpleExpand extends React.Component {
       type1: '',
       type2: '',
       identifier: '',
+      term: '',
       resultsLoading: false,
       resultsReady: false,
       resultsFail: false,
@@ -65,7 +66,7 @@ class SimpleExpand extends React.Component {
 
   handleCurieChange(ty, te, cu) {
     if (cu || !te) {
-      this.setState({ identifier: cu });
+      this.setState({ identifier: cu, term: te });
     }
   }
 
@@ -94,7 +95,7 @@ class SimpleExpand extends React.Component {
   render() {
     const { config } = this.props;
     const {
-      user, concepts, type1, type2, identifier, resultsReady, resultsLoading, resultsFail,
+      user, concepts, type1, type2, identifier, resultsReady, resultsLoading, resultsFail, term,
     } = this.state;
     // if we don't have all the info, disable the submit.
     const disableSubmit = !(type1 && type2 && identifier);
@@ -142,7 +143,7 @@ class SimpleExpand extends React.Component {
                 {type1 &&
                   <div>
                     <h3>
-                      Node Curies
+                      Node 1 Curie
                     </h3>
                     <div
                       style={{
@@ -153,7 +154,7 @@ class SimpleExpand extends React.Component {
                         concepts={concepts}
                         search={this.onSearch}
                         disableType
-                        initialInputs={{ type: type1, term: '', curie: identifier }}
+                        initialInputs={{ type: type1, term, curie: identifier }}
                         onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu)}
                       />
                     </div>
