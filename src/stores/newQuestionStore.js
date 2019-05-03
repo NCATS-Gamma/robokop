@@ -842,6 +842,11 @@ class NewQuestionStore {
   }
 
   @action.bound togglePanelModal() {
+    if (this.isUnsavedChanges) {
+      if (!window.confirm('You have unsaved changes. Are you sure you want to close? You will lose your work.')) {
+        return;
+      }
+    }
     const showModal = this.showPanelModal;
     this.showPanelModal = !showModal;
   }
