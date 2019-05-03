@@ -10,6 +10,7 @@ import Footer from './components/Footer';
 import Loading from './components/Loading';
 import CurieSelectorContainer from './components/shared/CurieSelectorContainer';
 import entityNameDisplay from './components/util/entityNameDisplay';
+import DownloadButton from './components/shared/DownloadButton';
 
 
 class SimpleSimilarity extends React.Component {
@@ -30,6 +31,8 @@ class SimpleSimilarity extends React.Component {
       resultsLoading: false,
       resultsReady: false,
       resultsFail: false,
+      threshold: 0.5,
+      maxResults: 250,
     };
 
     this.initializeState = this.initializeState.bind(this);
@@ -38,6 +41,8 @@ class SimpleSimilarity extends React.Component {
     this.handleCurieChange = this.handleCurieChange.bind(this);
     this.getResults = this.getResults.bind(this);
     this.getTableColumns = this.getTableColumns.bind(this);
+    this.changeThreshold = this.changeThreshold.bind(this);
+    this.changeMaxResults = this.changeMaxResults.bind(this);
   }
 
   componentDidMount() {
@@ -70,17 +75,29 @@ class SimpleSimilarity extends React.Component {
     }
   }
 
+  changeThreshold(event) {
+    const threshold = event.target.value;
+    this.setState({ threshold });
+  }
+
+  changeMaxResults(event) {
+    const maxResults = event.target.value;
+    this.setState({ maxResults });
+  }
+
   getResults(event) {
     event.preventDefault();
     this.setState({ resultsLoading: true, resultsReady: false });
     const {
-      type1, type2, identifier, simType,
+      type1, type2, identifier, simType, threshold, maxResults,
     } = this.state;
     this.appConfig.simpleSimilarity(
       type1,
       type2,
       identifier,
       simType,
+      threshold,
+      maxResults,
       (data) => {
         this.setState({
           results: data, resultsReady: true, resultsLoading: false,
@@ -112,10 +129,11 @@ class SimpleSimilarity extends React.Component {
   render() {
     const { config } = this.props;
     const {
-      user, concepts, type1, type2, identifier, results, resultsReady, resultsLoading, simType, resultsFail, term,
+      user, concepts, type1, type2, identifier, results, resultsReady, resultsLoading, simType,
+      resultsFail, term, maxResults, threshold,
     } = this.state;
     // if we don't have all the info, disable the submit.
-    const disableSubmit = !(type1 && type2 && identifier && simType);
+    const disableSubmit = !(type1 && type2 && identifier && simType) || resultsLoading;
     const types = concepts.map(concept => ({ text: entityNameDisplay(concept), value: concept }));
     return (
       <div>
@@ -197,6 +215,16 @@ class SimpleSimilarity extends React.Component {
                 </FormGroup>
               </Col>
             </Row>
+            <Row style={{ margin: '20px' }}>
+              <label htmlFor="maxResults" style={{ display: 'block', margin: '10px 0px' }}>
+                <input id="maxResults" style={{ marginRight: '10px' }} type="number" min="0" onChange={this.changeMaxResults} value={maxResults} />
+                Maximum Results
+              </label>
+              <label htmlFor="threshold" style={{ display: 'block', margin: '10px 0px' }}>
+                <input id="threshold" style={{ marginRight: '10px' }} type="number" min="0" step="0.1" onChange={this.changeThreshold} value={threshold} />
+                Threshold
+              </label>
+            </Row>
             <Row style={{ textAlign: 'right', margin: '20px' }}>
               <Button id="submitAPI" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
             </Row>
@@ -206,23 +234,26 @@ class SimpleSimilarity extends React.Component {
               <Loading />
             }
             {resultsReady &&
-              <ReactTable
-                data={results}
-                columns={[{
-                  Header: 'Similar Nodes',
-                  columns: this.getTableColumns(results),
-                }]}
-                defaultPageSize={10}
-                pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
-                minRows={7}
-                className="-striped -highlight"
-                defaultSorted={[
-                  {
-                    id: 'similarity',
-                    desc: true,
-                  },
-                ]}
-              />
+              <div>
+                <DownloadButton results={results} source="similarity" fileName={`${type1}_to_${type2}_with_${simType}_similarity`} />
+                <ReactTable
+                  data={results}
+                  columns={[{
+                    Header: 'Similar Nodes',
+                    columns: this.getTableColumns(results),
+                  }]}
+                  defaultPageSize={10}
+                  pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
+                  minRows={7}
+                  className="-striped -highlight"
+                  defaultSorted={[
+                    {
+                      id: 'similarity',
+                      desc: true,
+                    },
+                  ]}
+                />
+              </div>
             }
             {resultsFail &&
               <h3>

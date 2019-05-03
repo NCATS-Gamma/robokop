@@ -4,13 +4,25 @@
   {%- block html %}
   <head>
     {%- block head %}
-    <title>{% block title %}{{ title|default }}{% endblock title %}</title>
+    <title>ROBOKOP</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
       {%- block metas %}
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       {%- endblock metas %}
 
       {%- block styles %}
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+      <style>
+        body {
+          text-align: center;
+        }
+        #security_menu {
+          margin: auto;
+          width: 15%;
+          text-align: left;
+        }
+      </style>
       {%- endblock styles %}
     {%- endblock head %}
   </head>

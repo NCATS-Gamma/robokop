@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Grid, Row, Col, FormControl, Button, Glyphicon } from 'react-bootstrap';
+import { Grid, Row, Col, Button, Glyphicon } from 'react-bootstrap';
 import { AutoSizer } from 'react-virtualized';
 
 import AppConfig from './AppConfig';
@@ -13,6 +13,7 @@ import CurieSelectorContainer from './components/shared/CurieSelectorContainer';
 // import CurieBrowser from './components/shared/CurieBrowser';
 
 const _ = require('lodash');
+const shortid = require('shortid');
 
 class MultiSearch extends React.Component {
   constructor(props) {
@@ -106,13 +107,12 @@ class MultiSearch extends React.Component {
         submittedJSON = [submittedJSON];
       }
       if (Array.isArray(submittedJSON)) {
-        console.log('Array is:', submittedJSON);
         curieSelectorElements = width => (
           submittedJSON.map((jsonBlob, i) => {
             const curieSelectorElement = (
-              <div style={{ display: 'table-row' }}>
+              <div key={shortid.generate()} style={{ display: 'flex' }}>
                 <div
-                  style={{ display: 'table-cell', padding: '5px 0px' }}
+                  style={{ flexBasis: '100%', padding: '5px 0px' }}
                 >
                   <CurieSelectorContainer
                     concepts={this.state.concepts}
@@ -126,7 +126,7 @@ class MultiSearch extends React.Component {
                 </div>
                 <div
                   style={{
-                    display: 'table-cell', width: '30px', verticalAlign: 'middle', paddingLeft: '10px',
+                    width: '30px', verticalAlign: 'top', padding: '5px 10px',
                   }}
                 >
                   {(i !== 0) &&
@@ -237,7 +237,7 @@ MultiSearch.propTypes = {
   config: PropTypes.shape({
     protocol: PropTypes.string,
     clientHost: PropTypes.string,
-    port: PropTypes.number,
+    port: PropTypes.string,
   }).isRequired,
 };
 

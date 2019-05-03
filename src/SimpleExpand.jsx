@@ -98,7 +98,7 @@ class SimpleExpand extends React.Component {
       user, concepts, type1, type2, identifier, resultsReady, resultsLoading, resultsFail, term,
     } = this.state;
     // if we don't have all the info, disable the submit.
-    const disableSubmit = !(type1 && type2 && identifier);
+    const disableSubmit = !(type1 && type2 && identifier) || resultsLoading;
     const types = concepts.map(concept => ({ text: entityNameDisplay(concept), value: concept }));
     return (
       <div>
@@ -166,7 +166,7 @@ class SimpleExpand extends React.Component {
               <Button id="submitAPI" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
             </Row>
           </Form>
-          <Row style={{ marginBottom: '20px' }}>
+          <Row style={{ margin: '20px 0px' }}>
             {resultsLoading &&
               <Loading />
             }
@@ -174,6 +174,8 @@ class SimpleExpand extends React.Component {
               <MessageAnswersetTable
                 concepts={types}
                 store={this.answersetStore}
+                simpleExpand
+                fileName={`${type1}(${identifier})_to_${type2}_expanded`}
               />
             }
             {resultsFail &&

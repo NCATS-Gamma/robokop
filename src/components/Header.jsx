@@ -78,6 +78,10 @@ class Header extends React.Component {
             <NavDropdown eventKey={3} title="Apps" id="basic-nav-dropdown">
               <MenuItem eventKey={3.1} href={this.appConfig.urls.search}>Search - <small>Find Identifiers for Biomedical Concepts</small></MenuItem>
               <MenuItem eventKey={3.2} href={this.appConfig.urls.view}>Answer Set Explorer - <small>Use the Robokop UI with answer set files.</small></MenuItem>
+              <MenuItem eventKey={3.3} href={this.appConfig.urls.expand}>Simple Expand - <small>Use the Robokop Expand API.</small></MenuItem>
+              <MenuItem eventKey={3.4} href={this.appConfig.urls.enrich}>Simple Enriched - <small>Use the Robokop Enriched API.</small></MenuItem>
+              <MenuItem eventKey={3.5} href={this.appConfig.urls.similarity}>Simple Similarity - <small>Use the Robokop Similarity API.</small></MenuItem>
+              <MenuItem eventKey={3.6} href={this.appConfig.urls.synonymize}>Simple Synonymize - <small>Use the Robokop Synonymize API.</small></MenuItem>
             </NavDropdown>
             }
             {isAuth &&

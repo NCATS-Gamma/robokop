@@ -13,7 +13,7 @@ const ButtonGroupPanel = observer(({ store, openJsonEditor }) => {
   const atleastTwoNodes = store.panelState.filter(panel => store.isNode(panel) && !panel.deleted).length > 1;
   return (
     <div style={{
-        position: 'absolute', left: '30px', top: '70px', zIndex: 99,
+        position: 'absolute', left: '30px', top: '60px', zIndex: 99,
       }}
     >
       <ButtonGroup vertical>
