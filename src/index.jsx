@@ -171,9 +171,11 @@ const robokop = {
   },
   simpleExpand: () => {
     ReactDOM.render(
-      <SimpleExpand
-        config={config}
-      />,
+      <Provider store={new NewQuestionStore()}>
+        <SimpleExpand
+          config={config}
+        />
+      </Provider>,
       document.getElementById('reactEntry'),
     );
   },

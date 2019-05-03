@@ -1,18 +1,25 @@
 import React from 'react';
+import { inject, observer } from 'mobx-react';
+import { toJS } from 'mobx';
 
-import { DropdownList } from 'react-widgets';
-import { Grid, Row, Col, Form, FormGroup, Button } from 'react-bootstrap';
+import { DropdownList, SelectList } from 'react-widgets';
+import { Grid, Row, Col, Form, FormGroup, Button, OverlayTrigger } from 'react-bootstrap';
+
+import FaInfoCircle from 'react-icons/lib/fa/info-circle';
 
 import AppConfig from './AppConfig';
 import AnswersetStore from './stores/messageAnswersetStore';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Loading from './components/Loading';
+import { maxConnectivityPopover, directionPopover } from './components/shared/Popovers';
 import MessageAnswersetTable from './components/answerset/MessageAnswersetTable';
 import CurieSelectorContainer from './components/shared/CurieSelectorContainer';
 import entityNameDisplay from './components/util/entityNameDisplay';
 
 
+@inject(({ store }) => ({ store }))
+@observer
 class SimpleExpand extends React.Component {
   constructor(props) {
     super(props);
@@ -20,8 +27,6 @@ class SimpleExpand extends React.Component {
     this.appConfig = new AppConfig(props.config);
 
     this.state = {
-      user: {},
-      concepts: [],
       type1: '',
       type2: '',
       identifier: '',
@@ -29,31 +34,21 @@ class SimpleExpand extends React.Component {
       resultsLoading: false,
       resultsReady: false,
       resultsFail: false,
+      maxConnect: 0,
+      maxResults: 250,
+      predicate: [],
+      direction: 'out',
     };
 
-    this.initializeState = this.initializeState.bind(this);
     this.updateType = this.updateType.bind(this);
     this.onSearch = this.onSearch.bind(this);
     this.handleCurieChange = this.handleCurieChange.bind(this);
     this.getResults = this.getResults.bind(this);
+    this.changeMaxResults = this.changeMaxResults.bind(this);
+    this.changeMaxConnect = this.changeMaxConnect.bind(this);
+    this.getPredicateList = this.getPredicateList.bind(this);
 
     this.answersetStore = '';
-  }
-
-  componentDidMount() {
-    this.initializeState();
-  }
-
-  initializeState() {
-    // makes the appropriate GET request from server.py,
-    // uses the result to set this.state
-    this.appConfig.user(data => this.setState({
-      user: this.appConfig.ensureUser(data),
-      // userReady: true,
-    }));
-    this.appConfig.concepts(data => this.setState({
-      concepts: data,
-    }));
   }
 
   updateType(typeObj) {
@@ -70,14 +65,41 @@ class SimpleExpand extends React.Component {
     }
   }
 
+  changeMaxResults(event) {
+    // some reason why react is changing these to strings
+    const maxResults = Number(event.target.value);
+    this.setState({ maxResults });
+  }
+
+  changeMaxConnect(event) {
+    // some reason why react is changing these to strings
+    const maxConnect = Number(event.target.value);
+    this.setState({ maxConnect });
+  }
+
+  getPredicateList() {
+    const { type1, type2, identifier } = this.state;
+    let predicateList = [];
+    if (type1 && type2 && identifier) {
+      predicateList = [...new Set(this.props.store.predicateList[type1][type2])];
+    }
+    return predicateList;
+  }
+
   getResults(event) {
     event.preventDefault();
     this.setState({ resultsLoading: true, resultsReady: false, resultsFail: false });
-    const { type1, type2, identifier } = this.state;
+    const {
+      type1, type2, identifier, predicate, direction, maxConnect, maxResults,
+    } = this.state;
     this.appConfig.simpleExpand(
       type1,
       type2,
       identifier,
+      predicate,
+      direction,
+      maxConnect,
+      maxResults,
       (data) => {
         this.answersetStore = new AnswersetStore(data);
         this.setState({
@@ -93,55 +115,58 @@ class SimpleExpand extends React.Component {
   }
 
   render() {
-    const { config } = this.props;
+    const { config, store } = this.props;
+    const ready = store.conceptsReady && store.userReady && store.predicatesReady;
     const {
-      user, concepts, type1, type2, identifier, resultsReady, resultsLoading, resultsFail, term,
+      type1, type2, identifier, resultsReady, resultsLoading, resultsFail, term, maxConnect, maxResults,
+      predicate, direction,
     } = this.state;
+    const predicateList = this.getPredicateList();
     // if we don't have all the info, disable the submit.
     const disableSubmit = !(type1 && type2 && identifier) || resultsLoading;
-    const types = concepts.map(concept => ({ text: entityNameDisplay(concept), value: concept }));
+    const types = store.concepts.map(concept => ({ text: entityNameDisplay(concept), value: concept }));
     return (
       <div>
-        <Header config={config} user={user} />
-        <Grid>
-          <h1 style={{ textAlign: 'center' }}>Expanded Nodes</h1>
-          <Form>
-            <Row>
-              <Col md={6}>
-                <FormGroup controlId="node1">
-                  <h3>
-                    Node 1 Type
-                  </h3>
-                  <DropdownList
-                    filter
-                    data={types}
-                    textField="text"
-                    valueField="value"
-                    value={type1}
-                    onChange={value => this.updateType({ type1: value.value })}
-                  />
-                </FormGroup>
-              </Col>
-              <Col md={6}>
-                <FormGroup controlId="node2">
-                  <h3>
-                    Node 2 Type
-                  </h3>
-                  <DropdownList
-                    filter
-                    data={types}
-                    textField="text"
-                    valueField="value"
-                    value={type2}
-                    onChange={value => this.updateType({ type2: value.value })}
-                  />
-                </FormGroup>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={12}>
-                {type1 &&
-                  <div>
+        {ready &&
+          <div>
+            <Header config={config} user={store.user} />
+            <Grid>
+              <h1 style={{ textAlign: 'center' }}>Expanded Nodes</h1>
+              <Form>
+                <Row>
+                  <Col md={6}>
+                    <FormGroup controlId="node1">
+                      <h3>
+                        Node 1 Type
+                      </h3>
+                      <DropdownList
+                        filter
+                        data={types}
+                        textField="text"
+                        valueField="value"
+                        value={type1}
+                        onChange={value => this.updateType({ type1: value.value })}
+                      />
+                    </FormGroup>
+                  </Col>
+                  <Col md={6}>
+                    <FormGroup controlId="node2">
+                      <h3>
+                        Node 2 Type
+                      </h3>
+                      <DropdownList
+                        filter
+                        data={types}
+                        textField="text"
+                        valueField="value"
+                        value={type2}
+                        onChange={value => this.updateType({ type2: value.value })}
+                      />
+                    </FormGroup>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md={12}>
                     <h3>
                       Node 1 Curie
                     </h3>
@@ -151,41 +176,86 @@ class SimpleExpand extends React.Component {
                       }}
                     >
                       <CurieSelectorContainer
-                        concepts={concepts}
+                        concepts={toJS(store.concepts)}
                         search={this.onSearch}
                         disableType
                         initialInputs={{ type: type1, term, curie: identifier }}
                         onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu)}
                       />
                     </div>
-                  </div>
+                  </Col>
+                </Row>
+                <Row style={{ margin: '20px' }}>
+                  <Col md={5}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <h4>Predicates</h4>
+                      <Button
+                        onClick={() => this.setState({ predicate: '' })}
+                        style={{ padding: '2px', margin: 'auto 0' }}
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                    <SelectList
+                      data={predicateList}
+                      value={predicate}
+                      disabled={!predicateList.length}
+                      onChange={value => this.setState({ predicate: value })}
+                      style={{ maxHeight: '150px' }}
+                      messages={{
+                        emptyList: 'Please choose types and a curie first.',
+                      }}
+                    />
+                    <h4>
+                      Direction
+                      <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={directionPopover}>
+                        <FaInfoCircle size={17} />
+                      </OverlayTrigger>
+                    </h4>
+                    <SelectList
+                      data={['out', 'in', 'undirected']}
+                      value={direction}
+                      onChange={value => this.setState({ direction: value })}
+                    />
+                    <label htmlFor="maxConnect" style={{ display: 'block', margin: '10px 0px' }}>
+                      <input id="maxConnect" style={{ marginRight: '10px' }} type="number" min="0" onChange={this.changeMaxConnect} value={maxConnect} />
+                      Maximum Connectivity
+                      <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={maxConnectivityPopover}>
+                        <FaInfoCircle size={17} />
+                      </OverlayTrigger>
+                    </label>
+                    <label htmlFor="maxResults" style={{ display: 'block', margin: '10px 0px' }}>
+                      <input id="maxResults" style={{ marginRight: '10px' }} type="number" min="0" onChange={this.changeMaxResults} value={maxResults} />
+                      Maximum Results
+                    </label>
+                  </Col>
+                </Row>
+                <Row style={{ textAlign: 'right', margin: '20px' }}>
+                  <Button id="submitAPI" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
+                </Row>
+              </Form>
+              <Row style={{ margin: '20px 0px' }}>
+                {resultsLoading &&
+                  <Loading />
                 }
-              </Col>
-            </Row>
-            <Row style={{ textAlign: 'right', margin: '20px' }}>
-              <Button id="submitAPI" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
-            </Row>
-          </Form>
-          <Row style={{ margin: '20px 0px' }}>
-            {resultsLoading &&
-              <Loading />
-            }
-            {resultsReady &&
-              <MessageAnswersetTable
-                concepts={types}
-                store={this.answersetStore}
-                simpleExpand
-                fileName={`${type1}(${identifier})_to_${type2}_expanded`}
-              />
-            }
-            {resultsFail &&
-              <h3>
-                No results came back. Please try a different query.
-              </h3>
-            }
-          </Row>
-        </Grid>
-        <Footer config={config} />
+                {resultsReady &&
+                  <MessageAnswersetTable
+                    concepts={types}
+                    store={this.answersetStore}
+                    simpleExpand
+                    fileName={`${type1}(${identifier})_to_${type2}_expanded`}
+                  />
+                }
+                {resultsFail &&
+                  <h3>
+                    No results came back. Please try a different query.
+                  </h3>
+                }
+              </Row>
+            </Grid>
+            <Footer config={config} />
+          </div>
+        }
       </div>
     );
   }

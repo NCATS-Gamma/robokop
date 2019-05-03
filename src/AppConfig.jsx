@@ -51,7 +51,9 @@ class AppConfig {
       simpleSimilarity: (type1, type2, id, simType, threshold, maxResults) => (
         this.url(`api/simple/similarity/${type1}/${id}/${type2}/${simType}?threshhold=${threshold}&max_results=${maxResults}`)
       ), // Get for simple similarity
-      simpleExpand: (type1, type2, id) => this.url(`api/simple/expand/${type1}/${id}/${type2}`), // Get for simple expand
+      simpleExpand: (type1, type2, id, predicate, direction, maxConnect, maxResults) => (
+        this.url(`api/simple/expand/${type1}/${id}/${type2}?predicate=${predicate}&direction=${direction}&max_connectivity=${maxConnect}&max_results=${maxResults}`)
+      ), // Get for simple expand
       simpleSynonymize: (id, type) => this.url(`api/simple/synonymize/${id}/${type}/`), // POST for synonyms of curie from Builder API
       graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql`,
       publications: (id1, id2) => this.url(`api/omnicorp/${id1}/${id2}`), // GET publications for one identifier or a pair of identifiers
@@ -325,9 +327,9 @@ class AppConfig {
       failureFun,
     );
   }
-  simpleExpand(type1, type2, id, successFun, failureFun) {
+  simpleExpand(type1, type2, id, predicate, direction, maxConnect, maxResults, successFun, failureFun) {
     this.getRequest(
-      this.apis.simpleExpand(type1, type2, id),
+      this.apis.simpleExpand(type1, type2, id, predicate, direction, maxConnect, maxResults),
       successFun,
       failureFun,
     );

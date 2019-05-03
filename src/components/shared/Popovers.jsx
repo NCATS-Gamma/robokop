@@ -87,4 +87,17 @@ const questionNamePopover = (
   </Popover>
 );
 
-export { questionGraphPopover, nodePanelPopover, edgePanelPopover, questionNamePopover };
+const maxConnectivityPopover = (
+  <Popover title="Maximum Connectivity" id="popover-positioned-right">
+    Maximum number of edges into or out of nodes within the answer (0 for inifinite).
+  </Popover>
+);
+
+const directionPopover = (
+  <Popover title="Direction" id="popover-positioned-right">
+    Direction of the edge between the two nodes. The default is out, meaning an edge from node 1 to node 2. This parameter only matters if
+    predicate is also set.
+  </Popover>
+);
+
+export { questionGraphPopover, nodePanelPopover, edgePanelPopover, questionNamePopover, maxConnectivityPopover, directionPopover };

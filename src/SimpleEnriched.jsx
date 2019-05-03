@@ -209,54 +209,52 @@ class SimpleEnriched extends React.Component {
             </Row>
             <Row>
               <Col md={12}>
-                {type1 &&
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <h3>
-                      Node 1 Curies
-                    </h3>
-                    {curies.map((curie, i) => (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <h3>
+                    Node 1 Curies
+                  </h3>
+                  {curies.map((curie, i) => (
+                    <div
+                      key={shortid.generate()}
+                      style={{ display: 'flex' }}
+                    >
                       <div
-                        key={shortid.generate()}
-                        style={{ display: 'flex' }}
+                        style={{
+                          padding: '5px 0px',
+                          flexBasis: '100%',
+                        }}
                       >
-                        <div
-                          style={{
-                            padding: '5px 0px',
-                            flexBasis: '100%',
-                          }}
-                        >
-                          <CurieSelectorContainer
-                            concepts={concepts}
-                            search={this.onSearch}
-                            disableType
-                            initialInputs={{ type: type1, term: terms[i], curie: curies[i] }}
-                            onChangeHook={(ty, te, cu) => this.handleCurieChange(i, ty, te, cu)}
-                          />
-                        </div>
-                        <div
-                          style={{
-                            width: '30px', verticalAlign: 'top', padding: '5px 10px',
-                          }}
-                        >
-                          {(i !== 0) &&
-                            <Button
-                              bsStyle="default"
-                              onClick={() => this.deleteCuries(i)}
-                              style={{ padding: '8px' }}
-                            >
-                              <Glyphicon glyph="trash" />
-                            </Button>
-                          }
-                        </div>
+                        <CurieSelectorContainer
+                          concepts={concepts}
+                          search={this.onSearch}
+                          disableType
+                          initialInputs={{ type: type1, term: terms[i], curie: curies[i] }}
+                          onChangeHook={(ty, te, cu) => this.handleCurieChange(i, ty, te, cu)}
+                        />
                       </div>
-                    ))}
-                    <div style={{ display: 'table-row', textAlign: 'center' }}>
-                      <Button style={{ marginTop: '10px' }} onClick={this.addCuries}>
-                        <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Curie'}
-                      </Button>
+                      <div
+                        style={{
+                          width: '30px', verticalAlign: 'top', padding: '5px 10px',
+                        }}
+                      >
+                        {(i !== 0) &&
+                          <Button
+                            bsStyle="default"
+                            onClick={() => this.deleteCuries(i)}
+                            style={{ padding: '8px' }}
+                          >
+                            <Glyphicon glyph="trash" />
+                          </Button>
+                        }
+                      </div>
                     </div>
+                  ))}
+                  <div style={{ display: 'table-row', textAlign: 'center' }}>
+                    <Button style={{ marginTop: '10px' }} onClick={this.addCuries}>
+                      <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Curie'}
+                    </Button>
                   </div>
-                }
+                </div>
               </Col>
             </Row>
             <Row style={{ margin: '20px' }}>

@@ -175,27 +175,23 @@ class SimpleSimilarity extends React.Component {
             </Row>
             <Row>
               <Col md={12}>
-                {type1 &&
-                  <div>
-                    <h3>
-                      Node 1 Curie
-                    </h3>
-                    <div
-                      style={{
-                          padding: '5px 0px',
-                          flexBasis: '90%',
-                      }}
-                    >
-                      <CurieSelectorContainer
-                        concepts={concepts}
-                        search={this.onSearch}
-                        disableType
-                        initialInputs={{ type: type1, term, curie: identifier }}
-                        onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu)}
-                      />
-                    </div>
-                  </div>
-                }
+                <h3>
+                  Node 1 Curie
+                </h3>
+                <div
+                  style={{
+                      padding: '5px 0px',
+                      flexBasis: '90%',
+                  }}
+                >
+                  <CurieSelectorContainer
+                    concepts={concepts}
+                    search={this.onSearch}
+                    disableType
+                    initialInputs={{ type: type1, term, curie: identifier }}
+                    onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu)}
+                  />
+                </div>
               </Col>
             </Row>
             <Row>
@@ -221,8 +217,8 @@ class SimpleSimilarity extends React.Component {
                 Maximum Results
               </label>
               <label htmlFor="threshold" style={{ display: 'block', margin: '10px 0px' }}>
-                <input id="threshold" style={{ marginRight: '10px' }} type="number" min="0" step="0.1" onChange={this.changeThreshold} value={threshold} />
-                Threshold
+                <input id="threshold" style={{ marginRight: '10px', width: '172px' }} type="number" min="0" step="0.1" max="1" onChange={this.changeThreshold} value={threshold} />
+                Similarity Threshold
               </label>
             </Row>
             <Row style={{ textAlign: 'right', margin: '20px' }}>
