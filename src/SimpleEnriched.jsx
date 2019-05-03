@@ -2,7 +2,7 @@ import React from 'react';
 
 import { DropdownList } from 'react-widgets';
 import ReactTable from 'react-table';
-import { Grid, Row, Col, Button, Glyphicon, Form, FormGroup } from 'react-bootstrap';
+import { Grid, Row, Col, Button, Glyphicon, Form, FormGroup, Checkbox } from 'react-bootstrap';
 import FaPlus from 'react-icons/lib/fa/plus';
 
 import AppConfig from './AppConfig';
@@ -11,6 +11,7 @@ import Footer from './components/Footer';
 import Loading from './components/Loading';
 import CurieSelectorContainer from './components/shared/CurieSelectorContainer';
 import entityNameDisplay from './components/util/entityNameDisplay';
+import DownloadButton from './components/shared/DownloadButton';
 
 const shortid = require('shortid');
 
@@ -26,12 +27,15 @@ class SimpleEnriched extends React.Component {
       concepts: [],
       type1: '',
       type2: '',
-      identifiers: [''],
+      curies: [''],
       terms: [''],
       results: [],
       resultsLoading: false,
       resultsReady: false,
       resultsFail: false,
+      includeDescendants: false,
+      maxResults: 100,
+      threshold: 0.5,
     };
 
     this.initializeState = this.initializeState.bind(this);
@@ -42,6 +46,9 @@ class SimpleEnriched extends React.Component {
     this.getTableColumns = this.getTableColumns.bind(this);
     this.addCuries = this.addCuries.bind(this);
     this.deleteCuries = this.deleteCuries.bind(this);
+    this.toggleDescendants = this.toggleDescendants.bind(this);
+    this.changeMaxResults = this.changeMaxResults.bind(this);
+    this.changeThreshold = this.changeThreshold.bind(this);
   }
 
   componentDidMount() {
@@ -64,45 +71,70 @@ class SimpleEnriched extends React.Component {
     this.setState(typeObj);
   }
 
+  toggleDescendants() {
+    this.setState(prevState => ({ includeDescendants: !prevState.includeDescendants }));
+  }
+
+  changeMaxResults(event) {
+    // some reason why react is changing these to strings
+    const maxResults = Number(event.target.value);
+    this.setState({ maxResults });
+  }
+
+  changeThreshold(event) {
+    // some reason why react is changing these to strings
+    const threshold = Number(event.target.value);
+    this.setState({ threshold });
+  }
+
   onSearch(input, type) {
     return this.appConfig.questionNewSearch(input, type);
   }
 
   handleCurieChange(i, ty, te, cu) {
     if (cu || !te) {
-      const { identifiers, terms } = this.state;
-      identifiers[i] = cu;
+      const { curies, terms } = this.state;
+      curies[i] = cu;
       terms[i] = te;
-      this.setState({ identifiers, terms });
+      this.setState({ curies, terms });
     }
   }
 
   addCuries() {
-    const { identifiers, terms } = this.state;
-    identifiers.push('');
+    const { curies, terms } = this.state;
+    curies.push('');
     terms.push('');
-    this.setState({ identifiers, terms });
+    this.setState({ curies, terms });
   }
 
   deleteCuries(i) {
-    const { identifiers, terms } = this.state;
-    identifiers.splice(i, 1);
+    const { curies, terms } = this.state;
+    curies.splice(i, 1);
     terms.splice(i, 1);
-    this.setState({ identifiers, terms });
+    this.setState({ curies, terms });
   }
 
   getResults(event) {
     event.preventDefault();
     this.setState({ resultsLoading: true, resultsReady: false });
-    const { type1, type2, identifiers } = this.state;
-    const iders = identifiers.filter(id => id && id);
+    const {
+      type1, type2, curies, includeDescendants, maxResults, threshold,
+    } = this.state;
+    const identifiers = curies.filter(id => id && id);
+    const data = {
+      identifiers,
+      include_descendants: includeDescendants,
+      max_results: maxResults,
+      // someone can't spell
+      threshhold: threshold,
+    };
     this.appConfig.simpleEnriched(
       type1,
       type2,
-      iders,
-      (data) => {
+      data,
+      (results) => {
         this.setState({
-          results: data, resultsReady: true, resultsLoading: false,
+          results, resultsReady: true, resultsLoading: false,
         });
       },
       () => {
@@ -131,10 +163,11 @@ class SimpleEnriched extends React.Component {
   render() {
     const { config } = this.props;
     const {
-      user, concepts, type1, type2, identifiers, results, resultsReady, resultsLoading, resultsFail, terms,
+      user, concepts, type1, type2, curies, results, resultsReady, resultsLoading, resultsFail, terms,
+      includeDescendants, maxResults, threshold,
     } = this.state;
     // if we don't have all the info, disable the submit.
-    const disableSubmit = !(type1 && type2 && identifiers[0]);
+    const disableSubmit = !(type1 && type2 && curies[0]) || resultsLoading;
     const types = concepts.map(concept => ({ text: entityNameDisplay(concept), value: concept }));
     return (
       <div>
@@ -181,7 +214,7 @@ class SimpleEnriched extends React.Component {
                     <h3>
                       Node 1 Curies
                     </h3>
-                    {identifiers.map((curie, i) => (
+                    {curies.map((curie, i) => (
                       <div
                         key={shortid.generate()}
                         style={{ display: 'flex' }}
@@ -196,7 +229,7 @@ class SimpleEnriched extends React.Component {
                             concepts={concepts}
                             search={this.onSearch}
                             disableType
-                            initialInputs={{ type: type1, term: terms[i], curie: identifiers[i] }}
+                            initialInputs={{ type: type1, term: terms[i], curie: curies[i] }}
                             onChangeHook={(ty, te, cu) => this.handleCurieChange(i, ty, te, cu)}
                           />
                         </div>
@@ -226,6 +259,17 @@ class SimpleEnriched extends React.Component {
                 }
               </Col>
             </Row>
+            <Row style={{ margin: '20px' }}>
+              <Checkbox checked={includeDescendants} onChange={this.toggleDescendants} ><strong>Include Descendants?</strong></Checkbox>
+              <label htmlFor="maxResults" style={{ display: 'block', margin: '10px 0px' }}>
+                <input id="maxResults" style={{ marginRight: '10px' }} type="number" min="0" onChange={this.changeMaxResults} value={maxResults} />
+                Maximum Results
+              </label>
+              <label htmlFor="threshold" style={{ display: 'block', margin: '10px 0px' }}>
+                <input id="threshold" style={{ marginRight: '10px' }} type="number" min="0" step="0.1" onChange={this.changeThreshold} value={threshold} />
+                Threshold
+              </label>
+            </Row>
             <Row style={{ textAlign: 'right', margin: '20px' }}>
               <Button id="submitAPI" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
             </Row>
@@ -235,23 +279,26 @@ class SimpleEnriched extends React.Component {
               <Loading />
             }
             {resultsReady &&
-              <ReactTable
-                data={results}
-                columns={[{
-                  Header: 'Enriched Nodes',
-                  columns: this.getTableColumns(results),
-                }]}
-                defaultPageSize={10}
-                pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
-                minRows={7}
-                className="-striped -highlight"
-                defaultSorted={[
-                  {
-                    id: 'p',
-                    desc: true,
-                  },
-                ]}
-              />
+              <div>
+                <DownloadButton results={results} source="enriched" fileName={`${type1}_to_${type2}_enriched`} />
+                <ReactTable
+                  data={results}
+                  columns={[{
+                    Header: 'Enriched Nodes',
+                    columns: this.getTableColumns(results),
+                  }]}
+                  defaultPageSize={10}
+                  pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
+                  minRows={7}
+                  className="-striped -highlight"
+                  defaultSorted={[
+                    {
+                      id: 'p',
+                      desc: true,
+                    },
+                  ]}
+                />
+              </div>
             }
             {resultsFail &&
               <h3>

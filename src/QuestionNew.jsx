@@ -259,7 +259,7 @@ class QuestionNew extends React.Component {
                 <Col md={12}>
                   <Panel>
                     <Panel.Heading>
-                      <Panel.Title style={{ height: '6%' }}>
+                      <Panel.Title>
                         {'Machine Question Editor - Question Graph '}
                         <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={questionGraphPopover}>
                           <FaInfoCircle size={17} />

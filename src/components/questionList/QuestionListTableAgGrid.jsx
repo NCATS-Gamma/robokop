@@ -7,6 +7,17 @@ import { AgGridReact } from 'ag-grid-react';
 import LoadingImg from '../../../assets/images/loading.gif';
 import NetworkImg from '../../../assets/images/network.png';
 
+const timestampToDate = (ts) => {
+  let ts2 = ts;
+  if (ts) {
+    if (!ts.endsWith('Z')) {
+      ts2 = `${ts}Z`;
+    }
+    return new Date(ts2);
+  }
+  return null;
+};
+
 class QuestionListTableAgGrid extends React.Component {
   constructor(props) {
     super(props);
@@ -22,6 +33,7 @@ class QuestionListTableAgGrid extends React.Component {
 
     this.cellRendererAnswers = this.cellRendererAnswers.bind(this);
     this.cellRendererTaskStatus = this.cellRendererTaskStatus.bind(this);
+    this.cellRendererTimestamp = this.cellRendererTimestamp.bind(this);
   }
 
   onGridReady(params) {
@@ -31,8 +43,8 @@ class QuestionListTableAgGrid extends React.Component {
     this.gridApi.sizeColumnsToFit();
 
     const sort = [
-      { colId: 'isUserOwned', sort: 'desc' },
-      // { colId: 'latest_answerset_timestamp', sort: 'desc' },
+      // { colId: 'isUserOwned', sort: 'desc' },
+      { colId: 'latest_answerset_timestamp', sort: 'desc' },
     ];
     this.gridApi.setSortModel(sort);
   }
@@ -42,7 +54,7 @@ class QuestionListTableAgGrid extends React.Component {
       this.props.callbackAnswersetSelect(event.node.data, { id: event.node.data.latestAnswersetId });
     } else if (clickedColumn === 'isBusy') {
       this.props.onClick(event.node.data);
-    } else {
+    } else if (clickedColumn !== 'timestamp') {
       this.props.callbackQuestionSelect(event.node.data);
     }
   }
@@ -111,6 +123,15 @@ class QuestionListTableAgGrid extends React.Component {
     }
     return out;
   }
+
+  cellRendererTimestamp(params) {
+    let out = '';
+    if (params.data.timestamp) {
+      out = timestampToDate(params.data.timestamp).toLocaleDateString();
+    }
+    return out;
+  }
+
   render() {
     // { headerName: '', field: 'isBusy', suppressMenu: true, cellRenderer: this.cellRendererBusy, width: 10 },
     // {
@@ -175,6 +196,17 @@ class QuestionListTableAgGrid extends React.Component {
                     suppressMenu: true,
                     suppressSorting: true,
                     cellRenderer: this.cellRendererAnswers,
+                    width: 70,
+                    minWidth: 20,
+                    hide: false,
+                    cellClass: 'no-padding',
+                  },
+                  {
+                    headerName: 'Timestamp',
+                    headerClass: 'no-padding',
+                    field: 'timestamp',
+                    suppressMenu: true,
+                    cellRenderer: this.cellRendererTimestamp,
                     width: 70,
                     minWidth: 20,
                     hide: false,

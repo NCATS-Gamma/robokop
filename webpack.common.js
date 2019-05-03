@@ -25,11 +25,14 @@ const config = {
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
+        use: [
+          { loader: 'style-loader' },
+          { loader: 'css-loader' },
+        ],
       },
       {
-        test: /\.(png|jpg|gif)$/,
-        loader: 'file-loader',
+        test: /\.(png|jpg|gif|ico)$/,
+        loader: 'file-loader?name=[name].[ext]',
       },
       {
         test: /\.(ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,

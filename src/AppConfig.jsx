@@ -22,7 +22,7 @@ class AppConfig {
       help: this.url('help/'),
       search: this.url('search/'),
       view: this.url('simple/view/'),
-      enrich: this.url('simple/enriched/'),
+      enrich: this.url('simple/enriched'),
       similarity: this.url('simple/similarity'),
       expand: this.url('simple/expand'),
       synonymize: this.url('simple/synonymize'),
@@ -48,7 +48,9 @@ class AppConfig {
       search: this.url('api/search/'), // POST for Bionames search
       viewData: id => this.url(`api/simple/view/${id}`),
       simpleEnriched: (type1, type2) => this.url(`api/simple/enriched/${type1}/${type2}`), // POST for simple enriched
-      simpleSimilarity: (type1, type2, id, simType) => this.url(`api/simple/similarity/${type1}/${id}/${type2}/${simType}`), // Get for simple similarity
+      simpleSimilarity: (type1, type2, id, simType, threshold, maxResults) => (
+        this.url(`api/simple/similarity/${type1}/${id}/${type2}/${simType}?threshhold=${threshold}&max_results=${maxResults}`)
+      ), // Get for simple similarity
       simpleExpand: (type1, type2, id) => this.url(`api/simple/expand/${type1}/${id}/${type2}`), // Get for simple expand
       simpleSynonymize: (id, type) => this.url(`api/simple/synonymize/${id}/${type}/`), // POST for synonyms of curie from Builder API
       graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql`,
@@ -308,23 +310,17 @@ class AppConfig {
       failureFun,
     );
   }
-  simpleEnriched(type1, type2, identifiers, successFun, failureFun) {
+  simpleEnriched(type1, type2, body, successFun, failureFun) {
     this.postRequest(
       this.apis.simpleEnriched(type1, type2),
-      {
-        identifiers,
-        include_descendants: false,
-        max_results: 100,
-        rebuild: false,
-        threshold: 0.5,
-      },
+      body,
       successFun,
       failureFun,
     );
   }
-  simpleSimilarity(type1, type2, id, simType, successFun, failureFun) {
+  simpleSimilarity(type1, type2, id, simType, threshold, maxResults, successFun, failureFun) {
     this.getRequest(
-      this.apis.simpleSimilarity(type1, type2, id, simType),
+      this.apis.simpleSimilarity(type1, type2, id, simType, threshold, maxResults),
       successFun,
       failureFun,
     );

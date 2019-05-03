@@ -8,6 +8,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Loading from './components/Loading';
 import CurieSelectorContainer from './components/shared/CurieSelectorContainer';
+import DownloadButton from './components/shared/DownloadButton';
 
 
 class Synonymize extends React.Component {
@@ -98,7 +99,7 @@ class Synonymize extends React.Component {
       user, concepts, type, results, identifier, resultsReady, resultsLoading, resultsFail, term,
     } = this.state;
     // if we don't have all the info, disable the submit.
-    const disableSubmit = !(type && identifier);
+    const disableSubmit = !(type && identifier) || resultsLoading;
     return (
       <div>
         <Header config={config} user={user} />
@@ -135,20 +136,29 @@ class Synonymize extends React.Component {
               <Loading />
             }
             {resultsReady &&
-              <ReactTable
-                data={results.synonyms}
-                getTheadThProps={this.hideHeader}
-                columns={[{
-                  Header: 'Node Synonyms',
-                  columns: [{
-                    Header: 'Synonyms',
-                    id: 'synonym',
-                    accessor: s => s[0],
-                    className: 'center',
-                  }],
-                }]}
-                minRows={7}
-              />
+              <div>
+                <DownloadButton results={results} source="synonymize" fileName={`${results.id}_synonyms`} />
+                <ReactTable
+                  data={results.synonyms}
+                  getTheadThProps={this.hideHeader}
+                  columns={[{
+                    Header: 'Node Synonyms',
+                    columns: [{
+                      Header: 'Synonyms',
+                      id: 'synonym',
+                      accessor: s => s[0],
+                      className: 'center',
+                      Cell: (row) => {
+                        if (row.value === results.id) {
+                          return <span style={{ fontWeight: 'bold' }}>{row.value}</span>;
+                        }
+                        return <span>{row.value}</span>;
+                      },
+                    }],
+                  }]}
+                  minRows={7}
+                />
+              </div>
             }
             {resultsFail &&
               <h3>

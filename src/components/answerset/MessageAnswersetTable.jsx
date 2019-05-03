@@ -4,9 +4,11 @@ import { Row, Col } from 'react-bootstrap';
 import { observer } from 'mobx-react';
 import ReactTable from 'react-table';
 import 'react-table/react-table.css';
+
 // import { DropdownList } from 'react-widgets';
 
 import AnswersetFilter from '../shared/AnswersetFilter';
+import DownloadButton from '../shared/DownloadButton';
 import AnswersetTableSubComponent, { answersetSubComponentEnum } from './AnswersetTableSubComponent';
 import entityNameDisplay from './../util/entityNameDisplay';
 import getNodeTypeColorMap from './../util/colorUtils';
@@ -203,11 +205,14 @@ class MessageAnswersetTable extends React.Component {
       Header: 'Answer Set',
       columns,
     }];
+    const source = this.props.simpleExpand ? 'expand' : 'message';
+    const fileName = this.props.fileName || 'answers';
     return (
       <div>
         {Object.keys(answers).length ?
           <Row>
             <Col md={12}>
+              <DownloadButton results={this.props.store} source={source} fileName={fileName} />
               <Row style={{ marginTop: '10px' }}>
                 <div style={{ marginBottom: '10px', padding: '0 15px' }}>
                   <ReactTable

@@ -220,13 +220,10 @@ class MessageAnswersetPres extends React.Component {
             eventKey={answerSetTabEnum.answerTable}
             title="Answers Table"
           >
-            {/* <div style={{ height: '300px', border: '1px solid #ddd' }}>Placeholder!</div> */}
             <MessageAnswersetTable
-              // message={message}
               concepts={this.props.concepts}
               // callbackAnswerSelected={this.props.callbackAnswerSelected}
               store={this.answersetStore}
-              // handleTabSelect={this.handleTabSelect}
             />
           </Tab>
           <Tab

@@ -30,6 +30,7 @@ import NewQuestionStore from './stores/newQuestionStore';
 
 // Our actual CSS and other images etc.
 import '../assets/css/style.css';
+import '../assets/images/favicon.ico';
 
 const $ = require('jquery');
 
