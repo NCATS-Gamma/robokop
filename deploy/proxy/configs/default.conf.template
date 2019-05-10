@@ -90,7 +90,7 @@ server {
     }
     #supervisord
     location /builder/supervisord/ {
-      proxy_pass http://builder_supervisor;
+      proxy_pass http://builder_supervisor/;
     }
   }
   
