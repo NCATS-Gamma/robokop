@@ -43,26 +43,43 @@ server {
   listen 443 ssl http2;
   listen [::]:443 ssl http2;
 
-  proxy_redirect off;
-  proxy_set_header        Host $host:$server_port;
-  proxy_set_header        X-Real-IP $remote_addr;
-  proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-  proxy_set_header        X-Forwarded-Proto $scheme;
-  proxy_set_header        Accept-Encoding   "";
-  add_header              Front-End-Https   on;
 
   # ---------------- WEB SERVICES ---------------------
   # Manager
   location / {
     proxy_pass http://manager_web_server/;
+    proxy_redirect off;
     proxy_set_header        X-Swagger-Prefix "/manager";
+    proxy_set_header        Host $host:$server_port;
+    proxy_set_header        X-Real-IP $remote_addr;
+    proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header        X-Forwarded-Proto $scheme;
+    proxy_set_header        Accept-Encoding   "";
+    add_header              Front-End-Https   on;
     #location of spec file
     location /manager/spec/ {
       proxy_pass http://manager_web_server/manager/spec;
+      proxy_redirect off;
+      proxy_set_header        X-Swagger-Prefix "/manager";
+      proxy_set_header        Host $host:$server_port;
+      proxy_set_header        X-Real-IP $remote_addr;
+      proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header        X-Forwarded-Proto $scheme;
+      proxy_set_header        Accept-Encoding   "";
+      add_header              Front-End-Https   on;
     }
     #supervisord
     location /manager/supervisord/ {
+
       proxy_pass http://manager_supervisor/;
+      proxy_redirect off;
+      proxy_set_header        X-Swagger-Prefix "/manager";
+      proxy_set_header        Host $host:$server_port;
+      proxy_set_header        X-Real-IP $remote_addr;
+      proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header        X-Forwarded-Proto $scheme;
+      proxy_set_header        Accept-Encoding   "";
+      add_header              Front-End-Https   on;
     }
   }
   
@@ -70,13 +87,37 @@ server {
   location /ranker/ {
     proxy_pass http://ranker_web_server/;
     proxy_set_header        X-Swagger-Prefix "/ranker";
+    proxy_redirect off;
+    proxy_set_header        X-Swagger-Prefix "/manager";
+    proxy_set_header        Host $host:$server_port;
+    proxy_set_header        X-Real-IP $remote_addr;
+    proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header        X-Forwarded-Proto $scheme;
+    proxy_set_header        Accept-Encoding   "";
+    add_header              Front-End-Https   on;
     #location of spec file 
     location /ranker/spec/ {
       proxy_pass http://ranker_web_server/ranker/spec;
+      proxy_redirect off;
+      proxy_set_header        X-Swagger-Prefix "/manager";
+      proxy_set_header        Host $host:$server_port;
+      proxy_set_header        X-Real-IP $remote_addr;
+      proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header        X-Forwarded-Proto $scheme;
+      proxy_set_header        Accept-Encoding   "";
+      add_header              Front-End-Https   on;
     }
     #supervisord
     location /ranker/supervisord/ {
         proxy_pass http://ranker_supervisor/;
+        proxy_redirect off;
+        proxy_set_header        X-Swagger-Prefix "/manager";
+        proxy_set_header        Host $host:$server_port;
+        proxy_set_header        X-Real-IP $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+        proxy_set_header        Accept-Encoding   "";
+        add_header              Front-End-Https   on;
     }
   }
 
@@ -84,22 +125,62 @@ server {
   location /builder/ {
     proxy_pass http://builder_web_server/;
     proxy_set_header        X-Swagger-Prefix "/builder";
+    proxy_redirect off;
+    proxy_set_header        X-Swagger-Prefix "/manager";
+    proxy_set_header        Host $host:$server_port;
+    proxy_set_header        X-Real-IP $remote_addr;
+    proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header        X-Forwarded-Proto $scheme;
+    proxy_set_header        Accept-Encoding   "";
+    add_header              Front-End-Https   on;
     #location of spec file 
     location /builder/spec/ {
       proxy_pass http://builder_web_server/builder/spec;
+      proxy_redirect off;
+      proxy_set_header        X-Swagger-Prefix "/manager";
+      proxy_set_header        Host $host:$server_port;
+      proxy_set_header        X-Real-IP $remote_addr;
+      proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header        X-Forwarded-Proto $scheme;
+      proxy_set_header        Accept-Encoding   "";
+      add_header              Front-End-Https   on;
     }
     #supervisord
     location /builder/supervisord/ {
       proxy_pass http://builder_supervisor/;
+      proxy_redirect off;
+      proxy_set_header        X-Swagger-Prefix "/manager";
+      proxy_set_header        Host $host:$server_port;
+      proxy_set_header        X-Real-IP $remote_addr;
+      proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header        X-Forwarded-Proto $scheme;
+      proxy_set_header        Accept-Encoding   "";
+      add_header              Front-End-Https   on;
     }
   }
   
   location /broker/ {
     proxy_pass http://broker_ui/;
+    proxy_redirect off;
+    proxy_set_header        X-Swagger-Prefix "/manager";
+    proxy_set_header        Host $host:$server_port;
+    proxy_set_header        X-Real-IP $remote_addr;
+    proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header        X-Forwarded-Proto $scheme;
+    proxy_set_header        Accept-Encoding   "";
+    add_header              Front-End-Https   on;
   }
   
   location /graphql {
     proxy_pass http://graphql_server/graphql;
+    proxy_redirect off;
+    proxy_set_header        X-Swagger-Prefix "/manager";
+    proxy_set_header        Host $host:$server_port;
+    proxy_set_header        X-Real-IP $remote_addr;
+    proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header        X-Forwarded-Proto $scheme;
+    proxy_set_header        Accept-Encoding   "";
+    add_header              Front-End-Https   on;
   }
 }
 

@@ -19,8 +19,8 @@ SECURITY_REGISTER_URL = '/register'  # Specifies the register URL. Defaults to /
 SECURITY_RESET_URL = '/password/reset'  # Specifies the password reset URL. Defaults to /reset.
 SECURITY_CHANGE_URL = '/password/change'  # Specifies the password change URL. Defaults to /change.
 SECURITY_CONFIRM_URL = '/user/confirm'  # Specifies the email confirmation URL. Defaults to /confirm.
-SECURITY_POST_LOGIN_VIEW = os.environ['ROBOKOP_HOST']  # Specifies the default view to redirect to after a user logs in. This value can be set to a URL or an endpoint name. Defaults to /.
-SECURITY_POST_LOGOUT_VIEW = os.environ['ROBOKOP_HOST']  # Specifies the default view to redirect to after a user logs out. This value can be set to a URL or an endpoint name. Defaults to /.
+SECURITY_POST_LOGIN_VIEW = '/'  # Specifies the default view to redirect to after a user logs in. This value can be set to a URL or an endpoint name. Defaults to /.
+SECURITY_POST_LOGOUT_VIEW = '/'  # Specifies the default view to redirect to after a user logs out. This value can be set to a URL or an endpoint name. Defaults to /.
 SECURITY_CONFIRM_ERROR_VIEW = None  # Specifies the view to redirect to if a confirmation error occurs. This value can be set to a URL or an endpoint name. If this value is None, the user is presented the default view to resend a confirmation link. Defaults to None.
 # SECURITY_UNAUTHORIZED_VIEW = '/unauthorized' # Specifies the view to redirect to if a user attempts to access a URL/endpoint that they do not have permission to access. If this value is None, the user is presented with a default HTTP 403 response. Defaults to None.
 
