@@ -43,8 +43,7 @@ def initialize_task(**kwargs):
     if task_fun == 'manager.tasks.fetch_pubmed_info':
         return
 
-
-    logger.debug(f'task headers {headers}')
+    # logger.debug(f'task headers {headers}')
 
     if task_fun == 'manager.tasks.answer_question':
         task_type = TASK_TYPES['answer']
@@ -69,11 +68,15 @@ def initialize_task(**kwargs):
 @signals.task_prerun.connect()
 def setup_logging(signal=None, sender=None, task_id=None, task=None, *args, **kwargs):
     """Change the main logger's handlers so they could log to a task specific log file."""
-
-    headers = task['headers']
-    task_fun = headers['task']
-    if task_fun == 'manager.tasks.fetch_pubmed_info':
-        return
+    # logger.info('1')
+    # headers = task['headers']
+    # logger.info('2')
+    # task_fun = headers['task']
+    # logger.info('3')
+    # if task_fun == 'manager.tasks.fetch_pubmed_info':
+    #     logger.info('4')
+    #     return
+    # logger.info('5')
 
     logger = logging.getLogger('manager')
     logger.info(f'Starting task specific log for task {task_id}')
@@ -88,11 +91,11 @@ def task_post_run(**kwargs):
 
     Updates task object with end time.
     """
-    task = kwargs.get('task')
-    headers = task['headers']
-    task_fun = headers['task']
-    if task_fun == 'manager.tasks.fetch_pubmed_info':
-        return
+    # task = kwargs.get('task')
+    # headers = task['headers']
+    # task_fun = headers['task']
+    # if task_fun == 'manager.tasks.fetch_pubmed_info':
+    #     return
 
     task_id = kwargs.get('task_id')
     
@@ -115,7 +118,7 @@ class NoAnswersException(Exception):
     pass
 
 
-@celery.task(bind=True, exchange='manager', routing_key='manager.answer', task_acks_late=True, track_started=True, worker_prefetch_multiplier=1)
+@celery.task(bind=True, name='answer', exchange='manager', routing_key='manager.answer', task_acks_late=True, track_started=True, worker_prefetch_multiplier=1)
 def answer_question(self, question_id, user_email=None):
     """Generate answerset for a question."""
     self.update_state(state='ANSWERING')
@@ -246,7 +249,7 @@ def answer_question(self, question_id, user_email=None):
     return answerset_id
 
 
-@celery.task(bind=True, exchange='manager', routing_key='manager.update', task_acks_late=True, track_started=True, worker_prefetch_multiplier=1)
+@celery.task(bind=True, name='update', exchange='manager', routing_key='manager.update', task_acks_late=True, track_started=True, worker_prefetch_multiplier=1)
 def update_kg(self, question_id, user_email=None):
     """Update the shared knowledge graph with respect to a question."""
     self.update_state(state='UPDATING KG')
@@ -333,7 +336,7 @@ def update_kg(self, question_id, user_email=None):
     return "You updated the KG!"
 
 
-@celery.task(bind=True, exchange='manager', routing_key='manager.pubmed', task_acks_late=True, track_started=True, worker_prefetch_multiplier=1, rate_limit='1/s')
+@celery.task(bind=True, name='pubmed', exchange='manager', routing_key='manager.pubmed', task_acks_late=True, track_started=True, worker_prefetch_multiplier=1, rate_limit='1/s')
 def fetch_pubmed_info(self, pmid, pubmed_cache_key):
     # Actually make the request
     postUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
