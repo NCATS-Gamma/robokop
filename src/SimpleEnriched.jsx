@@ -215,7 +215,7 @@ class SimpleEnriched extends React.Component {
                   </h3>
                   {curies.map((curie, i) => (
                     <div
-                      key={shortid.generate()}
+                      key={['curieSelector', i].join('_')}
                       style={{ display: 'flex' }}
                     >
                       <div

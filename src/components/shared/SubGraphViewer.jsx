@@ -274,8 +274,8 @@ class SubGraphViewer extends React.Component {
       // e.selfEdge = false;
     });
 
-    const mashSupportAndKnolwedgeSourceEdges = false;
-    if (mashSupportAndKnolwedgeSourceEdges) {
+    const mashSupportAndKnowledgeSourceEdges = false;
+    if (mashSupportAndKnowledgeSourceEdges) {
       edgesRegular.forEach((e) => {
         // Find support edges between the same two nodes and merge publication lists
 

@@ -99,6 +99,13 @@ function defaultEdgePreProc(e) {
   if (Array.isArray(label)) {
     label = label.join(', ');
   }
+  if (!('type' in e) && !(e.predicate && e.predicate.length > 0)) {
+    e.arrows = {
+      to: {
+        enabled: false,
+      },
+    };
+  }
 
   const smooth = { forceDirection: 'none' };
 
@@ -284,7 +291,7 @@ class MachineQuestionView2 extends React.Component {
             key={shortid.generate()}
             graph={displayGraph}
             options={this.state.displayOptions}
-            events={{ selectNode: this.props.nodeSelectCallback, selectEdge: this.props.edgeSelectCallback }}
+            events={{ click: this.props.graphClickCallback }}
             getNetwork={(network) => { this.network = network; }} // Store network reference in the component
             style={{ width: this.props.width }}
           />

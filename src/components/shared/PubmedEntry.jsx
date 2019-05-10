@@ -3,49 +3,20 @@ import { Media, Button } from 'react-bootstrap';
 
 import FaExternalLink from 'react-icons/lib/fa/external-link';
 
+import AppConfig from '../../AppConfig';
+import { config } from '../../index';
+
 const shortid = require('shortid');
-
-
-const makeCancelable = (promise) => {
-  let hasCanceled = false;
-
-  const wrappedPromise = new Promise((resolve, reject) => {
-    promise.then(
-      val => (hasCanceled ? reject(new Error('canceled')) : resolve(val)),
-      error => (hasCanceled ? reject(new Error('canceled')) : reject(error)),
-    );
-  });
-
-  return {
-    promise: wrappedPromise,
-    cancel() {
-      hasCanceled = true;
-    },
-  };
-};
 
 class PubmedEntry extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      ready: false,
-      isFailure: false,
-      info: {
-        id: '',
-        title: 'Loading...',
-        authors: [],
-        journal: '',
-        source: '',
-        pubdate: '',
-        url: '',
-        doid: '',
-      },
-    };
+    this.appConfig = new AppConfig(config);
 
-    this.defaultInfo = {
+    this.defaultFailureInfo = {
       id: '',
-      title: 'Unable to fetch publication information',
+      title: 'Failed to fetch publication information',
       authors: [],
       journal: '',
       source: '',
@@ -54,106 +25,33 @@ class PubmedEntry extends React.Component {
       doid: '',
     };
 
-    this.updatePromise = new Promise(() => {});
-    this.updateInformation = this.updateInformation.bind(this);
-    this.getPubmedInformation = this.getPubmedInformation.bind(this);
+    this.getPubmedInfo = this.getPubmedInfo.bind(this);
   }
 
-  componentDidMount() {
-    this.updatePromise = this.updateInformation(this.props);
-    this.updatePromise.promise
-      .then(newState => this.setState(newState))
-      .catch(() => {});
-  }
-
-  componentWillReceiveProps(newProps) {
-    if (newProps.pmid !== this.props.pmid) {
-      this.updatePromise = this.updateInformation(newProps);
-
-      this.updatePromise.promise
-        .then(newState => this.setState(newState))
-        .catch(() => {});
-    }
-  }
-
-  componentWillUnmount() {
-    try {
-      this.updatePromise.cancel();
-    } catch (err) {
-      // Nothing
-    }
-  }
-
-  getPubmedInformation(pmid) {
-    const postUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi';
-    const postData = {
-      db: 'pubmed',
-      id: pmid,
-      version: '2.0',
-      retmode: 'json',
-    };
-
-    return new Promise((resolve, reject) => $.post(postUrl, postData, response => resolve(response)).fail(response => reject(response)));
-  }
-  updateInformation(newProps) {
-    const { pmid } = newProps;
-
-    let pmidStr = pmid.toString();
-    if ((typeof pmid === 'string' || pmid instanceof String) && (pmidStr.indexOf(':') !== -1)) {
-      // pmidStr has a colon, and therefore probably a curie, remove it.
-      pmidStr = pmidStr.substr(pmidStr.indexOf(':') + 1);
-    }
-
-    return makeCancelable(this.getPubmedInformation(pmidStr)
-      .then((response) => {
-        const data = response.result;
-        if (pmidStr in data) {
-          const paperInfo = data[pmidStr];
-          let info = Object.assign({}, this.defaultFailureInfo);
-          info = {
-            id: pmidStr,
-            title: paperInfo.title,
-            authors: paperInfo.authors,
-            journal: paperInfo.fulljournalname,
-            source: paperInfo.source,
-            pubdate: paperInfo.pubdate,
-            url: `https://www.ncbi.nlm.nih.gov/pubmed/${pmidStr}/`,
-            doid: paperInfo.elocationid,
-          };
-          return { info, ready: true, isFailure: false };
-        }
-        throw new Error('Bad response from https://www.ncbi.nlm.nih.gov/pubmed');
-      })
-      .catch((err) => {
-        console.log('Error fetching from pubmed', err);
-        return { info: Object.assign({}, this.defaultFailureInfo), isFailure: true };
-      }));
-  }
-
-  renderFailure() {
-    return (
-      <div style={{ color: '#ccc' }}>
-        Failed to retrieve publication information
-      </div>
-    );
-  }
-
-  renderLoading() {
-    return (
-      <div style={{ color: '#ccc' }}>
-        Loading...
-      </div>
-    );
-  }
-
-  renderValid() {
+  getPubmedInfo() {
+    const { pub } = this.props;
     let linkUrl = '#';
     let linkDisable = true;
-    if (this.state.info.url) {
-      linkDisable = false;
-      linkUrl = this.state.info.url;
+    const paperInfo = pub;
+    let info = {
+      id: paperInfo.uid,
+      title: paperInfo.title,
+      authors: paperInfo.authors,
+      journal: paperInfo.fulljournalname,
+      source: paperInfo.source,
+      pubdate: paperInfo.pubdate,
+      url: `https://www.ncbi.nlm.nih.gov/pubmed/${paperInfo.uid}/`,
+      doid: paperInfo.elocationid,
+    };
+    if (!info.id) {
+      // something went wrong and we got back some wonky object.
+      info = this.defaultFailureInfo;
     }
-    let { authors } = this.state.info;
+    if (info.url) {
+      linkDisable = false;
+      linkUrl = info.url;
+    }
+    let { authors } = info;
     if (authors == null) {
       authors = [];
     }
@@ -168,32 +66,36 @@ class PubmedEntry extends React.Component {
         </span>
       );
     });
+    return {
+      info, linkUrl, linkDisable, authorFrag,
+    };
+  }
 
+  render() {
+    const {
+      info, linkUrl, linkDisable, authorFrag,
+    } = this.getPubmedInfo();
     return (
       <Media>
-        <Media.Left>
-          <Button disabled={linkDisable} onClick={() => window.open(linkUrl, '_blank')}>
-            <div style={{ fontSize: '36px' }}>
-              <FaExternalLink />
-            </div>
-          </Button>
-        </Media.Left>
-        <Media.Body>
-          <Media.Heading>{this.state.info.title}</Media.Heading>
-          <p style={{ margin: '2px' }}>{this.state.info.journal} - {this.state.info.pubdate}</p>
-          <p style={{ margin: '2px' }}>{authorFrag}</p>
-        </Media.Body>
+        {info.id ?
+          <div>
+            <Media.Left>
+              <Button disabled={linkDisable} onClick={() => window.open(linkUrl, '_blank')}>
+                <div style={{ fontSize: '36px' }}>
+                  <FaExternalLink />
+                </div>
+              </Button>
+            </Media.Left>
+            <Media.Body>
+              <Media.Heading>{info.title || 'Error'}</Media.Heading>
+              <p style={{ margin: '2px' }}>{info.journal || 'Cannot get document summary'} - {info.pubdate}</p>
+              <p style={{ margin: '2px' }}>{authorFrag}</p>
+            </Media.Body>
+          </div>
+          :
+          'Loading...'
+        }
       </Media>
-    );
-  }
-  render() {
-    const { ready, isFailure } = this.state;
-    return (
-      <div>
-        {!ready && !isFailure && this.renderLoading()}
-        {!ready && isFailure && this.renderFailure()}
-        {ready && this.renderValid()}
-      </div>
     );
   }
 }

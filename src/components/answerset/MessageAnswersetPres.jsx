@@ -76,7 +76,7 @@ class MessageAnswersetPres extends React.Component {
     this.toggleGraphVisibility = this.toggleGraphVisibility.bind(this);
 
     this.answersetStore = new AnswersetStore(this.props.message);
-    console.log('MobX Answerset Store:', this.answersetStore);
+    // console.log('MobX Answerset Store:', this.answersetStore);
   }
   onDownload() {
     const data = this.props.message;
@@ -177,8 +177,7 @@ class MessageAnswersetPres extends React.Component {
                     graphState="display"
                     selectable
                     nodePreProcFn={nodePreProcFn}
-                    // nodeSelectCallback={this.nodeSelectCallback}
-                    // edgeSelectCallback={this.edgeSelectCallback}
+                    graphClickCallback={() => {}} // we don't want the graph to select anything on click
                   />
                 </Panel.Body>
               </Panel.Collapse>

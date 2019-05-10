@@ -141,6 +141,7 @@ class Synonymize extends React.Component {
                 <ReactTable
                   data={results.synonyms}
                   getTheadThProps={this.hideHeader}
+                  noDataText="No synonyms found"
                   columns={[{
                     Header: 'Node Synonyms',
                     columns: [{

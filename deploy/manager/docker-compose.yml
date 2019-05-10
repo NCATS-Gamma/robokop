@@ -42,3 +42,9 @@ services:
       - ../../../logs:/home/murphy/logs
       - ../../../shared:/home/murphy/shared
       - ../..:/home/murphy/robokop
+  pubmed_cache:
+    image: redis
+    container_name: pubmed_cache
+    ports:
+      - "${PUBMED_CACHE_PORT}:${PUBMED_CACHE_PORT}"
+    command: --port ${PUBMED_CACHE_PORT} --requirepass ${PUBMED_CACHE_PASSWORD}

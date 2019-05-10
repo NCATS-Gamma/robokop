@@ -125,7 +125,7 @@ class DownloadButton extends React.Component {
     const isMessage = source === 'message' || source === 'expand';
     // style should change based on which page we're on.
     const style = source === 'message' ?
-      { position: 'absolute', top: '-7%', right: '15px' }
+      { position: 'absolute', top: '-34px', right: '15px' }
       :
       { margin: '10px 0px' };
     const downloadOptions = (

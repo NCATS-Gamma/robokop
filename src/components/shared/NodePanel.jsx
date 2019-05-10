@@ -9,8 +9,7 @@ import Loading from './../Loading';
 import LabeledFormGroup from './../shared/LabeledFormGroup';
 import CurieSelectorContainer from './../shared/CurieSelectorContainer';
 import entityNameDisplay from '../util/entityNameDisplay';
-
-const shortid = require('shortid');
+import NodeProperties from './NodeProperties';
 
 const classNames = {
   formLabel: 'col-md-2 form-label',
@@ -66,9 +65,9 @@ class NodePanel extends React.Component {
     const { isValidType, curieEnabled } = activePanel;
     const dropDownObjList = activePanel.store.concepts.map(c => ({ text: entityNameDisplay(c), value: c }));
     const nodeInfo = [
-      { text: 'Specific Entry', value: 'curieEnabled' },
       { text: 'Single Unspecified Entry', value: 'regular' },
       { text: 'Collection of Unspecified Entries', value: 'set' },
+      { text: 'Specific Entry', value: 'curieEnabled' },
     ];
     const nodeTypeText = nodeInfo.find(nodeType => activePanel[nodeType.value]).text;
     let curie;
@@ -83,7 +82,7 @@ class NodePanel extends React.Component {
           <div>
             <Form horizontal>
               <LabeledFormGroup
-                formLabel={<span>Node Type</span>}
+                formLabel={<span>Node Type:</span>}
                 value={activePanel.type}
                 validateForm={() => this.validateFormElement('type')}
                 classNames={classNames}
@@ -116,7 +115,6 @@ class NodePanel extends React.Component {
               <div style={{ display: 'table', width: '100%' }}>
                 <div
                   style={{ display: 'table-row' }}
-                  key={shortid.generate()}
                 >
                   <div
                     style={{ display: 'table-cell', padding: '5px 0px' }}
@@ -131,6 +129,9 @@ class NodePanel extends React.Component {
                   </div>
                 </div>
               </div>
+            }
+            {isValidType &&
+              <NodeProperties activePanel={activePanel} />
             }
           </div>
           :

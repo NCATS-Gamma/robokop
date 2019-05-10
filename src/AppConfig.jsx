@@ -8,6 +8,7 @@ class AppConfig {
     this.comms = axios.create();
     this.questionNewSearchCancelToken = null; // Store cancelToken for get requests here (see https://github.com/axios/axios/issues/1361#issuecomment-366807250)
     axiosRetry(this.comms, { retries: 3 }); // Retry for request timeouts, help with spotty connections.
+    this.cancelToken = axios.CancelToken.source();
 
     // Valid urls we would go to
     this.urls = {
@@ -57,6 +58,7 @@ class AppConfig {
       simpleSynonymize: (id, type) => this.url(`api/simple/synonymize/${id}/${type}/`), // POST for synonyms of curie from Builder API
       graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql`,
       publications: (id1, id2) => this.url(`api/omnicorp/${id1}/${id2}`), // GET publications for one identifier or a pair of identifiers
+      pubmedPublications: id => this.url(`api/pubmed/${id}`), // GET pubmed publications for given id
     };
 
     this.url = this.url.bind(this);
@@ -348,6 +350,13 @@ class AppConfig {
       failureFun,
     );
   }
+  getPubmedPublications(id, successFun, failureFun) {
+    this.getRequest(
+      this.apis.pubmedPublications(id),
+      successFun,
+      failureFun,
+    );
+  }
 
   open(url) {
     window.open(url, '_blank'); // This will not open a new tab in all browsers, but will try
@@ -406,7 +415,7 @@ class AppConfig {
       console.log(err);
     },
   ) {
-    this.comms.get(addr).then((result) => {
+    this.comms.get(addr, { cancelToken: this.cancelToken.token }).then((result) => {
       successFunction(result.data); // 'ok'
     }).catch((err) => {
       failureFunction(err);

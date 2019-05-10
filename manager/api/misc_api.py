@@ -10,11 +10,12 @@ import time
 import requests
 from flask import request, Response
 from flask_restful import Resource, abort
+import redis
 
 from manager.setup import app, api
 from manager.logging_config import logger
 from manager.util import getAuthData
-from manager.tasks import celery
+from manager.tasks import celery, fetch_pubmed_info
 from manager.task import get_task_by_id, TASK_TYPES, save_task_result, save_revoked_task_result
 from manager.setup_db import engine
 
@@ -354,6 +355,63 @@ class Properties(Resource):
         return props
 
 api.add_resource(Properties, '/properties/')
+
+class Pubmed(Resource):
+    def get(self, pmid):
+        """
+        Get pubmed publication from id
+        ---
+        tags: [util]
+        parameters:
+          - in: path
+            name: pmid
+            description: ID of pubmed publication
+            schema:
+                type: string
+            required: true
+            default: "10924274"
+        responses:
+            200:
+                description: pubmed publication
+                content:
+                    application/json:
+        """
+        
+        # logger.debug(f'Fetching pubmed info for pmid {pmid}')
+
+        pubmed_redis_client = redis.Redis(
+            host=os.environ['PUBMED_CACHE_HOST'],
+            port=os.environ['PUBMED_CACHE_PORT'],
+            db=os.environ['PUBMED_CACHE_DB'],
+            password=os.environ['PUBMED_CACHE_PASSWORD'])
+
+        pubmed_cache_key = f'robokop_pubmed_cache_{pmid}'
+        pm_string = pubmed_redis_client.get(pubmed_cache_key)
+        if pm_string is None:
+            # logger.debug(f'Pubmed info for {pmid} not found in cache. Fetching from pubmed')
+
+            result = fetch_pubmed_info.apply_async(
+                args=[pmid, pubmed_cache_key]
+            )
+            
+            try:
+                task_status = result.get() # Blocking call to wait for task completion
+            except (redis.exceptions.InvalidResponse, redis.exceptions.ConnectionError) as err:
+                return "Celery results is bad: " + str(err), 500
+
+            if task_status != 'cached':
+                return task_status, 500
+            
+            pm_string = pubmed_redis_client.get(pubmed_cache_key)
+            if pm_string is None:
+                return 'Pubmed info could not be found', 500
+        
+        pubmed_info = json.loads(pm_string)
+        # logger.debug(f'Pubmed info for {pmid} found in cache.')
+        
+        return pubmed_info, 200
+
+api.add_resource(Pubmed, '/pubmed/<pmid>')
 
 class Search(Resource):
     def get(self, term, category):

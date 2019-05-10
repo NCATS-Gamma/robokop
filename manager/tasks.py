@@ -4,6 +4,7 @@ import os
 import json
 import time
 import logging
+import redis
 
 import requests
 from celery import Celery, signals
@@ -28,19 +29,23 @@ task_exchange = Exchange('manager', type='topic')
 celery.conf.task_queues = (
     Queue('manager_answer', exchange=task_exchange, routing_key='manager.answer'),
     Queue('manager_update', exchange=task_exchange, routing_key='manager.update'),
+    Queue('manager_pubmed', exchange=task_exchange, routing_key='manager.pubmed'),
 )
-
 
 @signals.after_task_publish.connect()
 def initialize_task(**kwargs):
     headers = kwargs.get('headers')
     
-    logger.debug(f'task headers {headers}')
-
     # Save initial task information into POSTGRES
     task_id = headers['id']
 
     task_fun = headers['task']
+    if task_fun == 'manager.tasks.fetch_pubmed_info':
+        return
+
+
+    logger.debug(f'task headers {headers}')
+
     if task_fun == 'manager.tasks.answer_question':
         task_type = TASK_TYPES['answer']
     elif task_fun == 'manager.tasks.update_kg':
@@ -64,6 +69,12 @@ def initialize_task(**kwargs):
 @signals.task_prerun.connect()
 def setup_logging(signal=None, sender=None, task_id=None, task=None, *args, **kwargs):
     """Change the main logger's handlers so they could log to a task specific log file."""
+
+    headers = task['headers']
+    task_fun = headers['task']
+    if task_fun == 'manager.tasks.fetch_pubmed_info':
+        return
+
     logger = logging.getLogger('manager')
     logger.info(f'Starting task specific log for task {task_id}')
     clear_log_handlers(logger)
@@ -77,6 +88,12 @@ def task_post_run(**kwargs):
 
     Updates task object with end time.
     """
+    task = kwargs.get('task')
+    headers = task['headers']
+    task_fun = headers['task']
+    if task_fun == 'manager.tasks.fetch_pubmed_info':
+        return
+
     task_id = kwargs.get('task_id')
     
     # Sync task status
@@ -314,3 +331,41 @@ def update_kg(self, question_id, user_email=None):
     logger.info(f"Done updating '{question_id}'.")
 
     return "You updated the KG!"
+
+
+@celery.task(bind=True, exchange='manager', routing_key='manager.pubmed', task_acks_late=True, track_started=True, worker_prefetch_multiplier=1, rate_limit='1/s')
+def fetch_pubmed_info(self, pmid, pubmed_cache_key):
+    # Actually make the request
+    postUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
+    postData = {"db": "pubmed", "id": pmid, "version": "2.0", "retmode": "json"}
+
+    response = requests.post(postUrl, data=postData)
+
+    # When you get the request back
+    if not response.ok:
+        # logger.debug(f'Pubmed returned a bad response for {pmid}, status code {response.status_code}')
+        if response.status_code == 429:
+            return 'Too many robokop pubmed requests'
+        return f'Unable to complete pubmed request, pubmed request status {response.status_code}'
+
+    pubmed_payload = response.json()
+    if not pubmed_payload or 'result' not in pubmed_payload:
+        # logger.debug(f'Pubmed returned a bad json response for {pmid}, response json {pubmed_payload}')
+        return 'Unable to complete pubmed request, bad pubmed response'
+    
+    pubmed_result = pubmed_payload['result']
+    if pmid not in pubmed_result:
+        # logger.debug(f'Pubmed returned a bad json result for {pmid}, result {pubmed_result}')
+        return 'Unable to complete pubmed request, bad pubmed result'
+
+    pubmed_info = pubmed_result[pmid]
+
+    pubmed_redis_client = redis.Redis(
+        host=os.environ['PUBMED_CACHE_HOST'],
+        port=os.environ['PUBMED_CACHE_PORT'],
+        db=os.environ['PUBMED_CACHE_DB'],
+        password=os.environ['PUBMED_CACHE_PASSWORD'])
+    pubmed_redis_client.set(pubmed_cache_key, json.dumps(pubmed_info))
+    # logger.debug(f'Pubmed response is now cached for pmid {pmid}')
+
+    return 'cached'

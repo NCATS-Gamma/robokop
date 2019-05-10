@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { FaSpinner } from 'react-icons/lib/fa';
 import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
-import { Modal, Col } from 'react-bootstrap';
+import { Modal } from 'react-bootstrap';
 
 import MachineQuestionView2 from './MachineQuestionView2';
 import NewQuestionPanelModal from './modals/NewQuestionPanelModal';
@@ -41,8 +41,9 @@ class MachineQuestionViewContainer extends React.Component {
 
     this.getHeight = this.getHeight.bind(this);
     this.getWidth = this.getWidth.bind(this);
-    this.nodeSelectCallback = this.nodeSelectCallback.bind(this);
-    this.edgeSelectCallback = this.edgeSelectCallback.bind(this);
+    // this.nodeSelectCallback = this.nodeSelectCallback.bind(this);
+    // this.edgeSelectCallback = this.edgeSelectCallback.bind(this);
+    this.graphClickCallback = this.graphClickCallback.bind(this);
     this.toggleJsonEditor = this.toggleJsonEditor.bind(this);
     this.saveJsonEditor = this.saveJsonEditor.bind(this);
   }
@@ -59,22 +60,30 @@ class MachineQuestionViewContainer extends React.Component {
     return `${w}px`;
   }
 
-  nodeSelectCallback(data) {
-    let nodeId = -1;
+  // nodeSelectCallback(data) {
+  //   let nodeId = -1;
+  //   if (data.nodes.length > 0) {
+  //     nodeId = data.nodes[0]; // eslint-disable-line prefer-destructuring
+  //   }
+  //   if (nodeId > -1) {
+  //     this.props.store.updateActivePanelFromNodeId(nodeId);
+  //   }
+  // }
+  // edgeSelectCallback(data) {
+  //   let edgeId = -1;
+  //   if (data.edges.length > 0) {
+  //     edgeId = data.edges[0]; // eslint-disable-line prefer-destructuring
+  //   }
+  //   if (edgeId > -1) {
+  //     this.props.store.updateActivePanelFromEdgeId(edgeId);
+  //   }
+  // }
+
+  graphClickCallback(data) {
     if (data.nodes.length > 0) {
-      nodeId = data.nodes[0]; // eslint-disable-line prefer-destructuring
-    }
-    if (nodeId > -1) {
-      this.props.store.updateActivePanelFromNodeId(nodeId);
-    }
-  }
-  edgeSelectCallback(data) {
-    let edgeId = -1;
-    if (data.edges.length > 0) {
-      edgeId = data.edges[0]; // eslint-disable-line prefer-destructuring
-    }
-    if (edgeId > -1) {
-      this.props.store.updateActivePanelFromEdgeId(edgeId);
+      this.props.store.updateActivePanelFromNodeId(data.nodes[0]);
+    } else if (data.edges.length > 0) {
+      this.props.store.updateActivePanelFromEdgeId(data.edges[0]);
     }
   }
 
@@ -123,8 +132,9 @@ class MachineQuestionViewContainer extends React.Component {
             concepts={toJS(store.concepts)}
             graphState={toJS(store.graphState)}
             selectable
-            nodeSelectCallback={this.nodeSelectCallback}
-            edgeSelectCallback={this.edgeSelectCallback}
+            // nodeSelectCallback={this.nodeSelectCallback}
+            // edgeSelectCallback={this.edgeSelectCallback}
+            graphClickCallback={this.graphClickCallback}
           />
         }
         {showFetching &&

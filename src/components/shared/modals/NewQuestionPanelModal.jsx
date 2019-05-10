@@ -30,8 +30,10 @@ class NewQuestionPanelModal extends React.Component {
     if (nodePanel) {
       return { backgroundColor: panelColorMap(store.activePanelState.type) };
     }
-    const type1 = (store.panelState[store.activePanelState.source_id] && store.panelState[store.activePanelState.source_id].type) || 'edge';
-    const type2 = (store.panelState[store.activePanelState.target_id] && store.panelState[store.activePanelState.target_id].type) || 'edge';
+    // only find the node panels in store state.
+    const nodeList = store.panelState.filter(panel => panel.panelType === 'node');
+    const type1 = (nodeList[store.activePanelState.source_id] && nodeList[store.activePanelState.source_id].type) || 'edge';
+    const type2 = (nodeList[store.activePanelState.target_id] && nodeList[store.activePanelState.target_id].type) || 'edge';
     const color1 = panelColorMap(type1);
     const color2 = panelColorMap(type2);
     return { backgroundImage: `linear-gradient(80deg, ${color1} 50%, ${color2} 50%)` };
@@ -47,7 +49,7 @@ class NewQuestionPanelModal extends React.Component {
     const backgroundColor = this.getBackgroundColor(isNodePanel);
     return (
       <div>
-        {activePanelState.id > -1 &&
+        {activePanelState.panelType &&
           <Modal
             show={store.showPanelModal}
             onHide={store.togglePanelModal}

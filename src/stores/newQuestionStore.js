@@ -178,13 +178,14 @@ class NodePanel {
   @observable type = '';
   @observable name = '';
   @observable curie = [];
+  @observable properties = [];
   @observable curieEnabled = false;
   @observable set = false;
   @observable regular = false;
   @observable deleted = false;
   panelType = panelTypes.node;
 
-  _publicFields = ['id', 'name', 'type', 'curie', 'set', 'curieEnabled', 'regular'];
+  _publicFields = ['id', 'name', 'type', 'curie', 'set', 'curieEnabled', 'regular', 'properties'];
   _nodeFunctionTypes = ['curieEnabled', 'set', 'regular'];
 
   constructor(store, userObj = {}) {
@@ -251,6 +252,22 @@ class NodePanel {
     }
   }
 
+  @action.bound addProperty() {
+    this.properties.push(['', '']);
+  }
+
+  @action.bound updateProperty(value, i, keyValue) {
+    if (keyValue === 'key') {
+      this.properties[i][0] = value;
+    } else {
+      this.properties[i][1] = value;
+    }
+  }
+
+  @action.bound deleteProperty(i) {
+    this.properties.splice(i, 1);
+  }
+
   @action.bound addCurie() {
     this.curie.push('');
   }
@@ -293,8 +310,16 @@ class NodePanel {
     return isValid;
   }
 
+  @computed get isValidProperties() {
+    if (!this.properties.length) {
+      return true; // if there are no properties, is valid
+    }
+    const valid = !this.properties.some(prop => !prop[0] || !prop[1]); // if any properties are blank, not valid
+    return valid;
+  }
+
   @computed get isValid() {
-    return this.isValidType && this.isValidCurieList && !this.deleted;
+    return this.isValidType && this.isValidCurieList && !this.deleted && this.isValidProperties;
   }
 
   // Prettified label for the panel
@@ -329,6 +354,9 @@ class NodePanel {
       curieEnabled: toJS(this.curieEnabled),
       deleted: toJS(this.deleted),
     };
+    this.properties.forEach((prop) => {
+      jsonObj[prop[0]] = prop[1];
+    });
     if (this.name !== '') {
       jsonObj.name = toJS(this.name);
     }
@@ -353,7 +381,7 @@ class NewQuestionStore {
   @observable graphState = graphStates.empty;
 
   @observable panelState = [];
-  @observable activePanelInd = 0;
+  @observable activePanelInd = null;
   @observable activePanelState = {};
 
   @observable predicateList = [];
@@ -545,7 +573,10 @@ class NewQuestionStore {
     if (this.activePanelInd === this.panelState.length) {
       return true; // This is an unsaved panel
     }
-    return !this.panelState[this.activePanelInd].isEqual(this.activePanelState); // Uses Panel isEqual class method
+    if (this.panelState[this.activePanelInd]) {
+      return !this.panelState[this.activePanelInd].isEqual(this.activePanelState); // Uses Panel isEqual class method
+    }
+    return false;
   }
 
   // Is a panel (input or output currently selected / being edited)
@@ -674,8 +705,8 @@ class NewQuestionStore {
       });
 
       // Reset activePanel to 1st panel/node
-      this.activePanelState = this.panelState.length > 0 ? this.panelState[0].clone() : {};
-      this.activePanelInd = 0;
+      this.activePanelState = {};
+      this.activePanelInd = null;
       if (this.panelState.length > 0) {
         this.setGraphState(graphStates.display);
       } else {
@@ -735,25 +766,25 @@ class NewQuestionStore {
     this.questionName = '';
     this.graphState = graphStates.empty;
     this.panelState = [];
-    this.activePanelInd = 0;
+    this.activePanelInd = null;
     this.activePanelState = {};
   }
 
   @action.bound newActivePanel(panelType) {
+    this.togglePanelModal();
     if (panelType === panelTypes.node) {
       this.activePanelState = new NodePanel(this);
     }
     if (panelType === panelTypes.edge) {
       // If a node was previously selected when clicking "New Edge", the source-id
       // for the new edge is pre-populated with a reference to the initially selected node
-      if ((this.panelState.length > this.activePanelInd) && this.isNode(this.panelState[this.activePanelInd])) {
+      if (this.activePanelInd && (this.panelState.length > this.activePanelInd) && this.isNode(this.panelState[this.activePanelInd])) {
         this.activePanelState = new EdgePanel(this, { source_id: this.panelState[this.activePanelInd].id });
       } else {
         this.activePanelState = new EdgePanel(this);
       }
     }
     this.activePanelInd = this.panelState.length;
-    this.togglePanelModal();
   }
 
   // Revert any unsaved changes in a panel for an existing node
@@ -846,6 +877,7 @@ class NewQuestionStore {
       if (!window.confirm('You have unsaved changes. Are you sure you want to close? You will lose your work.')) {
         return;
       }
+      this.activePanelState = {};
     }
     const showModal = this.showPanelModal;
     this.showPanelModal = !showModal;

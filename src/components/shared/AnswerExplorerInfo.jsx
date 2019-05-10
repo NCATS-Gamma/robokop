@@ -3,6 +3,9 @@ import React from 'react';
 import { Row, Col, Panel } from 'react-bootstrap';
 import FaDownload from 'react-icons/lib/fa/download';
 
+import AppConfig from '../../AppConfig';
+import { config } from '../../index';
+
 import SubGraphViewer from './SubGraphViewer';
 import PubmedList from './PubmedList';
 
@@ -13,6 +16,8 @@ const shortid = require('shortid');
 class AnswerExplorerInfo extends React.Component {
   constructor(props) {
     super(props);
+
+    this.appConfig = new AppConfig(config);
 
     this.state = {
       selectedEdge: {},
@@ -30,6 +35,24 @@ class AnswerExplorerInfo extends React.Component {
     this.syncPropsAndState(this.props);
   }
 
+  syncPropsAndState(newProps) {
+    const { graph, selectedEdge } = newProps;
+    const nodes = graph.node_list.filter(n => ((n.id === selectedEdge.source_id) || (n.id === selectedEdge.target_id)));
+    const nodeIds = nodes.map(n => n.id);
+    const edges = graph.edge_list.filter(e => (nodeIds.includes(e.source_id) && nodeIds.includes(e.target_id)));
+
+    const subgraph = { nodes, edges };
+    this.setState({
+      subgraph, selectedEdgeId: selectedEdge.edgeIdFromKG, selectedNodeId: null, selectedEdge,
+    }, () => {
+      this.getPublicationsFrag();
+    });
+
+    if (edges.length === 1) {
+      this.setState({ disbleGraphClick: true });
+    }
+  }
+
   onGraphClick(event) {
     if (this.state.disbleGraphClick) {
       return;
@@ -44,6 +67,68 @@ class AnswerExplorerInfo extends React.Component {
     }
     this.setState(newState);
   }
+
+  getNodeInfoFrag(n) {
+    if (!n || !('name' in n)) {
+      return (<div />);
+    }
+
+    const urls = curieUrls(n.id);
+    return (
+      <Panel>
+        <Panel.Heading>
+          <Panel.Title componentClass="h3">
+            {n.name}
+          </Panel.Title>
+        </Panel.Heading>
+        <Panel.Body style={{ minHeight: '100px' }}>
+          <h5>
+            {n.type}
+          </h5>
+          <h5>
+            {n.id}
+          </h5>
+          {
+            urls.map(link => <span key={shortid.generate()}><a href={link.url} target="_blank">{link.label}</a> &nbsp; </span>)
+          }
+        </Panel.Body>
+      </Panel>
+    );
+  }
+
+  getEdgeInfoFrag(edge) {
+    if (!edge) {
+      return (<div />);
+    }
+    let origin = 'Unknown';
+    const sourceToOriginString = source => source; // source.substr(0, source.indexOf('.'));
+
+    if ('source_database' in edge) {
+      if (Array.isArray(edge.source_database) && edge.source_database.length > 0) {
+        origin = edge.source_database.map(source => <span key={shortid.generate()}>{sourceToOriginString(source)} &nbsp; </span>);
+      } else {
+        origin = sourceToOriginString(edge.source_database);
+      }
+    }
+    return (
+      <Panel>
+        <Panel.Heading>
+          <Panel.Title componentClass="h3">
+            {edge.type}
+          </Panel.Title>
+        </Panel.Heading>
+        <Panel.Body style={{ minHeight: '100px' }}>
+          <h5>
+            Established using:
+            <p>
+              {origin}
+            </p>
+          </h5>
+        </Panel.Body>
+      </Panel>
+    );
+  }
+
   getPublicationsFrag() {
     let publicationListFrag = <div><p>Click on edge above to see a list of publications.</p></div>;
     let publicationsTitle = 'Publications';
@@ -114,84 +199,6 @@ class AnswerExplorerInfo extends React.Component {
       </Panel>
     );
   }
-  getNodeInfoFrag(n) {
-    if (!n || !('name' in n)) {
-      return (<div />);
-    }
-
-    const urls = curieUrls(n.id);
-    return (
-      <Panel>
-        <Panel.Heading>
-          <Panel.Title componentClass="h3">
-            {n.name}
-          </Panel.Title>
-        </Panel.Heading>
-        <Panel.Body style={{ minHeight: '100px' }}>
-          <h5>
-            {n.type}
-          </h5>
-          <h5>
-            {n.id}
-          </h5>
-          {
-            urls.map(link => <span key={shortid.generate()}><a href={link.url} target="_blank">{link.label}</a> &nbsp; </span>)
-          }
-        </Panel.Body>
-      </Panel>
-    );
-  }
-
-  getEdgeInfoFrag(edge) {
-    if (!edge) {
-      return (<div />);
-    }
-    let origin = 'Unknown';
-    const sourceToOriginString = source => source; // source.substr(0, source.indexOf('.'));
-
-    if ('source_database' in edge) {
-      if (Array.isArray(edge.source_database) && edge.source_database.length > 0) {
-        origin = edge.source_database.map(source => <span key={shortid.generate()}>{sourceToOriginString(source)} &nbsp; </span>);
-      } else {
-        origin = sourceToOriginString(edge.source_database);
-      }
-    }
-    return (
-      <Panel>
-        <Panel.Heading>
-          <Panel.Title componentClass="h3">
-            {edge.type}
-          </Panel.Title>
-        </Panel.Heading>
-        <Panel.Body style={{ minHeight: '100px' }}>
-          <h5>
-            Established using:
-            <p>
-              {origin}
-            </p>
-          </h5>
-        </Panel.Body>
-      </Panel>
-    );
-  }
-
-  syncPropsAndState(newProps) {
-    const { graph, selectedEdge } = newProps;
-    const nodes = graph.node_list.filter(n => ((n.id === selectedEdge.source_id) || (n.id === selectedEdge.target_id)));
-    const nodeIds = nodes.map(n => n.id);
-    const edges = graph.edge_list.filter(e => (nodeIds.includes(e.source_id) && nodeIds.includes(e.target_id)));
-
-    const subgraph = { nodes, edges };
-    this.setState({
-      subgraph, selectedEdgeId: selectedEdge.edgeIdFromKG, selectedNodeId: null, selectedEdge,
-    }, () => {
-      this.getPublicationsFrag();
-    });
-
-    if (edges.length === 1) {
-      this.setState({ disbleGraphClick: true });
-    }
-  }
 
   downloadPublicationsInfo(publications) {
     const defaultInfo = {
@@ -204,36 +211,42 @@ class AnswerExplorerInfo extends React.Component {
       url: '',
       doid: '',
     };
-    const getInfo = (result, pmid, pmidNum) => {
-      const paperInfo = result[pmidNum];
-      const fetchedInfo = {
-        id: pmid,
-        title: paperInfo.title,
-        authors: paperInfo.authors,
-        journal: paperInfo.fulljournalname,
-        source: paperInfo.source,
-        pubdate: paperInfo.pubdate,
-        url: `https://www.ncbi.nlm.nih.gov/pubmed/${pmidNum}/`,
-        doid: paperInfo.elocationid,
+    const getInfo = (pub) => {
+      const paperInfo = {
+        id: pub.uid,
+        title: pub.title,
+        authors: pub.authors,
+        journal: pub.fulljournalname,
+        source: pub.source,
+        pubdate: pub.pubdate,
+        url: `https://www.ncbi.nlm.nih.gov/pubmed/${pub.uid}/`,
+        doid: pub.elocationid,
       };
-      return { ...defaultInfo, ...fetchedInfo };
+      return { ...defaultInfo, ...paperInfo };
     };
 
     const getPubmedInformation = (pmid) => {
-      const pmidNum = pmid.substr(pmid.indexOf(':') + 1);
-      const postUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi';
-      const postData = {
-        db: 'pubmed',
-        id: pmidNum.toString(),
-        version: '2.0',
-        retmode: 'json',
-      };
+      let pmidStr = pmid.toString();
+      if ((typeof pmidStr === 'string' || pmidStr instanceof String) && (pmidStr.indexOf(':') !== -1)) {
+        // pmidStr has a colon, and therefore probably a curie, remove it.
+        pmidStr = pmidStr.substr(pmidStr.indexOf(':') + 1);
+      }
 
-      return new Promise((resolve, reject) => $.post(postUrl, postData, response => resolve(response)).fail(response => reject(response)))
-        .then(info => getInfo(info.result, pmid, pmidNum)).catch((err) => { console.log(err); return defaultInfo; });
+      return new Promise((resolve, reject) => {
+        this.appConfig.getPubmedPublications(
+          pmidStr,
+          (pub) => {
+            resolve(getInfo(pub));
+          },
+          (err) => {
+            console.log(err);
+            reject(defaultInfo);
+          },
+        );
+      });
     };
 
-    Promise.all(publications.map((p, i) => new Promise(resolve => setTimeout(resolve, (i * 100) + 1)).then(() => getPubmedInformation(p)))).then((data) => {
+    Promise.all(publications.map(pmid => new Promise(resolve => resolve(getPubmedInformation(pmid))))).then((data) => {
       // Transform the data into a json blob and give it a url
       // const json = JSON.stringify(data);
       // const blob = new Blob([json], { type: 'application/json' });

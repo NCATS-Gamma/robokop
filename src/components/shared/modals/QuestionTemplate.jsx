@@ -250,7 +250,7 @@ class QuestionTemplateModal extends React.Component {
           }
           {nameList.map((name, i) => (
             <CurieSelectorContainter
-              key={shortid.generate()}
+              key={['curieSelector', i].join('_')}
               ref={(type) => { this[`curie${i}`] = type; }}
               concepts={concepts}
               onChangeHook={(ty, te, cu) => this.handleCurieChange(i, ty, te, cu)}

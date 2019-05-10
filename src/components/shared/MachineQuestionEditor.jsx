@@ -157,7 +157,9 @@ class MachineQuestionEditor extends React.Component {
 
   render() {
     const topBarHeight = 30;
-    const { isValid, errorMessage, thinking } = this.state;
+    const {
+      isValid, errorMessage, thinking, data,
+    } = this.state;
     const fullHeight = this.props.height;
     let innerHeight = fullHeight;
     let containerStyle = { position: 'relative' };
@@ -216,7 +218,7 @@ class MachineQuestionEditor extends React.Component {
                   collapseStringsAfterLength={15}
                   indentWidth={2}
                   iconStyle="triangle"
-                  src={this.state.data}
+                  src={data}
                   onEdit={this.onEdit}
                   onAdd={this.onAdd}
                   onDelete={this.onDelete}
@@ -227,7 +229,7 @@ class MachineQuestionEditor extends React.Component {
                   <MachineQuestionView
                     height={innerHeight}
                     concepts={this.props.concepts}
-                    question={this.state.data.machine_question}
+                    question={data.machine_question}
                   />
                 }
                 {!isValid &&

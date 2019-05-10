@@ -44,7 +44,6 @@ class QuestionNew extends React.Component {
 
   componentDidMount() {
     this.props.store.getQuestionData(this.props.initializationId);
-    console.log('Mobx Store:', this.props.store);
   }
 
   componentWillUnmount() {

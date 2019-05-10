@@ -43,8 +43,8 @@ class QuestionListTableAgGrid extends React.Component {
     this.gridApi.sizeColumnsToFit();
 
     const sort = [
-      // { colId: 'isUserOwned', sort: 'desc' },
-      { colId: 'latest_answerset_timestamp', sort: 'desc' },
+      { colId: 'isUserOwned', sort: 'desc' },
+      // { colId: 'latest_answerset_timestamp', sort: 'desc' },
     ];
     this.gridApi.setSortModel(sort);
   }
@@ -54,7 +54,7 @@ class QuestionListTableAgGrid extends React.Component {
       this.props.callbackAnswersetSelect(event.node.data, { id: event.node.data.latestAnswersetId });
     } else if (clickedColumn === 'isBusy') {
       this.props.onClick(event.node.data);
-    } else if (clickedColumn !== 'timestamp') {
+    } else if (clickedColumn !== 'timestamp' && clickedColumn !== 'isUserOwned') {
       this.props.callbackQuestionSelect(event.node.data);
     }
   }
@@ -162,10 +162,13 @@ class QuestionListTableAgGrid extends React.Component {
                   {
                     headerName: '*',
                     field: 'isUserOwned',
+                    headerClass: 'no-padding',
+                    cellClass: 'no-padding',
                     suppressMenu: true,
-                    suppressSorting: true,
+                    // suppressSorting: true,
                     cellRenderer: this.cellRendererOwned,
-                    width: 20,
+                    width: 70,
+                    minWidth: 20,
                     hide: true,
                     tooltip: value => (value ? 'This is your question' : ''),
                     suppressResize: true,
@@ -186,7 +189,6 @@ class QuestionListTableAgGrid extends React.Component {
                     cellRenderer: this.cellRendererTaskStatus,
                     width: 70,
                     minWidth: 20,
-                    hide: false,
                     cellClass: 'no-padding',
                   },
                   {
@@ -198,7 +200,6 @@ class QuestionListTableAgGrid extends React.Component {
                     cellRenderer: this.cellRendererAnswers,
                     width: 70,
                     minWidth: 20,
-                    hide: false,
                     cellClass: 'no-padding',
                   },
                   {
@@ -209,7 +210,6 @@ class QuestionListTableAgGrid extends React.Component {
                     cellRenderer: this.cellRendererTimestamp,
                     width: 70,
                     minWidth: 20,
-                    hide: false,
                     cellClass: 'no-padding',
                   },
                 ]}
