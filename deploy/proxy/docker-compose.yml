@@ -1,0 +1,22 @@
+version: "3"
+services:  
+  nginx:
+    container_name: nginx_gateway
+    image: nginx:latest
+    env_file:
+      - ../../../shared/robokop.env
+    environment:
+      - SERVER_NAME=robokop.renci.org
+    ports: 
+      # - 80:80
+      - 443:443      
+    volumes:
+      - ./configs/:/etc/nginx/templates/ 
+      - ./startup.sh:/startup.sh
+      - ../../../logs/nginx/:/var/log/nginx/
+      - ../../../certs:/etc/ssl/certs
+      - ./configs/ssl.conf:/etc/nginx/ssl/ssl.conf
+    command: /bin/bash /startup.sh
+
+      
+    
