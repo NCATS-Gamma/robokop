@@ -2,7 +2,7 @@
 
 # _----- Aliases to server port combinations
 upstream manager_web_server {
-  server ${ROBOKOP_HOST}:${MANAGER_PORT};
+  server ${MANAGER_HOST}:${MANAGER_PORT};
 }
 upstream builder_web_server {
   server ${BUILDER_HOST}:${BUILDER_PORT};
@@ -11,7 +11,7 @@ upstream ranker_web_server {
   server ${RANKER_HOST}:${RANKER_PORT};
 }
 upstream manager_supervisor {
-  server ${ROBOKOP_HOST}:${MANAGER_SUPERVISOR_PORT};
+  server ${MANAGER_HOST}:${MANAGER_SUPERVISOR_PORT};
 }
 upstream builder_supervisor {
   server ${BUILDER_HOST}:${BUILDER_SUPERVISOR_PORT};
@@ -22,6 +22,10 @@ upstream ranker_supervisor {
 upstream broker_ui {
   server ${BROKER_HOST}:${BROKER_MONITOR_PORT};
 }
+upstream graphql_server {
+  server ${GRAPHQL_HOST}:${GRAPHQL_PORT};
+}
+
 
 server {
   server_name ${SERVER_NAME};
@@ -93,6 +97,10 @@ server {
   location /broker/ {
     proxy_pass http://broker_ui/;
   }
- 
-
+  
+  location /graphql {
+    proxy_pass http://graphql_server/graphql;
+  }
 }
+
+
