@@ -33,24 +33,26 @@ celery.conf.task_queues = (
 )
 
 @signals.after_task_publish.connect()
-def initialize_task(**kwargs):
-    headers = kwargs.get('headers')
-    
-    # Save initial task information into POSTGRES
-    task_id = headers['id']
-
-    task_fun = headers['task']
-    if task_fun == 'manager.tasks.fetch_pubmed_info':
-        return
-
-    # logger.debug(f'task headers {headers}')
-
-    if task_fun == 'manager.tasks.answer_question':
+def initialize_task(headers, body, exchange, routing_key, **kwargs):
+    '''
+        Task run as a task is added to the celery queue
+        We use this to save initial values for update and answer tasks
+        into the postgress
+    '''
+    task_name = headers['task']
+    if task_name == 'answer':
         task_type = TASK_TYPES['answer']
-    elif task_fun == 'manager.tasks.update_kg':
+    elif task_name == 'update':
         task_type = TASK_TYPES['update']
     else:
-        task_type = 'UNKNOWN'
+        # There may be other tasks sharing this signal, for example pubmed fetchiing
+        # We don't want these to enter the DB
+        # For future celery tasks, if setup is required edit this logic
+        # For now we assume all code below is for update or answer tasks.
+        return
+
+    task_id = headers['id']
+
     task_args = json.loads(headers['kwargsrepr'].replace("'",'"'))
     
     initiator = task_args['user_email']
@@ -66,17 +68,12 @@ def initialize_task(**kwargs):
     )
 
 @signals.task_prerun.connect()
-def setup_logging(signal=None, sender=None, task_id=None, task=None, *args, **kwargs):
-    """Change the main logger's handlers so they could log to a task specific log file."""
-    # logger.info('1')
-    # headers = task['headers']
-    # logger.info('2')
-    # task_fun = headers['task']
-    # logger.info('3')
-    # if task_fun == 'manager.tasks.fetch_pubmed_info':
-    #     logger.info('4')
-    #     return
-    # logger.info('5')
+def setup_logging(task_id, task, *args, **kwargs):
+    """
+        Change the main logger's handlers so they could log to a task specific log file.
+    """
+    if task.name == 'pubmed':
+        return
 
     logger = logging.getLogger('manager')
     logger.info(f'Starting task specific log for task {task_id}')
@@ -86,19 +83,14 @@ def setup_logging(signal=None, sender=None, task_id=None, task=None, *args, **kw
 
 
 @signals.task_postrun.connect()
-def task_post_run(**kwargs):
+def task_post_run(task_id, task, *args, **kwargs):
     """Reverts back logging to main configuration once task is finished.
 
     Updates task object with end time.
     """
-    # task = kwargs.get('task')
-    # headers = task['headers']
-    # task_fun = headers['task']
-    # if task_fun == 'manager.tasks.fetch_pubmed_info':
-    #     return
+    if task.name == 'pubmed':
+        return
 
-    task_id = kwargs.get('task_id')
-    
     # Sync task status
     save_task_result(task_id)
 
@@ -111,7 +103,7 @@ def task_post_run(**kwargs):
     set_up_main_logger()
     # finally log task has finished to main file
     logger = logging.getLogger(__name__)
-    logger.info(f"Task {kwargs.get('task_id')} is complete")
+    logger.info(f"Task {task_id} is complete")
 
 
 class NoAnswersException(Exception):
