@@ -52,7 +52,7 @@ const config = {
   host: process.env.ROBOKOP_HOST,
   port: process.env.MANAGER_PORT_UI,
   protocol: process.env.ROBOKOP_PROTOCOL,
-  graphqlPort: process.env.GRAPHQL_PORT_UI, // With our NGINX setup we no longe require a seperate more for the graphql
+  graphqlPort: process.env.GRAPHQL_PORT_UI, // With our NGINX setup we no longer require a seperate more for the graphql
 };
 
 const robokop = {
