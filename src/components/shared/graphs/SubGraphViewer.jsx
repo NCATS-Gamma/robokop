@@ -1,6 +1,6 @@
 import React from 'react';
-import getNodeTypeColorMap from '../util/colorUtils';
-import entityNameDisplay from '../util/entityNameDisplay';
+import getNodeTypeColorMap from '../../util/colorUtils';
+import entityNameDisplay from '../../util/entityNameDisplay';
 
 const Graph = require('react-graph-vis').default;
 const shortid = require('shortid');
@@ -23,17 +23,17 @@ class SubGraphViewer extends React.Component {
       physics: {
         minVelocity: 1,
         barnesHut: {
-          gravitationalConstant: 0,
+          gravitationalConstant: -300,
           centralGravity: 0.3,
-          springLength: 200,
+          springLength: 120,
           springConstant: 0.05,
-          damping: 0.95,
-          avoidOverlap: 0,
+          damping: 0.2,
+          avoidOverlap: 1,
         },
       },
       layout: {
         randomSeed: 0,
-        improvedLayout: true,
+        improvedLayout: false,
       },
       edges: {
         color: {
@@ -62,12 +62,9 @@ class SubGraphViewer extends React.Component {
         hoverConnectedEdges: true,
         selectConnectedEdges: false,
         selectable: true,
-        tooltipDelay: 50,
+        tooltipDelay: 400,
       },
-      // configure: {
-      //   enabled: true,
-      //   showButton: true,
-      // },
+      configure: true,
     };
 
     this.state = {
@@ -108,7 +105,7 @@ class SubGraphViewer extends React.Component {
     this.setState({ displayGraph: graph, displayGraphOptions: graphOptions }, this.setNetworkCallbacks);
   }
 
-  clickCallback(event) {
+  clickCallback(event) { /* eslint-disable no-param-reassign */
     // Add edge objects not just ids
     event.edgeObjects = event.edges.map(eId => this.state.displayGraph.edges.find(displayEdge => displayEdge.id === eId));
     event.graph = this.state.displayGraph;
@@ -122,7 +119,7 @@ class SubGraphViewer extends React.Component {
       this.network.physics.physicsEnabled = false;
     };
     const afterDraw = () => {
-      setTimeout(() => { stopLayout(); this.network.fit(); }, 2500);
+      setTimeout(() => { stopLayout(); this.network.fit(); }, 50);
     };
     const startLayout = () => {
       this.network.once('afterDrawing', afterDraw);
@@ -331,7 +328,8 @@ class SubGraphViewer extends React.Component {
         for (let jNode = iNode; jNode < g.nodes.length; jNode += 1) {
           const n2 = g.nodes[jNode];
           const theseNodeEdges = g.edges.filter(e => (((e.source_id === n1.id) && (e.target_id === n2.id)) || ((e.target_id === n1.id) && (e.source_id === n2.id))));
-
+          console.log('edges', theseNodeEdges);
+          // 
           let roundnessStep = 0.15;
           if (theseNodeEdges.length > 13) {
             // Roundness must be between 0 and 1. In general for less than 13 edges steps of 0.15 looks good
@@ -340,9 +338,10 @@ class SubGraphViewer extends React.Component {
             roundnessStep = 1 / (Math.ceil(theseNodeEdges.length) / 2);
           }
           theseNodeEdges.forEach((e, i) => {
+            const typeInd = (i + (e.source_id === n1.id)) % 2;
             e.smooth = {
               enabled: true,
-              type: types[i % 2],
+              type: types[typeInd],
               roundness: Math.floor((i + 1) / 2) * roundnessStep,
             };
           });
@@ -362,12 +361,12 @@ class SubGraphViewer extends React.Component {
     // g.edges = g.edges.filter((e, i) => !deleteMe[i]);
 
     // Add parameters to edges like curvature and labels and such
-    g.edges = g.edges.map((e, i) => {
+    g.edges = g.edges.map((e) => {
       let typeDependentParams = {};
       let label = e.type;
       let nPublications = e.publications ? e.publications.length : 0;
       if (nPublications === 0 && 'nPublications' in e) {
-        nPublications = e.nPublications;
+        ({ nPublications } = e); // object destructure, grabs variable out of object
       }
       if (nPublications > 0) {
         label = `${e.type} (${nPublications})`;
@@ -462,7 +461,7 @@ class SubGraphViewer extends React.Component {
             <Graph
               key={shortid.generate()} // Forces component remount
               graph={graph}
-              style={{ width: '100%' }}
+              style={{ width: '100%', padding: '10px' }}
               options={this.state.displayGraphOptions}
               events={{ click: this.clickCallback }}
               getNetwork={(network) => { this.network = network; }} // Store network reference in the component

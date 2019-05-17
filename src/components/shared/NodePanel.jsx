@@ -7,7 +7,7 @@ import { DropdownList } from 'react-widgets';
 
 import Loading from './../Loading';
 import LabeledFormGroup from './../shared/LabeledFormGroup';
-import CurieSelectorContainer from './../shared/CurieSelectorContainer';
+import CurieSelectorContainer from './../shared/curies/CurieSelectorContainer';
 import entityNameDisplay from '../util/entityNameDisplay';
 import NodeProperties from './NodeProperties';
 

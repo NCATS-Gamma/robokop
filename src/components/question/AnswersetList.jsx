@@ -2,7 +2,7 @@ import React from 'react';
 
 import AnswersetSelector from './AnswersetSelector';
 // import KnowledgeGraphViewer from './KnowledgeGraphViewer';
-import SubGraphViewer from '../shared/SubGraphViewer';
+import SubGraphViewer from '../shared/graphs/SubGraphViewer';
 
 import AnswersetStore from './../../stores/messageAnswersetStore';
 import Loading from '../Loading';

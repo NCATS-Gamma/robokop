@@ -9,7 +9,7 @@ import FaEyeSlash from 'react-icons/lib/fa/eye-slash';
 import QuestionHeader from '../shared/QuestionHeader';
 
 import AnswersetGraph from './AnswersetGraph';
-import MachineQuestionView2 from './../shared/MachineQuestionView2';
+import MachineQuestionView2 from './../shared/graphs/MachineQuestionView2';
 import MessageAnswersetTable from './MessageAnswersetTable';
 import AnswersetStore from './../../stores/messageAnswersetStore';
 import entityNameDisplay from './../util/entityNameDisplay';

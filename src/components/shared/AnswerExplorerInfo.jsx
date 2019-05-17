@@ -6,7 +6,7 @@ import FaDownload from 'react-icons/lib/fa/download';
 import AppConfig from '../../AppConfig';
 import { config } from '../../index';
 
-import SubGraphViewer from './SubGraphViewer';
+import SubGraphViewer from './graphs/SubGraphViewer';
 import PubmedList from './PubmedList';
 
 import curieUrls from '../util/curieUrls';
@@ -117,7 +117,7 @@ class AnswerExplorerInfo extends React.Component {
             {edge.type}
           </Panel.Title>
         </Panel.Heading>
-        <Panel.Body style={{ minHeight: '100px' }}>
+        <Panel.Body style={{ minHeight: '106px' }}>
           <h5>
             Established using:
             <p>

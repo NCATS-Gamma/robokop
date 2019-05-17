@@ -5,7 +5,7 @@ import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { Modal } from 'react-bootstrap';
 
-import MachineQuestionView2 from './MachineQuestionView2';
+import MachineQuestionView2 from './graphs/MachineQuestionView2';
 import NewQuestionPanelModal from './modals/NewQuestionPanelModal';
 import ButtonGroupPanel from './ButtonGroupPanel';
 import MachineQuestionEditor from './MachineQuestionEditor';
@@ -49,13 +49,13 @@ class MachineQuestionViewContainer extends React.Component {
   }
 
   getHeight() {
-    let h = $(window).height() - 50;
+    const h = $(window).height() - 50;
     return `${h}px`;
   }
 
   getWidth() {
     // let w = 500;
-    let w = $(`#${this.divId}`).innerWidth();
+    const w = $(`#${this.divId}`).innerWidth();
     // Ask how big the parent div is?
     return `${w}px`;
   }

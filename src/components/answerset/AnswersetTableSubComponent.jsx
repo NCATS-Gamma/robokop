@@ -17,7 +17,7 @@ import axios from 'axios';
 
 import entityNameDisplay from './../util/entityNameDisplay';
 import getColumnWidth from '../util/rtColumnWidth';
-import SubGraphViewer from '../shared/SubGraphViewer';
+import SubGraphViewer from '../shared/graphs/SubGraphViewer';
 import Loading from '../Loading';
 import AnswerExplorerInfo from '../shared/AnswerExplorerInfo';
 import { config } from '../../index';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, DropdownButton, MenuItem, Button } from 'react-bootstrap';
 
-import CurieSelectorContainter from '../CurieSelectorContainer';
+import CurieSelectorContainer from '../curies/CurieSelectorContainer';
 import AppConfig from '../../../AppConfig';
 import { config } from '../../../index';
 
@@ -249,7 +249,7 @@ class QuestionTemplateModal extends React.Component {
             <p>Choose curies below to fill out the template.</p>
           }
           {nameList.map((name, i) => (
-            <CurieSelectorContainter
+            <CurieSelectorContainer
               key={['curieSelector', i].join('_')}
               ref={(type) => { this[`curie${i}`] = type; }}
               concepts={concepts}

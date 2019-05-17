@@ -24,7 +24,7 @@ class AnswersetFilter extends React.Component {
       filterArray: [],
     };
 
-    this.blacklist = ['isSet', 'labels', 'equivalent_identifiers', 'type', 'id'];
+    this.blacklist = ['isSet', 'labels', 'equivalent_identifiers', 'type', 'id', 'degree'];
     this.filtHash = '';
     this.filter = this.filter.bind(this);
     this.getKeyIntersection = this.getKeyIntersection.bind(this);
