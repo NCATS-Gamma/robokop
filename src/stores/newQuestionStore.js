@@ -185,7 +185,8 @@ class NodePanel {
   @observable deleted = false;
   panelType = panelTypes.node;
 
-  _publicFields = ['id', 'name', 'type', 'curie', 'set', 'curieEnabled', 'regular', 'properties'];
+  _publicFields = ['id', 'name', 'type', 'curie', 'set', 'curieEnabled'];
+  _privateFields = ['panelType', 'deleted', 'regular'];
   _nodeFunctionTypes = ['curieEnabled', 'set', 'regular'];
 
   constructor(store, userObj = {}) {
@@ -193,9 +194,20 @@ class NodePanel {
     runInAction(() => {
       this.id = this.getUniqueId();
       // Assign any supplied params to this instance
-      this._publicFields.forEach((field) => { // eslint-disable-line no-underscore-dangle
-        if (Object.prototype.hasOwnProperty.call(userObj, field)) {
-          this[field] = userObj[field];
+      Object.keys(userObj).forEach((key) => {
+        if (this._publicFields.includes(key) || this._privateFields.includes(key)) {
+          this[key] = userObj[key];
+        } else {
+          // we need to get the specific type of the numbers
+          let type;
+          if (typeof userObj[key] === 'number' && Number.isInteger(userObj[key])) {
+            type = 'integer';
+          } else if (typeof userObj[key] === 'number') {
+            type = 'float';
+          } else {
+            type = typeof userObj[key];
+          }
+          this.properties.push({ key, value: userObj[key], type });
         }
       });
       // Ensure curie is always an array of strings
@@ -204,14 +216,9 @@ class NodePanel {
       }
       if (this.curie.length !== 0) {
         this.curieEnabled = true;
-        this.nodeFunction = 'curieEnabled';
-      }
-      if (this.set) {
-        this.nodeFunction = 'set';
       }
       if (!this.set && !this.curieEnabled) {
         this.regular = true;
-        this.nodeFunction = 'regular';
       }
     });
   }
@@ -230,42 +237,52 @@ class NodePanel {
   }
 
   @action.bound updateField(field, value) { // eslint-disable-line consistent-return
-    if (this._publicFields.indexOf(field) > -1) {
-      // Reset the curieList for Node if a new type is selected
-      if (field === 'type') {
-        if (this.type !== value) {
-          this.resetCurie();
-        }
+    // Reset the curieList and propertiesList for Node if a new type is selected
+    if (field === 'type') {
+      if (this.type !== value) {
+        this.resetCurie();
+        this.resetProperties();
       }
-      if (field === 'curie') {
-        // Ensure that only valid curies are written into the data structure
-        let curieVal = value;
-        if ((typeof curieVal === 'string') || (curieVal instanceof String)) {
-          curieVal = [curieVal];
-        }
-        this[field] = curieVal;
-      } else {
-        this[field] = value;
+    }
+    if (field === 'curie') {
+      // Ensure that only valid curies are written into the data structure
+      let curieVal = value;
+      if ((typeof curieVal === 'string') || (curieVal instanceof String)) {
+        curieVal = [curieVal];
       }
+      this[field] = curieVal;
     } else {
-      console.error(`Invalid field - ${field} supplied to NodePanel.updateField action`);
+      this[field] = value;
     }
   }
 
   @action.bound addProperty() {
-    this.properties.push(['', '']);
+    this.properties.push({ key: '', value: '', type: '' });
   }
 
   @action.bound updateProperty(value, i, keyValue) {
     if (keyValue === 'key') {
-      this.properties[i][0] = value;
+      const [val, type] = value.split(':');
+      this.properties[i].key = val;
+      this.properties[i].type = type.toLowerCase();
+      if (type === 'INTEGER' || type === 'FLOAT') {
+        this.properties[i].value = 0;
+      } else if (type === 'BOOLEAN') {
+        this.properties[i].value = true;
+      } else {
+        this.properties[i].value = '';
+      }
     } else {
-      this.properties[i][1] = value;
+      this.properties[i].value = value;
     }
   }
 
   @action.bound deleteProperty(i) {
     this.properties.splice(i, 1);
+  }
+
+  @action.bound resetProperties() {
+    this.properties = [];
   }
 
   @action.bound addCurie() {
@@ -314,7 +331,7 @@ class NodePanel {
     if (!this.properties.length) {
       return true; // if there are no properties, is valid
     }
-    const valid = !this.properties.some(prop => !prop[0] || !prop[1]); // if any properties are blank, not valid
+    const valid = !this.properties.some(prop => !prop.key || prop.value === ''); // if any properties are blank, not valid
     return valid;
   }
 
@@ -340,8 +357,8 @@ class NodePanel {
 
   // Make a deep clone of this instance
   clone() {
-    const userObj = {};
-    this._publicFields.forEach(field => (userObj[field] = toJS(this[field])));
+    const userObj = this.toJsonObj();
+    // this._publicFields.forEach(field => (userObj[field] = toJS(this[field])));
     return new NodePanel(this.store, userObj);
   }
 
@@ -355,7 +372,7 @@ class NodePanel {
       deleted: toJS(this.deleted),
     };
     this.properties.forEach((prop) => {
-      jsonObj[prop[0]] = prop[1];
+      jsonObj[prop.key] = prop.value;
     });
     if (this.name !== '') {
       jsonObj.name = toJS(this.name);
@@ -384,8 +401,11 @@ class NewQuestionStore {
   @observable activePanelInd = null;
   @observable activePanelState = {};
 
-  @observable predicateList = [];
+  @observable predicateList = {};
   @observable predicatesReady = false;
+
+  @observable nodePropertyList = {};
+  @observable nodePropertiesReady = false;
 
   @observable showPanelModal = false;
 
@@ -396,6 +416,7 @@ class NewQuestionStore {
     this.updateConcepts();
     this.updateUser();
     this.updatePredicates();
+    this.updateNodeProperties();
 
     // Reaction to auto remove any nodes flagged for deletion if no edges link to it
     this.disposeDeleteUnlinkedNodes = reaction(
@@ -921,6 +942,19 @@ class NewQuestionStore {
       this.predicatesReady = true;
     } catch (e) {
       console.error('Failed to retrieve and update MobX store predicates entry', e);
+    }
+  }).bind(this);
+
+  // Async action to update nodeProperties list and nodePropertiesReady flag in store
+  updateNodeProperties = flow(function* () { // eslint-disable-line func-names
+    try {
+      const nodeProperties = yield (() => new Promise((resolve, reject) => {
+        this.appConfig.nodeProperties(c => resolve(c), err => reject(err));
+      }))();
+      this.nodePropertyList = nodeProperties;
+      this.nodePropertiesReady = true;
+    } catch (e) {
+      console.error('Failed to retrieve and update MobX store node properties entry', e);
     }
   }).bind(this);
 

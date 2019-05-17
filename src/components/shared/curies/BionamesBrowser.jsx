@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Button } from 'react-bootstrap';
 import { AutoSizer, List } from 'react-virtualized';
 
-import curieUrls from '../util/curieUrls';
+import curieUrls from '../../util/curieUrls';
 
 const shortid = require('shortid');
 
