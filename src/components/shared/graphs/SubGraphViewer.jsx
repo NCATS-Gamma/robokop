@@ -64,7 +64,6 @@ class SubGraphViewer extends React.Component {
         selectable: true,
         tooltipDelay: 400,
       },
-      configure: true,
     };
 
     this.state = {
@@ -328,8 +327,6 @@ class SubGraphViewer extends React.Component {
         for (let jNode = iNode; jNode < g.nodes.length; jNode += 1) {
           const n2 = g.nodes[jNode];
           const theseNodeEdges = g.edges.filter(e => (((e.source_id === n1.id) && (e.target_id === n2.id)) || ((e.target_id === n1.id) && (e.source_id === n2.id))));
-          console.log('edges', theseNodeEdges);
-          // 
           let roundnessStep = 0.15;
           if (theseNodeEdges.length > 13) {
             // Roundness must be between 0 and 1. In general for less than 13 edges steps of 0.15 looks good
