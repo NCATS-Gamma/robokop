@@ -396,9 +396,15 @@ class Pubmed(Resource):
             
             try:
                 task_status = result.get() # Blocking call to wait for task completion
-            except (redis.exceptions.InvalidResponse, redis.exceptions.ConnectionError) as err:
+            except Exception as err:
+                # Celery/Redis is sometimes weird
+                # You might think this would catch all of your errors
+                #      (redis.exceptions.InvalidResponse, redis.exceptions.ConnectionError)
+                # But it won't, there are like 3 other types of exceptions that happen here stochastically
+                # There appears to be some sort of race condition with the task finishing quickly
+                # and the polling done inside of result.get() and the redis results db
                 return "Celery results is bad: " + str(err), 500
-
+            
             if task_status != 'cached':
                 return task_status, 500
             
