@@ -43,8 +43,8 @@ class QuestionListTableAgGrid extends React.Component {
     this.gridApi.sizeColumnsToFit();
 
     const sort = [
-      { colId: 'isUserOwned', sort: 'desc' },
-      // { colId: 'latest_answerset_timestamp', sort: 'desc' },
+      // { colId: 'isUserOwned', sort: 'desc' },
+      { colId: 'latest_answerset_timestamp', sort: 'desc' },
     ];
     this.gridApi.setSortModel(sort);
   }

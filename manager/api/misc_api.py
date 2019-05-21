@@ -307,9 +307,9 @@ class Predicates(Resource):
         """
         get_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/predicates"
         r = requests.get(get_url)
-        operations = r.json()
+        predicates = r.json()
 
-        return operations
+        return predicates
 
     def post(self):
         """
@@ -336,6 +336,48 @@ class Predicates(Resource):
         return Response(response.content, response.status_code)
 
 api.add_resource(Predicates, '/predicates/')
+
+class NodeProperties(Resource):
+    def get(self):
+        """
+        Get a JSON object of properties for each node type
+        ---
+        tags: [util]
+        responses:
+            200:
+                description: node properties
+                content:
+                    application/json:
+        """
+        r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/node_properties")
+        props = r.json()
+
+        return props
+
+    def post(self):
+        """
+        Force update of node-type property list from neo4j database
+        ---
+        tags: [util]
+        responses:
+            200:
+                description: "Here's your updated node-type property list"
+                content:
+                    application/json:
+                        schema:
+                            type: object
+            400:
+                description: "Something went wrong. Old node-type properties list will be retained"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
+        """
+        post_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/node_properties"
+        response = requests.post(post_url)
+        return Response(response.content, response.status_code)
+
+api.add_resource(NodeProperties, '/node_properties/')
 
 class Properties(Resource):
     def get(self):

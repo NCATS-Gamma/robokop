@@ -5,7 +5,7 @@ import GoQuestion from 'react-icons/lib/go/question';
 import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
 
 import QuestionHeader from '../shared/QuestionHeader';
-import MachineQuestionView from '../shared/MachineQuestionView';
+import MachineQuestionView2 from '../shared/graphs/MachineQuestionView2';
 import AnswersetList from './AnswersetList';
 import Loading from '../Loading';
 
@@ -156,7 +156,7 @@ class QuestionPres extends React.Component {
 
     const questionGraphPopover = (
       <Popover id="qgraph-popover" title="Question Graph" style={{ minWidth: '650px' }}>
-        <MachineQuestionView
+        <MachineQuestionView2
           height={250}
           concepts={this.props.concepts}
           question={questionGraph}

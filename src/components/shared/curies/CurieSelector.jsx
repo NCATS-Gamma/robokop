@@ -4,7 +4,7 @@ import { FormGroup, FormControl, InputGroup, Glyphicon } from 'react-bootstrap';
 import { DropdownList } from 'react-widgets';
 
 import BionamesBrowser from './BionamesBrowser';
-import entityNameDisplay from '../util/entityNameDisplay';
+import entityNameDisplay from '../../util/entityNameDisplay';
 
 const _ = require('lodash');
 
@@ -28,6 +28,7 @@ const defaultProps = {
   search: () => Promise.resolve({ options: [] }),
   width: 0, // will be ignored
   disableType: true,
+  size: undefined,
 };
 
 class CurieSelector extends React.Component {
@@ -46,6 +47,7 @@ class CurieSelector extends React.Component {
     this.handleTypeChange = this.handleTypeChange.bind(this);
     this.handleTermChange = this.handleTermChange.bind(this);
     this.handleReopen = this.handleReopen.bind(this);
+    this.updateComponent = this.updateComponent.bind(this);
 
     this.state = {
       options: null,
@@ -57,8 +59,12 @@ class CurieSelector extends React.Component {
 
   componentDidUpdate(prevProps) {
     if ((this.props.term !== prevProps.term)) { // Re-do search if term changes
-      this.setState({ loadingOptions: true }, () => this.debouncedHandleSearch(this.props.term, this.props.type));
+      this.updateComponent();
     }
+  }
+
+  updateComponent() {
+    this.setState({ loadingOptions: true }, () => this.debouncedHandleSearch(this.props.term, this.props.type));
   }
 
   // onInputFocus() {

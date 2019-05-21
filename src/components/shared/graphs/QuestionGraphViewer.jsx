@@ -1,8 +1,8 @@
 import React from 'react';
 
-import CardTypes from '../util/questionNewCardTypes';
-import getNodeTypeColorMap from '../util/colorUtils';
-import entityNameDisplay from '../util/entityNameDisplay';
+import CardTypes from '../../util/questionNewCardTypes';
+import getNodeTypeColorMap from '../../util/colorUtils';
+import entityNameDisplay from '../../util/entityNameDisplay';
 
 const Graph = require('react-graph-vis').default;
 
@@ -49,7 +49,7 @@ class QuestionGraphViewer extends React.Component {
     return graph;
   }
 
-  addTagsToGraph(graph) {
+  addTagsToGraph(graph) { /* eslint-disable no-param-reassign */
     // Adds vis.js specific tags primarily to style graph as desired
     const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
     graph.nodes = graph.nodes.map((n) => {
@@ -79,7 +79,7 @@ class QuestionGraphViewer extends React.Component {
       } else if ('curie' in n) {
         if (Array.isArray(n.curie)) {
           if (n.curie.length > 0) {
-            n.label = n.curie[0];
+            [n.label] = n.curie; // array destructure gets 0 index
           } else {
             n.label = '';
           }
