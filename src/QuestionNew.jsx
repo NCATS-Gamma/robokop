@@ -18,7 +18,6 @@ import LoadingNlpQuestionModal from './components/shared/modals/LoadingNlpQuesti
 import NewQuestionButtons from './components/shared/NewQuestionButtons';
 import questionTemplates from '../queries/index';
 import QuestionTemplateModal from './components/shared/modals/QuestionTemplate';
-import { StringDecoder } from 'string_decoder';
 
 const _ = require('lodash');
 
