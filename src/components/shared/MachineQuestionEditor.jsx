@@ -8,7 +8,7 @@ import Dropzone from 'react-dropzone';
 import FaCloudUpload from 'react-icons/lib/fa/cloud-upload';
 
 import SplitterLayout from 'react-splitter-layout';
-import MachineQuestionView2 from './graphs/MachineQuestionView2';
+import MachineQuestionView from './graphs/MachineQuestionView';
 import Loading from '../Loading';
 
 class MachineQuestionEditor extends React.Component {
@@ -37,7 +37,7 @@ class MachineQuestionEditor extends React.Component {
   }
 
   syncStateAndProps(newProps) {
-    this.setState({ data: { natural_question: newProps.question, machine_question: newProps.machineQuestion }, isValid: true });
+    this.setState({ data: { natural_question: newProps.question, machine_question: newProps.machineQuestion, max_connectivity: newProps.max_connectivity }, isValid: true });
   }
 
   onEdit(edit) {
@@ -202,7 +202,7 @@ class MachineQuestionEditor extends React.Component {
             </div>
           </div>
         </div>
-        <div style={{ ...containerStyle, marginRight: '-15px'}}>
+        <div style={{ ...containerStyle, marginRight: '-15px' }}>
           {!thinking &&
             <SplitterLayout>
               <div style={{ paddingTop: '10px' }}>
@@ -220,7 +220,7 @@ class MachineQuestionEditor extends React.Component {
               </div>
               <div>
                 {isValid &&
-                  <MachineQuestionView2
+                  <MachineQuestionView
                     height={innerHeight}
                     concepts={this.props.concepts}
                     question={data.machine_question}

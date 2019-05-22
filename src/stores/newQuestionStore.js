@@ -396,6 +396,7 @@ class NewQuestionStore {
   @observable questionName = '';
   @observable notes = '';
   @observable graphState = graphStates.empty;
+  @observable max_connectivity = 0;
 
   @observable panelState = [];
   @observable activePanelInd = null;
@@ -681,7 +682,7 @@ class NewQuestionStore {
         machineQuestion.edges.push(Object.assign({}, typeObj, panelJson));
       }
     });
-    return { natural_question: this.questionName, machine_question: machineQuestion };
+    return { natural_question: this.questionName, machine_question: machineQuestion, max_connectivity: this.max_connectivity };
   }
 
   /**
@@ -698,6 +699,7 @@ class NewQuestionStore {
       this.resetQuestion();
       const machineQuestionInput = _.cloneDeep(machineQuestionInp);
       this.questionName = machineQuestionInput.natural_question || '';
+      this.max_connectivity = typeof machineQuestionInput.max_connectivity === 'number' ? machineQuestionInput.max_connectivity : 'None';
 
       // Store mapping of original node/edge ids to internal representation and update panelState
       // with NodePanel and EdgePanel objects
@@ -992,6 +994,7 @@ class NewQuestionStore {
       this.machineQuestionSpecToPanelState({
         natural_question: data.data.question.natural_question,
         machine_question: data.data.question.machine_question,
+        max_connectivity: this.max_connectivity,
       });
       this.dataReady = true;
     } catch (e) {

@@ -1,32 +1,68 @@
 import React from 'react';
+import { observer } from 'mobx-react';
+import Slider from 'rc-slider';
+import Tooltip from 'rc-tooltip';
+import 'rc-slider/assets/index.css';
+import 'rc-tooltip/assets/bootstrap.css';
 
 import AnswersetSelector from './AnswersetSelector';
-// import KnowledgeGraphViewer from './KnowledgeGraphViewer';
 import SubGraphViewer from '../shared/graphs/SubGraphViewer';
 
 import AnswersetStore from './../../stores/messageAnswersetStore';
 import Loading from '../Loading';
 
+const { Handle } = Slider;
+
+const handle = (props) => {
+  const {
+    value, dragging, index, ...restProps
+  } = props;
+  return (
+    <Tooltip
+      prefixCls="rc-slider-tooltip"
+      overlay={`${value} Nodes`}
+      visible={dragging}
+      placement="top"
+      key={index}
+      overlayStyle={{ zIndex: 101 }}
+    >
+      <Handle value={value} {...restProps} />
+    </Tooltip>
+  );
+};
+
+@observer
 class AnswersetList extends React.Component {
   constructor(props) {
     super(props);
 
+    this.answersetStore = null;
+
     this.state = {
       loadingAnswerset: true,
       loadedAnswersetId: null,
-      loadedAnswerset: null,
-      loadedKnowledgeGraph: null,
-      isKgPruned: false,
-      pruneMaxNumNodes: null,
+      loadedAnswerset: false,
+      height: 400,
+      width: 1000,
     };
 
+    this.setGraphSize = this.setGraphSize.bind(this);
     this.onAnswersetSelect = this.onAnswersetSelect.bind(this);
+    this.handleSliderChange = this.handleSliderChange.bind(this);
   }
 
-  shouldComponentUpdate(newProps, newState) {
-    const propsAllMatch = (newProps.answersets.length === this.props.answersets.length);
-    const stateAllMatch = (newState.loadingAnswerset === this.state.loadingAnswerset);
-    return !(propsAllMatch && stateAllMatch);
+  componentDidMount() {
+    this.setGraphSize();
+  }
+
+  setGraphSize() {
+    const height = this.ansList.clientHeight;
+    const width = this.ansList.clientWidth;
+    this.setState({ height, width });
+  }
+
+  handleSliderChange(value) {
+    this.answersetStore.updateNumKGNodes(value);
   }
 
   onAnswersetSelect(aid) {
@@ -39,60 +75,44 @@ class AnswersetList extends React.Component {
       return;
     }
 
-    // console.log('Please fetch KG for: ', aid);
-
     this.setState({ loadingAnswerset: true }, () => {
       this.props.callbackFetchAnswerset(
         aid,
         (data) => {
-          const messagestore = new AnswersetStore(data);
-
-          const answerset = data;
-          const kg = messagestore.annotatedPrunedKnowledgeGraph;
-          kg.node_list = kg.nodes;
-          kg.edge_list = kg.edges;
-          delete kg.nodes;
-          delete kg.edges;
+          this.answersetStore = new AnswersetStore(data);
 
           this.setState({
             loadingAnswerset: false,
-            loadedAnswerset: answerset,
-            loadedKnowledgeGraph: kg,
-            loadedAnswersetId: aid,
-            isKgPruned: messagestore.isKgPruned(),
-            pruneMaxNumNodes: messagestore.maxNumNodes,
+            loadedAnswerset: true,
           });
         },
         (err) => {
           console.log('error encountered fetching AS:', err);
           this.setState({
             loadingAnswerset: false,
-            loadedAnswerset: null,
-            loadedKnowledgeGraph: null,
-            loadedAnswersetId: null,
+            loadedAnswerset: false,
           });
         },
       );
     });
   }
 
-  getHeight() {
-    const h = $(window).height() - 350;
-    return `${h}px`;
-  }
-  getWidth() {
-    let w = 500;
-    w = $('#answersetList').innerWidth();
-    // Ask how big the parent div is?
-    return `${w}px`;
-  }
-
   render() {
-    const height = this.getHeight();
-    const width = this.getWidth();
+    const {
+      height, width, loadingAnswerset, loadedAnswerset,
+    } = this.state;
+    let kg = {};
+    if (loadedAnswerset) {
+      kg = this.answersetStore.annotatedPrunedKnowledgeGraph;
+      kg.node_list = kg.nodes;
+      kg.edge_list = kg.edges;
+      delete kg.nodes;
+      delete kg.edges;
+    }
     return (
       <div
         id="answersetList"
+        ref={(ansList) => { this.ansList = ansList; }}
         style={{
           position: 'relative', minHeight: '200px', display: 'table', width: '100%',
         }}
@@ -120,18 +140,44 @@ class AnswersetList extends React.Component {
             width,
           }}
         >
-          {this.state.loadingAnswerset &&
+          {loadingAnswerset &&
             <div>
               <Loading
                 message={<p style={{ textAlign: 'center' }}>Loading Knowledge Graph</p>}
               />
             </div>
           }
-          {this.state.loadedAnswerset && !this.state.loadingAnswerset &&
+          {loadedAnswerset && !loadingAnswerset &&
             <div>
-              {this.state.isKgPruned && <span style={{ float: 'right', padding: '0 10px' }}>{`Pruned graph showing top ${this.state.pruneMaxNumNodes} nodes`}</span>}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: '300px',
+                  padding: '20px',
+                  backgroundColor: '#fff',
+                  boxShadow: '-2px 2px 5px 0px #7777777d',
+                  zIndex: 100,
+                }}
+              >
+                {this.answersetStore.isKgPruned() ?
+                  <span>Pruned graph showing top {this.answersetStore.numKGNodes} nodes</span>
+                  :
+                  <span>Aggregate Graph</span>
+                }
+                <div style={{ marginTop: '10px' }}>
+                  <Slider
+                    min={0}
+                    max={this.answersetStore.maxNumKGNodes}
+                    defaultValue={this.answersetStore.numKGNodes}
+                    onAfterChange={this.handleSliderChange}
+                    handle={handle}
+                  />
+                </div>
+              </div>
               <SubGraphViewer
-                subgraph={this.state.loadedKnowledgeGraph}
+                subgraph={kg}
                 concepts={this.props.concepts}
                 layoutRandomSeed={Math.floor(Math.random() * 100)}
                 showSupport={false}
@@ -139,6 +185,15 @@ class AnswersetList extends React.Component {
                 omitEdgeLabel
                 callbackOnGraphClick={() => {}}
               />
+            </div>
+          }
+          {!loadedAnswerset && !loadingAnswerset &&
+            <div
+              style={{
+                display: 'flex', height: '100%', justifyContent: 'center', alignItems: 'center',
+              }}
+            >
+              <h3>Sorry, something went wrong. Please pick a different answerset.</h3>
             </div>
           }
         </div>

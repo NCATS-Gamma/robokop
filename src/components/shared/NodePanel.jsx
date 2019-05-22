@@ -130,7 +130,7 @@ class NodePanel extends React.Component {
                 </div>
               </div>
             }
-            {isValidType && store.nodePropertyList[activePanel.type].length > 0 &&
+            {isValidType && store.nodePropertyList[activePanel.type] && store.nodePropertyList[activePanel.type].length > 0 &&
               <NodeProperties activePanel={activePanel} validProperties={toJS(store.nodePropertyList)} />
             }
           </div>

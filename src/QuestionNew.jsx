@@ -18,6 +18,7 @@ import LoadingNlpQuestionModal from './components/shared/modals/LoadingNlpQuesti
 import NewQuestionButtons from './components/shared/NewQuestionButtons';
 import questionTemplates from '../queries/index';
 import QuestionTemplateModal from './components/shared/modals/QuestionTemplate';
+import { StringDecoder } from 'string_decoder';
 
 const _ = require('lodash');
 
@@ -102,7 +103,7 @@ class QuestionNew extends React.Component {
 
   onSubmitQuestion() {
     const { store } = this.props;
-    this.onCreate({ questionText: store.questionName, machineQuestion: store.getMachineQuestionSpecJson.machine_question });
+    this.onCreate({ questionText: store.questionName, machineQuestion: store.getMachineQuestionSpecJson.machine_question, maxConnect: store.max_connectivity });
   }
 
   onResetQuestion() {
@@ -111,11 +112,12 @@ class QuestionNew extends React.Component {
     }
   }
 
-  onCreate({ questionText, machineQuestion }) {
+  onCreate({ questionText, machineQuestion, maxConnect }) {
     const newBoardInfo = {
       natural_question: questionText,
       notes: '',
       machine_question: machineQuestion,
+      max_connectivity: maxConnect,
     };
 
     // Splash wait overlay
