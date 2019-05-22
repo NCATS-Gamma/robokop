@@ -251,7 +251,7 @@ def update_kg(self, question_id, user_email=None):
 
     try:
         question_json = get_question_by_id(question_id)
-        builder_question = {'machine_question': question_json['question_graph']}
+        builder_question = {'query_graph': question_json['question_graph']}
 
         logger.info('Calling Builder')
         try:
