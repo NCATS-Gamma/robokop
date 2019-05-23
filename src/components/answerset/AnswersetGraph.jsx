@@ -55,11 +55,12 @@ class AnswersetGraph extends React.Component {
       <Row>
         <Col md={12}>
           <Panel style={{ marginTop: '10px' }}>
-            <Panel.Heading>
+            <Panel.Heading style={{ display: 'flex', justifyContent: 'space-between' }}>
               <Panel.Title componentClass="h3">{title}</Panel.Title>
-              <div style={{ marginTop: '10px' }}>
+              <div style={{ width: '330px', display: 'flex' }}>
+                <h4 style={{ width: '140px', margin: '0 10px' }}>Prune Nodes:</h4>
                 <Slider
-                  min={0}
+                  min={store.numQNodes}
                   max={store.maxNumKGNodes}
                   defaultValue={store.numKGNodes}
                   onAfterChange={this.handleSliderChange}

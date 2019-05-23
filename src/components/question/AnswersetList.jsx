@@ -4,12 +4,16 @@ import Slider from 'rc-slider';
 import Tooltip from 'rc-tooltip';
 import 'rc-slider/assets/index.css';
 import 'rc-tooltip/assets/bootstrap.css';
+import { OverlayTrigger, Popover } from 'react-bootstrap';
+import FaAngleDown from 'react-icons/lib/fa/angle-down';
 
 import AnswersetSelector from './AnswersetSelector';
 import SubGraphViewer from '../shared/graphs/SubGraphViewer';
 
 import AnswersetStore from './../../stores/messageAnswersetStore';
 import Loading from '../Loading';
+
+const shortid = require('shortid');
 
 const { Handle } = Slider;
 
@@ -24,7 +28,7 @@ const handle = (props) => {
       visible={dragging}
       placement="top"
       key={index}
-      overlayStyle={{ zIndex: 101 }}
+      overlayStyle={{ zIndex: 1061 }}
     >
       <Handle value={value} {...restProps} />
     </Tooltip>
@@ -102,12 +106,26 @@ class AnswersetList extends React.Component {
       height, width, loadingAnswerset, loadedAnswerset,
     } = this.state;
     let kg = {};
+    let sliderPopover = <div>No answerset</div>;
     if (loadedAnswerset) {
       kg = this.answersetStore.annotatedPrunedKnowledgeGraph;
       kg.node_list = kg.nodes;
       kg.edge_list = kg.edges;
       delete kg.nodes;
       delete kg.edges;
+      sliderPopover = (
+        <Popover id={shortid.generate()}>
+          <div style={{ marginTop: '10px', width: '200px' }}>
+            <Slider
+              min={this.answersetStore.numQNodes}
+              max={this.answersetStore.maxNumKGNodes}
+              defaultValue={this.answersetStore.numKGNodes}
+              onAfterChange={this.handleSliderChange}
+              handle={handle}
+            />
+          </div>
+        </Popover>
+      );
     }
     return (
       <div
@@ -154,27 +172,31 @@ class AnswersetList extends React.Component {
                   position: 'absolute',
                   top: 0,
                   right: 0,
-                  width: '300px',
-                  padding: '20px',
+                  width: '270px',
                   backgroundColor: '#fff',
                   boxShadow: '-2px 2px 5px 0px #7777777d',
                   zIndex: 100,
                 }}
               >
-                {this.answersetStore.isKgPruned() ?
-                  <span>Pruned graph showing top {this.answersetStore.numKGNodes} nodes</span>
-                  :
-                  <span>Aggregate Graph</span>
-                }
-                <div style={{ marginTop: '10px' }}>
-                  <Slider
-                    min={0}
-                    max={this.answersetStore.maxNumKGNodes}
-                    defaultValue={this.answersetStore.numKGNodes}
-                    onAfterChange={this.handleSliderChange}
-                    handle={handle}
-                  />
-                </div>
+                <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={sliderPopover}>
+                  {this.answersetStore.isKgPruned() ?
+                    <div
+                      style={{
+                        width: '100%', textAlign: 'center', cursor: 'pointer', padding: '10px',
+                      }}
+                    >
+                      Pruned graph showing top {this.answersetStore.numKGNodes} nodes <FaAngleDown />
+                    </div>
+                    :
+                    <div
+                      style={{
+                        width: '100%', textAlign: 'center', cursor: 'pointer', padding: '10px',
+                      }}
+                    >
+                      Prune Graph <FaAngleDown />
+                    </div>
+                  }
+                </OverlayTrigger>
               </div>
               <SubGraphViewer
                 subgraph={kg}
