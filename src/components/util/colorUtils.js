@@ -36,7 +36,7 @@ export default function getNodeTypeColorMap(types) {
       color = conceptColorMap[type];
     } else if (types && Array.isArray(types) && (types.indexOf(type) >= 0)) {
       // We are supposed to have a color for this.
-      console.log('No color is known for: ', type);
+      // console.log('No color is known for: ', type);
     }
 
     return color;

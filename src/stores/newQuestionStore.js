@@ -57,7 +57,7 @@ class EdgePanel {
   getPredicateList() {
     if (this.store.predicatesReady) {
       if (this.source_id === null || this.target_id === null) {
-        this.predicates = [];
+        this.predicateList = [];
         this.disablePredicates = true;
         return;
       }
@@ -72,6 +72,12 @@ class EdgePanel {
           }
         }
       });
+      if (type1 === 'named_thing') {
+        this.predicateList = [];
+        this.predicatesReady = true;
+        this.disablePredicates = false;
+        return;
+      }
       this.predicateList = [...new Set(this.store.predicateList[type1][type2])];
       this.predicatesReady = true;
       this.disablePredicates = false;
@@ -242,6 +248,10 @@ class NodePanel {
       if (this.type !== value) {
         this.resetCurie();
         this.resetProperties();
+      }
+      if (value === 'named_thing') {
+        this.regular = true;
+        this.curieEnabled = false;
       }
     }
     if (field === 'curie') {
