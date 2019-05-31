@@ -70,6 +70,7 @@ class NodePanel extends React.Component {
       { text: 'Specific Entry', value: 'curieEnabled' },
     ];
     const nodeTypeText = nodeInfo.find(nodeType => activePanel[nodeType.value]).text;
+    const disableCurie = activePanel.type === 'named_thing' ? ['curieEnabled'] : [];
     let curie;
     if (toJS(activePanel.curie).length !== 0) {
       curie = { curie: activePanel.curie[0], type: activePanel.type, term: activePanel.name };
@@ -108,10 +109,11 @@ class NodePanel extends React.Component {
                   valueField="value"
                   value={nodeTypeText}
                   onChange={value => activePanel.changeNodeFunction(value.value, value.text)}
+                  disabled={disableCurie}
                 />
               </LabeledFormGroup>
             </Form>
-            {isValidType && curieEnabled &&
+            {isValidType && curieEnabled && !disableCurie &&
               <div style={{ display: 'table', width: '100%' }}>
                 <div
                   style={{ display: 'table-row' }}
