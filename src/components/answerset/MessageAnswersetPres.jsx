@@ -9,7 +9,7 @@ import FaEyeSlash from 'react-icons/lib/fa/eye-slash';
 import QuestionHeader from '../shared/QuestionHeader';
 
 import AnswersetGraph from './AnswersetGraph';
-import MachineQuestionView2 from './../shared/graphs/MachineQuestionView2';
+import MachineQuestionView from './../shared/graphs/MachineQuestionView';
 import MessageAnswersetTable from './MessageAnswersetTable';
 import AnswersetStore from './../../stores/messageAnswersetStore';
 import entityNameDisplay from './../util/entityNameDisplay';
@@ -118,9 +118,6 @@ class MessageAnswersetPres extends React.Component {
     // const showOtherQuestions = this.props.otherQuestions.length > 0;
     // const showOtherAnswersets = this.props.otherQuestions.length > 0;
     const { message } = this.props;
-    const answersetGraph = this.answersetStore.annotatedPrunedKnowledgeGraph;
-    answersetGraph.node_list = answersetGraph.nodes;
-    answersetGraph.edge_list = answersetGraph.edges;
     return (
       <div style={this.props.style}>
         {!this.props.omitHeader &&
@@ -169,7 +166,7 @@ class MessageAnswersetPres extends React.Component {
               </Panel.Heading>
               <Panel.Collapse>
                 <Panel.Body style={{ padding: '0px' }}>
-                  <MachineQuestionView2
+                  <MachineQuestionView
                     height={200}
                     // width={width}
                     question={toJS(this.answersetStore.message.question_graph)}
@@ -230,9 +227,8 @@ class MessageAnswersetPres extends React.Component {
             title="Aggregate Graph"
           >
             <AnswersetGraph
-              answersetGraph={answersetGraph}
               concepts={this.props.concepts}
-              title={this.answersetStore.isKgPruned() ? `Pruned aggregate graph (Top ${this.answersetStore.maxNumNodes} nodes)` : 'Aggregate Graph'}
+              store={this.answersetStore}
             />
           </Tab>
         </Tabs>

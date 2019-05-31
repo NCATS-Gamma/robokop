@@ -5,7 +5,7 @@ import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { Modal } from 'react-bootstrap';
 
-import MachineQuestionView2 from './graphs/MachineQuestionView2';
+import MachineQuestionView from './graphs/MachineQuestionView';
 import NewQuestionPanelModal from './modals/NewQuestionPanelModal';
 import ButtonGroupPanel from './ButtonGroupPanel';
 import MachineQuestionEditor from './MachineQuestionEditor';
@@ -125,7 +125,7 @@ class MachineQuestionViewContainer extends React.Component {
       <div id={this.divId}>
         <ButtonGroupPanel store={store} openJsonEditor={this.toggleJsonEditor} />
         {showGraph &&
-          <MachineQuestionView2
+          <MachineQuestionView
             height={height}
             width={width}
             question={toJS(store.machineQuestion)}
@@ -183,6 +183,7 @@ class MachineQuestionViewContainer extends React.Component {
               concepts={toJS(store.concepts)}
               question={store.questionName}
               machineQuestion={toJS(store.getMachineQuestionSpecJson.machine_question)}
+              max_connectivity={store.max_connectivity}
               callbackSave={this.saveJsonEditor}
               callbackCancel={this.toggleJsonEditor}
             />

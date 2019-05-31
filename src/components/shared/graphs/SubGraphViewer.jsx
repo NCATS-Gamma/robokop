@@ -458,7 +458,7 @@ class SubGraphViewer extends React.Component {
             <Graph
               key={shortid.generate()} // Forces component remount
               graph={graph}
-              style={{ width: '100%', padding: '10px' }}
+              style={{ width: '100%' }}
               options={this.state.displayGraphOptions}
               events={{ click: this.clickCallback }}
               getNetwork={(network) => { this.network = network; }} // Store network reference in the component

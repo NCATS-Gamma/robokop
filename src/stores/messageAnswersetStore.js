@@ -17,7 +17,7 @@ class AnswersetStore {
   @observable activeAnswerId = null; // Currently 'selected' answer
   @observable filteredAnswers = []; // array of filtered answers
   @observable filterHash = ''; // hash of filtered answers object for checking if we need to get available answers
-  @observable maxNumNodes = 35; // Number of nodes (approx) for pruned annotated KG. Null results in all nodes
+  @observable numKGNodes = 35 // Number of nodes (approx) for pruned annotated KG. Null results in all nodes
 
   constructor(message) {
     runInAction(() => {
@@ -42,6 +42,11 @@ class AnswersetStore {
   // Return number of question nodes in message
   @computed get numQNodes() {
     return this.message.question_graph ? this.message.question_graph.nodes.length : 0;
+  }
+
+  // Return number of KG nodes in message
+  @computed get maxNumKGNodes() {
+    return this.message.knowledge_graph ? this.message.knowledge_graph.nodes.length : 0;
   }
 
   @computed get qNodeIdToIndMap() {
@@ -221,7 +226,7 @@ class AnswersetStore {
   // Determines if annotatedPrunedKnowledgeGraph had to prune KG
   isKgPruned() {
     if (this.message.knowledge_graph) {
-      return this.message.knowledge_graph.nodes.length > this.maxNumNodes;
+      return this.maxNumKGNodes > this.numKGNodes;
     }
     return false;
   }
@@ -234,7 +239,7 @@ class AnswersetStore {
 
       let graph = this.message.knowledge_graph;
       const { answers } = toJS(this.message);
-      const N = this.maxNumNodes;
+      const N = this.numKGNodes;
       const Q = this.numQNodes;
       const Nj = Math.round(N / Q);
 
@@ -473,12 +478,12 @@ class AnswersetStore {
     this.filterHash = hash(filteredAnswers);
   }
 
-  @action updateMaxNumNodes(numNodes) {
-    this.maxNumNodes = numNodes > 0 ? numNodes : 1;
+  @action resetNumKGNodes() {
+    this.numKGNodes = null;
   }
 
-  @action resetMaxNumNodes() {
-    this.maxNumNodes = null;
+  @action updateNumKGNodes(value) {
+    this.numKGNodes = value;
   }
 }
 
