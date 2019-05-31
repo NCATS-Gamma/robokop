@@ -40,7 +40,8 @@ class MessageAnswersetTable extends React.Component {
   componentWillMount() {
     const { store } = this.props;
     const answerTables = store.answerSetTableData;
-    const { headerInfo: columnHeaders, answers } = answerTables;
+    const { columnHeaders, answers } = answerTables;
+    console.log('answers', answers);
     this.initializeState(columnHeaders, answers);
   }
 
@@ -64,16 +65,10 @@ class MessageAnswersetTable extends React.Component {
   // provided sub-string
   defaultFilterMethod = (filter, row, column) => { // eslint-disable-line no-unused-vars
     // console.log('filter, row, column', filter, row, column);
-    const id = filter.pivotId || filter.id;
-    const columnInfo = row._original.nodes[id];
-    let show = true;
-    Object.keys(filter.value.selectedFilter).forEach((key) => {
-      if (show && !filter.value.selectedFilter[key].includes(String(columnInfo[key]))) {
-        show = false;
-        return show;
-      }
-    });
-    return show;
+    // get the row id
+    const id = row._index;
+    // store default filter returns a boolean
+    return this.props.store.defaultFilter(id);
   };
 
   setFilterMethod = (filter, row, column) => { // eslint-disable-line no-unused-vars
@@ -142,15 +137,14 @@ class MessageAnswersetTable extends React.Component {
         );
         colSpecObj.filterMethod = this.setFilterMethod;
       } else {
-        colSpecObj.accessor = d => (d.nodes[nodeId].name ? d.nodes[nodeId].name : d.nodes[nodeId].id);
+        colSpecObj.accessor = d => (d[nodeId][0].name ? d[nodeId][0].name : d[nodeId][0].id);
         colSpecObj.width = getColumnWidth(data, colSpecObj.accessor, colSpecObj.Header);
       }
       colSpecObj.Filter = props =>
         (<AnswersetFilter
           {...props}
-          answers={data}
+          nodeId={nodeId}
           store={store}
-          columnId={nodeId}
         />);
       const backgroundColor = bgColorMap(colSpecObj.type);
       const columnHeader = colSpecObj.Header;
