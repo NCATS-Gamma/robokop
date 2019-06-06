@@ -211,6 +211,7 @@ class QuestionListTableAgGrid extends React.Component {
                     width: 70,
                     minWidth: 20,
                     cellClass: 'no-padding',
+                    sortingOrder: ['desc', 'asc', 'null'],
                   },
                 ]}
                 rowData={this.props.questions}

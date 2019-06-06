@@ -19,44 +19,38 @@ class AnswersetFilter extends React.Component {
       openPanels: [],
     };
 
-    // this.filterStore = new AnswersetFilterStore(props.answers, props.nodeId);
-
     this.filterHash = '';
     this.check = this.check.bind(this);
+    this.checkAll = this.checkAll.bind(this);
     this.reset = this.reset.bind(this);
     this.handleSearch = this.handleSearch.bind(this);
     this.togglePanel = this.togglePanel.bind(this);
   }
 
-  componentDidMount() {
-    this.props.store.initializeFilter(this.props.nodeId);
-    this.setState({ search: '' });
-    // console.log('filter', this.props.store.filter);
-  }
-
-  componentDidUpdate() {
-    // if (this.filterHash !== this.store.filterHash) {
-    //   // this.filterStore.getAvailableAnswers(messageStore.filteredAnswers);
-    // }
-  }
-
   handleSearch(event) {
     const { value } = event.target;
-    // this.filterStore.searchFilter(value);
+    const { qnodeId, store } = this.props;
+    store.searchFilter(qnodeId, value);
     this.setState({ search: value });
   }
 
-  check(event) {
-    const { value, id } = event.target;
-    console.log('event', event.target);
-    const { nodeId, store } = this.props;
-    store.updateFilter(value, nodeId, id);
+  check(propertyKey, propertyValue) {
+    const { qnodeId, store } = this.props;
+    store.updateFilterKeys(qnodeId, propertyKey, propertyValue);
+    this.props.onChange({});
+  }
+
+  checkAll(propertyKey) {
+    const { qnodeId, store } = this.props;
+    store.checkAll(qnodeId, propertyKey);
     this.props.onChange({});
   }
 
   reset() {
-    const { nodeId, store } = this.props;
-    store.reset(nodeId);
+    const { qnodeId, store } = this.props;
+    store.reset(qnodeId);
+    this.props.onChange({});
+    this.setState({ search: '' });
   }
 
   togglePanel(index) {
@@ -68,9 +62,9 @@ class AnswersetFilter extends React.Component {
   }
 
   render() {
-    const { nodeId, store } = this.props;
-    const { filter } = store;
-    const isFiltered = this.props.store.isFiltered(nodeId);
+    const { qnodeId, store } = this.props;
+    const { searchedFilter, filterKeys } = store;
+    const isFiltered = store.isFiltered(qnodeId);
     const { search, openPanels } = this.state;
     const filterPopover = (
       <Popover id={shortid.generate()} className="answersetFilter" >
@@ -81,79 +75,71 @@ class AnswersetFilter extends React.Component {
           style={{ width: '100%', padding: '5px' }}
         />
         <Button style={{ display: 'block', margin: '10px auto' }} onClick={this.reset}>Reset</Button>
-        {Object.keys(filter[nodeId] || {}).map((key, index) => {
-          const style = { fontWeight: 'normal', whiteSpace: 'nowrap', overflow: 'auto' };
-          if (filter[nodeId][key].type !== 'bool') {
+        {Object.keys(searchedFilter[qnodeId] || {}).map((propertyKey, index) => {
+          // if there aren't any values under the header, don't show anything
+          if (Object.keys(searchedFilter[qnodeId][propertyKey]).length) {
             return (
               <div key={shortid.generate()}>
                 <Panel expanded={openPanels[index]} onToggle={() => {}}>
                   <Panel.Heading>
                     <Panel.Title>
                       <button onClick={() => this.togglePanel(index)}>{this.state.openPanels[index] ? <FaMinus /> : <FaPlus />}</button>
-                      <span>{entityNameDisplay(key)}</span>
+                      <span style={{ marginLeft: 10, fontWeight: 'bold' }}>{entityNameDisplay(propertyKey)}</span>
+                      <label htmlFor={`${propertyKey}-select`} className="pull-right">
+                        <input
+                          type="checkbox"
+                          id={`${propertyKey}-select`}
+                          defaultChecked={!store.isPropFiltered(filterKeys[qnodeId][propertyKey])}
+                          onChange={() => this.checkAll(propertyKey)}
+                          style={{ marginRight: '10px' }}
+                        />
+                        Toggle All
+                      </label>
                     </Panel.Title>
                   </Panel.Heading>
                   <Panel.Body collapsible>
-                    {Object.keys(filter[nodeId][key].value).map((option, i) => (
-                      <div key={shortid.generate()} style={{ paddingLeft: '20px', display: 'flex' }}>
-                        <label
-                          htmlFor={`${key}-${i}`}
-                          style={style}
-                        >
-                          <input
-                            type="checkbox"
-                            id={`${key}-${i}`}
-                            value={option}
-                            defaultChecked={filter[nodeId][key].value[option]}
-                            onChange={this.check}
-                            style={{ marginRight: '10px' }}
-                          />
-                          {option}
-                        </label>
-                      </div>
-                    ))}
+                    {Object.keys(searchedFilter[qnodeId][propertyKey]).map((propertyValue, i) => {
+                      const style = { fontWeight: 'normal', whiteSpace: 'nowrap', overflow: 'auto' };
+                      if (!filterKeys[qnodeId][propertyKey][propertyValue][1]) {
+                        style.color = 'lightgrey';
+                      }
+                      return (
+                        <div key={shortid.generate()} style={{ paddingLeft: '20px', display: 'flex' }}>
+                          <label
+                            htmlFor={`${propertyKey}-${i}`}
+                            style={style}
+                          >
+                            <input
+                              type="checkbox"
+                              id={`${propertyKey}-${i}`}
+                              defaultChecked={filterKeys[qnodeId][propertyKey][propertyValue][0]}
+                              onChange={() => this.check(propertyKey, propertyValue)}
+                              style={{ marginRight: '10px' }}
+                            />
+                            {propertyValue}
+                          </label>
+                        </div>
+                      );
+                    })}
                   </Panel.Body>
                 </Panel>
               </div>
             );
           }
-          // if the property is just a boolean
-          return (
-            <div key={shortid.generate()}>
-              <Panel expanded onToggle={() => {}}>
-                <Panel.Heading>
-                  <Panel.Title>
-                    <span>{entityNameDisplay(key)}</span>
-                  </Panel.Title>
-                </Panel.Heading>
-                <Panel.Body collapsible>
-                  <div key={shortid.generate()} style={{ paddingLeft: '20px', display: 'flex' }}>
-                    <label
-                      htmlFor={key}
-                      style={style}
-                    >
-                      <input
-                        type="checkbox"
-                        id={key}
-                        value={filter[nodeId][key].value}
-                        defaultChecked={filter[nodeId][key].value}
-                        onChange={this.check}
-                        style={{ marginRight: '10px' }}
-                      />
-                      {key}
-                    </label>
-                  </div>
-                </Panel.Body>
-              </Panel>
-            </div>
-          );
+          return null;
         })}
       </Popover>
     );
     return (
       <div>
         <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={filterPopover}>
-          <Button style={{ width: '100%', textAlign: 'center', cursor: 'pointer' }}><FaFilter /> {isFiltered && <FaCheck />}</Button>
+          <Button
+            style={{
+              display: 'flex', justifyContent: 'center', width: '100%', cursor: 'pointer',
+            }}
+          >
+            <FaFilter /> {isFiltered && <FaCheck />}
+          </Button>
         </OverlayTrigger>
       </div>
     );
