@@ -6,6 +6,8 @@ const Graph = require('react-graph-vis').default;
 const shortid = require('shortid');
 const _ = require('lodash');
 
+const keyBlacklist = ['isSet', 'labels', 'label', 'equivalent_identifiers', 'type', 'id', 'degree', 'name', 'title', 'color', 'binding'];
+
 class SubGraphViewer extends React.Component {
   constructor(props) {
     super(props);
@@ -238,11 +240,14 @@ class SubGraphViewer extends React.Component {
 
       // Set shortened node labels and tool-tip for each node
       n.label = n.name.length > 15 ? `${n.name.substring(0, 13)}...` : n.name;
-      n.title = (`
-        <div class="vis-tooltip-inner">
+      let extraFields = Object.keys(n).filter(property => !keyBlacklist.includes(property));
+      extraFields = extraFields.map(property => `<div key={${shortid.generate()}}><span class="field-name">${property}: </span>${n[property]}</div>`);
+      n.title = (
+        `<div class="vis-tooltip-inner">
           <div><span class="title">${n.name}</span></div>
           <div><span class="field-name">id: </span>${n.id}</div>
           <div><span class="field-name">type: </span>${entityNameDisplay(n.type)}</div>
+          ${extraFields.join('')}
         </div>`
       );
     });
