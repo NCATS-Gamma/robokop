@@ -40,7 +40,7 @@ class MessageAnswersetTable extends React.Component {
   componentWillMount() {
     const { store } = this.props;
     const answerTables = store.answerSetTableData;
-    const { headerInfo: columnHeaders, answers } = answerTables;
+    const { columnHeaders, answers } = answerTables;
     this.initializeState(columnHeaders, answers);
   }
 
@@ -64,36 +64,8 @@ class MessageAnswersetTable extends React.Component {
   // provided sub-string
   defaultFilterMethod = (filter, row, column) => { // eslint-disable-line no-unused-vars
     // console.log('filter, row, column', filter, row, column);
-    const id = filter.pivotId || filter.id;
-    const columnInfo = row._original.nodes[id];
-    let show = true;
-    Object.keys(filter.value.selectedFilter).forEach((key) => {
-      if (show && !filter.value.selectedFilter[key].includes(String(columnInfo[key]))) {
-        show = false;
-        return show;
-      }
-    });
-    return show;
-  };
-
-  setFilterMethod = (filter, row, column) => { // eslint-disable-line no-unused-vars
-    // console.log('filter, row, column', filter, row, column);
-    const id = filter.pivotId || filter.id;
-    const columnInfo = row[id];
-    // const combined = row[id].map(subNode => (subNode.name ? subNode.name : subNode.id)).join(' ');
-    let show = true;
-    Object.keys(filter.value.selectedFilter).forEach((key) => {
-      columnInfo.forEach((setAns) => {
-        if (show && !filter.value.selectedFilter[key].includes(String(setAns[key]))) {
-          show = false;
-          return show;
-        }
-      });
-      if (!show) {
-        return show;
-      }
-    });
-    return show;
+    // store default filter returns a boolean
+    return this.props.store.defaultFilter(row);
   };
 
   initializeState(columnHeaders, answers) {
@@ -109,7 +81,7 @@ class MessageAnswersetTable extends React.Component {
       const colSpecObj = _.cloneDeep(col);
       const nodeId = colSpecObj.id;
       if (colSpecObj.isSet) {
-        colSpecObj.accessor = d => d.nodes[nodeId].setNodes;
+        colSpecObj.accessor = d => (d[nodeId][0].name ? d[nodeId][0].name : d[nodeId][0].id);
         colSpecObj.style = { cursor: 'pointer', userSelect: 'none' };
         // cellTextFn returns array of strings to be used for display
         // in custom Cell renderer. This modularity is so that it can
@@ -140,17 +112,17 @@ class MessageAnswersetTable extends React.Component {
           data, colSpecObj.accessor, colSpecObj.Header,
           setNodes => `${cellTextFn(setNodes).join(' ')}   `,
         );
-        colSpecObj.filterMethod = this.setFilterMethod;
       } else {
-        colSpecObj.accessor = d => (d.nodes[nodeId].name ? d.nodes[nodeId].name : d.nodes[nodeId].id);
+        colSpecObj.accessor = d => (d[nodeId][0].name ? d[nodeId][0].name : d[nodeId][0].id);
         colSpecObj.width = getColumnWidth(data, colSpecObj.accessor, colSpecObj.Header);
       }
+      // this initializes the filter object for all nodes
+      store.initializeFilter();
       colSpecObj.Filter = props =>
         (<AnswersetFilter
           {...props}
-          answers={data}
+          qnodeId={nodeId}
           store={store}
-          columnId={nodeId}
         />);
       const backgroundColor = bgColorMap(colSpecObj.type);
       const columnHeader = colSpecObj.Header;

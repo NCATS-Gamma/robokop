@@ -22,7 +22,6 @@ import Loading from '../Loading';
 import AnswerExplorerInfo from '../shared/AnswerExplorerInfo';
 import { config } from '../../index';
 
-const _ = require('lodash');
 const shortid = require('shortid');
 
 const answersetSubComponentEnum = {
@@ -40,9 +39,6 @@ const propTypes = {
   store: PropTypes.any.isRequired, // eslint-disable-line react/forbid-prop-types
   nodeId: PropTypes.any, // eslint-disable-line react/forbid-prop-types
   activeButtonKey: PropTypes.any, // eslint-disable-line react/forbid-prop-types
-  rowInfo: PropTypes.shape({
-    original: PropTypes.object.isRequired,
-  }).isRequired,
 };
 
 @observer
@@ -56,6 +52,7 @@ class AnswersetTableSubComponent extends React.Component {
     super(props);
 
     this.state = {
+      rowData: {},
       graph: {},
       loadedGraph: false,
       selectedEdge: {},
@@ -88,17 +85,19 @@ class AnswersetTableSubComponent extends React.Component {
 
   // Method that updates local mobx state with activeButton and nodeId based on props
   syncPropsWithState() {
-    const { nodeId, activeButtonKey } = this.props;
+    const {
+      nodeId, activeButtonKey, rowInfo, store,
+    } = this.props;
     if (nodeId) {
       this.updateNodeId(nodeId);
     }
     if (activeButtonKey) {
       this.updateActiveButton(activeButtonKey);
     }
-    const rowData = _.cloneDeep(this.props.rowInfo.original);
+    const rowData = store.getDenseAnswer(rowInfo.original.id);
     const ansId = rowData.id;
-    this.props.store.updateActiveAnswerId(ansId);
-    let graph = this.props.store.activeAnswerGraph;
+    store.updateActiveAnswerId(ansId);
+    let graph = store.activeAnswerGraph;
     // returns the array of calls to make, and an array of node pairs
     const { calls, nodes } = this.makeNodePairs(graph.node_list, graph.edge_list);
     // async calls for omnicorp publications
@@ -110,7 +109,7 @@ class AnswersetTableSubComponent extends React.Component {
         // adds support edges to graph object
         graph = this.addSupportEdges(graph, pubs, nodes);
         // this signifies that the graph is updated and to display the SubGraphViewer
-        this.setState({ graph, loadedGraph: true });
+        this.setState({ graph, loadedGraph: true, rowData });
       })
       .catch((error) => {
         console.log('Error: ', error);
@@ -249,7 +248,7 @@ class AnswersetTableSubComponent extends React.Component {
   }
 
   renderJsonView() {
-    const rowData = _.cloneDeep(this.props.rowInfo.original);
+    const { rowData } = this.state;
     return (
       <ReactJson
         name={false}
@@ -265,8 +264,7 @@ class AnswersetTableSubComponent extends React.Component {
   }
 
   renderMetadataView() {
-    const rowData = _.cloneDeep(this.props.rowInfo.original);
-
+    const { rowData } = this.state;
     // Filter method for table columns that is case-insensitive, and matches all rows that contain
     // provided sub-string
     const defaultFilterMethod = (filter, row, column) => { // eslint-disable-line no-unused-vars

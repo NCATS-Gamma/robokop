@@ -129,6 +129,9 @@ div.vis-tooltip-inner {
   font-family: sans-serif;
   font-size: 0.9em;
   color: #eee;
+  max-height: 200px;
+  max-width: 200px;
+  overflow: auto;
 }
 div.vis-tooltip .invalid-node {
   background-color: rgba(134, 0, 0, 0.85);
