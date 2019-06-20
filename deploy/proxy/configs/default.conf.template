@@ -58,6 +58,9 @@ server {
     proxy_set_header        X-Forwarded-Proto $scheme;
     proxy_set_header        Accept-Encoding   "";
     add_header              Front-End-Https   on;
+    #slash append -----
+    rewrite ^([^.]*[^/])$ $1/ permanent;
+
     #location of spec file
     location /manager/spec/ {
       proxy_pass http://manager_web_server/manager/spec;
@@ -96,6 +99,8 @@ server {
     proxy_set_header        X-Forwarded-Proto $scheme;
     proxy_set_header        Accept-Encoding   "";
     add_header              Front-End-Https   on;
+    #slash append -----
+    rewrite ^([^.]*[^/])$ $1/ permanent;
     #location of spec file 
     location /ranker/spec/ {
       proxy_pass http://ranker_web_server/ranker/spec;
@@ -132,6 +137,8 @@ server {
     proxy_set_header        X-Forwarded-Proto $scheme;
     proxy_set_header        Accept-Encoding   "";
     add_header              Front-End-Https   on;
+    #slash append -----
+    rewrite ^([^.]*[^/])$ $1/ permanent;
     #location of spec file 
     location /builder/spec/ {
       proxy_pass http://builder_web_server/builder/spec;
