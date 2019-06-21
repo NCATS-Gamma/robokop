@@ -58,6 +58,8 @@ server {
     proxy_set_header        X-Forwarded-Proto $scheme;
     proxy_set_header        Accept-Encoding   "";
     add_header              Front-End-Https   on;
+    #for queries that take long;
+    proxy_read_timeout 1d;
     #slash append -----
     rewrite ^([^.]*[^/])$ $1/ permanent;
 
@@ -75,7 +77,6 @@ server {
     }
     #supervisord
     location /manager/supervisord/ {
-
       proxy_pass http://manager_supervisor/;
       proxy_redirect off;
       proxy_set_header        X-Swagger-Prefix "/manager";
@@ -101,6 +102,8 @@ server {
     add_header              Front-End-Https   on;
     #slash append -----
     rewrite ^([^.]*[^/])$ $1/ permanent;
+    #for queries that take long;
+    proxy_read_timeout 1d;
     #location of spec file 
     location /ranker/spec/ {
       proxy_pass http://ranker_web_server/ranker/spec;
@@ -139,6 +142,8 @@ server {
     add_header              Front-End-Https   on;
     #slash append -----
     rewrite ^([^.]*[^/])$ $1/ permanent;
+    #for queries that take long;
+    proxy_read_timeout 1d;
     #location of spec file 
     location /builder/spec/ {
       proxy_pass http://builder_web_server/builder/spec;
