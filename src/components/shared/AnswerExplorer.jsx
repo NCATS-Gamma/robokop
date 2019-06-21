@@ -5,7 +5,7 @@ import FaExternalLink from 'react-icons/lib/fa/external-link';
 import FaCommentO from 'react-icons/lib/fa/comment-o';
 
 import FeedbackExplorer from '../shared/FeedbackExplorer';
-import SubGraphViewer from './SubGraphViewer';
+import SubGraphViewer from './graphs/SubGraphViewer';
 import AnswerExplorerInfo from './AnswerExplorerInfo';
 
 // answer={answer}
@@ -34,9 +34,13 @@ class AnswerExplorer extends React.Component {
   }
   onGraphClick(event) {
     if (event.edges.length !== 0) { // Clicked on an Edge
-      this.setState({ selectedEdge: event.edgeObjects[0], selectedGraph: event.graph, modalShow: true, modalType: 'info' });
+      this.setState({
+        selectedEdge: event.edgeObjects[0], selectedGraph: event.graph, modalShow: true, modalType: 'info',
+      });
     } else { // Reset things since something else was clicked
-      this.setState({ selectedEdge: null, selectedGraph: null, modalShow: false, modalType: null });
+      this.setState({
+        selectedEdge: null, selectedGraph: null, modalShow: false, modalType: null,
+      });
     }
   }
   feedbackModalOpen() {

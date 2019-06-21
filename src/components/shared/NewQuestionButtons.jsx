@@ -33,7 +33,7 @@ class NewQuestionButtons extends React.Component {
     const isValidQuestion = graphValidationState.isValid;
     const errorMsg = 'Error: '.concat(graphValidationState.errorList.join(',\n '));
     return (
-      <div style={{ position: 'relative', float: 'right', margin: '20px 0px' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '20px 0px' }}>
         <Button
           onClick={toggleModal}
           className="btn btn-default"

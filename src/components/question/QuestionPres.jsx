@@ -5,7 +5,7 @@ import GoQuestion from 'react-icons/lib/go/question';
 import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
 
 import QuestionHeader from '../shared/QuestionHeader';
-import MachineQuestionView from '../shared/MachineQuestionView';
+import MachineQuestionView from '../shared/graphs/MachineQuestionView';
 import AnswersetList from './AnswersetList';
 import Loading from '../Loading';
 

@@ -6,12 +6,17 @@ import FaDownload from 'react-icons/lib/fa/download';
 import AppConfig from '../../AppConfig';
 import { config } from '../../index';
 
-import SubGraphViewer from './SubGraphViewer';
+import SubGraphViewer from './graphs/SubGraphViewer';
 import PubmedList from './PubmedList';
 
 import curieUrls from '../util/curieUrls';
+import getNodeTypeColorMap from '../util/colorUtils';
+import entityNameDisplay from '../util/entityNameDisplay';
 
 const shortid = require('shortid');
+
+const nodeBlacklist = ['isSet', 'labels', 'label', 'equivalent_identifiers', 'type', 'id', 'degree', 'name', 'title', 'color', 'binding'];
+const edgeBlacklist = ['binding', 'ctime', 'id', 'publications', 'source_database', 'source_id', 'target_id', 'type'];
 
 class AnswerExplorerInfo extends React.Component {
   constructor(props) {
@@ -72,42 +77,55 @@ class AnswerExplorerInfo extends React.Component {
     if (!n || !('name' in n)) {
       return (<div />);
     }
-
+    const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
+    const backgroundColor = nodeTypeColorMap(n.type);
+    const extraFields = Object.keys(n).filter(property => !nodeBlacklist.includes(property));
     const urls = curieUrls(n.id);
     return (
       <Panel>
-        <Panel.Heading>
+        <Panel.Heading style={{ backgroundColor }}>
           <Panel.Title componentClass="h3">
             {n.name}
+            <div className="pull-right">
+              {
+                urls.map(link => <span key={shortid.generate()}><a href={link.url} target="_blank"><img src={link.iconUrl} alt={link.label} height={16} width={16} /></a></span>)
+              }
+            </div>
           </Panel.Title>
         </Panel.Heading>
-        <Panel.Body style={{ minHeight: '100px' }}>
+        <Panel.Body style={{ height: '100px', overflowY: 'auto' }}>
           <h5>
-            {n.type}
+            type: {entityNameDisplay(n.type)}
           </h5>
           <h5>
-            {n.id}
+            id: {n.id}
           </h5>
-          {
-            urls.map(link => <span key={shortid.generate()}><a href={link.url} target="_blank">{link.label}</a> &nbsp; </span>)
-          }
+          {extraFields.map(property => (
+            <h5 key={shortid.generate()}>
+              {property}: {n[property].toString()}
+            </h5>
+          ))}
         </Panel.Body>
       </Panel>
     );
   }
 
-  getEdgeInfoFrag(edge) {
-    if (!edge) {
+  getEdgeInfoFrag(edgeId) {
+    if (!edgeId) {
       return (<div />);
     }
-    let origin = 'Unknown';
+    const edge = this.state.subgraph.edges.find(e => e.id === edgeId);
+
+    const extraFields = Object.keys(edge).filter(property => !edgeBlacklist.includes(property));
+
+    let origin = ['Unknown'];
     const sourceToOriginString = source => source; // source.substr(0, source.indexOf('.'));
 
     if ('source_database' in edge) {
       if (Array.isArray(edge.source_database) && edge.source_database.length > 0) {
-        origin = edge.source_database.map(source => <span key={shortid.generate()}>{sourceToOriginString(source)} &nbsp; </span>);
+        origin = edge.source_database.map(source => sourceToOriginString(source));
       } else {
-        origin = sourceToOriginString(edge.source_database);
+        origin = [sourceToOriginString(edge.source_database)];
       }
     }
     return (
@@ -117,13 +135,18 @@ class AnswerExplorerInfo extends React.Component {
             {edge.type}
           </Panel.Title>
         </Panel.Heading>
-        <Panel.Body style={{ minHeight: '100px' }}>
+        <Panel.Body style={{ height: '100px', overflowY: 'auto' }}>
           <h5>
             Established using:
             <p>
-              {origin}
+              {origin.join(', ')}
             </p>
           </h5>
+          {extraFields.map(property => (
+            <h5 key={shortid.generate()}>
+              {property}: {Array.isArray(edge[property]) ? edge[property].join(', ') : edge[property].toString()}
+            </h5>
+          ))}
         </Panel.Body>
       </Panel>
     );
@@ -296,7 +319,7 @@ class AnswerExplorerInfo extends React.Component {
               {this.getNodeInfoFrag(this.state.subgraph.nodes[0])}
             </Col>
             <Col md={4}>
-              {this.getEdgeInfoFrag(this.state.selectedEdge)}
+              {this.getEdgeInfoFrag(this.state.selectedEdgeId)}
             </Col>
             <Col md={4}>
               {this.getNodeInfoFrag(this.state.subgraph.nodes[1])}

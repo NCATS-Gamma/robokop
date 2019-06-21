@@ -7,7 +7,7 @@ import { DropdownList } from 'react-widgets';
 
 import Loading from './../Loading';
 import LabeledFormGroup from './../shared/LabeledFormGroup';
-import CurieSelectorContainer from './../shared/CurieSelectorContainer';
+import CurieSelectorContainer from './../shared/curies/CurieSelectorContainer';
 import entityNameDisplay from '../util/entityNameDisplay';
 import NodeProperties from './NodeProperties';
 
@@ -60,7 +60,7 @@ class NodePanel extends React.Component {
 
   render() {
     const { store } = this.props.activePanel;
-    const ready = store.dataReady && store.conceptsReady && store.userReady;
+    const ready = store.dataReady && store.conceptsReady && store.userReady && store.nodePropertiesReady;
     const { activePanel } = this.props;
     const { isValidType, curieEnabled } = activePanel;
     const dropDownObjList = activePanel.store.concepts.map(c => ({ text: entityNameDisplay(c), value: c }));
@@ -70,6 +70,7 @@ class NodePanel extends React.Component {
       { text: 'Specific Entry', value: 'curieEnabled' },
     ];
     const nodeTypeText = nodeInfo.find(nodeType => activePanel[nodeType.value]).text;
+    const disableCurie = activePanel.type === 'named_thing' ? 'curieEnabled' : '';
     let curie;
     if (toJS(activePanel.curie).length !== 0) {
       curie = { curie: activePanel.curie[0], type: activePanel.type, term: activePanel.name };
@@ -108,10 +109,11 @@ class NodePanel extends React.Component {
                   valueField="value"
                   value={nodeTypeText}
                   onChange={value => activePanel.changeNodeFunction(value.value, value.text)}
+                  disabled={[disableCurie]}
                 />
               </LabeledFormGroup>
             </Form>
-            {isValidType && curieEnabled &&
+            {isValidType && curieEnabled && !disableCurie &&
               <div style={{ display: 'table', width: '100%' }}>
                 <div
                   style={{ display: 'table-row' }}
@@ -130,8 +132,8 @@ class NodePanel extends React.Component {
                 </div>
               </div>
             }
-            {isValidType &&
-              <NodeProperties activePanel={activePanel} />
+            {isValidType && store.nodePropertyList[activePanel.type] && store.nodePropertyList[activePanel.type].length > 0 &&
+              <NodeProperties activePanel={activePanel} validProperties={toJS(store.nodePropertyList)} />
             }
           </div>
           :

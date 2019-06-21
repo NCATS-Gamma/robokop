@@ -1,14 +1,17 @@
 import React from 'react';
 import { Button, Glyphicon } from 'react-bootstrap';
 import { observer } from 'mobx-react';
-import { Combobox } from 'react-widgets';
+import { DropdownList } from 'react-widgets';
 import FaPlus from 'react-icons/lib/fa/plus';
 
 
 @observer
 class NodeProperties extends React.Component {
   render() {
-    const { activePanel } = this.props;
+    const { activePanel, validProperties } = this.props;
+    const listItem = ({ item }) => (
+      <span>{item.split(':')[0]}</span>
+    );
     return (
       <div style={{ margin: '10px 0px', display: 'flex', flexDirection: 'column' }} >
         {activePanel.properties.length > 0 &&
@@ -22,20 +25,61 @@ class NodeProperties extends React.Component {
             key={['property', i].join('_')}
             style={{ display: 'flex' }}
           >
-            <Combobox
-              // TODO: this will be coming from the backend
-              data={[]}
-              value={property[0]}
+            <DropdownList
+              data={validProperties[activePanel.type]}
+              itemComponent={listItem}
+              value={property.key}
               onChange={value => activePanel.updateProperty(value, i, 'key')}
               style={{ width: '48%', margin: 'auto 5px' }}
+              filter="contains"
             />
-            <Combobox
-              // TODO: this will be coming from the backend
-              data={[]}
-              value={property[1]}
-              onChange={value => activePanel.updateProperty(value, i, 'value')}
-              style={{ width: '48%', margin: 'auto 5px' }}
-            />
+            <div style={{ width: '48%', margin: 'auto' }}>
+              {property.type === 'string' &&
+                <input
+                  id="propertyValue"
+                  style={{
+                    width: '100%', margin: '4px', border: '1px solid #CCCCCC', borderRadius: '4px', padding: '6px',
+                  }}
+                  placeholder="Enter a value here."
+                  type="text"
+                  onChange={e => activePanel.updateProperty(e.target.value, i, 'value')}
+                  value={property.value}
+                />
+              }
+              {property.type === 'boolean' &&
+                <DropdownList
+                  style={{ width: '100%', margin: 'auto 5px' }}
+                  data={[true, false]}
+                  onChange={value => activePanel.updateProperty(value, i, 'value')}
+                  value={property.value}
+                />
+              }
+              {property.type === 'integer' &&
+                <input
+                  id="propertyValue"
+                  style={{
+                    width: '100%', margin: '4px', border: '1px solid #CCCCCC', borderRadius: '4px', padding: '6px',
+                  }}
+                  type="number"
+                  min="0"
+                  onChange={e => activePanel.updateProperty(Number(e.target.value), i, 'value')}
+                  value={property.value}
+                />
+              }
+              {property.type === 'float' &&
+                <input
+                  id="propertyValue"
+                  style={{
+                    width: '100%', margin: '4px', border: '1px solid #CCCCCC', borderRadius: '4px', padding: '6px',
+                  }}
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  onChange={e => activePanel.updateProperty(Number(e.target.value), i, 'value')}
+                  value={property.value}
+                />
+              }
+            </div>
             <div
               style={{
                 width: '4%', verticalAlign: 'top', padding: '5px 10px',

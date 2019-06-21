@@ -1,18 +1,13 @@
 import React from 'react';
 
-import QuestionGraphViewer from '../shared/QuestionGraphViewer';
+import QuestionGraphViewer from '../shared/graphs/QuestionGraphViewer';
 
 const shortid = require('shortid');
 
 class QuestionLinearGraph extends React.Component {
-  constructor(props) {
-    super(props);
-
-  }
-
   getGraph() {
     // Translate the query list to a graph for display
-    let q = this.props.machineQuestion.map(a => ({ ...a })); // Deep copy of array of objects 
+    let q = this.props.machineQuestion.map(a => ({ ...a })); // Deep copy of array of objects
     if (q == null || q.length === 0) {
       q = [];
     }

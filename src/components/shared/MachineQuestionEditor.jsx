@@ -8,7 +8,7 @@ import Dropzone from 'react-dropzone';
 import FaCloudUpload from 'react-icons/lib/fa/cloud-upload';
 
 import SplitterLayout from 'react-splitter-layout';
-import MachineQuestionView from './MachineQuestionView';
+import MachineQuestionView from './graphs/MachineQuestionView';
 import Loading from '../Loading';
 
 class MachineQuestionEditor extends React.Component {
@@ -35,15 +35,9 @@ class MachineQuestionEditor extends React.Component {
   componentDidMount() {
     this.syncStateAndProps(this.props);
   }
-  componentWillReceiveProps(nextProps) {
-    // We purposefully don't do this.
-    // When the parent updates (because we called update, we dont want to rerender)
-    // This prevents the parent from injecting a state update while we are open, but that would be weird anyway.
-    // this.syncStateAndProps(nextProps);
-  }
 
   syncStateAndProps(newProps) {
-    this.setState({ data: { natural_question: newProps.question, machine_question: newProps.machineQuestion }, isValid: true });
+    this.setState({ data: { natural_question: newProps.question, machine_question: newProps.machineQuestion, max_connectivity: newProps.max_connectivity }, isValid: true });
   }
 
   onEdit(edit) {
@@ -149,7 +143,7 @@ class MachineQuestionEditor extends React.Component {
       };
       fr.onerror = () => {
         window.alert('Sorry but there was a problem uploading the file. The file may be invalid JSON.');
-      }
+      };
       fr.readAsText(file);
     });
   }
@@ -208,7 +202,7 @@ class MachineQuestionEditor extends React.Component {
             </div>
           </div>
         </div>
-        <div style={{ ...containerStyle, marginRight: '-15px'}}>
+        <div style={{ ...containerStyle, marginRight: '-15px' }}>
           {!thinking &&
             <SplitterLayout>
               <div style={{ paddingTop: '10px' }}>

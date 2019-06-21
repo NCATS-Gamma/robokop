@@ -35,6 +35,7 @@ class AppConfig {
       user: this.url('api/user/'), // GET current user credentials
       concepts: this.url('api/concepts/'), // GET concepts contained in the global potential KG
       predicates: this.url('api/predicates'), // GET predicates for edges
+      nodeProperties: this.url('api/node_properties'), // GET valid node properties
       operations: this.url('api/operations/'), // GET operations contained in global potential KG
       questions: this.url('api/questions/'), // POST to store a new question
       question: questionId => this.url(`api/q/${questionId}/`), // POST to update meta data, DELETE to delete the question
@@ -111,6 +112,7 @@ class AppConfig {
   operations(fun) { this.getRequest(`${this.apis.operations}`, fun); }
   user(successFun, failureFun) { this.getRequest(`${this.apis.user}`, successFun, failureFun); }
   predicates(successFun, failureFun) { this.getRequest(`${this.apis.predicates}`, successFun, failureFun); }
+  nodeProperties(successFun, failureFun) { this.getRequest(`${this.apis.nodeProperties}`, successFun, failureFun); }
   answersetData(qid_aid, successFun, failureFun) { this.getRequest(`${this.apis.answersetData(qid_aid)}`, successFun, failureFun); }
 
   questionData(qid, successFun, failureFun) {

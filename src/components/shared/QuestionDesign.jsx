@@ -6,7 +6,7 @@ import FaWrench from 'react-icons/lib/fa/wrench';
 
 import Loading from '../Loading';
 import InputOptions from './InputOptions';
-import MachineQuestionView from './MachineQuestionView';
+import MachineQuestionView from './graphs/MachineQuestionView';
 import MachineQuestionEditor from './MachineQuestionEditor';
 
 class QuestionDesign extends React.Component {
@@ -71,7 +71,7 @@ class QuestionDesign extends React.Component {
     this.props.nlpParse(
       questionText,
       (res) => { this.setState({ machineQuestion: res, thinking: false, status: 'good' }); },
-      (res) => { this.setState({ machineQuestion: { nodes: [], edges: [] }, thinking: false, status: 'failure' }); },
+      () => { this.setState({ machineQuestion: { nodes: [], edges: [] }, thinking: false, status: 'failure' }); },
     );
   }
 

@@ -21,7 +21,6 @@ class PubmedList extends React.Component {
       row: {
         display: 'flex',
         flexDirection: 'row',
-        alignItems: 'center',
         padding: '5px',
         backgroundColor: '#fff',
         borderBottom: '1px solid #e0e0e0',

@@ -8,7 +8,7 @@ import AppConfig from './AppConfig';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Loading from './components/Loading';
-import CurieSelectorContainer from './components/shared/CurieSelectorContainer';
+import CurieSelectorContainer from './components/shared/curies/CurieSelectorContainer';
 import entityNameDisplay from './components/util/entityNameDisplay';
 import DownloadButton from './components/shared/DownloadButton';
 

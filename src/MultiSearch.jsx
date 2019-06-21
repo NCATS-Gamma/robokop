@@ -9,11 +9,9 @@ import Loading from './components/Loading';
 import Header from './components/Header';
 import Footer from './components/Footer';
 
-import CurieSelectorContainer from './components/shared/CurieSelectorContainer';
-// import CurieBrowser from './components/shared/CurieBrowser';
+import CurieSelectorContainer from './components/shared/curies/CurieSelectorContainer';
 
 const _ = require('lodash');
-const shortid = require('shortid');
 
 class MultiSearch extends React.Component {
   constructor(props) {
@@ -110,7 +108,7 @@ class MultiSearch extends React.Component {
         curieSelectorElements = width => (
           submittedJSON.map((jsonBlob, i) => {
             const curieSelectorElement = (
-              <div key={shortid.generate()} style={{ display: 'flex' }}>
+              <div key={['curie', i].join('_')} style={{ display: 'flex' }}>
                 <div
                   style={{ flexBasis: '100%', padding: '5px 0px' }}
                 >
@@ -210,11 +208,6 @@ class MultiSearch extends React.Component {
                   </div>
                 )}
               </AutoSizer>
-              {/* <div style={{ padding: '20px 0' }}>
-                <CurieBrowser
-                  curieList={this.curieListFromSubmittedJSON()}
-                />
-              </div> */}
             </Col>
           </Row>
         </Grid>

@@ -14,7 +14,7 @@ import Footer from './components/Footer';
 import Loading from './components/Loading';
 import { maxConnectivityPopover, directionPopover } from './components/shared/Popovers';
 import MessageAnswersetTable from './components/answerset/MessageAnswersetTable';
-import CurieSelectorContainer from './components/shared/CurieSelectorContainer';
+import CurieSelectorContainer from './components/shared/curies/CurieSelectorContainer';
 import entityNameDisplay from './components/util/entityNameDisplay';
 
 
