@@ -25,7 +25,6 @@ class AnswerExplorerInfo extends React.Component {
     this.appConfig = new AppConfig(config);
 
     this.state = {
-      selectedEdge: {},
       selectedEdgeId: null,
       selectedNodeId: null,
       subgraph: { nodes: [], edges: [] },
@@ -48,7 +47,7 @@ class AnswerExplorerInfo extends React.Component {
 
     const subgraph = { nodes, edges };
     this.setState({
-      subgraph, selectedEdgeId: selectedEdge.edgeIdFromKG, selectedNodeId: null, selectedEdge,
+      subgraph, selectedEdgeId: selectedEdge.edgeIdFromKG, selectedNodeId: null,
     }, () => {
       this.getPublicationsFrag();
     });
@@ -66,9 +65,9 @@ class AnswerExplorerInfo extends React.Component {
     const newState = { selectedEdgeId: null, selectedNodeId: null, selectedEdge: {} };
     if (event.edges.length !== 0) { // Clicked on an Edge
       newState.selectedEdgeId = event.edgeObjects[0].edgeIdFromKG;
-      newState.selectedEdge = event.edgeObjects[0];
+      [newState.selectedEdge] = event.edgeObjects;
     } else if (event.nodes.length !== 0) { // Clicked on a node
-      newState.selectedNodeId = event.nodes[0];
+      [newState.selectedNodeId] = event.nodes;
     }
     this.setState(newState);
   }
@@ -88,7 +87,7 @@ class AnswerExplorerInfo extends React.Component {
             {n.name}
             <div className="pull-right">
               {
-                urls.map(link => <span key={shortid.generate()}><a href={link.url} target="_blank"><img src={link.iconUrl} alt={link.label} height={16} width={16} /></a></span>)
+                urls.map(link => <span key={shortid.generate()} style={{ margin: '0px 5px' }}><a href={link.url} target="_blank"><img src={link.iconUrl} alt={link.label} height={16} width={16} /></a></span>)
               }
             </div>
           </Panel.Title>

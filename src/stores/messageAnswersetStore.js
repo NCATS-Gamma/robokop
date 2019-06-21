@@ -19,7 +19,8 @@ class AnswersetStore {
   @observable searchedFilter = {};
   @observable filteredAnswers = []; // array of filtered answers
   @observable filterHash = ''; // hash of filtered answers object for checking if we need to get available answers
-  @observable numKGNodes = 35 // Number of nodes (approx) for pruned annotated KG. Null results in all nodes
+  @observable numKGNodes = 35; // Number of nodes (approx) for pruned annotated KG. Null results in all nodes
+  @observable numAgSetNodes = 10; // Number of nodes for pruned active answer graph
 
   // we don't want to include any of these in the filter
   keyBlacklist = ['isSet', 'labels', 'equivalent_identifiers', 'type', 'id', 'degree'];
@@ -444,6 +445,23 @@ class AnswersetStore {
     return {};
   }
 
+  @action isAgPruned() {
+    return this.numAgSetNodes < this.maxNumAgNodes;
+  }
+
+  @computed get maxNumAgNodes() {
+    const answer = this.message.answers[this.ansIdToIndMap.get(this.activeAnswerId)];
+    const nodeBindingsMap = new Map(Object.entries(answer.node_bindings));
+    let maxNumAgNodes = 0;
+    nodeBindingsMap.forEach((val) => {
+      const nodeIds = toJS(val);
+      if (Array.isArray(nodeIds)) {
+        maxNumAgNodes = Math.max(maxNumAgNodes, nodeIds.length);
+      }
+    });
+    return maxNumAgNodes;
+  }
+
   // Returns subgraphViewer compatible format graph spec { node_list: {}, edge_list: {} }
   @computed get activeAnswerGraph() {
     const answer = this.message.answers[this.ansIdToIndMap.get(this.activeAnswerId)];
@@ -457,17 +475,32 @@ class AnswersetStore {
     nodeBindingsMap.forEach((val, keyId) => {
       const newNodes = [];
       const qNode = this.getQNode(keyId);
-      let nodeIds = toJS(val);
+      const nodeIds = toJS(val);
+      let nodes = [];
       let isSet = true;
 
       if (!Array.isArray(nodeIds)) {
-        nodeIds = [nodeIds];
+        nodes = [{ id: nodeIds }];
         isSet = false;
         // Node is not a set
         // We will make it an array so we can follow the same code path
+      } else { // we need to prune the set nodes down to a managable number
+        nodeIds.forEach((nodeId) => {
+          const node = { id: nodeId };
+          let score = 0;
+          this.message.knowledge_graph.edges.forEach((edge) => {
+            if (nodeId === edge.source_id || nodeId === edge.target_id) {
+              score += edge.publications.length;
+            }
+          });
+          node.score = score;
+          nodes.push(node);
+        });
+        nodes = _.reverse(_.sortBy(nodes, n => n.score));
+        nodes = nodes.splice(0, this.numAgSetNodes);
       }
-      nodeIds.forEach((nodeId) => {
-        const kgNode = toJS(this.getKgNode(nodeId));
+      nodes.forEach((node) => {
+        const kgNode = toJS(this.getKgNode(node.id));
         // Get the type from the qNode
         if (kgNode) {
           kgNode.type = qNode.type;
@@ -479,22 +512,24 @@ class AnswersetStore {
       newNodes.forEach(n => graph.node_list.push(_.cloneDeep(n)));
     });
 
+    const prunedAgNodeIdSet = new Set(graph.node_list.map((n => n.id)));
+
     const edgeBindingsMap = new Map(Object.entries(answer.edge_bindings));
 
-    // So we loop through the keys in node_bindings
-    edgeBindingsMap.forEach((val, keyId) => {
+    // Construct pruned edges
+    edgeBindingsMap.forEach((kedgeIds, qedgeId) => {
       const newEdges = [];
-      let edgeIds = toJS(val);
+      let edgeIds = toJS(kedgeIds);
       if (!Array.isArray(edgeIds)) {
         edgeIds = [edgeIds];
-        // Edge is not an array
-        // We will make it an array so we can follow the same code path
       }
-      edgeIds.forEach((edgeId) => {
-        const kgEdge = toJS(this.getKgEdge(edgeId));
-        // Get the type from the qNode
-        if (kgEdge) {
-          kgEdge.binding = keyId;
+      edgeIds.forEach((eId) => {
+        // get kedge details
+        const kgEdge = toJS(this.getKgEdge(eId));
+        // check that kedge is not pruned away
+        if (kgEdge && prunedAgNodeIdSet.has(kgEdge.source_id) && prunedAgNodeIdSet.has(kgEdge.target_id)) {
+          kgEdge.binding = qedgeId;
+          // add to newEdges
           newEdges.push(kgEdge);
         }
       });
@@ -523,6 +558,10 @@ class AnswersetStore {
 
   @action updateNumKGNodes(value) {
     this.numKGNodes = value;
+  }
+
+  @action updateNumAgNodes(value) {
+    this.numAgSetNodes = value;
   }
 
   @action initializeFilter() {
