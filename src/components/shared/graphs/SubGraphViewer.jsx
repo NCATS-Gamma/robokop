@@ -6,7 +6,7 @@ const Graph = require('react-graph-vis').default;
 const shortid = require('shortid');
 const _ = require('lodash');
 
-const keyBlacklist = ['isSet', 'labels', 'label', 'equivalent_identifiers', 'type', 'id', 'degree', 'name', 'title', 'color', 'binding'];
+const keyBlacklist = ['isSet', 'labels', 'label', 'equivalent_identifiers', 'type', 'id', 'degree', 'name', 'title', 'color', 'binding', 'scoreVector', 'aggScore'];
 
 class SubGraphViewer extends React.Component {
   constructor(props) {
@@ -207,7 +207,6 @@ class SubGraphViewer extends React.Component {
     delete g.edge_list;
     g.nodes = g.node_list;
     delete g.node_list;
-
     const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts); // We could put standardized concepts here
 
     // remove all duplicate nodes

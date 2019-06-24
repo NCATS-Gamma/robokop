@@ -15,6 +15,12 @@ import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import axios from 'axios';
 
+import Slider from 'rc-slider';
+import Tooltip from 'rc-tooltip';
+import 'rc-slider/assets/index.css';
+import 'rc-tooltip/assets/bootstrap.css';
+import FaAngleDown from 'react-icons/lib/fa/angle-down';
+
 import entityNameDisplay from './../util/entityNameDisplay';
 import getColumnWidth from '../util/rtColumnWidth';
 import SubGraphViewer from '../shared/graphs/SubGraphViewer';
@@ -41,6 +47,26 @@ const propTypes = {
   activeButtonKey: PropTypes.any, // eslint-disable-line react/forbid-prop-types
 };
 
+const { Handle } = Slider;
+
+const handle = (props) => {
+  const {
+    value, dragging, index, ...restProps
+  } = props;
+  return (
+    <Tooltip
+      prefixCls="rc-slider-tooltip"
+      overlay={`${value} Nodes`}
+      visible={dragging}
+      placement="top"
+      key={index}
+      overlayStyle={{ zIndex: 1061 }}
+    >
+      <Handle value={value} {...restProps} />
+    </Tooltip>
+  );
+};
+
 @observer
 class AnswersetTableSubComponent extends React.Component {
   @observable activeState = {
@@ -62,6 +88,7 @@ class AnswersetTableSubComponent extends React.Component {
     this.syncPropsWithState = this.syncPropsWithState.bind(this);
     this.fetchGraphSupport = this.fetchGraphSupport.bind(this);
     this.onGraphClick = this.onGraphClick.bind(this);
+    this.handleSliderChange = this.handleSliderChange.bind(this);
     this.modalClose = this.modalClose.bind(this);
   }
 
@@ -70,8 +97,8 @@ class AnswersetTableSubComponent extends React.Component {
     this.syncPropsWithState();
   }
 
-  componentWillUpdate(nextProps) {
-    if ((nextProps.nodeId !== this.props.nodeId) || (nextProps.activeButtonKey !== this.props.activeButtonKey)) {
+  componentDidUpdate(prevProps) {
+    if ((prevProps.nodeId !== this.props.nodeId) || (prevProps.activeButtonKey !== this.props.activeButtonKey) || (this.activeState.activeButton === 1 && !this.state.loadedGraph)) {
       this.syncPropsWithState();
     }
   }
@@ -135,7 +162,7 @@ class AnswersetTableSubComponent extends React.Component {
         }
       }
     }
-    // We picked pairs of nodes, due to the way simple view works, we might have literature_co-occurance edges for additional nodes
+    // We picked pairs of nodes, due to the way simple view works, we might have literature_co-occurence edges for additional nodes
     // We need to look through those edges and add those node pairs
     edges.forEach((e) => {
       if (e.type === 'literature_co-occurrence') {
@@ -206,14 +233,70 @@ class AnswersetTableSubComponent extends React.Component {
     }
   }
 
+  handleSliderChange(value) {
+    this.props.store.updateNumAgNodes(value);
+    this.setState({ loadedGraph: false });
+  }
+
   renderSubGraph() {
+    const { store, concepts } = this.props;
+    let sliderPopover = <div>No answerset</div>;
+    const maxSetNodes = store.maxNumAgNodes || 0;
+    if (this.state.loadedGraph) {
+      sliderPopover = (
+        <Popover id={shortid.generate()}>
+          <div style={{ marginTop: '10px', width: '200px' }}>
+            <Slider
+              min={1}
+              max={maxSetNodes}
+              defaultValue={store.numAgSetNodes}
+              onAfterChange={this.handleSliderChange}
+              handle={handle}
+            />
+          </div>
+        </Popover>
+      );
+    }
     return (
       <div>
         {this.state.loadedGraph ?
           <div>
+            {maxSetNodes > 10 && // only show pruner if there are more than 10 set nodes
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  right: 10,
+                  width: '270px',
+                  backgroundColor: '#fff',
+                  boxShadow: '-2px 2px 5px 0px #7777777d',
+                  zIndex: 100,
+                }}
+              >
+                <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={sliderPopover}>
+                  {store.isAgPruned() ?
+                    <div
+                      style={{
+                        width: '100%', textAlign: 'center', cursor: 'pointer', padding: '10px', fontSize: '12px',
+                      }}
+                    >
+                      Pruned graph showing top {store.numAgSetNodes} set nodes <FaAngleDown />
+                    </div>
+                    :
+                    <div
+                      style={{
+                        width: '100%', textAlign: 'center', cursor: 'pointer', padding: '10px',
+                      }}
+                    >
+                      Prune Graph <FaAngleDown />
+                    </div>
+                  }
+                </OverlayTrigger>
+              </div>
+            }
             <SubGraphViewer
               subgraph={this.state.graph}
-              concepts={this.props.concepts}
+              concepts={concepts}
               layoutRandomSeed={Math.floor(Math.random() * 100)}
               callbackOnGraphClick={this.onGraphClick}
               showSupport
@@ -235,7 +318,7 @@ class AnswersetTableSubComponent extends React.Component {
                 <AnswerExplorerInfo
                   graph={this.state.graph}
                   selectedEdge={this.state.selectedEdge}
-                  concepts={this.props.concepts}
+                  concepts={concepts}
                 />
               </Modal.Body>
             </Modal>
@@ -250,16 +333,18 @@ class AnswersetTableSubComponent extends React.Component {
   renderJsonView() {
     const { rowData } = this.state;
     return (
-      <ReactJson
-        name={false}
-        theme="rjv-default"
-        collapseStringsAfterLength={110}
-        indentWidth={2}
-        iconStyle="triangle"
-        src={rowData}
-        displayDataTypes={false}
-        collapsed={4}
-      />
+      <div style={{ margin: '10px 0px 10px 125px' }}>
+        <ReactJson
+          name={false}
+          theme="rjv-default"
+          collapseStringsAfterLength={110}
+          indentWidth={2}
+          iconStyle="triangle"
+          src={rowData}
+          displayDataTypes={false}
+          collapsed={4}
+        />
+      </div>
     );
   }
 
@@ -381,7 +466,7 @@ class AnswersetTableSubComponent extends React.Component {
       />
     );
     return (
-      <div style={{ padding: '0px 20px 0px 0px' }}>
+      <div style={{ padding: '10px 20px 0px 125px' }}>
         {dropDownComponent}
         {tableFragment}
       </div>
@@ -403,46 +488,45 @@ class AnswersetTableSubComponent extends React.Component {
       >
         <div
           style={{
+            position: 'relative',
             backgroundColor: '#fff',
             border: '1px solid #ededed',
-            padding: '20px',
             boxShadow: '0px 0px 5px 0px #ececec',
             minHeight: '200px',
-            width: '900px',
+            width: '1000px',
           }}
         >
-          <Row>
-            <Col md={2}>
-              <ButtonGroup vertical style={{ float: 'left' }}>
-                <Button
-                  active={isJsonActive}
-                  style={{ textAlign: 'left' }}
-                  onClick={() => this.updateActiveButton(answersetSubComponentEnum.json)}
-                >
-                  <span className="valign-center"><FaFileText /><span style={{ paddingLeft: '5px' }}>JSON</span></span>
-                </Button>
-                <Button
-                  active={isGraphActive}
-                  style={{ textAlign: 'left' }}
-                  onClick={() => this.updateActiveButton(answersetSubComponentEnum.graph)}
-                >
-                  <div className="valign-center"><IoNetwork /><span style={{ paddingLeft: '5px' }}>Graph</span></div>
-                </Button>
-                <Button
-                  active={isMetadataActive}
-                  style={{ textAlign: 'left' }}
-                  onClick={() => this.updateActiveButton(answersetSubComponentEnum.metadata)}
-                >
-                  <span className="valign-center"><FaThList /><span style={{ paddingLeft: '5px' }}>Metadata</span></span>
-                </Button>
-              </ButtonGroup>
-            </Col>
-            <Col md={10}>
-              {isJsonActive && this.renderJsonView()}
-              {isGraphActive && this.renderSubGraph()}
-              {isMetadataActive && this.renderMetadataView()}
-            </Col>
-          </Row>
+          <ButtonGroup
+            vertical
+            style={{
+              position: 'absolute', top: '10px', left: '10px', zIndex: 1,
+            }}
+          >
+            <Button
+              active={isJsonActive}
+              style={{ textAlign: 'left' }}
+              onClick={() => this.updateActiveButton(answersetSubComponentEnum.json)}
+            >
+              <span className="valign-center"><FaFileText /><span style={{ paddingLeft: '5px' }}>JSON</span></span>
+            </Button>
+            <Button
+              active={isGraphActive}
+              style={{ textAlign: 'left' }}
+              onClick={() => this.updateActiveButton(answersetSubComponentEnum.graph)}
+            >
+              <div className="valign-center"><IoNetwork /><span style={{ paddingLeft: '5px' }}>Graph</span></div>
+            </Button>
+            <Button
+              active={isMetadataActive}
+              style={{ textAlign: 'left' }}
+              onClick={() => this.updateActiveButton(answersetSubComponentEnum.metadata)}
+            >
+              <span className="valign-center"><FaThList /><span style={{ paddingLeft: '5px' }}>Metadata</span></span>
+            </Button>
+          </ButtonGroup>
+          {isJsonActive && this.renderJsonView()}
+          {isGraphActive && this.renderSubGraph()}
+          {isMetadataActive && this.renderMetadataView()}
         </div>
       </div>
     );
