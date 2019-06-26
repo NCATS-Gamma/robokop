@@ -45,8 +45,20 @@ def landing():
 
 @app.route('/help/')
 def help():
-    """Get starting guide."""
+    """Get help page."""
     return render_template('help.html')
+
+
+@app.route('/guide/')
+def guide():
+    """Get starting guide."""
+    return render_template('guide.html')
+
+
+@app.route('/apps/')
+def apps():
+    """Get apps page."""
+    return render_template('apps.html')
 
 @app.route('/termsofservice/')
 def termsofservice():
@@ -62,6 +74,13 @@ def activity():
 def search():
     """Search for biomedical concept identifiers."""
     return render_template('search.html')
+
+
+@app.route('/simple/question/')
+def simpleQuestion():
+    """Ask simple question without storing answer."""
+    return render_template('simpleQuestion.html')
+
 
 @app.route('/simple/view/')
 def viewer_blank():

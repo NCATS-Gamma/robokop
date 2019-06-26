@@ -97,7 +97,7 @@ class SubGraphViewer extends React.Component {
   syncStateAndProps(newProps) {
     let graph = newProps.subgraph;
 
-    const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'node_list'));
+    const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'nodes'));
     if (isValid) {
       graph = this.addTagsToGraph(graph);
     }
@@ -202,11 +202,6 @@ class SubGraphViewer extends React.Component {
   addTagsToGraph(graph) {
     // Adds vis.js specific tags primarily to style graph as desired
     const g = _.cloneDeep(graph);
-    // nodes -> node_list
-    g.edges = g.edge_list;
-    delete g.edge_list;
-    g.nodes = g.node_list;
-    delete g.node_list;
     const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts); // We could put standardized concepts here
 
     // remove all duplicate nodes
@@ -238,7 +233,7 @@ class SubGraphViewer extends React.Component {
       };
 
       // Set shortened node labels and tool-tip for each node
-      n.label = n.name.length > 15 ? `${n.name.substring(0, 13)}...` : n.name;
+      n.label = n.name && n.name.length > 15 ? `${n.name.substring(0, 13)}...` : n.name || 'Unknown';
       let extraFields = Object.keys(n).filter(property => !keyBlacklist.includes(property));
       extraFields = extraFields.map(property => `<div key={${shortid.generate()}}><span class="field-name">${property}: </span>${n[property]}</div>`);
       n.title = (

@@ -3,16 +3,14 @@ import { inject, observer } from 'mobx-react';
 import { toJS } from 'mobx';
 
 import { DropdownList, SelectList } from 'react-widgets';
-import { Grid, Row, Col, Form, FormGroup, Button, OverlayTrigger } from 'react-bootstrap';
-
-import FaInfoCircle from 'react-icons/lib/fa/info-circle';
+import { Grid, Row, Col, Form, FormGroup, Button } from 'react-bootstrap';
 
 import AppConfig from './AppConfig';
 import AnswersetStore from './stores/messageAnswersetStore';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Loading from './components/Loading';
-import { maxConnectivityPopover, directionPopover } from './components/shared/Popovers';
+import HelpButton from './components/shared/HelpButton';
 import MessageAnswersetTable from './components/answerset/MessageAnswersetTable';
 import CurieSelectorContainer from './components/shared/curies/CurieSelectorContainer';
 import entityNameDisplay from './components/util/entityNameDisplay';
@@ -208,9 +206,7 @@ class SimpleExpand extends React.Component {
                     />
                     <h4>
                       Direction
-                      <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={directionPopover}>
-                        <FaInfoCircle size={17} />
-                      </OverlayTrigger>
+                      <HelpButton link="expandAPI" />
                     </h4>
                     <SelectList
                       data={['out', 'in', 'undirected']}
@@ -220,9 +216,7 @@ class SimpleExpand extends React.Component {
                     <label htmlFor="maxConnect" style={{ display: 'block', margin: '10px 0px' }}>
                       <input id="maxConnect" style={{ marginRight: '10px' }} type="number" min="0" onChange={this.changeMaxConnect} value={maxConnect} />
                       Maximum Connectivity
-                      <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={maxConnectivityPopover}>
-                        <FaInfoCircle size={17} />
-                      </OverlayTrigger>
+                      <HelpButton link="expandAPI" />
                     </label>
                     <label htmlFor="maxResults" style={{ display: 'block', margin: '10px 0px' }}>
                       <input id="maxResults" style={{ marginRight: '10px' }} type="number" min="0" onChange={this.changeMaxResults} value={maxResults} />

@@ -462,10 +462,10 @@ class AnswersetStore {
     return maxNumAgNodes;
   }
 
-  // Returns subgraphViewer compatible format graph spec { node_list: {}, edge_list: {} }
+  // Returns subgraphViewer compatible format graph spec { nodes: {}, edges: {} }
   @computed get activeAnswerGraph() {
     const answer = this.message.answers[this.ansIdToIndMap.get(this.activeAnswerId)];
-    const graph = { node_list: [], edge_list: [] };
+    const graph = { nodes: [], edges: [] };
 
     // We could loop through the qNodes to find out what nodes are in this answer
     // But there might be extra nodes or edges in this answer
@@ -509,10 +509,10 @@ class AnswersetStore {
           newNodes.push(kgNode);
         }
       });
-      newNodes.forEach(n => graph.node_list.push(_.cloneDeep(n)));
+      newNodes.forEach(n => graph.nodes.push(_.cloneDeep(n)));
     });
 
-    const prunedAgNodeIdSet = new Set(graph.node_list.map((n => n.id)));
+    const prunedAgNodeIdSet = new Set(graph.nodes.map((n => n.id)));
 
     const edgeBindingsMap = new Map(Object.entries(answer.edge_bindings));
 
@@ -533,7 +533,7 @@ class AnswersetStore {
           newEdges.push(kgEdge);
         }
       });
-      newEdges.forEach(e => graph.edge_list.push(_.cloneDeep(e)));
+      newEdges.forEach(e => graph.edges.push(_.cloneDeep(e)));
     });
 
     return toJS(graph);

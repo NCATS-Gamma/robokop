@@ -1,13 +1,13 @@
 import React from 'react';
 
-import { Grid, Row, Col, Popover, OverlayTrigger, Panel, Button } from 'react-bootstrap';
-import GoQuestion from 'react-icons/lib/go/question';
+import { Grid, Row, Col, Popover, Panel, Button } from 'react-bootstrap';
 import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
 
 import QuestionHeader from '../shared/QuestionHeader';
 import MachineQuestionView from '../shared/graphs/MachineQuestionView';
 import AnswersetList from './AnswersetList';
 import Loading from '../Loading';
+import HelpButton from '../shared/HelpButton';
 
 const shortid = require('shortid');
 
@@ -134,26 +134,6 @@ class QuestionPres extends React.Component {
     const enableQuestionFork = (userIsLoggedIn && this.props.enableQuestionFork) || this.props.user.is_admin;
     const enableTaskStatus = ((userIsLoggedIn && this.props.enableTaskStatus) || this.props.user.is_admin) && (this.props.refreshBusy || this.props.answerBusy);
 
-    const knowledgeGraphHelp = (
-      <Popover id="knowledgeGraphTooltip" key={shortid.generate()} title="Local Knowledge Graph" style={{ minWidth: '500px' }}>
-        <div style={{ textAlign: 'left' }}>
-          <p>
-            {"\
-            All of Robokop's knowledge is stored in a large knowledge graph. You can explore the local region of the knowledge graph that we think is relevant \
-            to this question.\
-            "}
-          </p>
-          <br />
-          <p>
-            {'\
-            Even this small subgraph might be quite large, so wait to load it until requested.\
-            '
-            }
-          </p>
-        </div>
-      </Popover>
-    );
-
     const questionGraphPopover = (
       <Popover id="qgraph-popover" title="Question Graph" style={{ minWidth: '650px' }}>
         <MachineQuestionView
@@ -195,10 +175,8 @@ class QuestionPres extends React.Component {
             <Panel id="localKGHeader">
               <Panel.Heading>
                 <Panel.Title componentClass="h3">
-                  Local Knowledge Graph for Selected Answer Set
-                  <OverlayTrigger placement="right" overlay={knowledgeGraphHelp}>
-                    <span> {'    '} <GoQuestion /> </span>
-                  </OverlayTrigger>
+                  {'Local Knowledge Graph for Selected Answer Set '}
+                  <HelpButton link="knowledgeGraph" />
                 </Panel.Title>
               </Panel.Heading>
               <Panel.Body style={{ padding: 0, minHeight: '300px' }}>

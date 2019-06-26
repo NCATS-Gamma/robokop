@@ -27,6 +27,7 @@ import SubGraphViewer from '../shared/graphs/SubGraphViewer';
 import Loading from '../Loading';
 import AnswerExplorerInfo from '../shared/AnswerExplorerInfo';
 import { config } from '../../index';
+import getNodeTypeColorMap from './../util/colorUtils';
 
 const shortid = require('shortid');
 
@@ -126,7 +127,7 @@ class AnswersetTableSubComponent extends React.Component {
     store.updateActiveAnswerId(ansId);
     let graph = store.activeAnswerGraph;
     // returns the array of calls to make, and an array of node pairs
-    const { calls, nodes } = this.makeNodePairs(graph.node_list, graph.edge_list);
+    const { calls, nodes } = this.makeNodePairs(graph.nodes, graph.edges);
     // async calls for omnicorp publications
     this.fetchGraphSupport(calls)
       .then((result) => {
@@ -181,7 +182,7 @@ class AnswersetTableSubComponent extends React.Component {
   }
 
   addSupportEdges(graph, edgePubs, nodes) {
-    const edges = graph.edge_list;
+    const { edges } = graph;
     const updatedGraph = graph;
     edgePubs.forEach((pubs, index) => {
       // we only want to add the edge if it has any publications
@@ -212,7 +213,7 @@ class AnswersetTableSubComponent extends React.Component {
         }
       }
     });
-    updatedGraph.edge_list = edges;
+    updatedGraph.edges = edges;
     return updatedGraph;
   }
 
@@ -350,6 +351,7 @@ class AnswersetTableSubComponent extends React.Component {
 
   renderMetadataView() {
     const { rowData } = this.state;
+    const colorMap = getNodeTypeColorMap(this.props.concepts);
     // Filter method for table columns that is case-insensitive, and matches all rows that contain
     // provided sub-string
     const defaultFilterMethod = (filter, row, column) => { // eslint-disable-line no-unused-vars
@@ -449,11 +451,12 @@ class AnswersetTableSubComponent extends React.Component {
       isSet ? `Nodes for the ${this.activeState.nodeId} - ${entityNameDisplay(rowData.nodes[this.activeState.nodeId].type)} Set` :
         `Metadata for ${this.activeState.nodeId} - ${entityNameDisplay(rowData.nodes[this.activeState.nodeId].type)}`
     );
+    const backgroundColor = colorMap(rowData.nodes[this.activeState.nodeId].type);
     const tableFragment = (
       <ReactTable
         data={metadata}
         columns={[{
-          Header: headerTitle,
+          Header: <div style={{ backgroundColor, padding: 2 }}>{headerTitle}</div>,
           columns: getColumnSpecs(metadata),
         }]}
         defaultPageSize={5}

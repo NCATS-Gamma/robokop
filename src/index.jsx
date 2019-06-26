@@ -11,8 +11,11 @@ import 'react-widgets/dist/css/react-widgets.css';
 
 import 'babel-polyfill'; // For IE Promises
 
-import Landing from './Landing';
-import Help from './Help';
+import Landing from './simplePages/Landing';
+import Help from './simplePages/Help';
+import Guide from './simplePages/Guide';
+import SimpleQuestion from './SimpleQuestion';
+import Apps from './simplePages/Apps';
 import TermsofService from './TermsofService';
 import QuestionNew from './QuestionNew';
 import QuestionNewLinear from './QuestionNewLinear';
@@ -37,6 +40,7 @@ const $ = require('jquery');
 window.jQuery = window.$ = $; // eslint-disable-line
 
 require('bootstrap');
+
 const config = {
   ui: {
     enableNewAnswersets: true,
@@ -68,6 +72,22 @@ const robokop = {
   help: () => {
     ReactDOM.render(
       <Help
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  guide: () => {
+    ReactDOM.render(
+      <Guide
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  apps: () => {
+    ReactDOM.render(
+      <Apps
         config={config}
       />,
       document.getElementById('reactEntry'),
@@ -130,6 +150,14 @@ const robokop = {
       <Question
         config={config}
         id={questionId}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  simpleQuestion: () => { // ask simple question without signing in
+    ReactDOM.render(
+      <SimpleQuestion
+        config={config}
       />,
       document.getElementById('reactEntry'),
     );

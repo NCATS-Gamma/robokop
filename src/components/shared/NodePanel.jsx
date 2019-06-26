@@ -77,6 +77,7 @@ class NodePanel extends React.Component {
     } else {
       curie = { type: activePanel.type, curie: '', term: '' };
     }
+    console.log('store', store);
     return (
       <div>
         {ready ?

@@ -1,13 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react';
-import { Modal, OverlayTrigger, ButtonGroup, Button } from 'react-bootstrap';
+import { Modal, ButtonGroup, Button } from 'react-bootstrap';
 import FaFloppyO from 'react-icons/lib/fa/floppy-o';
 import FaTrash from 'react-icons/lib/fa/trash';
 import FaUndo from 'react-icons/lib/fa/rotate-left';
-import FaInfoCircle from 'react-icons/lib/fa/info-circle';
 
 import { panelTypes } from '../../../stores/newQuestionStore';
-import { nodePanelPopover, edgePanelPopover } from '../../shared/Popovers';
+import HelpButton from '../HelpButton';
 import getNodeTypeColorMap from '../../util/colorUtils';
 import EdgePanel from '../../shared/EdgePanel';
 import NodePanel from '../../shared/NodePanel';
@@ -58,13 +57,7 @@ class NewQuestionPanelModal extends React.Component {
             <Modal.Header style={backgroundColor}>
               <Modal.Title style={{ height: '6%' }}>
                 {`${isNodePanel ? 'Node' : 'Edge'} ${activePanelState.panelName} `}
-                <OverlayTrigger
-                  trigger={['hover', 'focus']}
-                  overlay={isNodePanel ? nodePanelPopover : edgePanelPopover}
-                  placement="right"
-                >
-                  <FaInfoCircle size={17} />
-                </OverlayTrigger>
+                <HelpButton link="nedgePanel" />
                 <ButtonGroup className="pull-right">
                   {!_.isEmpty(activePanelState) &&
                     <Button
