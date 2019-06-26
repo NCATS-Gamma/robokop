@@ -13,12 +13,12 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 SECURITY_PASSWORD_SALT = os.environ["ROBOKOP_SECURITY_PASSWORD_SALT"]
 
 # Security views
-SECURITY_LOGIN_URL = '/login'  # Specifies the login URL. Defaults to /login.
-SECURITY_LOGOUT_URL = '/logout'  # Specifies the logout URL. Defaults to /logout.
-SECURITY_REGISTER_URL = '/register'  # Specifies the register URL. Defaults to /register.
-SECURITY_RESET_URL = '/password/reset'  # Specifies the password reset URL. Defaults to /reset.
-SECURITY_CHANGE_URL = '/password/change'  # Specifies the password change URL. Defaults to /change.
-SECURITY_CONFIRM_URL = '/user/confirm'  # Specifies the email confirmation URL. Defaults to /confirm.
+SECURITY_LOGIN_URL = '/login/'  # Specifies the login URL. Defaults to /login.
+SECURITY_LOGOUT_URL = '/logout/'  # Specifies the logout URL. Defaults to /logout.
+SECURITY_REGISTER_URL = '/register/'  # Specifies the register URL. Defaults to /register.
+SECURITY_RESET_URL = '/password/reset/'  # Specifies the password reset URL. Defaults to /reset.
+SECURITY_CHANGE_URL = '/password/change/'  # Specifies the password change URL. Defaults to /change.
+SECURITY_CONFIRM_URL = '/user/confirm/'  # Specifies the email confirmation URL. Defaults to /confirm.
 SECURITY_POST_LOGIN_VIEW = '/'  # Specifies the default view to redirect to after a user logs in. This value can be set to a URL or an endpoint name. Defaults to /.
 SECURITY_POST_LOGOUT_VIEW = '/'  # Specifies the default view to redirect to after a user logs out. This value can be set to a URL or an endpoint name. Defaults to /.
 SECURITY_CONFIRM_ERROR_VIEW = None  # Specifies the view to redirect to if a confirmation error occurs. This value can be set to a URL or an endpoint name. If this value is None, the user is presented the default view to resend a confirmation link. Defaults to None.
