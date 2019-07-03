@@ -21,6 +21,7 @@ class AnswersetStore {
   @observable filterHash = ''; // hash of filtered answers object for checking if we need to get available answers
   @observable numKGNodes = 35; // Number of nodes (approx) for pruned annotated KG. Null results in all nodes
   @observable numAgSetNodes = 10; // Number of nodes for pruned active answer graph
+  @observable kgNodeIdToIndMap = new Map();
 
   // we don't want to include any of these in the filter
   keyBlacklist = ['isSet', 'labels', 'equivalent_identifiers', 'type', 'id', 'degree'];
@@ -35,6 +36,9 @@ class AnswersetStore {
         }
       });
       this.activeAnswerId = this.message.answers[0].id;
+      if (this.message.knowledge_graph) {
+        this.message.knowledge_graph.nodes.forEach((n, i) => this.kgNodeIdToIndMap.set(n.id, i));
+      }
     });
   }
 
@@ -59,13 +63,6 @@ class AnswersetStore {
     const indMap = new Map();
     if (this.message.question_graph) {
       this.message.question_graph.edges.forEach((e, i) => indMap.set(e.id, i));
-    }
-    return indMap;
-  }
-  @computed get kgNodeIdToIndMap() {
-    const indMap = new Map();
-    if (this.message.knowledge_graph) {
-      this.message.knowledge_graph.nodes.forEach((n, i) => indMap.set(n.id, i));
     }
     return indMap;
   }
@@ -133,7 +130,6 @@ class AnswersetStore {
   @computed get answerSetTableData() {
     const columnHeaders = [];
     const answers = [];
-    const kgMap = this.kgNodeIdToIndMap;
     // set the column headers object
     this.message.question_graph.nodes.forEach((n) => {
       columnHeaders.push({
@@ -154,7 +150,7 @@ class AnswersetStore {
         }
         answer[qnodeId] = [];
         kNodeIds.forEach((kNodeId) => {
-          const kNode = this.message.knowledge_graph.nodes[kgMap.get(kNodeId)];
+          const kNode = this.getKgNode(kNodeId);
           answer[qnodeId].push({
             name: kNode.name,
             id: kNode.id,
@@ -168,12 +164,17 @@ class AnswersetStore {
     return toJS({ columnHeaders, answers });
   }
 
+  @action getSetNodes(answerId, nodeId) {
+    const setNodeIds = this.message.answers[answerId].node_bindings[nodeId];
+    const setNodes = setNodeIds.map(id => this.getKgNode(id));
+    return toJS(setNodes);
+  }
+
   // builds dense answer
   @action getDenseAnswer(answerId) {
     const qNodeIds = this.getQNodeIds();
     const qEdgeIds = this.getQEdgeIds();
     const kg = this.message.knowledge_graph;
-    const kgNodeMap = this.kgNodeIdToIndMap;
     const kgEdgeMap = this.kgEdgeIdToIndMap;
     const answer = this.message.answers[answerId];
     const ansObj = {
@@ -188,19 +189,19 @@ class AnswersetStore {
         if (('set' in qNode) && qNode.set) {
           // Actually a set but only has one element
           nodeListObj = { type: qNode.type, name: `Set: ${entityNameDisplay(qNode.type)}`, isSet: true };
-          nodeListObj.setNodes = [knodeIds].map(kgNodeId => toJS(kg.nodes[kgNodeMap.get(kgNodeId)]));
+          nodeListObj.setNodes = [knodeIds].map(kgNodeId => toJS(this.getKgNode(kgNodeId)));
         } else {
           // for real, not a set
-          nodeListObj = { ...toJS(kg.nodes[kgNodeMap.get(knodeIds)]), ...nodeListObj };
+          nodeListObj = { ...toJS(this.getKgNode(knodeIds)), ...nodeListObj };
         }
       } else if ((knodeIds.length === 1) && ('set' in qNode) && !qNode.set) {
         // This is not a set node but, for some reason is an array
 
-        nodeListObj = { ...toJS(kg.nodes[kgNodeMap.get(knodeIds[0])]), ...nodeListObj };
+        nodeListObj = { ...toJS(this.getKgNode(knodeIds[0])), ...nodeListObj };
       } else {
         // Set
         nodeListObj = { type: qNode.type, name: `Set: ${entityNameDisplay(qNode.type)}`, isSet: true };
-        nodeListObj.setNodes = knodeIds.map(kgNodeId => toJS(kg.nodes[kgNodeMap.get(kgNodeId)]));
+        nodeListObj.setNodes = knodeIds.map(kgNodeId => toJS(this.getKgNode(kgNodeId)));
       }
       ansObj.nodes[qNodeId] = nodeListObj;
     });
@@ -611,16 +612,15 @@ class AnswersetStore {
     //  }
     // }
     // the arrays are [checked, available given other columns]
-    const { question_graph: qg, knowledge_graph: kg } = this.message;
+    const { question_graph: qg } = this.message;
     const { filter } = this;
     const filterKeys = {};
-    const kgmap = this.kgNodeIdToIndMap;
     qg.nodes.forEach((qnode) => {
       const qnodeId = qnode.id;
       filterKeys[qnodeId] = {};
       const qnodeFilter = filterKeys[qnodeId];
       Object.keys(filter[qnodeId]).forEach((knodeId) => {
-        const knode = kg.nodes[kgmap.get(knodeId)];
+        const knode = this.getKgNode(knodeId);
         if (Object.keys(qnodeFilter).length === 0) {
           // we are dealing with the first node
           Object.keys(knode).forEach((propertyKey) => {
@@ -661,7 +661,6 @@ class AnswersetStore {
   @action updateFilter() {
     const { filter, message } = this;
     const qNodeIds = this.getQNodeIds();
-    const kgmap = this.kgNodeIdToIndMap;
     message.answers.forEach((ans) => {
       const nodeBindings = ans.node_bindings;
       qNodeIds.forEach((qnodeId) => {
@@ -672,7 +671,7 @@ class AnswersetStore {
         const qnodeFilter = this.filterKeys[qnodeId];
         let show;
         knodeIds.forEach((knodeId) => {
-          const knode = message.knowledge_graph.nodes[kgmap.get(knodeId)];
+          const knode = this.getKgNode(knodeId);
           show = !Object.keys(qnodeFilter).some(propertyKey => !qnodeFilter[propertyKey][knode[propertyKey]][0]);
           filter[qnodeId][knodeId] = show;
         });
@@ -756,9 +755,8 @@ class AnswersetStore {
   // update filterKeys object based on filter and table filtered answers
   @action updateFilteredAnswers(filteredAnswers) {
     this.filteredAnswers = filteredAnswers;
-    const { question_graph: qg, knowledge_graph: kg } = this.message;
+    const { question_graph: qg } = this.message;
     const { filter, filterKeys } = this;
-    const kgmap = this.kgNodeIdToIndMap;
     qg.nodes.forEach((qnode) => {
       const qnodeId = qnode.id;
       const qnodeFilter = filterKeys[qnodeId];
@@ -773,7 +771,7 @@ class AnswersetStore {
       this.getQNodeIds().forEach((qnodeId) => { // loop over columns (qnodes)
         answer._original[qnodeId].forEach((knode) => { // loop over knodes
           if (filter[qnodeId][knode.id]) {
-            knode = kg.nodes[kgmap.get(knode.id)];
+            knode = this.getKgNode(knode.id);
             Object.keys(knode).forEach((propertyKey) => { // loop over properties belonging to knode
               propertyKey = propertyKey.replace(/ /g, '_'); // for consistency, change all spaces to underscores
               if (propertyKey in filterKeys[qnodeId]) {

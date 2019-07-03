@@ -168,6 +168,7 @@ class SimpleViewer extends React.Component {
               borderColor: '#e7e7e7',
               borderRadius: '4px',
               marginBottom: '20px',
+              cursor: 'pointer',
             }}
           >
             <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>

@@ -1,9 +1,9 @@
 import React from 'react';
-import { isObservableArray } from 'mobx';
+import { toJS } from 'mobx';
 import { Button, OverlayTrigger, Popover } from 'react-bootstrap';
 
 import FaDownload from 'react-icons/lib/fa/download';
-import Bars from 'react-icons/lib/fa/bars';
+import FaBars from 'react-icons/lib/fa/bars';
 
 class DownloadButton extends React.Component {
   constructor(props) {
@@ -18,33 +18,34 @@ class DownloadButton extends React.Component {
   // build out csv file when given a full message
   downloadCSV() {
     const { results, fileName } = this.props;
+    let { columnHeaders, answers } = results.answerSetTableData;
+    if (results.filteredAnswers.length) {
+      answers = toJS(results.filteredAnswers);
+    }
 
     // get the keys from the first answer, dropping any that start with an underscore
-    let answers = Object.keys(results.filteredAnswers[0]).filter(ans => !ans.startsWith('_'));
+    const answerKeys = Object.keys(answers[0]).filter(ans => !ans.startsWith('_') && ans !== 'id');
 
-    const csv = results.filteredAnswers.map((row, i) => {
-      const fieldList = answers.map((ans) => {
-        if (ans === 'score') {
-          return row[ans];
+    const csv = answers.map((row, i) => {
+      const fieldList = answerKeys.map((ansKey) => {
+        if (ansKey === 'score') {
+          return row.score;
         }
         // if the field is a set
-        if (isObservableArray(row[ans])) {
-          return row[ans].map(set => `${set.name} (${set.id})`).join(' | ');
+        if (!Array.isArray(row[ansKey])) {
+          row = row._original;
         }
-        return `${row[ans].toString().replace(/,/g, '')} (${row._original.nodes[ans].id})`;
+        return row[ansKey].map(set => `${set.name.replace(/,/g, '')} (${set.id})`).join(' | ');
       });
       return [i + 1, ...fieldList].join(',');
     });
-    // we don't want to search for score in the next line of code
-    answers.pop();
-    // get the type of each node
-    answers = answers.map(ans => `${ans}: ${results.filteredAnswers[0]._original.nodes[ans].type}`);
-    // add row to the front of the headers, add score back in
-    const fields = ['row', ...answers, 'score'];
-    csv.unshift(fields);
+    columnHeaders = columnHeaders.map(header => header.Header);
+    // add row to the front of the headers, add score
+    const headers = ['row', ...columnHeaders, 'score'].join(',');
+    csv.unshift(headers);
     const csvText = csv.join('\n');
 
-    const blob = new Blob([csvText], { type: 'text/plain' });
+    const blob = new Blob([csvText], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
 
     // Create a link with that URL and click it.
@@ -58,9 +59,15 @@ class DownloadButton extends React.Component {
   // build out a json file when given a full message
   downloadJSON() {
     const { results, fileName } = this.props;
-    // the json we want is nested, so we need to dig into it.
-    const original = results.filteredAnswers.map(ans => ans._original);
-    const json = JSON.stringify(original);
+    let { answers } = results.answerSetTableData;
+    if (results.filteredAnswers.length) {
+      answers = toJS(results.filteredAnswers);
+    }
+    if (answers[0]._original) {
+      // the json we want is nested, so we need to dig into it.
+      answers = answers.map(ans => ans._original);
+    }
+    const json = JSON.stringify(answers);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -125,7 +132,7 @@ class DownloadButton extends React.Component {
     const isMessage = source === 'message' || source === 'expand';
     // style should change based on which page we're on.
     const style = source === 'message' ?
-      { position: 'absolute', top: '-34px', right: '15px' }
+      { position: 'absolute', top: '-44px', right: 0 }
       :
       { margin: '10px 0px' };
     const downloadOptions = (
@@ -146,7 +153,7 @@ class DownloadButton extends React.Component {
     );
     return (
       <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={downloadOptions}>
-        <Button style={style} >Download <Bars /></Button>
+        <Button style={style} >Download <FaBars /></Button>
       </OverlayTrigger>
     );
   }

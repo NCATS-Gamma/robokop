@@ -76,9 +76,6 @@ class Header extends React.Component {
             <NavItem href={this.appConfig.urls.guide}>
               Guide
             </NavItem>
-            <NavItem href={this.appConfig.urls.apps}>
-              Apps
-            </NavItem>
             {isAuth ?
               this.getLoggedInFrag(user)
             :

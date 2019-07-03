@@ -30,6 +30,7 @@ class AppConfig {
       similarity: this.url('simple/similarity'),
       expand: this.url('simple/expand'),
       synonymize: this.url('simple/synonymize'),
+      publications: this.url('simple/publications'),
       termsofservice: this.url('termsofservice'),
     };
 
@@ -44,6 +45,7 @@ class AppConfig {
       question: questionId => this.url(`api/q/${questionId}/`), // POST to update meta data, DELETE to delete the question
       questionAnswer: questionId => this.url(`api/q/${questionId}/answer/`), // POST to initiate creation of a new answer set
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg/`), // POST to initiate an update of the KG for this question
+      simpleQuick: this.url('api/simple/quick'), // POST to answer question without caching
       answersetData: qid_aid => this.url(`api/a/${qid_aid}/?include_kg=true`), // GET complete message
       parse: this.url('api/nlp/'),
       task: taskId => this.url(`api/t/${taskId}/`), // DELETE or GET status
@@ -62,6 +64,7 @@ class AppConfig {
       simpleSynonymize: (id, type) => this.url(`api/simple/synonymize/${id}/${type}/`), // POST for synonyms of curie from Builder API
       graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql`,
       publications: (id1, id2) => this.url(`api/omnicorp/${id1}/${id2}`), // GET publications for one identifier or a pair of identifiers
+      publication: id => this.url(`api/omnicorp/${id}`), // Get publications for one identifier
       pubmedPublications: id => this.url(`api/pubmed/${id}`), // GET pubmed publications for given id
     };
 
@@ -319,6 +322,14 @@ class AppConfig {
       failureFun,
     );
   }
+  simpleQuick(body, successFun, failureFun) {
+    this.postRequest(
+      this.apis.simpleQuick,
+      body,
+      successFun,
+      failureFun,
+    );
+  }
   simpleEnriched(type1, type2, body, successFun, failureFun) {
     this.postRequest(
       this.apis.simpleEnriched(type1, type2),
@@ -351,6 +362,13 @@ class AppConfig {
   getPublications(id1, id2, successFun, failureFun) {
     this.getRequest(
       this.apis.publications(id1, id2),
+      successFun,
+      failureFun,
+    );
+  }
+  getPublication(id, successFun, failureFun) {
+    this.getRequest(
+      this.apis.publication(id),
       successFun,
       failureFun,
     );

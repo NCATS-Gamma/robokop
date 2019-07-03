@@ -351,6 +351,9 @@ class AnswersetTableSubComponent extends React.Component {
 
   renderMetadataView() {
     const { rowData } = this.state;
+    if (!Object.keys(rowData).length) { // if user clicks on gene in table to show metadata, we need to sync props with state before continuing
+      return null;
+    }
     const colorMap = getNodeTypeColorMap(this.props.concepts);
     // Filter method for table columns that is case-insensitive, and matches all rows that contain
     // provided sub-string

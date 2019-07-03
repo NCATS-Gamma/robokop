@@ -159,7 +159,7 @@ class MultiSearch extends React.Component {
                 }}
               >
                 <h2>
-                  Bionames Search
+                  Bionames Lookup
                   <br />
                   <small>
                     An easy to use interface for the <a href="https://bionames.renci.org/apidocs/">Bionames service</a>

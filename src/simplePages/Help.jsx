@@ -67,6 +67,20 @@ class Help extends React.Component {
             <Grid>
               <Row>
                 <Col md={8}>
+                  <h2>Terms</h2>
+                  <hr style={{ border: '1px solid #eee' }} />
+                  <p>
+                    <b>Predicate</b> - The edge relationship between two nodes. This is an optional edge property, and leaving blank includes all edges.
+                  </p>
+                  <p>
+                    <b>Treat As</b> - When asking a question, there are three different general node types, specific entry, collection of unspecified entries, and single unspecified entry.
+                    <ul>
+                      <li>For a specific entry, the user must assign an identifier to that node.</li>
+                      <li>For a collection of unspecified entries, the user wants that node to be a &quot;set&quot;, meaning Robokop will condense all nodes of that type into a single answer rather than separate answers.</li>
+                      <li>For a single unspecified entry, the user wants Robokop to find all nodes of that type in its answers.</li>
+                    </ul>
+                  </p>
+                  <hr style={{ border: '1px solid #eee' }} />
                   <h2>APIs</h2>
                   <h3 id="expandAPI">Expand API</h3>
                   <p>
@@ -94,7 +108,7 @@ class Help extends React.Component {
                     number of nodes to show.
                   </p>
                   <h2 id="questionNew">New Question</h2>
-                  <hr style={{ height: '3px' }} />
+                  <hr style={{ border: '1px solid #eee' }} />
                   <h3>New Question Buttons</h3>
                   <p>
                     The Upload [<FaUpload size={14} />
@@ -107,7 +121,7 @@ class Help extends React.Component {
                     pre-existing question templates by clicking the Use a
                     Question Template [<FaFolder size={14} />] button.
                   </p>
-                  <hr />
+                  <hr style={{ border: '1px solid #eee' }} />
                   <h3>Question Text Field</h3>
                   <p>
                     Text description of the question being constructed. This can
@@ -115,7 +129,7 @@ class Help extends React.Component {
                     customizations of the machine-question via this UI. This
                     text has no effect on the outputted answers.
                   </p>
-                  <hr />
+                  <hr style={{ border: '1px solid #eee' }} />
                   <h3 id="machineQuestionEditor">Machine Question Editor</h3>
                   <p>
                     This graph provides an updated view of the Machine question
@@ -130,7 +144,7 @@ class Help extends React.Component {
                     border until any edges that link to the deleted node are set
                     to point to valid nodes, or themselves deleted.
                   </p>
-                  <hr />
+                  <hr style={{ border: '1px solid #eee' }} />
                   <h3 id="questionGraphOptions">Question Graph Options</h3>
                   <p>
                     The user can create a new Node [<FaPlusSquare size={14} />
@@ -139,7 +153,7 @@ class Help extends React.Component {
                     in a JSON editor by clicking the buttons in the top left
                     corner of the question graph section.
                   </p>
-                  <hr />
+                  <hr style={{ border: '1px solid #eee' }} />
                   <h3 id="nedgePanel">Node / Edge Panel</h3>
                   <p>
                     The toolbar at the top of the Node / Edge panel enables the

@@ -112,6 +112,11 @@ def synonymize():
     """Get synonymous curie identifiers."""
     return render_template('synonymize.html')
 
+@app.route('/simple/publications/')
+def publications():
+    """Get relevant publications."""
+    return render_template('simplePublications.html')
+
 @app.route('/compare/')
 def compare():
     """Search for biomedical concept identifiers."""

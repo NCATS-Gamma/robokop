@@ -148,10 +148,6 @@ class QuestionNew extends React.Component {
     this.setState(prevState => ({ showQuestionTemplateModal: !prevState.showQuestionTemplateModal }));
   }
 
-  goToHelp(id) {
-    this.appConfig.redirect(`${this.appConfig.urls.help()}#${id}`);
-  }
-
   // Prevent default form submit and make call to parse NLP question via store method
   getNlpParsedQuestion(event) {
     event.preventDefault();

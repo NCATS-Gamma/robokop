@@ -96,7 +96,8 @@ class MessageAnswersetTable extends React.Component {
           return [entityNameDisplay(colSpecObj.type), `[${setNodes.length}]`];
         };
         colSpecObj.Cell = (row) => {
-          const cellText = cellTextFn(row.value);
+          const setNodes = store.getSetNodes(row.index, row.column.id);
+          const cellText = cellTextFn(setNodes);
           return (
             <span>
               <span style={{ textAlign: 'center' }}>{`${cellText[0]} `}
@@ -177,69 +178,68 @@ class MessageAnswersetTable extends React.Component {
       Header: 'Answer Set',
       columns,
     }];
+    // these are for the download button
     const source = this.props.simpleExpand ? 'expand' : 'message';
     const fileName = this.props.fileName || 'answers';
     return (
       <div>
         {Object.keys(answers).length ?
-          <Row>
+          <Row style={{ marginTop: '10px' }}>
             <Col md={12}>
-              <DownloadButton results={this.props.store} source={source} fileName={fileName} />
-              <Row style={{ marginTop: '10px' }}>
-                <div style={{ marginBottom: '10px', padding: '0 15px' }}>
-                  <ReactTable
-                    ref={(r) => { this.reactTable = r; }}
-                    data={answers}
-                    columns={column}
-                    defaultPageSize={10}
-                    defaultFilterMethod={this.defaultFilterMethod}
-                    pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
-                    minRows={10}
-                    filterable
-                    onFilteredChange={this.getFiltered}
-                    className="-highlight"
-                    collapseOnDataChange={false}
-                    onPageChange={this.clearExpanded}
-                    onSortedChange={this.clearExpanded}
-                    SubComponent={tableSubComponent}
-                    expanded={expanded}
-                    defaultSorted={[
-                      {
-                        id: 'score',
-                        desc: true,
+              <div style={{ marginBottom: '10px', position: 'relative' }}>
+                <DownloadButton results={this.props.store} source={source} fileName={fileName} />
+                <ReactTable
+                  ref={(r) => { this.reactTable = r; }}
+                  data={answers}
+                  columns={column}
+                  defaultPageSize={10}
+                  defaultFilterMethod={this.defaultFilterMethod}
+                  pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
+                  minRows={10}
+                  filterable
+                  onFilteredChange={this.getFiltered}
+                  className="-highlight"
+                  collapseOnDataChange={false}
+                  onPageChange={this.clearExpanded}
+                  onSortedChange={this.clearExpanded}
+                  SubComponent={tableSubComponent}
+                  expanded={expanded}
+                  defaultSorted={[
+                    {
+                      id: 'score',
+                      desc: true,
+                    },
+                  ]}
+                  getTdProps={(state, rowInfo, column, instance) => { // eslint-disable-line
+                    return {
+                      onClick: (e, handleOriginal) => {
+                        // IMPORTANT! React-Table uses onClick internally to trigger
+                        // events like expanding SubComponents and pivots.
+                        // By default a custom 'onClick' handler will override this functionality.
+                        // If you want to fire the original onClick handler, call the
+                        // 'handleOriginal' function.
+                        if (handleOriginal) {
+                          handleOriginal();
+                        }
+                        // Trigger appropriate subcomponent depending on where user clicked
+                        if (column.isSet) { // Handle user clicking on a "Set" element in a row
+                          const newSubComponent = this.subComponentFactory({
+                            nodeId: column.id,
+                            activeButtonKey: answersetSubComponentEnum.metadata,
+                          });
+                          this.updateTableSubComponent(rowInfo.viewIndex, newSubComponent);
+                        } else if (column.expander) { // Handle user clicking on the row Expander element (1st column)
+                          this.updateTableSubComponent(rowInfo.viewIndex, this.subComponentFactory());
+                        }
                       },
-                    ]}
-                    getTdProps={(state, rowInfo, column, instance) => { // eslint-disable-line
-                      return {
-                        onClick: (e, handleOriginal) => {
-                          // IMPORTANT! React-Table uses onClick internally to trigger
-                          // events like expanding SubComponents and pivots.
-                          // By default a custom 'onClick' handler will override this functionality.
-                          // If you want to fire the original onClick handler, call the
-                          // 'handleOriginal' function.
-                          if (handleOriginal) {
-                            handleOriginal();
-                          }
-                          // Trigger appropriate subcomponent depending on where user clicked
-                          if (column.isSet) { // Handle user clicking on a "Set" element in a row
-                            const newSubComponent = this.subComponentFactory({
-                              nodeId: column.id,
-                              activeButtonKey: answersetSubComponentEnum.metadata,
-                            });
-                            this.updateTableSubComponent(rowInfo.viewIndex, newSubComponent);
-                          } else if (column.expander) { // Handle user clicking on the row Expander element (1st column)
-                            this.updateTableSubComponent(rowInfo.viewIndex, this.subComponentFactory());
-                          }
-                        },
-                      };
-                    }}
-                    getTrProps={(state, rowInfo) => ({
-                          className: rowInfo ? (this.isSelected(rowInfo) ? 'selected-row' : '') : '', // eslint-disable-line no-nested-ternary
-                        })
-                      }
-                  />
-                </div>
-              </Row>
+                    };
+                  }}
+                  getTrProps={(state, rowInfo) => ({
+                        className: rowInfo ? (this.isSelected(rowInfo) ? 'selected-row' : '') : '', // eslint-disable-line no-nested-ternary
+                      })
+                    }
+                />
+              </div>
             </Col>
           </Row>
           :

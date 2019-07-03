@@ -29,6 +29,7 @@ import SimpleEnriched from './SimpleEnriched';
 import SimpleSimilarity from './SimpleSimilarity';
 import SimpleExpand from './SimpleExpand';
 import Synonymize from './Synonymize';
+import SimplePublications from './SimplePublications';
 import NewQuestionStore from './stores/newQuestionStore';
 
 // Our actual CSS and other images etc.
@@ -154,11 +155,14 @@ const robokop = {
       document.getElementById('reactEntry'),
     );
   },
-  simpleQuestion: () => { // ask simple question without signing in
+  simpleQuestion: (id) => { // ask simple question without signing in
     ReactDOM.render(
-      <SimpleQuestion
-        config={config}
-      />,
+      <Provider store={new NewQuestionStore()}>
+        <SimpleQuestion
+          config={config}
+          initializationId={id}
+        />
+      </Provider>,
       document.getElementById('reactEntry'),
     );
   },
@@ -210,6 +214,14 @@ const robokop = {
   synonymize: () => {
     ReactDOM.render(
       <Synonymize
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  simplePublications: () => {
+    ReactDOM.render(
+      <SimplePublications
         config={config}
       />,
       document.getElementById('reactEntry'),

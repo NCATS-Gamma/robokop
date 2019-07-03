@@ -996,6 +996,7 @@ class NewQuestionStore {
       this.dataReady = true;
       return;
     }
+    console.log(id);
     try {
       // const concepts = yield this.appConfig.concepts(c => Promise.resolve(c));
       const data = yield (() => new Promise((resolve, reject) => {
