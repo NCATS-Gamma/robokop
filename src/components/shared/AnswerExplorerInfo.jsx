@@ -76,10 +76,16 @@ class AnswerExplorerInfo extends React.Component {
     if (!n || !('name' in n)) {
       return (<div />);
     }
+    const edge = this.state.subgraph.edges.find(edge => edge.id === this.state.selectedEdgeId);
+    let urls;
+    if (edge.source_database.includes('ctd')) {
+      urls = curieUrls(`ctd:${n.id}`, n.type);
+    } else {
+      urls = curieUrls(n.id);
+    }
     const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
     const backgroundColor = nodeTypeColorMap(n.type);
     const extraFields = Object.keys(n).filter(property => !nodeBlacklist.includes(property));
-    const urls = curieUrls(n.id);
     return (
       <Panel>
         <Panel.Heading style={{ backgroundColor }}>

@@ -1,5 +1,8 @@
 import React from 'react';
-import { Grid, Jumbotron, ButtonToolbar, Button, ListGroup, ListGroupItem } from 'react-bootstrap';
+import {
+  Grid, Jumbotron, ButtonToolbar, Button, ListGroup,
+  ListGroupItem, Glyphicon, Col, Row,
+} from 'react-bootstrap';
 import './simplecss.css';
 import AppConfig from '../AppConfig';
 import Loading from '../components/Loading';
@@ -29,6 +32,33 @@ class Landing extends React.Component {
         console.log('Failed to retrieve user information. This may indicate a connection issue.');
         console.log(err);
       },
+    );
+  }
+
+  CustomComponent({
+    glyph, header, text, href,
+  }) {
+    return (
+      <Col md={6} >
+        <ListGroupItem
+          style={{ padding: '15px', margin: '15px 0px' }}
+          href={href}
+        >
+          <div style={{ height: '155px', display: 'flex' }}>
+            <div
+              style={{
+                padding: '20px', display: 'flex', alignItems: 'center',
+              }}
+            >
+              <Glyphicon glyph={glyph} style={{ fontSize: '40px' }} />
+            </div>
+            <div>
+              <h4 style={{ fontSize: '20px' }}>{header}</h4>
+              <p style={{ fontSize: '16px' }}>{text}</p>
+            </div>
+          </div>
+        </ListGroupItem>
+      </Col>
     );
   }
 
@@ -67,80 +97,76 @@ class Landing extends React.Component {
                   <Button bsSize="large" href={this.appConfig.urls.questions}>
                     Browse Questions
                   </Button>
-                  {shownNewQuestion && (
+                  {shownNewQuestion ?
                     <Button
                       bsSize="large"
                       href={this.appConfig.urls.questionDesign}
                     >
                       Ask a Question
                     </Button>
-                  )}
-                  {showLogIn && (
-                    <Button bsSize="large" href={this.appConfig.urls.login}>
-                      Log In
+                    :
+                    <Button
+                      bsSize="large"
+                      href={this.appConfig.urls.simpleQuestion}
+                    >
+                      Ask a Quick Question
                     </Button>
-                  )}
+                  }
                 </ButtonToolbar>
               </Jumbotron>
               <Jumbotron>
                 <h2>Robokop Apps</h2>
                 <ListGroup>
-                  <ListGroupItem
-                    href={this.appConfig.urls.search}
-                    style={{ padding: '15px' }}
-                    header="Bionames Lookup"
-                  >
-                    Find Identifiers for Biomedical Concepts. This service takes human readable names and returns possible identifiers from a set of vocabularies.
-                  </ListGroupItem>
-                  <ListGroupItem
-                    href={this.appConfig.urls.view}
-                    style={{ padding: '15px' }}
-                    header="Answerset Explorer"
-                  >
-                    Easily upload JSON files of answersets to view them in Robokop&apos;s graphical interface.
-                  </ListGroupItem>
-                  <ListGroupItem
-                    href={this.appConfig.urls.simpleQuestion}
-                    style={{ padding: '15px' }}
-                    header="Simple Question"
-                  >
-                    Ask a question and get an answerset back. This question will not be stored and you don&apos;t have to be signed in.
-                  </ListGroupItem>
-                  <ListGroupItem
-                    href={this.appConfig.urls.expand}
-                    style={{ padding: '15px' }}
-                    header="Expand"
-                  >
-                    Use the Robokop Expand API. This API allows users to post simple one-hop questions and received ranked results. Users can control returned types, predicates, and edge directionality.
-                  </ListGroupItem>
-                  <ListGroupItem
-                    href={this.appConfig.urls.enrich}
-                    style={{ padding: '15px' }}
-                    header="Enrich"
-                  >
-                    Use the Robokop Enrich API. This API takes a list of entities of one type, and returns a list of entities that connect to the input more frequently than would be expected by chance.
-                  </ListGroupItem>
-                  <ListGroupItem
-                    href={this.appConfig.urls.similarity}
-                    style={{ padding: '15px' }}
-                    header="Similarity"
-                  >
-                    Use the Robokop Similarity API. This API performs a Jaccard similarity search in the Robokop knowledge graph, where similarity is calculated over shared nodes. Returns the most similar nodes, along with their similarity scores.
-                  </ListGroupItem>
-                  <ListGroupItem
-                    href={this.appConfig.urls.synonymize}
-                    style={{ padding: '15px' }}
-                    header="Synonymize"
-                  >
-                    Use the Robokop Synonymize API. The same entity may have many different names in different naming systems. This API takes an identifier and returns all of the other identifiers by which that entity is known, as well as the identifier by which that entity is known in Robokop.
-                  </ListGroupItem>
-                  <ListGroupItem
-                    href={this.appConfig.urls.publications}
-                    style={{ padding: '15px' }}
-                    header="Omnicorp"
-                  >
-                    Use the Robokop Omnicorp API. This API takes defined entities and returns the publications that they share.
-                  </ListGroupItem>
+                  <Row>
+                    <this.CustomComponent
+                      glyph="question-sign"
+                      header="Quick Question"
+                      text="Ask a question and get an answerset back. This question will not be stored and you don&apos;t have to be signed in."
+                      href={this.appConfig.urls.simpleQuestion}
+                    />
+                    <this.CustomComponent
+                      glyph="link"
+                      header="Identifier Lookup"
+                      text="Provide an identifier and receive all of the other identifiers by which that entity is known, as well as the identifier by which that entity is known in Robokop."
+                      href={this.appConfig.urls.synonymize}
+                    />
+                  </Row>
+                  <Row>
+                    <this.CustomComponent
+                      glyph="import"
+                      header="Answerset Explorer"
+                      text="Easily upload JSON files of answersets to view them in Robokop&apos;s graphical interface."
+                      href={this.appConfig.urls.view}
+                    />
+                    <this.CustomComponent
+                      glyph="fullscreen"
+                      header="Expand"
+                      text="Build simple one-hop questions and receive ranked results. You can specify returned types, predicates, and edge directionality."
+                      href={this.appConfig.urls.expand}
+                    />
+                  </Row>
+                  <Row>
+                    <this.CustomComponent
+                      glyph="random"
+                      header="Enrich"
+                      text="Provide a list of entities of one type, and receive a list of entities that connect to the input more frequently than would be expected by chance."
+                      href={this.appConfig.urls.enrich}
+                    />
+                    <this.CustomComponent
+                      glyph="duplicate"
+                      header="Similarity"
+                      text="Perform a Jaccard similarity search in the Robokop knowledge graph, where similarity is calculated over shared nodes. Receive the most similar nodes, along with their similarity scores."
+                      href={this.appConfig.urls.similarity}
+                    />
+                  </Row>
+                  <Row>
+                    <this.CustomComponent
+                      glyph="list-alt"
+                      header="Omnicorp"
+                      text="Provide a list of defined identifiers and receive the publications that they share."
+                      href={this.appConfig.urls.publications}
+                    />
+                  </Row>
                 </ListGroup>
               </Jumbotron>
             </Grid>

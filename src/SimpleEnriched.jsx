@@ -2,7 +2,7 @@ import React from 'react';
 
 import { DropdownList } from 'react-widgets';
 import ReactTable from 'react-table';
-import { Grid, Row, Col, Button, Glyphicon, Form, FormGroup, Checkbox } from 'react-bootstrap';
+import { Grid, Row, Col, Button, Glyphicon, Form, FormGroup } from 'react-bootstrap';
 import FaPlus from 'react-icons/lib/fa/plus';
 
 import AppConfig from './AppConfig';
@@ -114,7 +114,7 @@ class SimpleEnriched extends React.Component {
 
   getResults(event) {
     event.preventDefault();
-    this.setState({ resultsLoading: true, resultsReady: false });
+    this.setState({ resultsLoading: true, resultsReady: false, resultsFail: false });
     const {
       type1, type2, curies, includeDescendants, maxResults, threshold,
     } = this.state;
@@ -171,13 +171,19 @@ class SimpleEnriched extends React.Component {
       <div>
         <Header config={config} user={user} />
         <Grid>
-          <h1 style={{ textAlign: 'center' }}>Enriched Nodes</h1>
+          <h1 className="robokopApp">
+            Enrichment
+            <br />
+            <small>
+              Use the Robokop Enrich API. This API takes a list of entities of one type, and returns a list of entities that connect to the input more frequently than would be expected by chance.
+            </small>
+          </h1>
           <Form>
             <Row>
               <Col md={6}>
                 <FormGroup controlId="node1">
                   <h3>
-                    Node 1 Type
+                    Type 1
                   </h3>
                   <DropdownList
                     filter
@@ -192,7 +198,7 @@ class SimpleEnriched extends React.Component {
               <Col md={6}>
                 <FormGroup controlId="node2">
                   <h3>
-                    Node 2 Type
+                    Type 2
                   </h3>
                   <DropdownList
                     filter
@@ -209,7 +215,7 @@ class SimpleEnriched extends React.Component {
               <Col md={12}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <h3>
-                    Node 1 Curies
+                    Type 1 Identifiers
                   </h3>
                   {curies.map((curie, i) => (
                     <div
@@ -249,34 +255,39 @@ class SimpleEnriched extends React.Component {
                   ))}
                   <div style={{ display: 'table-row', textAlign: 'center' }}>
                     <Button style={{ marginTop: '10px' }} onClick={this.addCuries}>
-                      <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Curie'}
+                      <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Identifier'}
                     </Button>
                   </div>
                 </div>
               </Col>
             </Row>
             <Row style={{ margin: '20px' }}>
-              <Checkbox checked={includeDescendants} onChange={this.toggleDescendants} ><strong>Include Descendants?</strong></Checkbox>
-              <label htmlFor="maxResults" style={{ display: 'block', margin: '10px 0px' }}>
-                <input id="maxResults" style={{ marginRight: '10px' }} type="number" min="0" onChange={this.changeMaxResults} value={maxResults} />
-                Maximum Results
-              </label>
-              <label htmlFor="threshold" style={{ display: 'block', margin: '10px 0px' }}>
-                <input id="threshold" style={{ marginRight: '10px' }} type="number" min="0" step="0.1" onChange={this.changeThreshold} value={threshold} />
-                Threshold
-              </label>
+              <Col md={5} className="appQueryOptions">
+                <label htmlFor="descendants" style={{ display: 'block', margin: '10px 0px' }}>
+                  Include Descendants?
+                  <input id="descendants" style={{ marginLeft: '10px' }} type="checkbox" onChange={this.toggleDescendants} checked={includeDescendants} />
+                </label>
+                <label htmlFor="maxResults" style={{ display: 'block', margin: '10px 0px' }}>
+                  Maximum Results
+                  <input id="maxResults" style={{ marginLeft: '10px' }} type="number" min="0" onChange={this.changeMaxResults} value={maxResults} />
+                </label>
+                <label htmlFor="threshold" style={{ display: 'block', margin: '10px 0px' }}>
+                  Threshold
+                  <input id="threshold" style={{ marginLeft: '10px' }} type="number" min="0" step="0.1" onChange={this.changeThreshold} value={threshold} />
+                </label>
+              </Col>
             </Row>
-            <Row style={{ textAlign: 'right', margin: '20px' }}>
-              <Button id="submitAPI" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
+            <Row style={{ textAlign: 'center', margin: '20px' }}>
+              <Button id="submitAPI" bsSize="large" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
             </Row>
           </Form>
-          <Row style={{ marginBottom: '20px' }}>
+          <Row style={{ margin: '40px 0px 20px 0px' }}>
             {resultsLoading &&
               <Loading />
             }
             {resultsReady &&
-              <div>
-                <DownloadButton results={results} source="enriched" fileName={`${type1}_to_${type2}_enriched`} />
+              <div style={{ position: 'relative' }}>
+                {results.length > 0 && <DownloadButton results={results} source="enriched" fileName={`${type1}_to_${type2}_enriched`} />}
                 <ReactTable
                   data={results}
                   columns={[{

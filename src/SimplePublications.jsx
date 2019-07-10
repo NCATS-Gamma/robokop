@@ -190,10 +190,19 @@ class SimplePublications extends React.Component {
       <div>
         <Header config={config} user={user} />
         <Grid>
-          <h1 style={{ textAlign: 'center' }}>Shared Publications</h1>
+          <h1 className="robokopApp">
+            Omnicorp Shared Publications
+            <br />
+            <small>
+              Use the Robokop Omnicorp API. This API takes defined entities and returns the publications that they share.
+            </small>
+          </h1>
           <Form>
             <Row>
               <Col md={12}>
+                <h3>
+                  Identifiers
+                </h3>
                 {entities.map((node, i) => (
                   <Row key={`curie-${i}`} style={{ display: 'flex' }}> {/* eslint-disable-line */}
                     <div
@@ -234,8 +243,8 @@ class SimplePublications extends React.Component {
                 </div>
               </Col>
             </Row>
-            <Row style={{ textAlign: 'right', margin: '20px' }}>
-              <Button id="submitAPI" onClick={this.getResults} disabled={disabled}>Submit</Button>
+            <Row style={{ textAlign: 'center', margin: '40px 0px' }}>
+              <Button id="submitAPI" bsSize="large" onClick={this.getResults} disabled={disabled}>Submit</Button>
             </Row>
           </Form>
           <Row style={{ margin: '20px 0px' }}>

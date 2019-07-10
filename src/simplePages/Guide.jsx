@@ -56,14 +56,14 @@ class Guide extends React.Component {
                     Create an Account
                   </h3>
                   <p>
-                    {'You can ask and browse old questions without an account, but your questions won\'t be saved. In order to save questions, you will need to '}<a href="/register">register</a>{' an account.'}
+                    {'You can browse saved questions and ask new questions without an account, but your new questions won\'t be saved. In order to save questions, you will need to '}<a href="/register">register</a>{' an account.'}
                   </p>
                   <hr />
                   <h3>
                     Ask a Question
                   </h3>
                   <p>
-                    {'Currently, questions in Robokop are "asked" by specifying a path template through types of nodes in a knowledge graph. The '}<a href={this.appConfig.urls.questionDesign}>New Question Page</a> {' will provide further details.'}
+                    {'Currently, questions in Robokop are "asked" by specifying a path template through types of nodes in a knowledge graph. The '}<a href={`${this.appConfig.urls.help}#questionNew`}>Help Page</a> {' will provide further details on asking new questions.'}
                   </p>
                   <hr />
                   <h3>
@@ -126,20 +126,24 @@ class Guide extends React.Component {
                   </p>
                   <hr />
                   <h3>
-                    Go Get Started
+                    Get Started
                   </h3>
-                  <ButtonToolbar>
-                    <Button bsSize="large" bsStyle="link" href={this.appConfig.urls.questions}>
+                  <ButtonToolbar style={{ marginBottom: '20px' }}>
+                    <Button bsSize="large" href={this.appConfig.urls.questions}>
                       Browse Questions
                     </Button>
-                    {shownNewQuestion &&
-                      <Button bsSize="large" bsStyle="link" href={this.appConfig.urls.questionDesign}>
+                    {shownNewQuestion ?
+                      <Button bsSize="large" href={this.appConfig.urls.questionDesign}>
                         Ask a Question
+                      </Button>
+                      :
+                      <Button bsSize="large" href={this.appConfig.urls.simpleQuestion}>
+                        Ask a Quick Question
                       </Button>
                     }
                     {showLogIn &&
-                      <Button bsSize="large" bsStyle="link" href={this.appConfig.urls.login}>
-                        Log In / Register
+                      <Button bsSize="large" href={this.appConfig.urls.login}>
+                        Sign In / Register
                       </Button>
                     }
                   </ButtonToolbar>

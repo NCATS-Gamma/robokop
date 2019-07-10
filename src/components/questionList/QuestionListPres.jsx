@@ -96,10 +96,10 @@ class QuestionListPres extends React.Component {
             {showLogIn &&
               <div style={{ marginBottom: '20px' }}>
                 <p style={{ display: 'inline-block', marginRight: '20px' }}>
-                  You aren&apos;t logged in. Please <a href={this.props.loginUrl}>log in</a> to save your questions.
+                  You aren&apos;t signed in. Please <a href={this.props.loginUrl}>Sign In</a> to save your questions.
                 </p>
                 <Button bsStyle="default" onClick={this.props.simpleQuestion}>
-                  Ask a Question
+                  Ask a Quick Question
                 </Button>
               </div>
             }

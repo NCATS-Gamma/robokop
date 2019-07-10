@@ -1,4 +1,4 @@
-export default function curieUrls(id) {
+export default function curieUrls(id, type) {
   const onto = id.substr(0, id.indexOf(':'));
   const entry = id.substr(id.indexOf(':') + 1);
   const urls = [];
@@ -8,6 +8,8 @@ export default function curieUrls(id) {
   } else if (onto.toLowerCase() === 'hgnc') {
     // HGNC - https://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id=HGNC:8856
     urls.push({ label: 'HGNC', url: `https://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id=${id}`, iconUrl: 'https://www.genenames.org/sites/genenames.org/files/genenames_favicon_0.ico' });
+  } else if (onto.toLowerCase() === 'ctd') {
+    urls.push({ label: 'CTD', url: `http://ctdbase.org/detail.go?type=${type}&acc=${id}`, iconUrl: 'http://ctdbase.org/images/ctdlogo_xs.v15420.png' });
   } else {
     // http://purl.obolibrary.org/obo/MONDO_0022308
     const ontobeeUrl = `http://purl.obolibrary.org/obo/${id.replace(':','_')}`;

@@ -168,6 +168,8 @@ class SimpleQuestion extends React.Component {
       user, ready, loading, loaded, showQuestionTemplateModal, tabKey,
     } = this.state;
     const { config } = this.props;
+    const validUser = this.appConfig.ensureUser(user);
+    const questionLink = !validUser.is_authenticated ? <a href={this.appConfig.urls.login}>Sign In</a> : <a href={this.appConfig.urls.questionDesign}>Go Here</a>;
     const questionList = _.cloneDeep(questionTemplates);
     return (
       <div>
@@ -178,6 +180,13 @@ class SimpleQuestion extends React.Component {
               <Row>
                 {!loading && !loaded &&
                   <div>
+                    <h1 className="robokopApp">
+                      Ask a Quick Question
+                      <br />
+                      <small>
+                        This question will not be saved. If you would like to save a question, please {questionLink}.
+                      </small>
+                    </h1>
                     <Col md={12}>
                       <NewQuestionButtons
                         onDownloadQuestion={this.onDownloadQuestion}

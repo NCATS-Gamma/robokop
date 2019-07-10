@@ -392,3 +392,14 @@ button.taskListTask {
 .curieSelectorInput:focus {
   border: 1px solid black !important;
 }
+
+.robokopApp {
+  margin: 20px 0px;
+}
+.appQueryOptions input {
+  width: 200px;
+  float: right;
+}
+.appQueryOptions label {
+  float: right;
+}

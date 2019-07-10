@@ -19,14 +19,14 @@ class Header extends React.Component {
   getNotLoggedInFrag() {
     return (
       <NavItem href={this.appConfig.urls.login}>
-        {'Log In'}
+        {'Sign In / Register'}
       </NavItem>
     );
   }
   getLoggedInFrag(user) {
     return (
       <NavDropdown title={user.username} id="basic-nav-dropdown">
-        <MenuItem href={this.appConfig.urls.logout}>Log Out</MenuItem>
+        <MenuItem href={this.appConfig.urls.logout}>Sign Out</MenuItem>
       </NavDropdown>
     );
   }

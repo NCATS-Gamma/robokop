@@ -52,6 +52,7 @@ class DownloadButton extends React.Component {
     const a = document.createElement('a');
     a.download = `${fileName}.csv`;
     a.href = url;
+    document.body.appendChild(a);
     a.click();
     a.remove();
   }
@@ -73,6 +74,7 @@ class DownloadButton extends React.Component {
     const a = document.createElement('a');
     a.download = `${fileName}.json`;
     a.href = url;
+    document.body.appendChild(a);
     a.click();
     a.remove();
   }
@@ -107,8 +109,10 @@ class DownloadButton extends React.Component {
     const a = document.createElement('a');
     a.download = `${fileName}.csv`;
     a.href = url;
+    document.body.appendChild(a);
     a.click();
     a.remove();
+    console.log('downloaded');
   }
 
   // build a json file given simple results
@@ -121,6 +125,7 @@ class DownloadButton extends React.Component {
     const a = document.createElement('a');
     a.download = `${fileName}.json`;
     a.href = url;
+    document.body.appendChild(a);
     a.click();
     a.remove();
   }
@@ -131,10 +136,7 @@ class DownloadButton extends React.Component {
     // i.e. full message vs. simple
     const isMessage = source === 'message' || source === 'expand';
     // style should change based on which page we're on.
-    const style = source === 'message' ?
-      { position: 'absolute', top: '-44px', right: 0 }
-      :
-      { margin: '10px 0px' };
+    const style = { position: 'absolute', top: '-44px', right: 0 };
     const downloadOptions = (
       <Popover id="downloadOptions">
         <Button

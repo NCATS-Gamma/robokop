@@ -65,34 +65,10 @@ class Help extends React.Component {
           <div>
             <Header config={this.props.config} user={user} />
             <Grid>
-              <Row>
+              <Row style={{ marginBottom: '20px' }}>
                 <Col md={8}>
-                  <h2>Terms</h2>
-                  <hr style={{ border: '1px solid #eee' }} />
-                  <p>
-                    <b>Predicate</b> - The edge relationship between two nodes. This is an optional edge property, and leaving blank includes all edges.
-                  </p>
-                  <p>
-                    <b>Treat As</b> - When asking a question, there are three different general node types, specific entry, collection of unspecified entries, and single unspecified entry.
-                    <ul>
-                      <li>For a specific entry, the user must assign an identifier to that node.</li>
-                      <li>For a collection of unspecified entries, the user wants that node to be a &quot;set&quot;, meaning Robokop will condense all nodes of that type into a single answer rather than separate answers.</li>
-                      <li>For a single unspecified entry, the user wants Robokop to find all nodes of that type in its answers.</li>
-                    </ul>
-                  </p>
-                  <hr style={{ border: '1px solid #eee' }} />
-                  <h2>APIs</h2>
-                  <h3 id="expandAPI">Expand API</h3>
-                  <p>
-                    Direction is the direction of an edge between two nodes. The
-                    default is out, meaning an edge from node 1 to node 2. This
-                    parameter only matters if predicate is also set.
-                  </p>
-                  <p>
-                    Max connectivity is the maximum number of edges into or out
-                    of nodes within the answer (0 for inifinite).
-                  </p>
                   <h2>Answers Knowledge Graph</h2>
+                  <hr style={{ border: '1px solid #eee' }} />
                   <h3 id="knowledgeGraph">Knowledge Graph</h3>
                   <p>
                     All of Robokop&apos;s knowledge is stored in a large
@@ -189,6 +165,31 @@ class Help extends React.Component {
                   <p>
                     An edge can optionally have a predicate (if supported by
                     Robokop). Predicates can be chosen from the dropdown list.
+                  </p>
+                  <h2>Terms</h2>
+                  <hr style={{ border: '1px solid #eee' }} />
+                  <p>
+                    <b>Predicate</b> - The edge relationship between two nodes. This is an optional edge property, and leaving blank includes all edges.
+                  </p>
+                  <p>
+                    <b>Treat As</b> - When asking a question, there are three different general node types, specific entry, collection of unspecified entries, and single unspecified entry.
+                  </p>
+                  <ul>
+                    <li>For a specific entry, the user must assign an identifier to that node.</li>
+                    <li>For a collection of unspecified entries, the user wants that node to be a &quot;set&quot;, meaning Robokop will condense all nodes of that type into a single answer rather than separate answers.</li>
+                    <li>For a single unspecified entry, the user wants Robokop to find all nodes of that type in its answers.</li>
+                  </ul>
+                  <h2>APIs</h2>
+                  <hr style={{ border: '1px solid #eee' }} />
+                  <h3 id="expandAPI">Expand API</h3>
+                  <p>
+                    Direction is the direction of an edge between two nodes. The
+                    default is out, meaning an edge from node 1 to node 2. This
+                    parameter only matters if predicate is also set.
+                  </p>
+                  <p>
+                    Max connectivity is the maximum number of edges into or out
+                    of nodes within the answer (0 for inifinite).
                   </p>
                 </Col>
               </Row>
