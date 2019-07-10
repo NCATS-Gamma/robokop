@@ -193,7 +193,7 @@ class SimplePublications extends React.Component {
           <h1 style={{ textAlign: 'center' }}>Shared Publications</h1>
           <Form>
             <Row>
-              <Col md={12} style={{ textAlign: 'center' }}>
+              <Col md={12}>
                 {entities.map((node, i) => (
                   <Row key={`curie-${i}`} style={{ display: 'flex' }}> {/* eslint-disable-line */}
                     <div
@@ -223,13 +223,15 @@ class SimplePublications extends React.Component {
                     </div>
                   </Row>
                 ))}
-                <Button
-                  bsStyle="default"
-                  bsSize="sm"
-                  onClick={this.addCurie}
-                >
-                  <Glyphicon glyph="plus" />
-                </Button>
+                <div style={{ width: '100%', textAlign: 'center' }}>
+                  <Button
+                    bsStyle="default"
+                    bsSize="sm"
+                    onClick={this.addCurie}
+                  >
+                    <Glyphicon glyph="plus" />
+                  </Button>
+                </div>
               </Col>
             </Row>
             <Row style={{ textAlign: 'right', margin: '20px' }}>
