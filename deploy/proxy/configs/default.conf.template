@@ -147,6 +147,7 @@ server {
     #location of spec file 
     location /builder/spec/ {
       proxy_pass http://builder_web_server/builder/spec;
+      proxy_set_header        X-Swagger-Prefix "/builder";
       proxy_redirect off;
       proxy_set_header        Host $host;
       proxy_set_header        X-Real-IP $remote_addr;
