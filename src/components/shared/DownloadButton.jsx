@@ -112,7 +112,6 @@ class DownloadButton extends React.Component {
     document.body.appendChild(a);
     a.click();
     a.remove();
-    console.log('downloaded');
   }
 
   // build a json file given simple results
