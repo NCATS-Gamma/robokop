@@ -47,7 +47,6 @@ class AnswersetList extends React.Component {
       loadedAnswersetId: null,
       loadedAnswerset: false,
       height: 400,
-      width: 1000,
     };
 
     this.setGraphSize = this.setGraphSize.bind(this);
@@ -61,8 +60,7 @@ class AnswersetList extends React.Component {
 
   setGraphSize() {
     const height = this.ansList.clientHeight;
-    const width = this.ansList.clientWidth;
-    this.setState({ height, width });
+    this.setState({ height });
   }
 
   handleSliderChange(value) {
@@ -103,16 +101,12 @@ class AnswersetList extends React.Component {
 
   render() {
     const {
-      height, width, loadingAnswerset, loadedAnswerset,
+      height, loadingAnswerset, loadedAnswerset,
     } = this.state;
     let kg = {};
     let sliderPopover = <div>No answerset</div>;
     if (loadedAnswerset) {
       kg = this.answersetStore.annotatedPrunedKnowledgeGraph;
-      kg.node_list = kg.nodes;
-      kg.edge_list = kg.edges;
-      delete kg.nodes;
-      delete kg.edges;
       sliderPopover = (
         <Popover id={shortid.generate()}>
           <div style={{ marginTop: '10px', width: '200px' }}>
@@ -152,12 +146,7 @@ class AnswersetList extends React.Component {
             callbackOnSelect={aid => this.onAnswersetSelect(aid)}
           />
         </div>
-        <div
-          style={{
-            height,
-            width,
-          }}
-        >
+        <div style={{ height }}>
           {loadingAnswerset &&
             <div>
               <Loading

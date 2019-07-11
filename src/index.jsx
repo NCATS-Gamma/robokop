@@ -11,8 +11,11 @@ import 'react-widgets/dist/css/react-widgets.css';
 
 import 'babel-polyfill'; // For IE Promises
 
-import Landing from './Landing';
-import Help from './Help';
+import Landing from './simplePages/Landing';
+import Help from './simplePages/Help';
+import Guide from './simplePages/Guide';
+import SimpleQuestion from './SimpleQuestion';
+import Apps from './simplePages/Apps';
 import TermsofService from './TermsofService';
 import QuestionNew from './QuestionNew';
 import QuestionNewLinear from './QuestionNewLinear';
@@ -26,6 +29,7 @@ import SimpleEnriched from './SimpleEnriched';
 import SimpleSimilarity from './SimpleSimilarity';
 import SimpleExpand from './SimpleExpand';
 import Synonymize from './Synonymize';
+import SimplePublications from './SimplePublications';
 import NewQuestionStore from './stores/newQuestionStore';
 
 // Our actual CSS and other images etc.
@@ -37,6 +41,7 @@ const $ = require('jquery');
 window.jQuery = window.$ = $; // eslint-disable-line
 
 require('bootstrap');
+
 const config = {
   ui: {
     enableNewAnswersets: true,
@@ -68,6 +73,22 @@ const robokop = {
   help: () => {
     ReactDOM.render(
       <Help
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  guide: () => {
+    ReactDOM.render(
+      <Guide
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  apps: () => {
+    ReactDOM.render(
+      <Apps
         config={config}
       />,
       document.getElementById('reactEntry'),
@@ -134,6 +155,17 @@ const robokop = {
       document.getElementById('reactEntry'),
     );
   },
+  simpleQuestion: (id) => { // ask simple question without signing in
+    ReactDOM.render(
+      <Provider store={new NewQuestionStore()}>
+        <SimpleQuestion
+          config={config}
+          initializationId={id}
+        />
+      </Provider>,
+      document.getElementById('reactEntry'),
+    );
+  },
   answerset: (answersetId, answerId) => {
     ReactDOM.render(
       <Answerset
@@ -182,6 +214,14 @@ const robokop = {
   synonymize: () => {
     ReactDOM.render(
       <Synonymize
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  simplePublications: () => {
+    ReactDOM.render(
+      <SimplePublications
         config={config}
       />,
       document.getElementById('reactEntry'),

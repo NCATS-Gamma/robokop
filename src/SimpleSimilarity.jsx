@@ -139,13 +139,19 @@ class SimpleSimilarity extends React.Component {
       <div>
         <Header config={config} user={user} />
         <Grid>
-          <h1 style={{ textAlign: 'center' }}>Similar Nodes</h1>
+          <h1 className="robokopApp">
+            Similarity
+            <br />
+            <small>
+              Use the Robokop Similarity API. This API performs a Jaccard similarity search in the Robokop knowledge graph, where similarity is calculated over shared nodes. Returns the most similar nodes, along with their similarity scores.
+            </small>
+          </h1>
           <Form>
             <Row>
               <Col md={6}>
                 <FormGroup controlId="node1">
                   <h3>
-                    Node 1 Type
+                    Type 1
                   </h3>
                   <DropdownList
                     filter
@@ -160,7 +166,7 @@ class SimpleSimilarity extends React.Component {
               <Col md={6}>
                 <FormGroup controlId="node2">
                   <h3>
-                    Node 2 Type
+                    Type 2
                   </h3>
                   <DropdownList
                     filter
@@ -176,7 +182,7 @@ class SimpleSimilarity extends React.Component {
             <Row>
               <Col md={12}>
                 <h3>
-                  Node 1 Curie
+                  Type 1 Identifier
                 </h3>
                 <div
                   style={{
@@ -212,26 +218,28 @@ class SimpleSimilarity extends React.Component {
               </Col>
             </Row>
             <Row style={{ margin: '20px' }}>
-              <label htmlFor="maxResults" style={{ display: 'block', margin: '10px 0px' }}>
-                <input id="maxResults" style={{ marginRight: '10px' }} type="number" min="0" onChange={this.changeMaxResults} value={maxResults} />
-                Maximum Results
-              </label>
-              <label htmlFor="threshold" style={{ display: 'block', margin: '10px 0px' }}>
-                <input id="threshold" style={{ marginRight: '10px', width: '172px' }} type="number" min="0" step="0.1" max="1" onChange={this.changeThreshold} value={threshold} />
-                Similarity Threshold
-              </label>
+              <Col md={5} className="appQueryOptions">
+                <label htmlFor="maxResults" style={{ display: 'block', margin: '10px 0px' }}>
+                  Maximum Results
+                  <input id="maxResults" style={{ marginLeft: '10px' }} type="number" min="0" onChange={this.changeMaxResults} value={maxResults} />
+                </label>
+                <label htmlFor="threshold" style={{ display: 'block', margin: '10px 0px' }}>
+                  Threshold
+                  <input id="threshold" style={{ marginLeft: '10px' }} type="number" min="0" step="0.1" max="1" onChange={this.changeThreshold} value={threshold} />
+                </label>
+              </Col>
             </Row>
-            <Row style={{ textAlign: 'right', margin: '20px' }}>
-              <Button id="submitAPI" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
+            <Row style={{ textAlign: 'center', margin: '20px' }}>
+              <Button id="submitAPI" bsSize="large" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
             </Row>
           </Form>
-          <Row style={{ marginBottom: '20px' }}>
+          <Row style={{ margin: '40px 0px 20px 0px' }}>
             {resultsLoading &&
               <Loading />
             }
             {resultsReady &&
-              <div>
-                <DownloadButton results={results} source="similarity" fileName={`${type1}_to_${type2}_with_${simType}_similarity`} />
+              <div style={{ position: 'relative' }}>
+                {results.length > 0 && <DownloadButton results={results} source="similarity" fileName={`${type1}_to_${type2}_with_${simType}_similarity`} />}
                 <ReactTable
                   data={results}
                   columns={[{

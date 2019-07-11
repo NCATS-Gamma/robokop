@@ -94,9 +94,14 @@ class QuestionListPres extends React.Component {
           </Col>
           <Col md={12}>
             {showLogIn &&
-              <p>
-                If you would like to begin asking your own questions you will need to <a href={this.props.loginUrl}>Log in</a>
-              </p>
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{ display: 'inline-block', marginRight: '20px' }}>
+                  You aren&apos;t signed in. Please <a href={this.props.loginUrl}>Sign In</a> to save your questions.
+                </p>
+                <Button bsStyle="default" onClick={this.props.simpleQuestion}>
+                  Ask a Quick Question
+                </Button>
+              </div>
             }
             {!showLogIn && showMyQuestionsEmpty &&
               <div>

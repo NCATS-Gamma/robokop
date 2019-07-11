@@ -1,4 +1,4 @@
-import { observable, action, computed, flow, toJS, configure, autorun, reaction, runInAction } from 'mobx';
+import { observable, action, computed, flow, toJS, configure, reaction, runInAction } from 'mobx';
 
 import { graphStates } from '../components/shared/MachineQuestionViewContainer';
 import entityNameDisplay from '../components/util/entityNameDisplay';

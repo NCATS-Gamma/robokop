@@ -104,13 +104,19 @@ class Synonymize extends React.Component {
       <div>
         <Header config={config} user={user} />
         <Grid>
-          <h1 style={{ textAlign: 'center' }}>Synonymize Node</h1>
+          <h1 className="robokopApp">
+            Identifier Lookup
+            <br />
+            <small>
+              Use the Robokop Synonymize API. This API takes an identifier and returns all of the other identifiers by which that entity is known, as well as the identifier by which that entity is known in Robokop.
+            </small>
+          </h1>
           <Form>
             <Row>
               <Col md={12}>
                 <div>
                   <h3>
-                    Node Curie
+                    Identifier
                   </h3>
                   <div
                     style={{
@@ -127,17 +133,17 @@ class Synonymize extends React.Component {
                 </div>
               </Col>
             </Row>
-            <Row style={{ textAlign: 'right', margin: '20px' }}>
-              <Button id="submitAPI" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
+            <Row style={{ textAlign: 'center', margin: '20px' }}>
+              <Button id="submitAPI" bsSize="large" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
             </Row>
           </Form>
-          <Row style={{ marginBottom: '20px' }}>
+          <Row style={{ margin: '40px 0px 20px 0px' }}>
             {resultsLoading &&
               <Loading />
             }
             {resultsReady &&
-              <div>
-                <DownloadButton results={results} source="synonymize" fileName={`${results.id}_synonyms`} />
+              <div style={{ position: 'relative' }}>
+                {results.synonyms.length > 0 && <DownloadButton results={results} source="synonymize" fileName={`${results.id}_synonyms`} />}
                 <ReactTable
                   data={results.synonyms}
                   getTheadThProps={this.hideHeader}

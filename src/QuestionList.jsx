@@ -26,6 +26,7 @@ class QuestionList extends React.Component {
     this.callbackTaskStop = this.callbackTaskStop.bind(this);
     this.toggleModal = this.toggleModal.bind(this);
     this.callbackQuestionNew = this.callbackQuestionNew.bind(this);
+    this.simpleQuestion = this.simpleQuestion.bind(this);
     this.sortTasks = this.sortTasks.bind(this);
   }
 
@@ -66,6 +67,10 @@ class QuestionList extends React.Component {
     this.appConfig.redirect(this.appConfig.urls.questionDesign);
   }
 
+  simpleQuestion() {
+    this.appConfig.redirect(this.appConfig.urls.simpleQuestion);
+  }
+
   render() {
     const ready = this.state.userReady;
     return (
@@ -89,6 +94,7 @@ class QuestionList extends React.Component {
                 <QuestionListPres
                   loginUrl={this.appConfig.urls.login}
                   callbackQuestionNew={this.callbackQuestionNew}
+                  simpleQuestion={this.simpleQuestion}
                   callbackAnswersetSelect={(q, a) => this.appConfig.open(this.appConfig.urls.answerset(q.id, a.id))}
                   callbackQuestionSelect={q => this.appConfig.open(this.appConfig.urls.question(q.id))}
                   questions={this.state.questions}

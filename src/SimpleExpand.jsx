@@ -3,16 +3,14 @@ import { inject, observer } from 'mobx-react';
 import { toJS } from 'mobx';
 
 import { DropdownList, SelectList } from 'react-widgets';
-import { Grid, Row, Col, Form, FormGroup, Button, OverlayTrigger } from 'react-bootstrap';
-
-import FaInfoCircle from 'react-icons/lib/fa/info-circle';
+import { Grid, Row, Col, Form, FormGroup, Button } from 'react-bootstrap';
 
 import AppConfig from './AppConfig';
 import AnswersetStore from './stores/messageAnswersetStore';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Loading from './components/Loading';
-import { maxConnectivityPopover, directionPopover } from './components/shared/Popovers';
+import HelpButton from './components/shared/HelpButton';
 import MessageAnswersetTable from './components/answerset/MessageAnswersetTable';
 import CurieSelectorContainer from './components/shared/curies/CurieSelectorContainer';
 import entityNameDisplay from './components/util/entityNameDisplay';
@@ -131,13 +129,19 @@ class SimpleExpand extends React.Component {
           <div>
             <Header config={config} user={store.user} />
             <Grid>
-              <h1 style={{ textAlign: 'center' }}>Expanded Nodes</h1>
+              <h1 className="robokopApp">
+                Expansion
+                <br />
+                <small>
+                  Use the Robokop Expand API. This API allows users to post simple one-hop questions and received ranked results. Users can control returned types, predicates, and edge directionality.
+                </small>
+              </h1>
               <Form>
                 <Row>
                   <Col md={6}>
                     <FormGroup controlId="node1">
                       <h3>
-                        Node 1 Type
+                        Type 1
                       </h3>
                       <DropdownList
                         filter
@@ -152,7 +156,7 @@ class SimpleExpand extends React.Component {
                   <Col md={6}>
                     <FormGroup controlId="node2">
                       <h3>
-                        Node 2 Type
+                        Type 2
                       </h3>
                       <DropdownList
                         filter
@@ -168,7 +172,7 @@ class SimpleExpand extends React.Component {
                 <Row>
                   <Col md={12}>
                     <h3>
-                      Node 1 Curie
+                      Type 1 Identifier
                     </h3>
                     <div
                       style={{
@@ -203,35 +207,33 @@ class SimpleExpand extends React.Component {
                       onChange={value => this.setState({ predicate: value })}
                       style={{ maxHeight: '150px' }}
                       messages={{
-                        emptyList: 'Please choose types and a curie first.',
+                        emptyList: 'Please choose types and an identifier first.',
                       }}
                     />
                     <h4>
-                      Direction
-                      <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={directionPopover}>
-                        <FaInfoCircle size={17} />
-                      </OverlayTrigger>
+                      Direction{' '}
+                      <HelpButton link="expandAPI" />
                     </h4>
                     <SelectList
                       data={['out', 'in', 'undirected']}
                       value={direction}
                       onChange={value => this.setState({ direction: value })}
                     />
-                    <label htmlFor="maxConnect" style={{ display: 'block', margin: '10px 0px' }}>
-                      <input id="maxConnect" style={{ marginRight: '10px' }} type="number" min="0" onChange={this.changeMaxConnect} value={maxConnect} />
-                      Maximum Connectivity
-                      <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={maxConnectivityPopover}>
-                        <FaInfoCircle size={17} />
-                      </OverlayTrigger>
-                    </label>
-                    <label htmlFor="maxResults" style={{ display: 'block', margin: '10px 0px' }}>
-                      <input id="maxResults" style={{ marginRight: '10px' }} type="number" min="0" onChange={this.changeMaxResults} value={maxResults} />
-                      Maximum Results
-                    </label>
+                    <div className="appQueryOptions">
+                      <label htmlFor="maxConnect" style={{ display: 'block', margin: '10px 0px' }}>
+                        <HelpButton link="expandAPI" />{' '}
+                        Maximum Connectivity
+                        <input id="maxConnect" style={{ marginLeft: '10px' }} type="number" min="0" onChange={this.changeMaxConnect} value={maxConnect} />
+                      </label>
+                      <label htmlFor="maxResults" style={{ display: 'block', margin: '10px 0px' }}>
+                        Maximum Results
+                        <input id="maxResults" style={{ marginLeft: '10px' }} type="number" min="0" onChange={this.changeMaxResults} value={maxResults} />
+                      </label>
+                    </div>
                   </Col>
                 </Row>
-                <Row style={{ textAlign: 'right', margin: '20px' }}>
-                  <Button id="submitAPI" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
+                <Row style={{ textAlign: 'center', margin: '20px' }}>
+                  <Button id="submitAPI" bsSize="large" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
                 </Row>
               </Form>
               <Row style={{ margin: '20px 0px' }}>

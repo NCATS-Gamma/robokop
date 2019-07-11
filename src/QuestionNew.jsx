@@ -3,17 +3,16 @@ import Dialog from 'react-bootstrap-dialog';
 import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import {
-  Grid, Row, Col, Panel, OverlayTrigger,
+  Grid, Row, Col, Panel,
   Form, FormControl, FormGroup,
 } from 'react-bootstrap';
-import FaInfoCircle from 'react-icons/lib/fa/info-circle';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Loading from './components/Loading';
 import MachineQuestionViewContainer, { graphStates } from './components/shared/MachineQuestionViewContainer';
-import { questionGraphPopover, questionNamePopover } from './components/shared/Popovers';
+import HelpButton from './components/shared/HelpButton';
 import LoadingNlpQuestionModal from './components/shared/modals/LoadingNlpQuestion';
 import NewQuestionButtons from './components/shared/NewQuestionButtons';
 import questionTemplates from '../queries/index';
@@ -237,9 +236,7 @@ class QuestionNew extends React.Component {
                 <Col md={12}>
                   <h3 style={{ display: 'inline-block' }}>
                     {'Question '}
-                    <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={questionNamePopover}>
-                      <FaInfoCircle size={17} />
-                    </OverlayTrigger>
+                    <HelpButton link="questionNew" />
                   </h3>
                   <Form horizontal onSubmit={e => e.preventDefault()}>
                     <FormGroup
@@ -261,9 +258,7 @@ class QuestionNew extends React.Component {
                     <Panel.Heading>
                       <Panel.Title>
                         {'Machine Question Editor - Question Graph '}
-                        <OverlayTrigger trigger={['hover', 'focus']} placement="right" overlay={questionGraphPopover}>
-                          <FaInfoCircle size={17} />
-                        </OverlayTrigger>
+                        <HelpButton link="machineQuestionEditor" />
                       </Panel.Title>
                     </Panel.Heading>
                     <Panel.Body style={{ padding: '0px' }}>

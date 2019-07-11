@@ -97,9 +97,9 @@ class Question extends React.Component {
     this.setState(prevState => ({ showModal: !prevState.showModal }));
   }
   sortTasks() {
-    const sortedTasks = this.state.tasks;
-    if (sortedTasks.length) {
-      return sortedTasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const { tasks } = this.state;
+    if (tasks.length) {
+      return tasks.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     }
     return [];
   }

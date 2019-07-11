@@ -46,11 +46,7 @@ class AnswersetGraph extends React.Component {
   render() {
     const { store } = this.props;
     const answersetGraph = store.annotatedPrunedKnowledgeGraph;
-    answersetGraph.node_list = answersetGraph.nodes;
-    answersetGraph.edge_list = answersetGraph.edges;
-    const bodyStyle = { minHeight: '100px' };
     const title = store.isKgPruned() ? `Pruned aggregate graph (Top ${store.numKGNodes} nodes)` : 'Aggregate Graph';
-
     return (
       <Row>
         <Col md={12}>
@@ -68,7 +64,7 @@ class AnswersetGraph extends React.Component {
                 />
               </div>
             </Panel.Heading>
-            <Panel.Body style={bodyStyle}>
+            <Panel.Body style={{ height: '630px' }}>
               <SubGraphViewer
                 subgraph={answersetGraph}
                 concepts={this.props.concepts}

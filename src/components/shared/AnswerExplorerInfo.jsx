@@ -41,9 +41,9 @@ class AnswerExplorerInfo extends React.Component {
 
   syncPropsAndState(newProps) {
     const { graph, selectedEdge } = newProps;
-    const nodes = graph.node_list.filter(n => ((n.id === selectedEdge.source_id) || (n.id === selectedEdge.target_id)));
+    const nodes = graph.nodes.filter(n => ((n.id === selectedEdge.source_id) || (n.id === selectedEdge.target_id)));
     const nodeIds = nodes.map(n => n.id);
-    const edges = graph.edge_list.filter(e => (nodeIds.includes(e.source_id) && nodeIds.includes(e.target_id)));
+    const edges = graph.edges.filter(e => (nodeIds.includes(e.source_id) && nodeIds.includes(e.target_id)));
 
     const subgraph = { nodes, edges };
     this.setState({
@@ -76,10 +76,16 @@ class AnswerExplorerInfo extends React.Component {
     if (!n || !('name' in n)) {
       return (<div />);
     }
+    const edge = this.state.subgraph.edges.find(edge => edge.id === this.state.selectedEdgeId);
+    let urls;
+    if (edge.source_database.includes('ctd')) {
+      urls = curieUrls(`ctd:${n.id}`, n.type);
+    } else {
+      urls = curieUrls(n.id);
+    }
     const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
     const backgroundColor = nodeTypeColorMap(n.type);
     const extraFields = Object.keys(n).filter(property => !nodeBlacklist.includes(property));
-    const urls = curieUrls(n.id);
     return (
       <Panel>
         <Panel.Heading style={{ backgroundColor }}>
@@ -302,7 +308,7 @@ class AnswerExplorerInfo extends React.Component {
             <Col md={12}>
               <SubGraphViewer
                 height={200}
-                subgraph={{ node_list: this.state.subgraph.nodes, edge_list: this.state.subgraph.edges }}
+                subgraph={{ nodes: this.state.subgraph.nodes, edges: this.state.subgraph.edges }}
                 layoutStyle="auto"
                 layoutRandomSeed={1}
                 showSupport
