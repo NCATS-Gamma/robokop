@@ -77,14 +77,12 @@ class AnswerExplorerInfo extends React.Component {
     if (!n || !('name' in n)) {
       return (<div />);
     }
-    console.log(n);
     const edge = this.state.subgraph.edges.find(e => e.id === this.state.selectedEdgeId);
     const urls = curieUrls(n.id);
     if (edge.source_database.includes('ctd')) {
       const urlObj = ctdUrls(n.type, n.equivalent_identifiers);
       urls.push(urlObj);
     }
-    console.log('urls', urls);
     const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
     const backgroundColor = nodeTypeColorMap(n.type);
     const extraFields = Object.keys(n).filter(property => !nodeBlacklist.includes(property));
