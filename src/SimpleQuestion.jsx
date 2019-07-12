@@ -18,6 +18,7 @@ import QuestionTemplateModal from './components/shared/modals/QuestionTemplate';
 import MessageAnswersetTable from './components/answerset/MessageAnswersetTable';
 import AnswersetGraph from './components/answerset/AnswersetGraph';
 import SimpleQuestionGraph from './components/shared/graphs/SimpleQuestionGraph';
+import QuickQuestionError from './components/shared/modals/QuickQuestionError';
 
 
 @inject(({ store }) => ({ store }))
@@ -39,6 +40,8 @@ class SimpleQuestion extends React.Component {
       loaded: false,
       tabKey: 1,
       showQuestionTemplateModal: false,
+      questionFail: false,
+      errorMessage: '',
     };
 
     this.onResetQuestion = this.onResetQuestion.bind(this);
@@ -49,6 +52,7 @@ class SimpleQuestion extends React.Component {
     this.handleTabSelect = this.handleTabSelect.bind(this);
     this.onQuestionTemplate = this.onQuestionTemplate.bind(this);
     this.toggleQuestionTemplate = this.toggleQuestionTemplate.bind(this);
+    this.resetQuestion = this.resetQuestion.bind(this);
   }
 
   componentDidMount() {
@@ -140,12 +144,21 @@ class SimpleQuestion extends React.Component {
     this.appConfig.simpleQuick(
       newBoardInfo,
       (data) => {
+        if (!data.answers.length) {
+          throw Error('No answers were found');
+        }
         this.answersetStore = new AnswersetStore(data);
         this.setState({ message: data, loading: false, loaded: true });
       },
       (err) => {
         console.log('Trouble asking question:', err);
-        this.setState({ loading: false });
+        let errorMessage = '';
+        if (err.response || err.response) {
+          errorMessage = 'Please check the console for a more descriptive error message';
+        } else {
+          errorMessage = err.message;
+        }
+        this.setState({ loading: false, questionFail: true, errorMessage });
       },
     );
   }
@@ -163,9 +176,13 @@ class SimpleQuestion extends React.Component {
     this.props.store.machineQuestionSpecToPanelState(question);
   }
 
+  resetQuestion() {
+    this.setState({ questionFail: false, errorMessage: '' });
+  }
+
   render() {
     const {
-      user, ready, loading, loaded, showQuestionTemplateModal, tabKey,
+      user, ready, loading, loaded, showQuestionTemplateModal, tabKey, questionFail, errorMessage,
     } = this.state;
     const { config } = this.props;
     const validUser = this.appConfig.ensureUser(user);
@@ -289,6 +306,11 @@ class SimpleQuestion extends React.Component {
               questions={questionList}
               selectQuestion={this.onQuestionTemplate}
               concepts={toJS(this.props.store.concepts)}
+            />
+            <QuickQuestionError
+              showModal={questionFail}
+              closeModal={this.resetQuestion}
+              errorMessage={errorMessage}
             />
           </div>
         :

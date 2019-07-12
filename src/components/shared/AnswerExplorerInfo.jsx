@@ -10,6 +10,7 @@ import SubGraphViewer from './graphs/SubGraphViewer';
 import PubmedList from './PubmedList';
 
 import curieUrls from '../util/curieUrls';
+import ctdUrls from '../util/ctdUrls';
 import getNodeTypeColorMap from '../util/colorUtils';
 import entityNameDisplay from '../util/entityNameDisplay';
 
@@ -76,13 +77,14 @@ class AnswerExplorerInfo extends React.Component {
     if (!n || !('name' in n)) {
       return (<div />);
     }
-    const edge = this.state.subgraph.edges.find(edge => edge.id === this.state.selectedEdgeId);
-    let urls;
+    console.log(n);
+    const edge = this.state.subgraph.edges.find(e => e.id === this.state.selectedEdgeId);
+    const urls = curieUrls(n.id);
     if (edge.source_database.includes('ctd')) {
-      urls = curieUrls(`ctd:${n.id}`, n.type);
-    } else {
-      urls = curieUrls(n.id);
+      const urlObj = ctdUrls(n.type, n.equivalent_identifiers);
+      urls.push(urlObj);
     }
+    console.log('urls', urls);
     const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
     const backgroundColor = nodeTypeColorMap(n.type);
     const extraFields = Object.keys(n).filter(property => !nodeBlacklist.includes(property));
