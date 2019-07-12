@@ -1,18 +1,16 @@
-export default function curieUrls(id, type) {
+export default function curieUrls(id) {
   const onto = id.substr(0, id.indexOf(':'));
-  const entry = id.substr(id.indexOf(':') + 1);
+  // const entry = id.substr(id.indexOf(':') + 1);
   const urls = [];
   if (onto.toLowerCase() === 'db') {
     // drug bank - https://www.drugbank.ca/drugs/DB00619
-    urls.push({ label: 'Drug Bank', url: `https://www.drugbank.ca/drugs/${id.replace(':','')}`, iconUrl: 'https://www.drugbank.ca/favicons/favicon-16x16.png' });
+    urls.push({ label: 'Drug Bank', url: `https://www.drugbank.ca/drugs/${id.replace(':', '')}`, iconUrl: 'https://www.drugbank.ca/favicons/favicon-16x16.png' });
   } else if (onto.toLowerCase() === 'hgnc') {
     // HGNC - https://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id=HGNC:8856
     urls.push({ label: 'HGNC', url: `https://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id=${id}`, iconUrl: 'https://www.genenames.org/sites/genenames.org/files/genenames_favicon_0.ico' });
-  } else if (onto.toLowerCase() === 'ctd') {
-    urls.push({ label: 'CTD', url: `http://ctdbase.org/detail.go?type=${type}&acc=${id}`, iconUrl: 'http://ctdbase.org/images/ctdlogo_xs.v15420.png' });
   } else {
     // http://purl.obolibrary.org/obo/MONDO_0022308
-    const ontobeeUrl = `http://purl.obolibrary.org/obo/${id.replace(':','_')}`;
+    const ontobeeUrl = `http://purl.obolibrary.org/obo/${id.replace(':', '_')}`;
     urls.push({ label: 'Ontobee', url: ontobeeUrl, iconUrl: 'http://berkeleybop.org/favicon.ico' });
 
     // https://www.ebi.ac.uk/ols/ontologies/mondo/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMONDO_0022308
