@@ -1,0 +1,51 @@
+{
+    "name": "WF2 Module 1d - $name1$ ($identifier1$)",
+    "natural_question": "WF2 Module 1a : $name1$ ($identifier1$) to genes to disease-related-chemical-similar genes.",
+    "machine_question": {
+      "nodes": [
+            {
+                "id": "n0",
+                "type": "disease",
+                "curie": [
+                  "$identifier1$"
+                ]
+            },
+            {
+                "id": "n1",
+                "type": "gene"
+            },
+            {
+                "id": "n2",
+                "type": "chemical_substance",
+		"set": true
+            },
+            {
+                "id": "n3",
+                "type": "gene"
+            }
+        ],
+        "edges": [
+            {
+                "id": "e0",
+                "source_id": "n0",
+                "target_id": "n1"
+            },
+            {
+                "id": "e1",
+                "source_id": "n1",
+                "target_id": "n2"
+            },
+            {
+                "id": "e2",
+                "source_id": "n3",
+                "target_id": "n2"
+            },
+            {
+                "id": "e3",
+                "source_id": "n0",
+                "target_id": "n2"
+            }
+
+        ]
+    }
+}

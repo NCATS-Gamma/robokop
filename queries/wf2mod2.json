@@ -1,0 +1,29 @@
+{
+  "natural_question": "WF2mod2 property $identifier2$ and disease $name1$ ($identifier1$)?",
+  "machine_question": {
+    "nodes": [
+      {
+        "id": "n0",
+        "type": "chemical_substance",
+        "$identifier2$": true
+      },
+      {
+        "id": "n1",
+        "type": "gene",
+      },
+      {
+        "id": "n2",
+        "type": "disease",
+        "curie": "$identifier1$"
+      }
+    ],
+    "edges": [
+      {
+        "id": "e0",
+        "source_id": "n1",
+        "target_id": "n0",
+	"type": "increases_degradation_of"
+      }
+    ]
+  }
+}
