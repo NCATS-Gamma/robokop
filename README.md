@@ -254,3 +254,7 @@ To install on Windows, we recommend utilizing the Windows subsystem for Linux (W
 4. You can add the 2 commands above to your `.bashrc` file in WSL to ensure that these env variables are always available and correctly exported and made available to docker. Note that the relative path to the `/shared/robokop.env` file will differ based on your current working directory in your bash session.
 
 5. Run the steps outlined in the "Web Interface Compilation" section
+
+## Contributing
+
+Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
