@@ -199,7 +199,7 @@ class Expand(Resource):
 
         return answerset
 
-api.add_resource(Expand, '/simple/expand/<type1>/<id1>/<type2>')
+api.add_resource(Expand, '/simple/expand/<type1>/<id1>/<type2>/')
 
 class Quick(Resource):
     def post(self):
@@ -645,7 +645,7 @@ class SimilaritySearch(Resource):
 
         return response.json()
 
-api.add_resource(SimilaritySearch, '/simple/similarity/<type1>/<id1>/<type2>/<by_type>')
+api.add_resource(SimilaritySearch, '/simple/similarity/<type1>/<id1>/<type2>/<by_type>/')
 
 class EnrichedExpansion(Resource):
     def post(self, type1, type2 ):
@@ -817,7 +817,7 @@ class EnrichedExpansion(Resource):
             descendants.update(response['descendants'])
         identifiers.update(descendants)
 
-api.add_resource(EnrichedExpansion, '/simple/enriched/<type1>/<type2>')
+api.add_resource(EnrichedExpansion, '/simple/enriched/<type1>/<type2>/')
 
 def list_templates():
     template_jsons = [f.replace('.json','').lower() for f in os.listdir(template_dir) if os.path.isfile(os.path.join(template_dir, f)) and '.json' in f]

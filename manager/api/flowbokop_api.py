@@ -277,7 +277,7 @@ class FlowbokopSimilarity(Resource):
                 out_curies.append(curie_dict)
         return out_curies
 
-api.add_resource(FlowbokopSimilarity, '/flowbokop/similarity/<type1>/<type2>/<by_type>')
+api.add_resource(FlowbokopSimilarity, '/flowbokop/similarity/<type1>/<type2>/<by_type>/')
 
 
 class FlowbokopEnrichment(Resource):
@@ -359,7 +359,7 @@ class FlowbokopEnrichment(Resource):
             out_curies.append(curie_dict)
         return out_curies
 
-api.add_resource(FlowbokopEnrichment, '/flowbokop/enrichment/<type1>/<type2>')
+api.add_resource(FlowbokopEnrichment, '/flowbokop/enrichment/<type1>/<type2>/')
 
 class FlowbokopRobokop(Resource):
     def post(self):

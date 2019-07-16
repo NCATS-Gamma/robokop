@@ -211,7 +211,7 @@ class Omnicorp(Resource):
         r = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/omnicorp/{id1}/{id2}")
         return r.json()
 
-api.add_resource(Omnicorp, '/omnicorp/<id1>/<id2>')
+api.add_resource(Omnicorp, '/omnicorp/<id1>/<id2>/')
 
 
 class Omnicorp1(Resource):
@@ -242,7 +242,7 @@ class Omnicorp1(Resource):
         r = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/omnicorp/{id1}")
         return r.json()
 
-api.add_resource(Omnicorp1, '/omnicorp/<id1>')
+api.add_resource(Omnicorp1, '/omnicorp/<id1>/')
 
 
 class Connections(Resource):
@@ -459,7 +459,7 @@ class Pubmed(Resource):
         
         return pubmed_info, 200
 
-api.add_resource(Pubmed, '/pubmed/<pmid>')
+api.add_resource(Pubmed, '/pubmed/<pmid>/')
 
 class Search(Resource):
     def get(self, term, category):
@@ -630,4 +630,4 @@ class TaskLog(Resource):
         return result, 200
             
 
-api.add_resource(TaskLog, '/t/<task_id>/log')
+api.add_resource(TaskLog, '/t/<task_id>/log/')
