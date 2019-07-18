@@ -21,6 +21,7 @@ class AppConfig {
       answerset: (questionId, answersetId) => this.url(`a/${questionId}_${answersetId}/`),
       answer: (questionId, answersetId, answerId) => this.url(`a/${questionId}_${answersetId}/${answerId}/`),
       help: this.url('help/'),
+      about: this.url('about/'),
       guide: this.url('guide/'),
       apps: this.url('apps/'),
       search: this.url('search/'),
@@ -37,24 +38,25 @@ class AppConfig {
     // Other URLs that are primarily used for API calls
     this.apis = {
       user: this.url('api/user/'), // GET current user credentials
+      licenses: this.url('api/licenses/'), // GET source licenses
       concepts: this.url('api/concepts/'), // GET concepts contained in the global potential KG
-      predicates: this.url('api/predicates'), // GET predicates for edges
-      nodeProperties: this.url('api/node_properties'), // GET valid node properties
+      predicates: this.url('api/predicates/'), // GET predicates for edges
+      nodeProperties: this.url('api/node_properties/'), // GET valid node properties
       operations: this.url('api/operations/'), // GET operations contained in global potential KG
       questions: this.url('api/questions/'), // POST to store a new question
       question: questionId => this.url(`api/q/${questionId}/`), // POST to update meta data, DELETE to delete the question
       questionAnswer: questionId => this.url(`api/q/${questionId}/answer/`), // POST to initiate creation of a new answer set
       questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg/`), // POST to initiate an update of the KG for this question
-      simpleQuick: this.url('api/simple/quick'), // POST to answer question without caching
+      simpleQuick: this.url('api/simple/quick/'), // POST to answer question without caching
       answersetData: qid_aid => this.url(`api/a/${qid_aid}/?include_kg=true`), // GET complete message
       parse: this.url('api/nlp/'),
       task: taskId => this.url(`api/t/${taskId}/`), // DELETE or GET status
-      taskLog: taskId => this.url(`api/t/${taskId}/log`), // GET detailed log of ongoing or completed task
+      taskLog: taskId => this.url(`api/t/${taskId}/log/`), // GET detailed log of ongoing or completed task
       feedbackNew: this.url('api/feedback/'), // POST new feedback
-      feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback`),
+      feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback/`),
       search: this.url('api/search/'), // POST for Bionames search
-      viewData: id => this.url(`api/simple/view/${id}`),
-      simpleEnriched: (type1, type2) => this.url(`api/simple/enriched/${type1}/${type2}`), // POST for simple enriched
+      viewData: id => this.url(`api/simple/view/${id}/`),
+      simpleEnriched: (type1, type2) => this.url(`api/simple/enriched/${type1}/${type2}/`), // POST for simple enriched
       simpleSimilarity: (type1, type2, id, simType, threshold, maxResults) => (
         this.url(`api/simple/similarity/${type1}/${id}/${type2}/${simType}?threshhold=${threshold}&max_results=${maxResults}`)
       ), // Get for simple similarity
@@ -62,10 +64,10 @@ class AppConfig {
         this.url(`api/simple/expand/${type1}/${id}/${type2}?predicate=${predicate}&direction=${direction}&max_connectivity=${maxConnect}&max_results=${maxResults}`)
       ), // Get for simple expand
       simpleSynonymize: (id, type) => this.url(`api/simple/synonymize/${id}/${type}/`), // POST for synonyms of curie from Builder API
-      graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql`,
-      publications: (id1, id2) => this.url(`api/omnicorp/${id1}/${id2}`), // GET publications for one identifier or a pair of identifiers
-      publication: id => this.url(`api/omnicorp/${id}`), // Get publications for one identifier
-      pubmedPublications: id => this.url(`api/pubmed/${id}`), // GET pubmed publications for given id
+      graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql/`,
+      publications: (id1, id2) => this.url(`api/omnicorp/${id1}/${id2}/`), // GET publications for one identifier or a pair of identifiers
+      publication: id => this.url(`api/omnicorp/${id}/`), // Get publications for one identifier
+      pubmedPublications: id => this.url(`api/pubmed/${id}/`), // GET pubmed publications for given id
     };
 
     this.url = this.url.bind(this);
@@ -117,6 +119,7 @@ class AppConfig {
   concepts(fun, fail = () => {}) { this.getRequest(`${this.apis.concepts}`, fun, fail); }
   operations(fun) { this.getRequest(`${this.apis.operations}`, fun); }
   user(successFun, failureFun) { this.getRequest(`${this.apis.user}`, successFun, failureFun); }
+  licenses(successFun, failureFun) { this.getRequest(`${this.apis.licenses}`, successFun, failureFun); }
   predicates(successFun, failureFun) { this.getRequest(`${this.apis.predicates}`, successFun, failureFun); }
   nodeProperties(successFun, failureFun) { this.getRequest(`${this.apis.nodeProperties}`, successFun, failureFun); }
   answersetData(qid_aid, successFun, failureFun) { this.getRequest(`${this.apis.answersetData(qid_aid)}`, successFun, failureFun); }
