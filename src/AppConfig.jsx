@@ -64,7 +64,7 @@ class AppConfig {
         this.url(`api/simple/expand/${type1}/${id}/${type2}?predicate=${predicate}&direction=${direction}&max_connectivity=${maxConnect}&max_results=${maxResults}`)
       ), // Get for simple expand
       simpleSynonymize: (id, type) => this.url(`api/simple/synonymize/${id}/${type}/`), // POST for synonyms of curie from Builder API
-      graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql/`,
+      graphql: `${this.config.protocol}://${this.config.host}:${this.config.graphqlPort}/graphql`,
       publications: (id1, id2) => this.url(`api/omnicorp/${id1}/${id2}/`), // GET publications for one identifier or a pair of identifiers
       publication: id => this.url(`api/omnicorp/${id}/`), // Get publications for one identifier
       pubmedPublications: id => this.url(`api/pubmed/${id}/`), // GET pubmed publications for given id
