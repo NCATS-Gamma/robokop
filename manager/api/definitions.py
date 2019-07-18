@@ -361,19 +361,3 @@ class Curie():
             example: "Ebola hemorrhagic fever"
     """
     pass
-
-@swagger.definition('FlowbokopServiceInput')
-class FlowbokopServiceInput():
-    """
-    Flowbokop Service Input
-    ---
-    type: object
-    properties:
-        input:
-            type: array
-            items:
-                $ref: "#/definitions/Curie"
-        options:
-            type: object
-    """
-    pass

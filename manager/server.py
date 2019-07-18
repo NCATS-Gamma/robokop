@@ -18,7 +18,6 @@ import manager.api.messages_api
 import manager.api.q_api
 import manager.api.misc_api
 import manager.api.simple_api
-import manager.api.flowbokop_api
 
 
 # Initialization
