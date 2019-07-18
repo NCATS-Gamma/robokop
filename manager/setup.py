@@ -44,6 +44,13 @@ template = {
     "schemes": [
         "http",
         "https"
+    ],
+    "tags": [
+        {"name": "answerset"},
+        {"name": "question"},
+        {"name": "tasks"},
+        {"name": "simple"},
+        {"name": "util"}
     ]
 }
 
