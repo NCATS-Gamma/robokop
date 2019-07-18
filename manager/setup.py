@@ -46,11 +46,14 @@ template = {
         "https"
     ],
     "tags": [
-        {"name": "answerset"},
-        {"name": "question"},
+        {"name": "answers"},
+        {"name": "questions"},
         {"name": "tasks"},
+        {"name": "users"},
         {"name": "simple"},
-        {"name": "util"}
+        {"name": "util"},
+        {"name": "util - builder"},
+        {"name": "util - ranker"}
     ]
 }
 

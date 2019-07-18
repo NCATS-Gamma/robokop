@@ -154,7 +154,7 @@ class Concepts(Resource):
         """
         Get known biomedical concepts
         ---
-        tags: [util]
+        tags: ["util - builder"]
         responses:
             200:
                 description: concepts
@@ -181,7 +181,7 @@ class Omnicorp(Resource):
         """
         Get publications for a pair of identifiers
         ---
-        tags: [util]
+        tags: ["util - ranker"]
         parameters:
           - in: path
             name: id1
@@ -219,7 +219,7 @@ class Omnicorp1(Resource):
         """
         Get publications for one identifier
         ---
-        tags: [util]
+        tags: ["util - ranker"]
         parameters:
           - in: path
             name: id1
@@ -250,7 +250,7 @@ class Connections(Resource):
         """
         Get possible connections between biomedical concepts
         ---
-        tags: [util]
+        tags: ["util - builder"]
         responses:
             200:
                 description: concepts
@@ -273,7 +273,7 @@ class Operations(Resource):
         """
         Get a machine readable list of all connections between biomedical concepts with sources
         ---
-        tags: [util]
+        tags: ["util - builder"]
         responses:
             200:
                 description: concepts
@@ -296,7 +296,7 @@ class Predicates(Resource):
         """
         Get a machine readable list of all predicates for a source-target pair
         ---
-        tags: [util]
+        tags: ["util - builder"]
         responses:
             200:
                 description: predicates
@@ -315,7 +315,7 @@ class Predicates(Resource):
         """
         Force update of source-target predicate list from neo4j database
         ---
-        tags: [util]
+        tags: ["util - builder"]
         responses:
             200:
                 description: "Here's your updated source-target predicate list"
@@ -342,7 +342,7 @@ class NodeProperties(Resource):
         """
         Get a JSON object of properties for each node type
         ---
-        tags: [util]
+        tags: ["util - builder"]
         responses:
             200:
                 description: node properties
@@ -358,7 +358,7 @@ class NodeProperties(Resource):
         """
         Force update of node-type property list from neo4j database
         ---
-        tags: [util]
+        tags: ["util - builder"]
         responses:
             200:
                 description: "Here's your updated node-type property list"
@@ -384,7 +384,7 @@ class Properties(Resource):
         """
         Get a machine readable list of potential node proeprties in the knowledge graph
         ---
-        tags: [util]
+        tags: ["util - builder"]
         responses:
             200:
                 description: concepts
@@ -535,7 +535,7 @@ class User(Resource):
         """
         Get current user info
         ---
-        tags: [util]
+        tags: [users]
         responses:
             200:
                 description: user

@@ -31,7 +31,7 @@ class AnswersetAPI(Resource):
         """
         Get message for question/answerset.
         ---
-        tags: [answerset]
+        tags: [answers]
         parameters:
           - in: path
             name: qid_aid
@@ -115,7 +115,7 @@ class QuestionAPI(Resource):
         """
         Get message for question.
         ---
-        tags: [question]
+        tags: [questions]
         parameters:
           - in: path
             name: question_id
@@ -175,7 +175,7 @@ class QuestionAPI(Resource):
         """
         Edit question metadata
         ---
-        tags: [question]
+        tags: [questions]
         parameters:
           - in: path
             name: question_id
@@ -261,7 +261,7 @@ class QuestionAPI(Resource):
         """
         Delete question
         ---
-        tags: [question]
+        tags: [questions]
         parameters:
           - in: path
             name: question_id
@@ -322,7 +322,7 @@ class AnswerQuestion(Resource):
         """
         Answer question
         ---
-        tags: [question]
+        tags: [questions]
         parameters:
           - in: path
             name: question_id
@@ -371,7 +371,7 @@ class RefreshKG(Resource):
         """
         Refresh KG for question
         ---
-        tags: [question]
+        tags: [questions]
         parameters:
           - in: path
             name: question_id

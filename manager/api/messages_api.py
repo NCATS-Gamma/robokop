@@ -66,7 +66,7 @@ class QuestionsAPI(Resource):
         """
         Create a question.
         ---
-        tags: [question]
+        tags: [questions]
         requestBody:
             name: question
             content:
