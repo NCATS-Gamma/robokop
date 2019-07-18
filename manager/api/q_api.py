@@ -47,11 +47,11 @@ class AnswersetAPI(Resource):
             default: false
         responses:
             200:
-                description: "question edited"
+                description: "Message with results"
                 content:
-                    text/plain:
+                    application/json:
                         schema:
-                            type: string
+                            type: object
             401:
                 description: "unauthorized"
                 content:
@@ -125,11 +125,11 @@ class QuestionAPI(Resource):
             required: true
         responses:
             200:
-                description: "question edited"
+                description: "Question"
                 content:
-                    text/plain:
+                    application/json:
                         schema:
-                            type: string
+                            type: object
             401:
                 description: "unauthorized"
                 content:
