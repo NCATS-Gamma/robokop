@@ -189,14 +189,14 @@ class Omnicorp(Resource):
             schema:
                 type: string
             required: true
-            default: "MONDO:0005737"
+            example: "MONDO:0005737"
           - in: path
             name: id2
             description: "curie of second term"
             schema:
                 type: string
             required: true
-            default: "HGNC:7897"
+            example: "HGNC:7897"
         responses:
             200:
                 description: publications
@@ -227,7 +227,7 @@ class Omnicorp1(Resource):
             schema:
                 type: string
             required: true
-            default: "MONDO:0005737"
+            example: "MONDO:0005737"
         responses:
             200:
                 description: publications
@@ -236,7 +236,7 @@ class Omnicorp1(Resource):
                         schema:
                             type: array
                             items:
-                                type: string
+                                type: integer
         """
 
         r = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/omnicorp/{id1}")
@@ -280,9 +280,18 @@ class Operations(Resource):
                 content:
                     application/json:
                         schema:
-                            type: array
-                            items:
-                                type: string
+                            type: object
+                            additionalProperties:
+                                type: object
+                                additionalProperties:
+                                    type: array
+                                    items:
+                                        type: object
+                                        properties:
+                                            link:
+                                                type: string
+                                            op:
+                                                type: string
         """
         r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/operations")
         operations = r.json()
@@ -303,7 +312,16 @@ class Predicates(Resource):
                 content:
                     application/json:
                         schema:
+                            description: Source map
                             type: object
+                            additionalProperties:
+                                description: Target map
+                                type: object
+                                additionalProperties:
+                                    description: Array of predicates
+                                    type: array
+                                    items:
+                                        type: string
         """
         get_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/predicates"
         r = requests.get(get_url)
@@ -322,7 +340,16 @@ class Predicates(Resource):
                 content:
                     application/json:
                         schema:
+                            description: Source map
                             type: object
+                            additionalProperties:
+                                description: Target map
+                                type: object
+                                additionalProperties:
+                                    description: Array of predicates
+                                    type: array
+                                    items:
+                                        type: string
             400:
                 description: "Something went wrong. Old predicate list will be retained"
                 content:
@@ -348,6 +375,12 @@ class NodeProperties(Resource):
                 description: node properties
                 content:
                     application/json:
+                        schema:
+                            type: object
+                            additionalProperties:
+                                type: array
+                                items:
+                                    type: string
         """
         r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/node_properties")
         props = r.json()
@@ -366,6 +399,10 @@ class NodeProperties(Resource):
                     application/json:
                         schema:
                             type: object
+                            additionalProperties:
+                                type: array
+                                items:
+                                    type: string
             400:
                 description: "Something went wrong. Old node-type properties list will be retained"
                 content:
@@ -390,6 +427,31 @@ class Properties(Resource):
                 description: concepts
                 content:
                     application/json:
+                        schema:
+                            type: object
+                            additionalProperties:
+                                type: object
+                                properties:
+                                    node_type:
+                                        type: string
+                                    prefixes:
+                                        type: array
+                                        items:
+                                            type: string
+                                additionalProperties:
+                                    type: object
+                                    properties:
+                                        url:
+                                            type: string
+                                        keys:
+                                            type: object
+                                            additionalProperties:
+                                                type: object
+                                                properties:
+                                                    source:
+                                                        type: string
+                                                    data_type:
+                                                        type: string
         """
         r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/properties")
         props = r.json()
@@ -411,12 +473,14 @@ class Pubmed(Resource):
             schema:
                 type: string
             required: true
-            default: "10924274"
+            example: "10924274"
         responses:
             200:
                 description: pubmed publication
                 content:
                     application/json:
+                        schema:
+                            type: object
         """
         
         # logger.debug(f'Fetching pubmed info for pmid {pmid}')
@@ -490,7 +554,14 @@ class Search(Resource):
                         schema:
                             type: array
                             items:
-                                type: string
+                                type: object
+                                properties:
+                                    id:
+                                        type: string
+                                    label:
+                                        type: string
+                                    type:
+                                        type: string
         """
         if category not in concept_map:
             abort(400, error_message=f'Unsupported category: {category} provided')
