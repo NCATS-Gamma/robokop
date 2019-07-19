@@ -9,7 +9,7 @@
       },
       {
         "id": "n1",
-        "type": "gene",
+        "type": "gene"
       },
       {
         "id": "n2",
@@ -22,7 +22,7 @@
         "id": "e0",
         "source_id": "n1",
         "target_id": "n0",
-	"type": "increases_degradation_of"
+	      "type": "increases_degradation_of"
       }
     ]
   }
