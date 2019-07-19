@@ -12,6 +12,7 @@ import 'react-widgets/dist/css/react-widgets.css';
 import 'babel-polyfill'; // For IE Promises
 
 import Landing from './simplePages/Landing';
+import About from './simplePages/About';
 import Help from './simplePages/Help';
 import Guide from './simplePages/Guide';
 import SimpleQuestion from './SimpleQuestion';
@@ -65,6 +66,14 @@ const robokop = {
   landing: () => {
     ReactDOM.render(
       <Landing
+        config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  about: () => {
+    ReactDOM.render(
+      <About
         config={config}
       />,
       document.getElementById('reactEntry'),

@@ -101,28 +101,9 @@ class Guide extends React.Component {
                     {'You can provide feedback about which answer in an answerset you think is best. Over time we will use the feedback to improve the ranking engine inside of Robokop.'}
                   </p> */}
                   <hr />
-                  <h3>Knowledge Sources</h3>
-                  <p>
-                    <a href="http://stars-app.renci.org/pubmedgraph/sparql">Omnicorp</a> - is an RDF graph associating ontology terms with pubmed ids. This allows users to find articles related to particular terms, as well as to perform literature co-occurence calculations.
-                  </p>
-                  <p>
-                    <a href="http://stars-app.renci.org/uberongraph/sparql">UberonGraph</a> - is an RDF graph created by combining numerous community bio-ontologies, including GO, UBERON, CHEBI, RO, and others. Reasoning is then applied to the integrated information to infer and materialize relationships between entities.
-                  </p>
-                  <p>
-                    <a href="https://ctdapi.renci.org/">CTD</a> - is a <a href="https://researchsoftwareinstitute.github.io/data-translator/apis">SmartBag</a> enabled API allowing access to the <a href="http://ctdbase.org/">Comparative Toxicogenomics Database</a>.
-                  </p>
-                  <p>
-                    <a href="http://chemotext.mml.unc.edu/">Chemotext</a> - provides Medline/PubMed abstract co-occurrence of MeSH terms.
-                  </p>
-                  <hr />
-                  <h3>Automated Workflows and Modules</h3>
-                  <p>
-                    Workflows are pre-constructed questions where the user specifies certain entities. These workflows can be used when asking a new question by clicking on the Question Templates button at the top of the New Question page.
-                  </p>
-                  <hr />
                   <h3>Walkthrough</h3>
                   <p>
-                    A comprehensive walkthrough of the application can be found at <a href="https://researchsoftwareinstitute.github.io/data-translator/apps/robokop">Translator</a>.
+                    A comprehensive walkthrough of the application can be found at <a target="_blank" rel="noopener noreferrer" href="https://researchsoftwareinstitute.github.io/data-translator/apps/robokop">RSI Data Translator Robokop App</a>.
                   </p>
                   <hr />
                   <h3>
