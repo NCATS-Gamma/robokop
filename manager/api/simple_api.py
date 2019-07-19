@@ -16,6 +16,7 @@ from flask_security import auth_required
 from flask_restful import Resource
 
 from manager.setup import api
+import manager.api.definitions2
 
 logger = logging.getLogger(__name__)
 
@@ -78,27 +79,27 @@ class Expand(Resource):
             schema:
                 type: string
             required: true
-            default: "disease"
+            example: "disease"
           - in: path
             name: id1
             description: "curie of first node"
             schema:
                 type: string
             required: true
-            default: "MONDO:0005737"
+            example: "MONDO:0005737"
           - in: path
             name: type2
             description: "type of second node"
             schema:
                 type: string
             required: true
-            default: "gene"
+            example: "gene"
           - in: query
             name: predicate
             description: "edge predicate between the two nodes, also see direction"
             schema:
                 type: string
-            default: "disease_to_gene_association"
+            example: "disease_to_gene_association"
           - in: query
             name: direction
             description: "direction of the edge between the two nodes, can be one of out, in, undirected. The default is out meaning an edge from node_1 to node_2. This parameter only matters if predicate is also set."
@@ -112,9 +113,14 @@ class Expand(Resource):
             default: false
           - in: query
             name: output_format
-            description: Requested output format. DENSE, MESSAGE, CSV or ANSWERS
+            description: Requested output format.
             schema:
                 type: string
+                enum:
+                  - DENSE
+                  - MESSAGE
+                  - CSV
+                  - ANSWERS
             default: MESSAGE
           - in: query
             name: max_connectivity
@@ -130,16 +136,19 @@ class Expand(Resource):
             default: 250
         responses:
             200:
-                description: answers
                 content:
                     application/json:
                         schema:
+                            oneOf:
+                              - description: Message
                             type: object
-                            properties:
-                                answers:
-                                    type: array
-                                    items:
-                                        $ref: '#/definitions/Answer'
+                              - description: Dense
+                                type: object
+                              - description: Answers
+                                type: object
+                    text/csv:
+                        schema:
+                            type: string
         """
         direction = request.args.get('direction', 'out')
         direction = direction.lower()
@@ -223,9 +232,14 @@ class Quick(Resource):
             default: false
           - in: query
             name: output_format
-            description: Requested output format. DENSE, MESSAGE, CSV or ANSWERS
+            description: Requested output format.
             schema:
                 type: string
+                enum:
+                  - DENSE
+                  - MESSAGE
+                  - CSV
+                  - ANSWERS
             default: MESSAGE
           - in: query
             name: max_connectivity
@@ -241,11 +255,11 @@ class Quick(Resource):
             default: 250
         responses:
             200:
-                description: Answer set
+                description: Message
                 content:
                     application/json:
                         schema:
-                            $ref: '#/definitions/Response'
+                            $ref: "#/definitions/Message"
         """
         logger.info('Answering question quickly')
         question = request.json
@@ -378,11 +392,18 @@ class View(Resource):
             content:
                 application/json:
                     schema:
-                        $ref: '#/components/schemas/Message'
+                        $ref: '#/definitions/Message'
+                    examples:
+                        yanked:
+                            $ref: '#/definitions/ex_yanked'
             required: true
         responses:
             200:
                 description: A URL for further viewing
+                content:
+                    text/plain:
+                        schema:
+                            type: string
         """
         
         logger.info('Recieving Answerset for storage and later viewing')
@@ -454,14 +475,14 @@ class Synonymize(Resource):
             schema:
                 type: string
             required: true
-            default: "MONDO:0005737"
+            example: "MONDO:0005737"
           - in: path
             name: type1
             description: "type of query node"
             schema:
                 type: string
             required: true
-            default: "disease"
+            example: "disease"
         responses:
             200:
                 description: Synonymized node
@@ -476,7 +497,8 @@ class Synonymize(Resource):
                                     type: string
                                 synonyms:
                                     type: array
-                                    items: string
+                                    items:
+                                        type: string
                                 type:
                                     type: string
         """
@@ -504,28 +526,28 @@ class SimilaritySearch(Resource):
             schema:
                 type: string
             required: true
-            default: "disease"
+            example: "disease"
           - in: path
             name: id1
             description: "curie of query node"
             schema:
                 type: string
             required: true
-            default: "MONDO:0005737"
+            example: "MONDO:0005737"
           - in: path
             name: type2
             description: "type of return nodes"
             schema:
                 type: string
             required: true
-            default: "disease"
+            example: "disease"
           - in: path
             name: by_type
             description: "type used to evaluate similarity"
             schema:
                 type: string
             required: true
-            default: "phenotypic_feature"
+            example: "phenotypic_feature"
           - in: query
             name: threshhold
             description: "Number between 0 and 1 indicating the minimum similarity to return"
@@ -550,12 +572,7 @@ class SimilaritySearch(Resource):
                 content:
                     application/json:
                         schema:
-                            type: object
-                            properties:
-                                answers:
-                                    type: array
-                                    items:
-                                        $ref: '#/definitions/Answer'
+                            $ref: "#/definitions/SimilarityResult"
         """
         #TODO:Add another argument:
         #- in: query
@@ -660,14 +677,14 @@ class EnrichedExpansion(Resource):
             schema:
                 type: string
             required: true
-            default: "disease"
+            example: "disease"
           - in: path
             name: type2
             description: "type of return nodes"
             schema:
                 type: string
             required: true
-            default: "phenotypic_feature"
+            example: "phenotypic_feature"
         requestBody:
             name: all_the_things
             description: "This should probably be a schema object"
@@ -709,16 +726,20 @@ class EnrichedExpansion(Resource):
                             rebuild: false
         responses:
             200:
-                description: answers
+                description: return nodes
                 content:
                     application/json:
                         schema:
-                            type: object
-                            properties:
-                                answers:
                                     type: array
                                     items:
-                                        $ref: '#/definitions/Answer'
+                                type: object
+                                properties:
+                                    id:
+                                        type: string
+                                    name:
+                                        type: string
+                                    p:
+                                        type: number
         """
         parameters = request.json
         identifiers = parameters['identifiers']
