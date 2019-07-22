@@ -1,0 +1,26 @@
+{
+    "name": "Expand - $name1$ ($identifier1$) to $type2$",
+    "natural_question": "What $type2$s are associated with $name1$ ($identifier1$)?",
+    "machine_question": {
+      "nodes": [
+            {
+                "id": "n0",
+                "type": "disease",
+                "curie": [
+                  "$identifier1$"
+                ]
+            },
+            {
+                "id": "n1",
+                "type": "$type2$"
+            }
+        ],
+        "edges": [
+            {
+                "id": "e0",
+                "source_id": "n0",
+                "target_id": "n1"
+            }
+        ]
+    }
+}

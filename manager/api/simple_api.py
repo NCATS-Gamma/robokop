@@ -141,7 +141,7 @@ class Expand(Resource):
                         schema:
                             oneOf:
                               - description: Message
-                            type: object
+                                type: object
                               - description: Dense
                                 type: object
                               - description: Answers
@@ -730,8 +730,8 @@ class EnrichedExpansion(Resource):
                 content:
                     application/json:
                         schema:
-                                    type: array
-                                    items:
+                            type: array
+                            items:
                                 type: object
                                 properties:
                                     id:
@@ -884,7 +884,7 @@ class Templates(Resource):
 api.add_resource(Templates, '/simple/templates/')
 
 class Template(Resource):
-    def get(self, template_id, **kwargs):
+    def get(self, template_id):
         """
         Return an optionally completed template
         ---
@@ -896,67 +896,42 @@ class Template(Resource):
             schema:
                 type: string
             required: true
-            default: "wf1mod1"
-          - in: path
-            name: identifier1
-            description: "The curie for the first template node."
-            schema:
-                type: string
-            required: true
-            default: "MONDO:0005737"
-          - in: path
-            name: identifier2
-            description: "The curie for the second template node (if necessary)"
-            schema:
-                type: string
-            required: false
-            default: ""
+            example: "expand"
           - in: query
-            name: name1
-            description: "Natural language name for the first template node. This is only used in the natural language question"
+            name: arguments
             schema:
-                type: string
-            required: false
-            default: "Ebola"
-          - in: query
-            name: name2
-            description: "Natural language name for the second template node. This is only used in the natural language question"
-            schema:
-                type: string
-            required: false
-            default: ""
+                type: object
+            style: form
+            explode: true
+            example:
+                identifier1: "MONDO:0005737"
+                name1: "Ebola hemorrhagic fever"
+                type2: "gene"
         responses:
             200:
-                description: A machine question 
+                description: A machine question
                 content:
                     application/json:
                         schema:
-                            type: array
-                            items:
-                                type: string
+                            $ref: "#/definitions/Question"
         """
 
-        template_args = {}
-        for arg in kwargs:
-            if kwargs[arg]:
-                template_args[arg] = kwargs[arg]
-
-        for arg in request.args:
-            if request.args[arg]:
-                template_args[arg] = request.args[arg]
-
+        kwargs = {
+            key: request.args[key]
+            for key in request.args
+        }
         try:
-            question = load_and_complete_template(template_id, **template_args)
+            question = load_and_complete_template(template_id, **kwargs)
         except Exception as e:
             return str(e), 404
 
         return json.loads(question), 200
 
-api.add_resource(Template, '/simple/template/<template_id>/', '/simple/template/<template_id>/<identifier1>/', '/simple/template/<template_id>/<identifier1>/<identifier2>/', '/simple/template/<template_id>/<identifier1>/<identifier2>/<identifier3>/')
+api.add_resource(Template, '/simple/template/<template_id>/')
 
 
 class TemplateRun(Resource):
-    def get(self, template_id, **kwargs):
+    def get(self, template_id):
         """
         Answer a templated questions.
         ---
@@ -968,35 +943,17 @@ class TemplateRun(Resource):
             schema:
                 type: string
             required: true
-            default: "wf1mod1"
-          - in: path
-            name: identifier1
-            description: "The curie for the first template node."
-            schema:
-                type: string
-            required: true
-            default: "MONDO:0005737"
-          - in: path
-            name: identifier2
-            description: "The curie for the second template node (if necessary)"
-            schema:
-                type: string
-            required: false
-            default: ""
+            example: "expand"
           - in: query
-            name: name1
-            description: "Natural language name for the first template node. This is only used in the natural language question"
+            name: arguments
             schema:
-                type: string
-            required: false
-            default: "Ebola"
-          - in: query
-            name: name2
-            description: "Natural language name for the second template node. This is only used in the natural language question"
-            schema:
-                type: string
-            required: false
-            default: ""
+                type: object
+            style: form
+            explode: true
+            example:
+                identifier1: "MONDO:0005737"
+                name1: "Ebola hemorrhagic fever"
+                type2: "gene"
           - in: query
             name: rebuild
             description: Request a rebuild of the knowledge graph specifically for this question
@@ -1005,9 +962,14 @@ class TemplateRun(Resource):
             default: false
           - in: query
             name: output_format
-            description: Requested output format. DENSE, MESSAGE, CSV or ANSWERS
+            description: Requested output format
             schema:
                 type: string
+                enum:
+                  - DENSE
+                  - MESSAGE
+                  - CSV
+                  - ANSWER
             default: MESSAGE
           - in: query
             name: max_connectivity
@@ -1028,27 +990,18 @@ class TemplateRun(Resource):
                 content:
                     application/json:
                         schema:
-                            type: object
-                            properties:
-                                answers:
-                                    type: array
-                                    items:
-                                        $ref: '#/definitions/Answer'
+                            $ref: "#/definitions/Message"
         """
         logger.info(f'Quick Template - {template_id}')
 
-        template_args = {}
-        for arg in kwargs:
-            if kwargs[arg]:
-                template_args[arg] = kwargs[arg]
-
         quick_args = ['output_format', 'rebuild', 'max_connectivity', 'max_results']
-        for arg in request.args:
-            if arg not in quick_args:
-                template_args[arg] = request.args[arg]
+        kwargs = {
+            key: request.args[key]
+            for key in request.args if key not in quick_args
+        }
     
         try:
-            question_text = load_and_complete_template(template_id, **template_args)
+            question_text = load_and_complete_template(template_id, **kwargs)
         except Exception as e:
             return str(e), 404
 
@@ -1072,7 +1025,7 @@ class TemplateRun(Resource):
 
         return answerset
 
-api.add_resource(TemplateRun, '/simple/quick/template/<template_id>/<identifier1>/', '/simple/quick/template/<template_id>/<identifier1>/<identifier2>/', '/simple/quick/template/<template_id>/<identifier1>/<identifier2>/<identifier3>/')
+api.add_resource(TemplateRun, '/simple/quick/template/<template_id>/')
 
 
 
