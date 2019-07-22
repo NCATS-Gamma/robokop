@@ -70,6 +70,9 @@ class Header extends React.Component {
             }
           </Nav>
           <Nav pullRight>
+            <NavItem href={this.appConfig.urls.about}>
+              About
+            </NavItem>
             <NavItem href={this.appConfig.urls.help}>
               Help
             </NavItem>

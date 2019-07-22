@@ -176,6 +176,46 @@ class Concepts(Resource):
 api.add_resource(Concepts, '/concepts/')
 
 
+class Licenses(Resource):
+    def get(self):
+        """
+        Get source licenses from knowledge sources
+        ---
+        tags: [util]
+        responses:
+            200:
+                description: Licenses
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: object
+                                properties:
+                                    name:
+                                        type: string
+                                        example: Drugbank
+                                    url:
+                                        type: string
+                                        example: https://www.drugbank.ca/
+                                    license:
+                                        type: string
+                                        example: CC-BY-NC-4.0
+                                    license_url:
+                                        type: string
+                                        example: https://www.drugbank.ca/releases/latest
+                                    citation_url:
+                                        type: string
+                                        example: https://www.drugbank.ca/about
+        """
+        r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/sourceLicenses")
+        licenses = r.json()
+
+        return licenses
+
+api.add_resource(Licenses, '/licenses/')
+
+
 class Omnicorp(Resource):
     def get(self, id1, id2):
         """

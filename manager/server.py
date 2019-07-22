@@ -41,6 +41,12 @@ def landing():
     return render_template('landing.html')
 
 
+@app.route('/about/')
+def about():
+    """Get about page."""
+    return render_template('about.html')
+
+
 @app.route('/help/')
 def help():
     """Get help page."""
