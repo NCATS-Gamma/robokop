@@ -2,7 +2,7 @@
 import logging
 import datetime
 
-from sqlalchemy import Column, String, Integer, ForeignKeyConstraint, DateTime
+from sqlalchemy import Column, String, Integer, ForeignKeyConstraint, DateTime, Boolean
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy import inspect
@@ -109,6 +109,7 @@ class Question(Base, FromDictMixin):
     qgraph_id = Column(QGRAPH_ID_TYPE)
     etc = Column(JSON)
     timestamp = Column(DateTime)
+    published = Column(Boolean, default=False)
 
     owner = relationship(
         'User',
@@ -131,7 +132,7 @@ class Question(Base, FromDictMixin):
         'question_graph': QGraph
     }
 
-    dump_attributes = ['id', 'owner_email', 'natural_question', 'question_graph', 'timestamp', 'notes']
+    dump_attributes = ['id', 'owner_email', 'natural_question', 'question_graph', 'timestamp', 'notes', 'published']
 
     def __init__(self, *args, **kwargs):
         """Initialize Question."""
