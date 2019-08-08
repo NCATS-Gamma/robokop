@@ -9,20 +9,6 @@ services:
       - POSTGRES_PASSWORD
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
-  graphql:
-    image: graphile/postgraphile
-    container_name: postgraphile
-    depends_on:
-      - postgres
-    environment:
-      - PGHOST=${POSTGRES_HOST}
-      - PGPORT=${POSTGRES_PORT}
-      - PGDATABASE=${POSTGRES_DB}
-      - PGUSER=${POSTGRES_USER}
-      - PGPASSWORD=${POSTGRES_PASSWORD}
-    ports:
-      - "${GRAPHQL_PORT}:${GRAPHQL_PORT}"
-    command: postgraphile --port ${GRAPHQL_PORT} --watch --cors --simple-collections only --disable-default-mutations
   manager:
     container_name: manager
     build:
@@ -38,6 +24,7 @@ services:
     ports:
       - "${MANAGER_PORT}:${MANAGER_PORT}"
       - "${MANAGER_SUPERVISOR_PORT}:${MANAGER_SUPERVISOR_PORT}"
+      - "${GRAPHQL_PORT}:${GRAPHQL_PORT}"
     volumes:
       - ../../../logs:/home/murphy/logs
       - ../../../shared:/home/murphy/shared
