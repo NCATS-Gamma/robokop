@@ -86,7 +86,7 @@ class AnswersetAPI(Resource):
             }}
         }}"""
         request_body = {'query': query}
-        url = f'http://{os.environ["GRAPHQL_HOST"]}:{os.environ["GRAPHQL_PORT"]}/graphql'
+        url = f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["GRAPHQL_PORT"]}/graphql'
         response = requests.post(url, json=request_body)
         graphql_out = response.json()
         question_graph = json.loads(graphql_out['data']['question']['question_graph']['body'])
@@ -154,7 +154,7 @@ class QuestionAPI(Resource):
             }}
         }}"""
         request_body = {'query': query}
-        url = f'http://{os.environ["GRAPHQL_HOST"]}:{os.environ["GRAPHQL_PORT"]}/graphql'
+        url = f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["GRAPHQL_PORT"]}/graphql'
         response = requests.post(url, json=request_body)
         graphql_out = response.json()
         question = graphql_out['data']['question']
