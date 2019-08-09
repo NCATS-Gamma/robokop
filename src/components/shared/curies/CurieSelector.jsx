@@ -92,7 +92,7 @@ class CurieSelector extends React.Component {
     if (!input || (input.length < 3)) {
       return Promise.resolve({ options: null });
     }
-    const searchNodeType = this.props.disableTypeFilter ? nodeType : '';
+    const searchNodeType = this.props.disableTypeFilter ? '' : nodeType;
     return this.props.search(input, searchNodeType);
   }
   handleTermChange(event) {
@@ -138,7 +138,6 @@ class CurieSelector extends React.Component {
               {!disableType &&
                 <DropdownList
                   filter
-                  // dropUp
                   disabled={disableType}
                   style={{ display: 'table-cell', verticalAlign: 'middle', width: '200px' }}
                   data={dropDownObjList}

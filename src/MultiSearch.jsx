@@ -24,16 +24,16 @@ class MultiSearch extends React.Component {
       userReady: false,
       user: {},
       concepts: [],
-      rawInputJson: '',
       submittedJSON: this.stringify(this.defaultCurie()),
+      disableType: false,
+      disableTypeFilter: false,
     };
 
     this.onSearch = this.onSearch.bind(this);
-    this.handleRawJsonChange = this.handleRawJsonChange.bind(this);
     this.updateCurie = this.updateCurie.bind(this);
     this.addCurie = this.addCurie.bind(this);
     this.deleteCurie = this.deleteCurie.bind(this);
-    this.curieListFromSubmittedJSON = this.curieListFromSubmittedJSON.bind(this);
+    this.toggleDisableType = this.toggleDisableType.bind(this);
   }
 
   componentDidMount() {
@@ -74,13 +74,8 @@ class MultiSearch extends React.Component {
     submittedJSONObj[i] = { type, term, curie };
     this.setState({ submittedJSON: this.stringify(submittedJSONObj) });
   }
-  curieListFromSubmittedJSON() {
-    const submittedJSON = JSON.parse(this.state.submittedJSON);
-    submittedJSON.map(blob => (blob.label = blob.term));
-    return submittedJSON;
-  }
-  handleRawJsonChange(event) {
-    this.setState({ rawInputJson: event.target.value });
+  toggleDisableType() {
+    this.setState(prevState => ({ disableType: !prevState.disableType, disableTypeFilter: !prevState.disableTypeFilter }));
   }
   renderLoading() {
     return (
@@ -118,10 +113,9 @@ class MultiSearch extends React.Component {
                     concepts={this.state.concepts}
                     search={(input, nodeType) => this.onSearch(input, nodeType)}
                     width={width}
-                    disableType={false}
-                    disableTypeFilter={false}
+                    disableType={this.state.disableType}
+                    disableTypeFilter={this.state.disableTypeFilter}
                     initialInputs={jsonBlob}
-                    // key={shortid.generate()}
                     onChangeHook={(ty, te, cu) => this.updateCurie(i, ty, te, cu)}
                   />
                 </div>
@@ -169,6 +163,11 @@ class MultiSearch extends React.Component {
                   </small>
                 </h2>
               </div>
+              <Button
+                onClick={this.toggleDisableType}
+              >
+                Toggle Type
+              </Button>
               <AutoSizer disableHeight>
                 {({ width }) => (
                   <div
