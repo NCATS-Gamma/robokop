@@ -15,7 +15,10 @@ const propTypes = {
     value: PropTypes.string,
     label: PropTypes.string,
   })),
+  concepts: PropTypes.arrayOf(PropTypes.string).isRequired,
   thinking: PropTypes.bool,
+  disableTypeFilter: PropTypes.bool,
+  type: PropTypes.string,
   // type: PropTypes.string,
   onSelect: PropTypes.func,
   width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
@@ -24,7 +27,8 @@ const propTypes = {
 const defaultProps = {
   thinking: false,
   data: [],
-  // type: 'Disease',
+  disableTypeFilter: true,
+  type: 'disease',
   onSelect: () => {},
   width: 0, // will be ignored
 };
@@ -49,10 +53,73 @@ class BionamesBrowser extends React.Component {
     const d = this.props.data[index];
     const curie = d.value;
     const name = d.label;
-    const types = d.type;
-    const type = types[types.length - 1];
-    const color = this.nodeTypeColorMap(type);
+    const types = d.type.slice();
     const degree = d.degree;
+
+    // types is a list of all the types for this node.
+    // We want to assign a set of color stripes to the row in the search table corresponding to these types
+    // First lets remove named_thing because it includes verything
+    const removeIndex = types.indexOf('named_thing');
+    if (removeIndex >= 0) {
+      types.splice(removeIndex, 1);
+    }
+
+    // The goal is a list of up to 5 colors (by default white)
+    const nTotalStripes = 5;
+    const colors = new Array(nTotalStripes);
+    colors.fill('#fff');
+    const selectedTypes = new Array(nTotalStripes);
+    selectedTypes.fill('');
+    let nUsedColors = 0;
+
+    const theseConcepts = this.props.concepts.slice();
+
+    let conceptFoundIndex = -1;
+    let foundIndex = -1;
+    if (!this.props.disableTypeFilter) {
+      // We are biased towards a particular type
+      // Let's search for that one first
+      foundIndex = types.indexOf(this.props.type);
+      if (foundIndex >= 0) {
+        // We have this type
+        colors[nUsedColors] = this.nodeTypeColorMap(this.props.type);
+        selectedTypes[nUsedColors] = this.props.type;
+        nUsedColors += 1;
+
+        types.splice(foundIndex, 1);
+      }
+
+      // Remove this type from further consideration
+      conceptFoundIndex = theseConcepts.indexOf(this.props.type);
+      if (conceptFoundIndex >= 0) {
+        theseConcepts.splice(conceptFoundIndex, 1);
+      }
+    }
+    console.log(colors)
+
+    // To find other colors for these types we will go through all concepts in order
+    theseConcepts.forEach((concept) => {
+      foundIndex = types.indexOf(concept);
+      if (foundIndex >= 0 && nUsedColors < nTotalStripes) {
+        // We have this type and we have more color stripes available
+        colors[nUsedColors] = this.nodeTypeColorMap(concept);
+        selectedTypes[nUsedColors] = concept;
+        nUsedColors += 1;
+      }
+    });
+
+    const stripes = colors.map((c, ind) => (
+      <div
+        title={entityNameDisplay(selectedTypes[ind])}
+        style={{
+          display: 'table-cell',
+          height: '100%',
+          width: '5px',
+          backgroundColor: c,
+        }}
+        key={shortid.generate()}
+      />
+    ));
 
     const urls = curieUrls(curie);
     const links = (
@@ -63,7 +130,7 @@ class BionamesBrowser extends React.Component {
       </span>
     );
 
-    const maxWidth = this.props.width ? { maxWidth: `${this.props.width - 425}px` } : {}; // sum of other columns below plus a little pad
+    const maxWidth = this.props.width ? { maxWidth: `${this.props.width - 440}px` } : {}; // sum of other columns below plus a little pad
 
     return (
       <div
@@ -76,15 +143,7 @@ class BionamesBrowser extends React.Component {
           borderBottom: '1px solid #e0e0e0',
         }}
       >
-        <div
-          title={entityNameDisplay(type)}
-          style={{
-            display: 'table-cell',
-            height: '100%',
-            width: '10px',
-            backgroundColor: color,
-          }}
-        />
+        {stripes}
         <div
           style={{
             display: 'table-cell',

@@ -201,6 +201,8 @@ class CurieSelector extends React.Component {
               onSelect={this.handleSelect}
               width={browserWidth}
               concepts={concepts}
+              disableTypeFilter={this.props.disableTypeFilter}
+              type={type}
             />
           </div>
         }
