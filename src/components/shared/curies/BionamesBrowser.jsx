@@ -5,6 +5,7 @@ import { Button } from 'react-bootstrap';
 import { AutoSizer, List } from 'react-virtualized';
 
 import curieUrls from '../../util/curieUrls';
+import getNodeTypeColorMap from '../../util/colorUtils';
 
 const shortid = require('shortid');
 
@@ -35,6 +36,9 @@ class BionamesBrowser extends React.Component {
     this.renderThinking = this.renderThinking.bind(this);
     this.renderEmpty = this.renderEmpty.bind(this);
     this.renderOptions = this.renderOptions.bind(this);
+    
+    this.nodeTypeColorMap = getNodeTypeColorMap(props.concepts);
+
   }
 
   rowRenderer({
@@ -45,6 +49,9 @@ class BionamesBrowser extends React.Component {
     const d = this.props.data[index];
     const curie = d.value;
     const name = d.label;
+    const types = d.type;
+    const type = types[types.length-1];
+    const color = this.nodeTypeColorMap[type];
 
     const urls = curieUrls(curie);
     const links = (
@@ -64,7 +71,7 @@ class BionamesBrowser extends React.Component {
           ...style,
           display: 'table',
           padding: '5 10',
-          backgroundColor: '#fff',
+          backgroundColor: color,
           borderBottom: '1px solid #e0e0e0',
         }}
       >

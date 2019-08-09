@@ -103,7 +103,7 @@ class CurieSelectorContainter extends React.Component {
 
   render() {
     const {
-      concepts, search, width, size, disableType,
+      concepts, search, width, size, disableType, disableTypeFilter,
     } = this.props;
     const { type, term, curie } = this.state;
     return (
@@ -119,6 +119,7 @@ class CurieSelectorContainter extends React.Component {
         onTermChange={this.onTermChange}
         onSelect={this.onSelect}
         disableType={disableType}
+        disableTypeFilter={disableTypeFilter}
         search={search}
         width={width}
         size={size}

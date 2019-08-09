@@ -25,7 +25,7 @@ class MultiSearch extends React.Component {
       user: {},
       concepts: [],
       rawInputJson: '',
-      submittedJSON: this.stringify([this.defaultCurie()]),
+      submittedJSON: this.stringify(this.defaultCurie()),
     };
 
     this.onSearch = this.onSearch.bind(this);
@@ -89,6 +89,7 @@ class MultiSearch extends React.Component {
   }
   renderLoaded() {
     const isEmptyJsonInput = this.state.submittedJSON === '';
+
     let curieSelectorElements;
     if (isEmptyJsonInput) {
       curieSelectorElements = width => (
@@ -96,7 +97,8 @@ class MultiSearch extends React.Component {
           concepts={this.state.concepts}
           search={(input, nodeType) => this.onSearch(input, nodeType)}
           width={width}
-          displayType
+          disableType
+          disableTypeFilter
         />
       );
     } else {
@@ -116,7 +118,8 @@ class MultiSearch extends React.Component {
                     concepts={this.state.concepts}
                     search={(input, nodeType) => this.onSearch(input, nodeType)}
                     width={width}
-                    displayType
+                    disableType={false}
+                    disableTypeFilter={false}
                     initialInputs={jsonBlob}
                     // key={shortid.generate()}
                     onChangeHook={(ty, te, cu) => this.updateCurie(i, ty, te, cu)}
