@@ -154,31 +154,42 @@ class AppConfig {
     this.postRequest(this.apis.graphql, { query }, successFun, failureFun);
   }
   questionList(successFun, failtureFun) {
-    const query = `{
-      questions: allQuestionsList {
-        id
-        naturalQuestion
-        ownerId
-        notes
-        timestamp
-        tasks: tasksByQuestionIdList {
+    this.user((data) => {
+      const user = this.ensureUser(data);
+      // guest users have user_id = null
+      // but we need it to be an int
+      if (user.user_id === null) {
+        user.user_id = -1;
+      }
+      const query = `{
+        questions: allQuestionsList (filter: {or: [
+          {ownerId: {equalTo: ${user.user_id}}}
+          {published: {equalTo: true}}
+        ]}) {
           id
-          initiator
+          naturalQuestion
+          ownerId
+          notes
           timestamp
-          startingTimestamp
-          endTimestamp
-          result
-          type
-        }
-        qgraphs: qgraphByQgraphId {
-          answersets: answersetsByQgraphIdList {
+          tasks: tasksByQuestionIdList {
             id
+            initiator
             timestamp
+            startingTimestamp
+            endTimestamp
+            result
+            type
+          }
+          qgraphs: qgraphByQgraphId {
+            answersets: answersetsByQgraphIdList {
+              id
+              timestamp
+            }
           }
         }
-      }
-    }`;
-    this.postRequest(this.apis.graphql, { query }, successFun, failtureFun);
+      }`;
+      this.postRequest(this.apis.graphql, { query }, successFun, failtureFun);
+    });
   }
   questionCreate(data, successFun, failureFun) {
     // Data must contain a complete specification for a new question

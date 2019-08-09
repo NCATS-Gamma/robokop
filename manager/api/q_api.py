@@ -86,7 +86,7 @@ class AnswersetAPI(Resource):
             }}
         }}"""
         request_body = {'query': query}
-        url = f'http://{os.environ["GRAPHQL_HOST"]}:{os.environ["GRAPHQL_PORT"]}/graphql'
+        url = f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["GRAPHQL_PORT"]}/graphql'
         response = requests.post(url, json=request_body)
         graphql_out = response.json()
         question_graph = json.loads(graphql_out['data']['question']['question_graph']['body'])
@@ -107,6 +107,71 @@ class AnswersetAPI(Resource):
         return message, 200
 
 api.add_resource(AnswersetAPI, '/a/<qid_aid>/')
+
+
+class PublishAPI(Resource):
+
+    @auth_required('session', 'basic')
+    def post(self, question_id):
+        """
+        Toggle question published
+        ---
+        tags: [questions]
+        parameters:
+          - in: path
+            name: question_id
+            description: "question id"
+            schema:
+                type: string
+            required: true
+        responses:
+            200:
+                description: "question edited"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
+            401:
+                description: "unauthorized"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
+            404:
+                description: "invalid question key"
+                content:
+                    text/plain:
+                        schema:
+                            type: string
+        """
+        auth = request.authorization
+        if auth:
+            user_email = auth.username
+            user = get_user_by_email(user_email)
+            user_id = user['id']
+        else:
+            user = getAuthData()
+            user_id = user['id']
+            user_email = user['email']
+
+        try:
+            question = get_question_by_id(question_id)
+        except Exception as err:
+            return "Invalid question id.", 404
+
+        if not (user_email == question['owner_email'] or user['is_admin']):
+            return "UNAUTHORIZED", 401  # not authorized
+
+        # User is authorized
+        mods = {
+            'published': not question['published']
+        }
+
+        modify_question_by_id(question_id, mods)
+
+        return "SUCCESS", 200
+
+api.add_resource(PublishAPI, '/q/<question_id>/publish')
 
 
 class QuestionAPI(Resource):
@@ -154,7 +219,7 @@ class QuestionAPI(Resource):
             }}
         }}"""
         request_body = {'query': query}
-        url = f'http://{os.environ["GRAPHQL_HOST"]}:{os.environ["GRAPHQL_PORT"]}/graphql'
+        url = f'http://{os.environ["ROBOKOP_HOST"]}:{os.environ["GRAPHQL_PORT"]}/graphql'
         response = requests.post(url, json=request_body)
         graphql_out = response.json()
         question = graphql_out['data']['question']

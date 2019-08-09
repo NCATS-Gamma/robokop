@@ -32,6 +32,10 @@ class QuestionListPres extends React.Component {
   }
 
   syncStateAndProps(newProps) {
+    if (newProps.questions === null) {
+      this.setState({ questions: [] });
+      return;
+    }
     const questions = newProps.questions.map((question) => {
       const q = question;
       q.isUserOwned = q.ownerId === this.props.user.user_id;
