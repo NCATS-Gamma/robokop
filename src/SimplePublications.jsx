@@ -21,7 +21,7 @@ class SimplePublications extends React.Component {
       user: {},
       concepts: [],
       entities: [
-        { type: '', term: '', curie: '' },
+        { type: 'disease', term: '', curie: '' },
       ],
       pubs: [],
       loading: false,
@@ -54,7 +54,7 @@ class SimplePublications extends React.Component {
 
   addCurie() {
     const { entities } = this.state;
-    entities.push({ type: '', term: '', curie: '' });
+    entities.push({ type: 'disease', term: '', curie: '' });
     this.setState({ entities });
   }
 
@@ -213,6 +213,8 @@ class SimplePublications extends React.Component {
                         search={this.onSearch}
                         initialInputs={{ type: node.type, term: node.term, curie: node.curie }}
                         onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu, i)}
+                        disableType
+                        disableTypeFilter
                       />
                     </div>
                     <div

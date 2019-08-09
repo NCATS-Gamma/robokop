@@ -20,7 +20,7 @@ class Synonymize extends React.Component {
     this.state = {
       user: {},
       concepts: [],
-      type: '',
+      type: 'disease', // this just needs to be something
       identifier: '',
       term: '',
       results: {},
@@ -128,6 +128,8 @@ class Synonymize extends React.Component {
                       search={this.onSearch}
                       initialInputs={{ type, term, curie: identifier }}
                       onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu)}
+                      disableType
+                      disableTypeFilter
                     />
                   </div>
                 </div>

@@ -11,8 +11,6 @@ import Footer from './components/Footer';
 
 import CurieSelectorContainer from './components/shared/curies/CurieSelectorContainer';
 
-const _ = require('lodash');
-
 class MultiSearch extends React.Component {
   constructor(props) {
     super(props);
@@ -24,7 +22,7 @@ class MultiSearch extends React.Component {
       userReady: false,
       user: {},
       concepts: [],
-      submittedJSON: this.stringify(this.defaultCurie()),
+      submittedJSON: [this.defaultCurie()],
       disableType: false,
       disableTypeFilter: false,
     };
@@ -52,29 +50,29 @@ class MultiSearch extends React.Component {
   onSearch(input, nodeType) {
     return this.appConfig.questionNewSearch(input, nodeType);
   }
-  stringify(jsonObj, spaces = 2) {
-    // Stringifies while retaining desired order
-    return JSON.stringify(jsonObj, ['type', 'term', 'curie'], spaces);
-  }
   defaultCurie() {
     return { type: 'disease', term: '', curie: '' };
   }
   deleteCurie(i) {
-    const submittedJSONObj = JSON.parse(this.state.submittedJSON);
-    submittedJSONObj.splice(i, 1);
-    this.setState({ submittedJSON: this.stringify(submittedJSONObj) });
+    const { submittedJSON } = this.state;
+    submittedJSON.splice(i, 1);
+    this.setState({ submittedJSON });
   }
   addCurie() {
-    const submittedJSONObj = JSON.parse(this.state.submittedJSON);
-    submittedJSONObj.push(this.defaultCurie());
-    this.setState({ submittedJSON: this.stringify(submittedJSONObj) });
+    const { submittedJSON } = this.state;
+    submittedJSON.push(this.defaultCurie());
+    this.setState({ submittedJSON });
   }
   updateCurie(i, type, term, curie) {
-    const submittedJSONObj = JSON.parse(this.state.submittedJSON);
-    submittedJSONObj[i] = { type, term, curie };
-    this.setState({ submittedJSON: this.stringify(submittedJSONObj) });
+    const { submittedJSON } = this.state;
+    submittedJSON[i] = { type, term, curie };
+    this.setState({ submittedJSON });
   }
   toggleDisableType() {
+    const { submittedJSON } = this.state;
+    submittedJSON.forEach((curie, i) => {
+      submittedJSON[i] = this.defaultCurie();
+    });
     this.setState(prevState => ({ disableType: !prevState.disableType, disableTypeFilter: !prevState.disableTypeFilter }));
   }
   renderLoading() {
@@ -83,64 +81,44 @@ class MultiSearch extends React.Component {
     );
   }
   renderLoaded() {
-    const isEmptyJsonInput = this.state.submittedJSON === '';
-
-    let curieSelectorElements;
-    if (isEmptyJsonInput) {
-      curieSelectorElements = width => (
-        <CurieSelectorContainer
-          concepts={this.state.concepts}
-          search={(input, nodeType) => this.onSearch(input, nodeType)}
-          width={width}
-          disableType
-          disableTypeFilter
-        />
-      );
-    } else {
-      let submittedJSON = JSON.parse(this.state.submittedJSON);
-      if (_.isPlainObject(submittedJSON)) {
-        submittedJSON = [submittedJSON];
-      }
-      if (Array.isArray(submittedJSON)) {
-        curieSelectorElements = width => (
-          submittedJSON.map((jsonBlob, i) => {
-            const curieSelectorElement = (
-              <div key={['curie', i].join('_')} style={{ display: 'flex' }}>
-                <div
-                  style={{ flexBasis: '100%', padding: '5px 0px' }}
+    const { submittedJSON } = this.state;
+    const curieSelectorElements = width => (
+      submittedJSON.map((jsonBlob, i) => {
+        const curieSelectorElement = (
+          <div key={['curie', i].join('_')} style={{ display: 'flex' }}>
+            <div
+              style={{ flexBasis: '100%', padding: '5px 0px' }}
+            >
+              <CurieSelectorContainer
+                concepts={this.state.concepts}
+                search={(input, nodeType) => this.onSearch(input, nodeType)}
+                width={width}
+                disableType={this.state.disableType}
+                disableTypeFilter={this.state.disableTypeFilter}
+                initialInputs={jsonBlob}
+                onChangeHook={(ty, te, cu) => this.updateCurie(i, ty, te, cu)}
+              />
+            </div>
+            <div
+              style={{
+                width: '30px', verticalAlign: 'top', padding: '5px 10px',
+              }}
+            >
+              {(i !== 0) &&
+                <Button
+                  bsStyle="default"
+                  onClick={() => this.deleteCurie(i)}
+                  style={{ padding: '8px' }}
                 >
-                  <CurieSelectorContainer
-                    concepts={this.state.concepts}
-                    search={(input, nodeType) => this.onSearch(input, nodeType)}
-                    width={width}
-                    disableType={this.state.disableType}
-                    disableTypeFilter={this.state.disableTypeFilter}
-                    initialInputs={jsonBlob}
-                    onChangeHook={(ty, te, cu) => this.updateCurie(i, ty, te, cu)}
-                  />
-                </div>
-                <div
-                  style={{
-                    width: '30px', verticalAlign: 'top', padding: '5px 10px',
-                  }}
-                >
-                  {(i !== 0) &&
-                    <Button
-                      bsStyle="default"
-                      onClick={() => this.deleteCurie(i)}
-                      style={{ padding: '8px' }}
-                    >
-                      <Glyphicon glyph="trash" />
-                    </Button>
-                  }
-                </div>
-              </div>
-            );
-            return curieSelectorElement;
-          })
+                  <Glyphicon glyph="trash" />
+                </Button>
+              }
+            </div>
+          </div>
         );
-      }
-    }
+        return curieSelectorElement;
+      })
+    );
     return (
       <div>
         <Header
