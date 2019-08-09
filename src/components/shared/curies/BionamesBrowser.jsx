@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Button } from 'react-bootstrap';
+import { Button, Badge } from 'react-bootstrap';
 import { AutoSizer, List } from 'react-virtualized';
 
 import curieUrls from '../../util/curieUrls';
@@ -52,6 +52,7 @@ class BionamesBrowser extends React.Component {
     const types = d.type;
     const type = types[types.length - 1];
     const color = this.nodeTypeColorMap(type);
+    const degree = d.degree;
 
     const urls = curieUrls(curie);
     const links = (
@@ -62,7 +63,7 @@ class BionamesBrowser extends React.Component {
       </span>
     );
 
-    const maxWidth = this.props.width ? { maxWidth: `${this.props.width - 275}px` } : {}; // sum of other columns below plus a little pad
+    const maxWidth = this.props.width ? { maxWidth: `${this.props.width - 375}px` } : {}; // sum of other columns below plus a little pad
 
     return (
       <div
@@ -82,7 +83,6 @@ class BionamesBrowser extends React.Component {
             height: '100%',
             width: '10px',
             backgroundColor: color,
-            marginRight: 10,
           }}
         />
         <div
@@ -94,6 +94,7 @@ class BionamesBrowser extends React.Component {
             overflow: 'hidden',
             ...maxWidth,
             verticalAlign: 'middle',
+            paddingLeft: 10,
           }}
         >
           {name}
@@ -102,8 +103,21 @@ class BionamesBrowser extends React.Component {
           display: 'table-cell',
           width: '150px',
           verticalAlign: 'middle',
-        }}>
+          }}
+        >
           {curie}
+        </div>
+        <div style={{
+          display: 'table-cell',
+          width: '50px',
+          verticalAlign: 'middle',
+          }}
+        >
+          <span
+            title={`${degree} known connections`}
+          >
+            <Badge>{degree}</Badge>
+          </span>
         </div>
         <div
           style={{

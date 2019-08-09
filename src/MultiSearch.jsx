@@ -166,7 +166,7 @@ class MultiSearch extends React.Component {
               <Button
                 onClick={this.toggleDisableType}
               >
-                Toggle Type
+                Filter on Node Type
               </Button>
               <AutoSizer disableHeight>
                 {({ width }) => (
