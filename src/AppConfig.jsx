@@ -154,12 +154,12 @@ class AppConfig {
     this.postRequest(this.apis.graphql, { query }, successFun, failureFun);
   }
   questionList(successFun, failtureFun) {
-    this.user(data => {
-      var user = this.ensureUser(data);
+    this.user((data) => {
+      const user = this.ensureUser(data);
       // guest users have user_id = null
       // but we need it to be an int
       if (user.user_id === null) {
-        user.user_id = -1
+        user.user_id = -1;
       }
       const query = `{
         questions: allQuestionsList (filter: {or: [
