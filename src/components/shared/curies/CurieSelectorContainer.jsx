@@ -15,6 +15,7 @@ const propTypes = {
   }),
   onChangeHook: PropTypes.func, // Hook to be notified any time there is any user activated changes: (type, term, curie) => {}
   disableType: PropTypes.bool,
+  disableTypeFilter: PropTypes.bool,
   width: PropTypes.number,
   search: PropTypes.func,
   size: PropTypes.string,
@@ -28,6 +29,7 @@ const defaultProps = {
   size: undefined,
   width: 0, // will be ignored
   disableType: false,
+  disableTypeFilter: false,
   onChangeHook: () => {},
 };
 
