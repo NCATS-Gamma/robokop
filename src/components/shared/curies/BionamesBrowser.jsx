@@ -36,9 +36,8 @@ class BionamesBrowser extends React.Component {
     this.renderThinking = this.renderThinking.bind(this);
     this.renderEmpty = this.renderEmpty.bind(this);
     this.renderOptions = this.renderOptions.bind(this);
-    
-    this.nodeTypeColorMap = getNodeTypeColorMap(props.concepts);
 
+    this.nodeTypeColorMap = getNodeTypeColorMap(props.concepts);
   }
 
   rowRenderer({
@@ -50,8 +49,8 @@ class BionamesBrowser extends React.Component {
     const curie = d.value;
     const name = d.label;
     const types = d.type;
-    const type = types[types.length-1];
-    const color = this.nodeTypeColorMap[type];
+    const type = types[types.length - 1];
+    const color = this.nodeTypeColorMap(type);
 
     const urls = curieUrls(curie);
     const links = (
@@ -71,10 +70,17 @@ class BionamesBrowser extends React.Component {
           ...style,
           display: 'table',
           padding: '5 10',
-          backgroundColor: color,
+          backgroundColor: '#fff',
           borderBottom: '1px solid #e0e0e0',
         }}
       >
+        <div
+          style={{
+            display: 'table-cell',
+            width: '10px',
+            backgroundColor: color,
+          }}
+        />
         <div
           style={{
             display: 'table-cell',
