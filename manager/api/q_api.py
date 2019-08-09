@@ -171,7 +171,7 @@ class PublishAPI(Resource):
 
         return "SUCCESS", 200
 
-api.add_resource(PublishAPI, '/q/<question_id>/publish')
+api.add_resource(PublishAPI, '/q/<question_id>/publish/')
 
 
 class QuestionAPI(Resource):
