@@ -61,7 +61,7 @@ class BionamesBrowser extends React.Component {
       </span>
     );
 
-    const maxWidth = this.props.width ? { maxWidth: `${this.props.width - 275}px` } : {}; // sum of other columns below plus a little pad
+    const maxWidth = this.props.width ? { maxWidth: `${this.props.width - 325}px` } : {}; // sum of other columns below plus a little pad
 
     return (
       <div
@@ -75,12 +75,12 @@ class BionamesBrowser extends React.Component {
         }}
       >
         <div
+          title={type}
           style={{
             display: 'table-cell',
             height: '100%',
             width: '10px',
             backgroundColor: color,
-            marginRight: 10,
           }}
         />
         <div
@@ -92,6 +92,7 @@ class BionamesBrowser extends React.Component {
             overflow: 'hidden',
             ...maxWidth,
             verticalAlign: 'middle',
+            paddingLeft: 10,
           }}
         >
           {name}
@@ -100,7 +101,8 @@ class BionamesBrowser extends React.Component {
           display: 'table-cell',
           width: '150px',
           verticalAlign: 'middle',
-        }}>
+          }}
+        >
           {curie}
         </div>
         <div
