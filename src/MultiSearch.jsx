@@ -134,10 +134,10 @@ class MultiSearch extends React.Component {
                 }}
               >
                 <h2>
-                  Bionames Lookup
+                  Robokop Search
                   <br />
                   <small>
-                    An easy to use interface for the <a href="https://bionames.renci.org/apidocs/">Bionames service</a>
+                    Find nodes within the Robokop KG by their common name
                   </small>
                 </h2>
               </div>
