@@ -69,7 +69,7 @@ class BionamesBrowser extends React.Component {
         style={{
           ...style,
           display: 'table',
-          padding: '5px 10px 5px 0px',
+          padding: 0,
           backgroundColor: '#fff',
           borderBottom: '1px solid #e0e0e0',
         }}
@@ -77,8 +77,10 @@ class BionamesBrowser extends React.Component {
         <div
           style={{
             display: 'table-cell',
+            height: '100%',
             width: '10px',
             backgroundColor: color,
+            marginRight: 10,
           }}
         />
         <div
@@ -89,17 +91,23 @@ class BionamesBrowser extends React.Component {
             textOverflow: 'ellipsis',
             overflow: 'hidden',
             ...maxWidth,
+            verticalAlign: 'middle',
           }}
         >
           {name}
         </div>
-        <div style={{ display: 'table-cell', width: '150px' }}>
+        <div style={{
+          display: 'table-cell',
+          width: '150px',
+          verticalAlign: 'middle',
+        }}>
           {curie}
         </div>
         <div
           style={{
             display: 'table-cell',
             width: '73px',
+            verticalAlign: 'middle',
           }}
         >
           {links}
@@ -108,6 +116,8 @@ class BionamesBrowser extends React.Component {
           style={{
             display: 'table-cell',
             width: '50px',
+            verticalAlign: 'middle',
+            paddingRight: 10,
           }}
         >
           <Button
