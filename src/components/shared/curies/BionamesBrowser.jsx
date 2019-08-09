@@ -69,7 +69,7 @@ class BionamesBrowser extends React.Component {
         style={{
           ...style,
           display: 'table',
-          padding: '5 10',
+          padding: '5px 10px 5px 0px',
           backgroundColor: '#fff',
           borderBottom: '1px solid #e0e0e0',
         }}

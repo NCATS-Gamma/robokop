@@ -568,7 +568,7 @@ api.add_resource(Pubmed, '/pubmed/<pmid>/')
 def search_request(term, node_type=None):
     results = []
     error_status = {'isError': False}
-    
+
     if node_type:
         url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/entity_lookup/{node_type}"
     else:
@@ -623,7 +623,7 @@ class Search(Resource):
         term = request.get_data()
         results, error_status = search_request(term, node_type=None)
 
-        if not results and error_status['isError'] :
+        if not results and error_status['isError']:
             abort(error_status['code'], message=f"Ranker lookup endpoint returned {error_status['code']} error code")
         else:
             return results, 200

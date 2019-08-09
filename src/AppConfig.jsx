@@ -415,11 +415,11 @@ class AppConfig {
     }
     // Inclusion of direct identifiers bypasses API lookup
     if (input.includes(':')) {
-      return Promise.resolve({ options: [{ value: input, label: input }] });
+      return Promise.resolve({ options: [{ value: input, label: input, type: nodeType }] });
     }
     this.questionNewSearchCancelToken = axios.CancelToken.source();
 
-    const url = nodeType ? `${this.apis.search}/${nodeType}` : this.apis.search;
+    const url = nodeType ? `${this.apis.search}${nodeType}` : this.apis.search;
     // Because this method is called by react-select Async we must return a promise that will return the values
     return this.comms.post(url, input, { cancelToken: this.questionNewSearchCancelToken.token }).then((result) => {
       const options = result.data.map(d => ({ ...d, value: d.curie, label: d.name }));
