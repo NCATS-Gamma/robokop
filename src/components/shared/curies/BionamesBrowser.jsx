@@ -6,6 +6,7 @@ import { AutoSizer, List } from 'react-virtualized';
 
 import curieUrls from '../../util/curieUrls';
 import getNodeTypeColorMap from '../../util/colorUtils';
+import entityNameDisplay from '../../util/entityNameDisplay';
 
 const shortid = require('shortid');
 
@@ -75,6 +76,7 @@ class BionamesBrowser extends React.Component {
         }}
       >
         <div
+          title={entityNameDisplay(type)}
           style={{
             display: 'table-cell',
             height: '100%',
