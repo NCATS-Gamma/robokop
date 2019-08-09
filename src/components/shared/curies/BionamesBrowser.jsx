@@ -1,11 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Button } from 'react-bootstrap';
+import { Button, Badge } from 'react-bootstrap';
 import { AutoSizer, List } from 'react-virtualized';
 
 import curieUrls from '../../util/curieUrls';
 import getNodeTypeColorMap from '../../util/colorUtils';
+import entityNameDisplay from '../../util/entityNameDisplay';
 
 const shortid = require('shortid');
 
@@ -51,6 +52,7 @@ class BionamesBrowser extends React.Component {
     const types = d.type;
     const type = types[types.length - 1];
     const color = this.nodeTypeColorMap(type);
+    const degree = d.degree;
 
     const urls = curieUrls(curie);
     const links = (
@@ -61,7 +63,7 @@ class BionamesBrowser extends React.Component {
       </span>
     );
 
-    const maxWidth = this.props.width ? { maxWidth: `${this.props.width - 325}px` } : {}; // sum of other columns below plus a little pad
+    const maxWidth = this.props.width ? { maxWidth: `${this.props.width - 375}px` } : {}; // sum of other columns below plus a little pad
 
     return (
       <div
@@ -75,7 +77,7 @@ class BionamesBrowser extends React.Component {
         }}
       >
         <div
-          title={type}
+          title={entityNameDisplay(type)}
           style={{
             display: 'table-cell',
             height: '100%',
@@ -104,6 +106,18 @@ class BionamesBrowser extends React.Component {
           }}
         >
           {curie}
+        </div>
+        <div style={{
+          display: 'table-cell',
+          width: '50px',
+          verticalAlign: 'middle',
+          }}
+        >
+          <span
+            title={`${degree} known connections`}
+          >
+            <Badge>{degree}</Badge>
+          </span>
         </div>
         <div
           style={{

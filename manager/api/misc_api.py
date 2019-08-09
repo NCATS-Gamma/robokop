@@ -580,7 +580,10 @@ def search_request(term, node_type=None):
         error_status['isError'] = True
         error_status['code'] = r.status_code
 
-    return sorted(results, reverse=True, key=lambda x: x['degree']), error_status
+    # We have considered some degree based sorting of results
+    # Results come in sorted by text scores, we will trust that for now.
+    # return sorted(results, reverse=True, key=lambda x: x['degree']), error_status
+    return results, error_status
 
 class Search(Resource):
     def post(self):
