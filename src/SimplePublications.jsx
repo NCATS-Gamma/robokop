@@ -2,6 +2,7 @@ import React from 'react';
 import { Grid, Row, Col, Form, Panel, Button, Glyphicon } from 'react-bootstrap';
 import _ from 'lodash';
 import FaDownload from 'react-icons/lib/fa/download';
+import { AutoSizer } from 'react-virtualized';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
@@ -205,18 +206,23 @@ class SimplePublications extends React.Component {
                 </h3>
                 {entities.map((node, i) => (
                   <Row key={`curie-${i}`} style={{ display: 'flex' }}> {/* eslint-disable-line */}
-                    <div
-                      style={{ flexBasis: '100%', padding: '5px 0px' }}
-                    >
-                      <CurieSelectorContainer
-                        concepts={concepts}
-                        search={this.onSearch}
-                        initialInputs={{ type: node.type, term: node.term, curie: node.curie }}
-                        onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu, i)}
-                        disableType
-                        disableTypeFilter
-                      />
-                    </div>
+                    <AutoSizer disableHeight>
+                      {({ width }) => (
+                        <div
+                          style={{ flexBasis: '100%', padding: '5px 0px' }}
+                        >
+                          <CurieSelectorContainer
+                            concepts={concepts}
+                            search={this.onSearch}
+                            width={width}
+                            initialInputs={{ type: node.type, term: node.term, curie: node.curie }}
+                            onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu, i)}
+                            disableType
+                            disableTypeFilter
+                          />
+                        </div>
+                      )}
+                    </AutoSizer>
                     <div
                       style={{
                         width: '30px', verticalAlign: 'top', padding: '5px 10px',

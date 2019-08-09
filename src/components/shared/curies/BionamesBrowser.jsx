@@ -63,7 +63,7 @@ class BionamesBrowser extends React.Component {
       </span>
     );
 
-    const maxWidth = this.props.width ? { maxWidth: `${this.props.width - 375}px` } : {}; // sum of other columns below plus a little pad
+    const maxWidth = this.props.width ? { maxWidth: `${this.props.width - 425}px` } : {}; // sum of other columns below plus a little pad
 
     return (
       <div
