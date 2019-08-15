@@ -397,7 +397,7 @@ class Predicates(Resource):
                         schema:
                             type: string
         """
-        post_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/predicates"
+        post_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/predicates/"
         logger.debug(f'Predicates:post:: Trying to post to: {post_url}')
         response = requests.post(post_url)
         return Response(response.content, response.status_code)
@@ -422,7 +422,7 @@ class NodeProperties(Resource):
                                 items:
                                     type: string
         """
-        r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/node_properties")
+        r = requests.get(f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/node_properties/")
         props = r.json()
 
         return props
@@ -450,7 +450,7 @@ class NodeProperties(Resource):
                         schema:
                             type: string
         """
-        post_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/node_properties"
+        post_url = f"http://{os.environ['BUILDER_HOST']}:{os.environ['BUILDER_PORT']}/api/node_properties/"
         response = requests.post(post_url)
         return Response(response.content, response.status_code)
 
