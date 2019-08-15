@@ -320,7 +320,7 @@ class NodePanel {
   }
 
   isValidCurie(val) {
-    return /^[a-z0-9_\+\-]+:[a-z0-9_\+\-]+/i.test(val); // eslint-disable-line no-useless-escape
+    return /^[a-z0-9_.\+\-]+:[a-z0-9_\+\-]+/i.test(val); // eslint-disable-line no-useless-escape
   }
 
   @computed get isValidCurieList() {
