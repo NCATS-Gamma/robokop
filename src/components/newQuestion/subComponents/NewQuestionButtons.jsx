@@ -1,12 +1,9 @@
 import React from 'react';
-import Dropzone from 'react-dropzone';
 import { Button } from 'react-bootstrap';
 
 import FaDownload from 'react-icons/lib/fa/download';
-import FaUpload from 'react-icons/lib/fa/upload';
 import FaPaperPlaneO from 'react-icons/lib/fa/paper-plane-o';
 import FaTrash from 'react-icons/lib/fa/trash';
-import FaFolder from 'react-icons/lib/fa/folder';
 
 /**
  * Header buttons for new question page
@@ -26,39 +23,14 @@ class NewQuestionButtons extends React.Component {
 
   render() {
     const {
-      onDropFile, onDownloadQuestion, onResetQuestion,
-      onSubmitQuestion, graphValidationState, toggleModal,
+      onDownloadQuestion, onResetQuestion,
+      onSubmitQuestion, graphValidationState,
     } = this.props;
     const buttonStyles = { padding: '5px', marginLeft: '10px' };
     const isValidQuestion = graphValidationState.isValid;
     const errorMsg = 'Error: '.concat(graphValidationState.errorList.join(',\n '));
     return (
       <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '20px 0px' }}>
-        <Button
-          onClick={toggleModal}
-          className="btn btn-default"
-          title="Fill out question template"
-          style={{ padding: '5px' }}
-        >
-          Use a Question Template <span style={{ fontSize: '22px' }}><FaFolder style={{ cursor: 'pointer' }} /></span>
-        </Button>
-        <Button
-          style={buttonStyles}
-          className="btn btn-default"
-          title="Upload Machine Question from JSON"
-        >
-          <span>
-            <Dropzone
-              onDrop={onDropFile}
-              multiple={false}
-              style={{
-                border: 'none',
-              }}
-            >
-              Upload <span style={{ fontSize: '22px' }}><FaUpload style={{ cursor: 'pointer' }} /></span>
-            </Dropzone>
-          </span>
-        </Button>
         <Button
           style={buttonStyles}
           className="btn btn-default"

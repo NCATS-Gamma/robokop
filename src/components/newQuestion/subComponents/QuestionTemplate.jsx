@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, DropdownButton, MenuItem, Button } from 'react-bootstrap';
 
-import CurieSelectorContainer from '../curies/CurieSelectorContainer';
+import CurieSelectorContainer from '../../shared/curies/CurieSelectorContainer';
 import AppConfig from '../../../AppConfig';
 import { config } from '../../../index';
 
@@ -116,8 +116,6 @@ class QuestionTemplateModal extends React.Component {
       for (let i = 0; i < questionName.length; i += 2) {
         questionName.splice(i, 0, ' ');
       }
-    } else {
-      return 'Please select a question template to get started.';
     }
     return questionName;
   }
@@ -191,7 +189,6 @@ class QuestionTemplateModal extends React.Component {
   }
 
   submitTemplate() {
-    this.props.toggleModal();
     this.props.selectQuestion(this.state.questionTemplate);
     this.setState({
       questionTemplate: {},
@@ -206,7 +203,7 @@ class QuestionTemplateModal extends React.Component {
 
   render() {
     const {
-      showModal, toggleModal, questions, concepts,
+      showModal, questions, concepts, close,
     } = this.props;
     const {
       disableSubmit, nameList, curies, labels, types, questionName,
@@ -215,39 +212,43 @@ class QuestionTemplateModal extends React.Component {
     return (
       <Modal
         show={showModal}
-        onHide={toggleModal}
         backdrop
+        onHide={close}
       >
         <Modal.Header closeButton>
           <Modal.Title>Question Templates</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <DropdownButton
-            bsStyle="default"
-            title={questionName.length > 0 ? 'Change templates' : 'Select a question template'}
-            key={1}
-            id="dropdown-question-template"
-          >
-            {questions.map(question => (
-              <MenuItem
-                key={shortid.generate()}
-                eventKey={question}
-                onSelect={this.selectQuestion}
+        <Modal.Body style={{ minHeight: 200 }}>
+          <div className="questionTemplateDropdown" id={questionName.length > 0 ? '' : 'centeredQuestionTemplateMenu'}>
+            <DropdownButton
+              bsStyle="default"
+              title={questionName.length > 0 ? 'Change templates' : 'Select a question template'}
+              key={1}
+              id="questionTemplateDropdown"
+            >
+              {questions.map(question => (
+                <MenuItem
+                  key={shortid.generate()}
+                  eventKey={question}
+                  onSelect={this.selectQuestion}
+                >
+                  {question.natural_question}
+                </MenuItem>))
+              }
+            </DropdownButton>
+          </div>
+          {questionName.length > 0 && (
+            <div>
+              <h4
+                style={{
+                  display: 'block', width: '100%', margin: '20px 0px', height: '45px', fontSize: '20px', textAlign: 'center', cursor: 'default',
+                }}
               >
-                {question.natural_question}
-              </MenuItem>))
-            }
-          </DropdownButton>
-          <h4
-            style={{
-              display: 'block', width: '100%', margin: '20px 0px', height: '45px', fontSize: '20px', textAlign: 'center', cursor: 'default',
-            }}
-          >
-            { questionDisplay }
-          </h4>
-          {questionName.length > 0 &&
-            <p>Choose curies below to fill out the template.</p>
-          }
+                { questionDisplay }
+              </h4>
+              <p>Choose curies below to fill out the template.</p>
+            </div>
+          )}
           {nameList.map((name, i) => (
             <CurieSelectorContainer
               key={['curieSelector', i].join('_')}

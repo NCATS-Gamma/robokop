@@ -15,10 +15,10 @@ import Landing from './simplePages/Landing';
 import About from './simplePages/About';
 import Help from './simplePages/Help';
 import Guide from './simplePages/Guide';
-import SimpleQuestion from './SimpleQuestion';
+import SimpleQuestion from './components/newQuestion/SimpleQuestion';
 import Apps from './simplePages/Apps';
 import TermsofService from './TermsofService';
-import QuestionNew from './QuestionNew';
+import QuestionNew from './components/newQuestion/QuestionNew';
 import QuestionNewLinear from './QuestionNewLinear';
 import Question from './Question';
 import QuestionList from './QuestionList';
@@ -36,12 +36,6 @@ import NewQuestionStore from './stores/newQuestionStore';
 // Our actual CSS and other images etc.
 import '../assets/css/style.css';
 import '../assets/images/favicon.ico';
-
-const $ = require('jquery');
-
-window.jQuery = window.$ = $; // eslint-disable-line
-
-require('bootstrap');
 
 const config = {
   ui: {

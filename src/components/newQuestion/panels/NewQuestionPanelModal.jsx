@@ -6,10 +6,10 @@ import FaTrash from 'react-icons/lib/fa/trash';
 import FaUndo from 'react-icons/lib/fa/rotate-left';
 
 import { panelTypes } from '../../../stores/newQuestionStore';
-import HelpButton from '../HelpButton';
+import HelpButton from '../../shared/HelpButton';
 import getNodeTypeColorMap from '../../util/colorUtils';
-import EdgePanel from '../../shared/EdgePanel';
-import NodePanel from '../../shared/NodePanel';
+import EdgePanel from './EdgePanel';
+import NodePanel from './NodePanel';
 
 const _ = require('lodash');
 
@@ -88,7 +88,7 @@ class NewQuestionPanelModal extends React.Component {
                 </ButtonGroup>
               </Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body style={{ minHeight: 300 }}>
               {isNodePanel ?
                 <NodePanel activePanel={activePanelState} />
                 :

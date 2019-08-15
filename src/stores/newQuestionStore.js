@@ -1,6 +1,6 @@
 import { observable, action, computed, flow, toJS, configure, reaction, runInAction } from 'mobx';
 
-import { graphStates } from '../components/shared/MachineQuestionViewContainer';
+import { graphStates } from '../components/newQuestion/subComponents/MachineQuestionViewContainer';
 import entityNameDisplay from '../components/util/entityNameDisplay';
 import AppConfig from '../AppConfig';
 
@@ -220,7 +220,7 @@ class NodePanel {
       if ((typeof this.curie === 'string') || (this.curie instanceof String)) {
         this.curie = [this.curie];
       }
-      if (this.curie.length !== 0) {
+      if (this.curie.length !== 0 || (this.store.panelState.length === 0 && Object.keys(userObj).length === 0)) {
         this.curieEnabled = true;
       }
       if (!this.set && !this.curieEnabled) {
@@ -233,6 +233,7 @@ class NodePanel {
     this._nodeFunctionTypes.forEach((node) => {
       this[node] = field === node;
     });
+    if (!this.curieEnabled) this.name = '';
   }
 
   // Returns lowest non-zero integer id not already used
@@ -254,16 +255,7 @@ class NodePanel {
         this.curieEnabled = false;
       }
     }
-    if (field === 'curie') {
-      // Ensure that only valid curies are written into the data structure
-      let curieVal = value;
-      if ((typeof curieVal === 'string') || (curieVal instanceof String)) {
-        curieVal = [curieVal];
-      }
-      this[field] = curieVal;
-    } else {
-      this[field] = value;
-    }
+    this[field] = value;
   }
 
   @action.bound addProperty() {
@@ -320,7 +312,8 @@ class NodePanel {
   }
 
   isValidCurie(val) {
-    return /^[a-z0-9_\+\-]+:[a-z0-9_\+\-]+/i.test(val); // eslint-disable-line no-useless-escape
+    const valid = /^[a-z0-9_.\+\-]+:[a-z0-9_\+\-]+/i.test(val); // eslint-disable-line no-useless-escape
+    return valid;
   }
 
   @computed get isValidCurieList() {

@@ -1,24 +1,20 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import { toJS } from 'mobx';
-import _ from 'lodash';
-import { Grid, Row, Col, Panel, Form, FormGroup, FormControl, Tabs, Tab } from 'react-bootstrap';
+import { Grid, Row, Tabs, Tab } from 'react-bootstrap';
 import FaDownload from 'react-icons/lib/fa/download';
 
-import AppConfig from './AppConfig';
-import AnswersetStore from './stores/messageAnswersetStore';
-import Loading from './components/Loading';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import questionTemplates from '../queries/index';
-import HelpButton from './components/shared/HelpButton';
-import NewQuestionButtons from './components/shared/NewQuestionButtons';
-import MachineQuestionViewContainer, { graphStates } from './components/shared/MachineQuestionViewContainer';
-import QuestionTemplateModal from './components/shared/modals/QuestionTemplate';
-import MessageAnswersetTable from './components/answerset/MessageAnswersetTable';
-import AnswersetGraph from './components/answerset/AnswersetGraph';
-import SimpleQuestionGraph from './components/shared/graphs/SimpleQuestionGraph';
-import QuickQuestionError from './components/shared/modals/QuickQuestionError';
+import './newQuestion.css';
+import AppConfig from '../../AppConfig';
+import AnswersetStore from '../../stores/messageAnswersetStore';
+import Loading from '../Loading';
+import Header from '../Header';
+import Footer from '../Footer';
+import MessageAnswersetTable from '../answerset/MessageAnswersetTable';
+import AnswersetGraph from '../answerset/AnswersetGraph';
+import SimpleQuestionGraph from './subComponents/SimpleQuestionGraph';
+import QuickQuestionError from './subComponents/QuickQuestionError';
+import QuestionBuilder from './subComponents/QuestionBuilder';
 
 
 @inject(({ store }) => ({ store }))
@@ -39,7 +35,6 @@ class SimpleQuestion extends React.Component {
       loading: false,
       loaded: false,
       tabKey: 1,
-      showQuestionTemplateModal: false,
       questionFail: false,
       errorMessage: '',
     };
@@ -47,11 +42,8 @@ class SimpleQuestion extends React.Component {
     this.onResetQuestion = this.onResetQuestion.bind(this);
     this.onDownloadQuestion = this.onDownloadQuestion.bind(this);
     this.onDownloadAnswer = this.onDownloadAnswer.bind(this);
-    this.onDropFile = this.onDropFile.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.handleTabSelect = this.handleTabSelect.bind(this);
-    this.onQuestionTemplate = this.onQuestionTemplate.bind(this);
-    this.toggleQuestionTemplate = this.toggleQuestionTemplate.bind(this);
     this.resetQuestion = this.resetQuestion.bind(this);
   }
 
@@ -100,30 +92,6 @@ class SimpleQuestion extends React.Component {
     a.remove();
   }
 
-  onDropFile(acceptedFiles) {
-    acceptedFiles.forEach((file) => {
-      const fr = new window.FileReader();
-      fr.onloadstart = () => this.props.store.setGraphState(graphStates.fetching);
-      fr.onload = (e) => {
-        const fileContents = e.target.result;
-        try {
-          const fileContentObj = JSON.parse(fileContents);
-          this.props.store.machineQuestionSpecToPanelState(fileContentObj);
-        } catch (err) {
-          console.error(err);
-          window.alert('Failed to read this Question template. Are you sure this is valid?');
-          this.props.store.setGraphState(graphStates.error);
-        }
-      };
-      fr.onerror = () => {
-        window.alert('Sorry but there was a problem uploading the file. The file may be invalid JSON.');
-        this.props.store.resetQuestion();
-        this.props.store.setGraphState(graphStates.error);
-      };
-      fr.readAsText(file);
-    });
-  }
-
   onResetQuestion() {
     if (window.confirm('Are you sure you want to reset this question? This action cannot be undone.')) {
       this.props.store.resetQuestion();
@@ -167,27 +135,17 @@ class SimpleQuestion extends React.Component {
     this.setState({ tabKey });
   }
 
-  toggleQuestionTemplate() {
-    this.setState(prevState => ({ showQuestionTemplateModal: !prevState.showQuestionTemplateModal }));
-  }
-
-  // Loads the question template and updates the MobX store/UI
-  onQuestionTemplate(question) {
-    this.props.store.machineQuestionSpecToPanelState(question);
-  }
-
   resetQuestion() {
     this.setState({ questionFail: false, errorMessage: '' });
   }
 
   render() {
     const {
-      user, ready, loading, loaded, showQuestionTemplateModal, tabKey, questionFail, errorMessage,
+      user, ready, loading, loaded, tabKey, questionFail, errorMessage,
     } = this.state;
     const { config } = this.props;
     const validUser = this.appConfig.ensureUser(user);
     const questionLink = !validUser.is_authenticated ? <a href={this.appConfig.urls.login}>Sign In</a> : <a href={this.appConfig.urls.questionDesign}>Go Here</a>;
-    const questionList = _.cloneDeep(questionTemplates);
     return (
       <div>
         {ready ?
@@ -204,52 +162,13 @@ class SimpleQuestion extends React.Component {
                         This question will not be saved. If you would like to save a question, please {questionLink}.
                       </small>
                     </h1>
-                    <Col md={12}>
-                      <NewQuestionButtons
-                        onDownloadQuestion={this.onDownloadQuestion}
-                        onDropFile={this.onDropFile}
-                        onResetQuestion={this.onResetQuestion}
-                        onSubmitQuestion={this.onSubmit}
-                        toggleModal={this.toggleQuestionTemplate}
-                        graphValidationState={this.props.store.graphValidationState}
-                      />
-                    </Col>
-                    <Col md={12}>
-                      <h3 style={{ display: 'inline-block' }}>
-                        {'Question '}
-                        <HelpButton link="questionNew" />
-                      </h3>
-                      <Form horizontal onSubmit={e => e.preventDefault()}>
-                        <FormGroup
-                          bsSize="large"
-                          controlId="formHorizontalNodeIdName"
-                          validationState={this.props.store.questionName.length > 0 ? 'success' : 'error'}
-                          style={{ margin: '0' }}
-                        >
-                          <FormControl
-                            type="text"
-                            value={this.props.store.questionName}
-                            onChange={e => this.props.store.updateQuestionName(e.target.value)}
-                          />
-                        </FormGroup>
-                      </Form>
-                    </Col>
-                    <Col md={12}>
-                      <Panel>
-                        <Panel.Heading>
-                          <Panel.Title>
-                            {'Machine Question Editor - Question Graph '}
-                            <HelpButton link="machineQuestionEditor" />
-                          </Panel.Title>
-                        </Panel.Heading>
-                        <Panel.Body style={{ padding: '0px' }}>
-                          <MachineQuestionViewContainer
-                            height="350px"
-                            width={this.props.width}
-                          />
-                        </Panel.Body>
-                      </Panel>
-                    </Col>
+                    <QuestionBuilder
+                      store={this.props.store}
+                      download={this.onDownloadQuestion}
+                      reset={this.onResetQuestion}
+                      submit={this.onSubmit}
+                      width={this.props.width}
+                    />
                   </div>
                 }
                 {loaded &&
@@ -300,13 +219,6 @@ class SimpleQuestion extends React.Component {
               </Row>
             </Grid>
             <Footer config={config} />
-            <QuestionTemplateModal
-              showModal={showQuestionTemplateModal}
-              toggleModal={this.toggleQuestionTemplate}
-              questions={questionList}
-              selectQuestion={this.onQuestionTemplate}
-              concepts={toJS(this.props.store.concepts)}
-            />
             <QuickQuestionError
               showModal={questionFail}
               closeModal={this.resetQuestion}

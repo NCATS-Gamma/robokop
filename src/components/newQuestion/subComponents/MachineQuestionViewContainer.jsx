@@ -5,10 +5,11 @@ import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { Modal } from 'react-bootstrap';
 
-import MachineQuestionView from './graphs/MachineQuestionView';
-import NewQuestionPanelModal from './modals/NewQuestionPanelModal';
+import MachineQuestionView from '../../shared/graphs/MachineQuestionView';
+import NewQuestionPanelModal from '../panels/NewQuestionPanelModal';
 import ButtonGroupPanel from './ButtonGroupPanel';
 import MachineQuestionEditor from './MachineQuestionEditor';
+import { panelTypes } from '../../../stores/newQuestionStore';
 
 const graphStates = {
   fetching: 'fetching',
@@ -48,14 +49,19 @@ class MachineQuestionViewContainer extends React.Component {
     this.saveJsonEditor = this.saveJsonEditor.bind(this);
   }
 
+  componentDidMount() {
+    const { store } = this.props;
+    if (store.graphState === graphStates.empty) setTimeout(() => store.newActivePanel(panelTypes.node), 1000);
+  }
+
   getHeight() {
-    const h = $(window).height() - 50;
+    const h = window.innerHeight - 50;
     return `${h}px`;
   }
 
   getWidth() {
     // let w = 500;
-    const w = $(`#${this.divId}`).innerWidth();
+    const w = document.getElementById(`${this.divId}`).innerWidth;
     // Ask how big the parent div is?
     return `${w}px`;
   }

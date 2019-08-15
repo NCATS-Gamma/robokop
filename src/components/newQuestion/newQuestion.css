@@ -1,0 +1,34 @@
+#newQuestionOptions {
+    width: 100%;
+    margin: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.optionsButton {
+    width: 30%;
+    height: 200px;
+}
+.optionButtonDesc {
+    white-space: normal;
+}
+#questionNameSubmit {
+    float: right;
+    margin: 20px;
+}
+#nodeFunctionButtonGroup {
+    padding: 20px 0px;
+}
+#centeredQuestionTemplateMenu {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+}
+#centeredQuestionTemplateMenu > .dropdown > .dropdown-menu {
+    left: -150%;
+}
+.questionTemplateDropdown > .dropdown > .dropdown-menu {
+    max-height: 250px;
+    overflow: auto;
+}

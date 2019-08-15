@@ -6,7 +6,7 @@ import FaPlusSquare from 'react-icons/lib/fa/plus-square';
 import FaPlus from 'react-icons/lib/fa/plus';
 import FaWrench from 'react-icons/lib/fa/wrench';
 
-import { panelTypes } from '../../stores/newQuestionStore';
+import { panelTypes } from '../../../stores/newQuestionStore';
 
 const ButtonGroupPanel = observer(({ store, openJsonEditor }) => {
   const { isValidGraph } = store.graphValidationState;
@@ -20,11 +20,13 @@ const ButtonGroupPanel = observer(({ store, openJsonEditor }) => {
         <Button onClick={() => store.newActivePanel(panelTypes.node)}>
           <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{' New Node'}
         </Button>
-        {atleastTwoNodes &&
-          <Button onClick={() => store.newActivePanel(panelTypes.edge)}>
-            <FaPlus style={{ verticalAlign: 'text-top' }} />{' New Edge'}
-          </Button>
-        }
+        <Button
+          onClick={() => store.newActivePanel(panelTypes.edge)}
+          disabled={!atleastTwoNodes}
+          title={!atleastTwoNodes ? 'Please create two nodes before connecting them with an edge' : ''}
+        >
+          <FaPlus style={{ verticalAlign: 'text-top' }} />{' New Edge'}
+        </Button>
         <Button
           onClick={openJsonEditor}
           disabled={!isValidGraph}

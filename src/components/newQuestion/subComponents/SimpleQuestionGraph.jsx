@@ -3,7 +3,7 @@ import { toJS } from 'mobx';
 import { Row, Col, Panel } from 'react-bootstrap';
 import FaEye from 'react-icons/lib/fa/eye';
 import FaEyeSlash from 'react-icons/lib/fa/eye-slash';
-import MachineQuestionView from './MachineQuestionView';
+import MachineQuestionView from '../../shared/graphs/MachineQuestionView';
 import entityNameDisplay from '../../util/entityNameDisplay';
 
 /* eslint-disable no-param-reassign */

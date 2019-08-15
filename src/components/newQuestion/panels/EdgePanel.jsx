@@ -6,8 +6,8 @@ import { toJS } from 'mobx';
 import { observer, PropTypes as mobxPropTypes } from 'mobx-react';
 import { Multiselect, DropdownList } from 'react-widgets';
 
-import Loading from './../Loading';
-import LabeledFormGroup from './../shared/LabeledFormGroup';
+import Loading from '../../Loading';
+import LabeledFormGroup from '../../shared/LabeledFormGroup';
 
 const classNames = {
   formLabel: 'col-md-2 form-label',

@@ -16,8 +16,8 @@ class NodeProperties extends React.Component {
       <div style={{ margin: '10px 0px', display: 'flex', flexDirection: 'column' }} >
         {activePanel.properties.length > 0 &&
           <div>
-            <div style={{ width: '48%', textAlign: 'center', display: 'inline-block' }}>Property Name:</div>
-            <div style={{ width: '48%', textAlign: 'center', display: 'inline-block' }}>Property Value:</div>
+            <div style={{ width: '48%', textAlign: 'center', display: 'inline-block' }}>Constraint:</div>
+            <div style={{ width: '48%', textAlign: 'center', display: 'inline-block' }}>Value:</div>
           </div>
         }
         {activePanel.properties.map((property, i) => (
@@ -32,6 +32,7 @@ class NodeProperties extends React.Component {
               onChange={value => activePanel.updateProperty(value, i, 'key')}
               style={{ width: '48%', margin: 'auto 5px' }}
               filter="contains"
+              placeholder="Choose a constraint"
             />
             <div style={{ width: '48%', margin: 'auto' }}>
               {property.type === 'string' &&
@@ -97,7 +98,7 @@ class NodeProperties extends React.Component {
         ))}
         <div style={{ textAlign: 'center' }}>
           <Button style={{ marginTop: '10px' }} onClick={activePanel.addProperty}>
-            <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Property'}
+            <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Constraint'}
           </Button>
         </div>
       </div>

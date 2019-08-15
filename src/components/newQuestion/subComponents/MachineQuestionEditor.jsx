@@ -8,8 +8,8 @@ import Dropzone from 'react-dropzone';
 import FaCloudUpload from 'react-icons/lib/fa/cloud-upload';
 
 import SplitterLayout from 'react-splitter-layout';
-import MachineQuestionView from './graphs/MachineQuestionView';
-import Loading from '../Loading';
+import MachineQuestionView from '../../shared/graphs/MachineQuestionView';
+import Loading from '../../Loading';
 
 class MachineQuestionEditor extends React.Component {
   constructor(props) {
