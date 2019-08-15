@@ -420,19 +420,20 @@ class AppConfig {
   // Requests curie from bionames and returns an object of form
   // { options: [{ value, label }, ...] }. Returned object is an
   // empty object {} if request is cancelled
-  questionNewSearch(input, category) {
+  questionNewSearch(input, nodeType) {
     if (this.questionNewSearchCancelToken) {
       this.questionNewSearchCancelToken.cancel();
     }
     // Inclusion of direct identifiers bypasses API lookup
     if (input.includes(':')) {
-      return Promise.resolve({ options: [{ value: input, label: input }] });
+      return Promise.resolve({ options: [{ value: input, label: input, type: nodeType }] });
     }
     this.questionNewSearchCancelToken = axios.CancelToken.source();
-    const addr = `${this.apis.search}${encodeURIComponent(input)}/${encodeURIComponent(category)}`;
+
+    const url = nodeType ? `${this.apis.search}${nodeType}` : this.apis.search;
     // Because this method is called by react-select Async we must return a promise that will return the values
-    return this.comms.get(addr, { cancelToken: this.questionNewSearchCancelToken.token }).then((result) => {
-      const options = result.data.map(d => ({ value: d.id, label: d.label }));
+    return this.comms.post(url, input, { cancelToken: this.questionNewSearchCancelToken.token }).then((result) => {
+      const options = result.data.map(d => ({ ...d, value: d.curie, label: d.name }));
       return { options };
     }, (thrown) => {
       if (axios.isCancel(thrown)) {

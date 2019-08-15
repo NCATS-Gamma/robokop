@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Grid, Row, Col, Form, Button } from 'react-bootstrap';
 import ReactTable from 'react-table';
+import { AutoSizer } from 'react-virtualized';
 
 import AppConfig from './AppConfig';
 import Header from './components/Header';
@@ -20,7 +21,7 @@ class Synonymize extends React.Component {
     this.state = {
       user: {},
       concepts: [],
-      type: '',
+      type: 'disease', // this just needs to be something
       identifier: '',
       term: '',
       results: {},
@@ -118,18 +119,25 @@ class Synonymize extends React.Component {
                   <h3>
                     Identifier
                   </h3>
-                  <div
-                    style={{
-                        padding: '5px 0px',
-                    }}
-                  >
-                    <CurieSelectorContainer
-                      concepts={concepts}
-                      search={this.onSearch}
-                      initialInputs={{ type, term, curie: identifier }}
-                      onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu)}
-                    />
-                  </div>
+                  <AutoSizer disableHeight>
+                    {({ width }) => (
+                      <div
+                        style={{
+                            padding: '5px 0px',
+                        }}
+                      >
+                        <CurieSelectorContainer
+                          concepts={concepts}
+                          search={this.onSearch}
+                          width={width}
+                          initialInputs={{ type, term, curie: identifier }}
+                          onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu)}
+                          disableType
+                          disableTypeFilter
+                        />
+                      </div>
+                        )}
+                  </AutoSizer>
                 </div>
               </Col>
             </Row>

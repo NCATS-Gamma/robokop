@@ -565,27 +565,47 @@ class Pubmed(Resource):
 
 api.add_resource(Pubmed, '/pubmed/<pmid>/')
 
+def search_request(term, node_type=None):
+    results = []
+    error_status = {'isError': False}
+
+    if node_type:
+        url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/entity_lookup/{node_type}"
+    else:
+        url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/entity_lookup"
+    r = requests.post(url, data=term)
+    if r.ok:
+        results = r.json()
+    else:
+        error_status['isError'] = True
+        error_status['code'] = r.status_code
+
+    # We have considered some degree based sorting of results
+    # Results come in sorted by text scores, we will trust that for now.
+    # return sorted(results, reverse=True, key=lambda x: x['degree']), error_status
+    return results, error_status
+
 class Search(Resource):
-    def get(self, term, category):
+    def post(self):
         """
-        Look up biomedical search term using bionames service
+        Look up biomedical identifiers from common names using robokop kg
         ---
         tags: [util]
-        parameters:
-          - in: path
-            name: term
-            description: "biomedical term"
-            schema:
-                type: string
+        requestBody:
+            name: "term"
+            description: "search term"
             required: true
-            example: ebola
-          - in: path
-            name: category
-            description: "biomedical concept category"
-            schema:
-                type: string
-            required: true
-            example: disease
+            content:
+                text/plain:
+                    schema:
+                        type: string
+                    examples:
+                        ebola:
+                            summary: "Find the identifier for ebola"
+                            value: "ebola"
+                        cog:
+                            summary: "Find anything containing 'cog'"
+                            value: "cog"
         responses:
             200:
                 description: "biomedical identifiers"
@@ -596,49 +616,76 @@ class Search(Resource):
                             items:
                                 type: object
                                 properties:
-                                    id:
+                                    curie:
                                         type: string
-                                    label:
+                                    name:
                                         type: string
-                                    type:
-                                        type: string
+                                    connections:
+                                        type: object
         """
-        if category not in concept_map:
-            abort(400, error_message=f'Unsupported category: {category} provided')
-        bionames = concept_map[category]
-        
-        if not bionames: # No matching biolink name for this category
-            return []
-        
-        results = []
-        error_status = {'isError': False}
-        for bioname in bionames:
-            url = f"https://bionames.renci.org/lookup/{term}/{bioname}/"
-            r = requests.get(url)
-            if r.ok:
-                all_results = r.json()
-                for r in all_results:
-                    if not 'id' in r:
-                        continue
-                    if 'label' in r:
-                        r['label'] = r['label'] or r['id']
-                    elif 'desc' in r:
-                        r['label'] = r['desc'] or r['id']
-                        r.pop('desc')
-                    else:
-                        continue
-                    results.append(r)
-            else:
-                error_status['isError'] = True
-                error_status['code'] = r.status_code
+        term = request.get_data()
+        results, error_status = search_request(term, node_type=None)
 
-        results = list({r['id']:r for r in results}.values())
-        if not results and error_status['isError'] :
-            abort(error_status['code'], message=f"Bionames lookup endpoint returned {error_status['code']} error code")
+        if not results and error_status['isError']:
+            abort(error_status['code'], message=f"Ranker lookup endpoint returned {error_status['code']} error code")
         else:
-            return results
+            return results, 200
 
-api.add_resource(Search, '/search/<term>/<category>/')
+api.add_resource(Search, '/search')
+
+class SearchType(Resource):
+    def post(self, node_type):
+        """
+        Look up biomedical identifiers from common names using robokop kg filtering by type
+        ---
+        tags: [util]
+        parameters:
+          - in: path
+            name: node_type
+            description: type of search term of interest
+            schema:
+                type: string
+            required: true
+            example: "disease"
+        requestBody:
+            name: "term"
+            description: "search term"
+            required: true
+            content:
+                text/plain:
+                    schema:
+                        type: string
+                    examples:
+                        ebola:
+                            summary: "Find the identifier for ebola"
+                            value: "ebola"
+        responses:
+            200:
+                description: "biomedical identifiers"
+                content:
+                    application/json:
+                        schema:
+                            type: array
+                            items:
+                                type: object
+                                properties:
+                                    curie:
+                                        type: string
+                                    name:
+                                        type: string
+                                    connections:
+                                        type: object
+        """
+
+        term = request.get_data()
+        results, error_status = search_request(term, node_type=node_type)
+
+        if not results and error_status['isError'] :
+            abort(error_status['code'], message=f"Ranker lookup endpoint returned {error_status['code']} error code")
+        else:
+            return results, 200
+
+api.add_resource(SearchType, '/search/<node_type>')
 
 class User(Resource):
     def get(self):
