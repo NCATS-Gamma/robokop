@@ -31,17 +31,6 @@ class NewQuestionButtons extends React.Component {
     const errorMsg = 'Error: '.concat(graphValidationState.errorList.join(',\n '));
     return (
       <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '20px 0px' }}>
-        <Button
-          style={buttonStyles}
-          className="btn btn-default"
-          disabled={!isValidQuestion}
-          title={isValidQuestion ? 'Download Machine Question as JSON' : errorMsg}
-          onClick={onDownloadQuestion}
-        >
-          <span>
-            Download <span style={{ fontSize: '22px' }}><FaDownload style={{ cursor: 'pointer' }} /></span>
-          </span>
-        </Button>
         {/* Delete/ Reset Graph Button */}
         <Button
           style={buttonStyles}
@@ -51,6 +40,17 @@ class NewQuestionButtons extends React.Component {
         >
           <span>
             Reset <span style={{ fontSize: '22px' }}><FaTrash style={{ cursor: 'pointer' }} /></span>
+          </span>
+        </Button>
+        <Button
+          style={buttonStyles}
+          className="btn btn-default"
+          disabled={!isValidQuestion}
+          title={isValidQuestion ? 'Download Machine Question as JSON' : errorMsg}
+          onClick={onDownloadQuestion}
+        >
+          <span>
+            Download <span style={{ fontSize: '22px' }}><FaDownload style={{ cursor: 'pointer' }} /></span>
           </span>
         </Button>
         <Button

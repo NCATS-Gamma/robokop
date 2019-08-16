@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Form, ToggleButtonGroup, ToggleButton, Checkbox } from 'react-bootstrap';
+import { Checkbox } from 'react-bootstrap';
 import { toJS } from 'mobx';
 import { observer, PropTypes as mobxPropTypes } from 'mobx-react';
 import { DropdownList } from 'react-widgets';
@@ -60,7 +60,6 @@ class NodePanel extends React.Component {
     const { activePanel } = this.props;
     const { isValidType } = activePanel;
     const nodeFunction = nodeFuntionList.find(func => activePanel[func]);
-    console.log(nodeFunction);
     const dropDownObjList = activePanel.store.concepts.map(c => ({ text: entityNameDisplay(c), value: c }));
     const disableCurie = activePanel.type === 'named_thing' ? 'curieEnabled' : '';
     let curie;
@@ -73,19 +72,14 @@ class NodePanel extends React.Component {
       <div>
         {ready ?
           <div>
-            <Form horizontal>
-              <ToggleButtonGroup
-                type="radio"
-                name="nodeToggle"
-                justified
-                defaultValue={nodeFunction === 'set' ? 'regular' : nodeFunction}
-                onChange={() => {}} // react-bootstrap sucks
-                id="nodeFunctionButtonGroup"
-              >
-                <ToggleButton value="curieEnabled" onClick={() => activePanel.changeNodeFunction('curieEnabled')}>Specific Node</ToggleButton>
-                <ToggleButton value="regular" onClick={this.handleRegularButton}>General Node</ToggleButton>
-              </ToggleButtonGroup>
-              {nodeFunction &&
+            <h2
+              style={{ textAlign: 'center' }}
+            >
+              {nodeFunction === 'curieEnabled' ? 'Specific' : nodeFunction === 'regular' ? 'General' : 'Set'} Node {/* eslint-disable-line */}
+            </h2>
+            {nodeFunction &&
+              <div>
+                <h4>Type</h4>
                 <DropdownList
                   filter
                   placeholder="Select a Biomedical Type"
@@ -95,11 +89,13 @@ class NodePanel extends React.Component {
                   value={activePanel.type}
                   onChange={value => activePanel.updateField('type', value.value)}
                   disabled={nodeFunction === 'curieEnabled' ? ['named_thing'] : []}
+                  containerClassName="nodePanelNodeType"
                 />
-              }
-            </Form>
+              </div>
+            }
             {isValidType && nodeFunction === 'curieEnabled' && !disableCurie &&
-              <div style={{ display: 'table', width: '100%' }}>
+              <div style={{ display: 'table', width: '100%', marginTop: '20px' }}>
+                <h4>Specific Node Identifier</h4>
                 <div
                   style={{ display: 'table-row' }}
                 >
@@ -118,7 +114,13 @@ class NodePanel extends React.Component {
               </div>
             }
             {isValidType && nodeFunction && nodeFunction !== 'curieEnabled' &&
-              <Checkbox checked={activePanel.set} onChange={event => this.handleSetCheckbox(event)}>Allow this node to be a set</Checkbox>
+              <Checkbox
+                checked={activePanel.set}
+                onChange={event => this.handleSetCheckbox(event)}
+                style={{ textAlign: 'right', margin: '20px 0px' }}
+              >
+                Allow this node to be a set
+              </Checkbox>
             }
             {isValidType && nodeFunction !== 'curieEnabled' &&
               <div>

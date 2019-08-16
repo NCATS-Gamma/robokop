@@ -4,6 +4,7 @@ import { Modal, ButtonGroup, Button } from 'react-bootstrap';
 import FaFloppyO from 'react-icons/lib/fa/floppy-o';
 import FaTrash from 'react-icons/lib/fa/trash';
 import FaUndo from 'react-icons/lib/fa/rotate-left';
+import _ from 'lodash';
 
 import { panelTypes } from '../../../stores/newQuestionStore';
 import HelpButton from '../../shared/HelpButton';
@@ -11,7 +12,7 @@ import getNodeTypeColorMap from '../../util/colorUtils';
 import EdgePanel from './EdgePanel';
 import NodePanel from './NodePanel';
 
-const _ = require('lodash');
+const nodeFuntionList = ['regular', 'set', 'curieEnabled'];
 
 @observer
 class NewQuestionPanelModal extends React.Component {
@@ -20,6 +21,7 @@ class NewQuestionPanelModal extends React.Component {
     this.state = {};
 
     this.getBackgroundColor = this.getBackgroundColor.bind(this);
+    this.handleRegularButton = this.handleRegularButton.bind(this);
   }
 
   getBackgroundColor(nodePanel) {
@@ -38,6 +40,16 @@ class NewQuestionPanelModal extends React.Component {
     return { backgroundImage: `linear-gradient(80deg, ${color1} 50%, ${color2} 50%)` };
   }
 
+  handleRegularButton() {
+    const { activePanelState } = this.props.store;
+    const nodeFunction = nodeFuntionList.find(func => activePanelState[func]);
+    if (nodeFunction === 'curieEnabled') {
+      activePanelState.changeNodeFunction('regular');
+    } else {
+      activePanelState.changeNodeFunction('curieEnabled');
+    }
+  }
+
   render() {
     const { store } = this.props;
     const { activePanelState } = store;
@@ -51,42 +63,30 @@ class NewQuestionPanelModal extends React.Component {
         {activePanelState.panelType &&
           <Modal
             show={store.showPanelModal}
+            backdrop="static"
             onHide={store.togglePanelModal}
-            backdrop
           >
-            <Modal.Header style={backgroundColor}>
-              <Modal.Title style={{ height: '6%' }}>
+            <Modal.Header style={backgroundColor} closeButton>
+              <Modal.Title style={{ height: '6%', display: 'inline-block' }}>
                 {`${isNodePanel ? 'Node' : 'Edge'} ${activePanelState.panelName} `}
                 <HelpButton link="nedgePanel" />
-                <ButtonGroup className="pull-right">
-                  {!_.isEmpty(activePanelState) &&
-                    <Button
-                      onClick={store.saveActivePanel}
-                      disabled={!unsavedChanges || !isValidPanel}
-                      bsStyle={isValidPanel ? (unsavedChanges ? 'primary' : 'default') : 'danger'} // eslint-disable-line no-nested-ternary
-                      title={isValidPanel ? (unsavedChanges ? 'Save changes' : 'No changes to save') : 'Fix invalid panel entries first'} // eslint-disable-line no-nested-ternary
-                    >
-                      <FaFloppyO style={{ verticalAlign: 'text-top' }} />
-                      {' Save'}
-                    </Button>
-                  }
-                  {!isNewPanel &&
-                    <Button
-                      onClick={store.revertActivePanel}
-                      disabled={!unsavedChanges}
-                      title={unsavedChanges ? 'Undo unsaved changes' : 'No changes to undo'}
-                    >
-                      <FaUndo style={{ verticalAlign: 'text-top' }} />
-                      {' Undo'}
-                    </Button>
-                  }
-                  {(store.panelState.length > 0) &&
-                    <Button onClick={store.deleteActivePanel} title={`${isNewPanel ? 'Discard' : 'Delete'} current node`}>
-                      <FaTrash style={{ verticalAlign: 'text-top' }} />{` ${isNewPanel ? 'Discard' : 'Delete'}`}
-                    </Button>
-                  }
-                </ButtonGroup>
               </Modal.Title>
+              {isNodePanel &&
+                <div style={{ display: 'inline-block', float: 'right', marginRight: '30px' }}>
+                  <h5
+                    style={{ display: 'inline-block', marginRight: '10px' }}
+                  >
+                    Toggle between this node being specific or general:
+                  </h5>
+                  <Button
+                    onClick={this.handleRegularButton}
+                    style={{ display: 'inline-block' }}
+                    bsSize="small"
+                  >
+                    {store.activePanelState.curieEnabled ? 'General' : 'Specific'} Node
+                  </Button>
+                </div>
+              }
             </Modal.Header>
             <Modal.Body style={{ minHeight: 300 }}>
               {isNodePanel ?
@@ -95,6 +95,37 @@ class NewQuestionPanelModal extends React.Component {
                 <EdgePanel activePanel={activePanelState} />
               }
             </Modal.Body>
+            <Modal.Footer>
+              <ButtonGroup className="pull-right">
+                <Button onClick={store.togglePanelModal}>Close</Button>
+                {(store.panelState.length > 0) &&
+                  <Button onClick={store.deleteActivePanel} title={`${isNewPanel ? 'Discard' : 'Delete'} current node`}>
+                    <FaTrash style={{ verticalAlign: 'text-top' }} />{` ${isNewPanel ? 'Discard' : 'Delete'}`}
+                  </Button>
+                }
+                {!isNewPanel &&
+                  <Button
+                    onClick={store.revertActivePanel}
+                    disabled={!unsavedChanges}
+                    title={unsavedChanges ? 'Undo unsaved changes' : 'No changes to undo'}
+                  >
+                    <FaUndo style={{ verticalAlign: 'text-top' }} />
+                    {' Undo'}
+                  </Button>
+                }
+                {!_.isEmpty(activePanelState) &&
+                  <Button
+                    onClick={store.saveActivePanel}
+                    disabled={!unsavedChanges || !isValidPanel}
+                    bsStyle={isValidPanel ? (unsavedChanges ? 'primary' : 'default') : 'danger'} // eslint-disable-line no-nested-ternary
+                    title={isValidPanel ? (unsavedChanges ? 'Save changes' : 'No changes to save') : 'Fix invalid panel entries first'} // eslint-disable-line no-nested-ternary
+                  >
+                    <FaFloppyO style={{ verticalAlign: 'text-top' }} />
+                    {' Save'}
+                  </Button>
+                }
+              </ButtonGroup>
+            </Modal.Footer>
           </Modal>
         }
       </div>

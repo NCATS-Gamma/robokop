@@ -1,13 +1,16 @@
 #newQuestionOptions {
     width: 100%;
-    margin: auto;
+    margin: 30px auto;
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: space-around;
+    flex-wrap: wrap;
+
 }
 .optionsButton {
-    width: 30%;
+    width: 45%;
     height: 200px;
+    margin: 20px 0px;
 }
 .optionButtonDesc {
     white-space: normal;
@@ -31,4 +34,12 @@
 .questionTemplateDropdown > .dropdown > .dropdown-menu {
     max-height: 250px;
     overflow: auto;
+}
+.nodePanelNodeType {
+    font-size: 16px;
+    border: 3px solid #829AB1;
+}
+.questionListModal {
+    border: 1px solid grey;
+    border-radius: 5px;
 }

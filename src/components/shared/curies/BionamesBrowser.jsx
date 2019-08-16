@@ -95,7 +95,6 @@ class BionamesBrowser extends React.Component {
         theseConcepts.splice(conceptFoundIndex, 1);
       }
     }
-    console.log(colors)
 
     // To find other colors for these types we will go through all concepts in order
     theseConcepts.forEach((concept) => {

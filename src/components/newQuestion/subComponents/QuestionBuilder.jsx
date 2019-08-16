@@ -3,14 +3,18 @@ import { observer } from 'mobx-react';
 import Dropzone from 'react-dropzone';
 import FaUpload from 'react-icons/lib/fa/upload';
 import FaFolder from 'react-icons/lib/fa/folder';
+import GoRepoForked from 'react-icons/lib/go/repo-forked';
 import { Col, Form, FormGroup, FormControl, Panel, Jumbotron, Button } from 'react-bootstrap';
 import _ from 'lodash';
 import { toJS } from 'mobx';
 
+import AppConfig from '../../../AppConfig';
+import { config } from '../../../index';
 import HelpButton from '../../shared/HelpButton';
 import NewQuestionButtons from './NewQuestionButtons';
 import MachineQuestionViewContainer, { graphStates } from './MachineQuestionViewContainer';
 import QuestionTemplateModal from './QuestionTemplate';
+import QuestionListModal from './QuestionListModal';
 import questionTemplates from '../../../../queries/index';
 
 @observer
@@ -19,14 +23,19 @@ class QuestionBuilder extends React.Component {
     super(props);
 
     this.questionName = null; // ref to questionName text field
+    this.appConfig = new AppConfig(config);
     this.state = {
       showQuestionTemplateModal: false,
       step: 1,
+      questions: [],
+      questionsReady: false,
     };
 
     this.selectOption = this.selectOption.bind(this);
     this.onQuestionTemplate = this.onQuestionTemplate.bind(this);
     this.onDropFile = this.onDropFile.bind(this);
+    this.getQuestions = this.getQuestions.bind(this);
+    this.questionSelected = this.questionSelected.bind(this);
     this.submitQuestionName = this.submitQuestionName.bind(this);
     this.reset = this.reset.bind(this);
     this.hideQuestionTemplateModal = this.hideQuestionTemplateModal.bind(this);
@@ -43,7 +52,7 @@ class QuestionBuilder extends React.Component {
   // Loads the question template and updates the MobX store/UI
   onQuestionTemplate(question) {
     this.props.store.machineQuestionSpecToPanelState(question);
-    this.setState({ showQuestionTemplateModal: false, step: 2 }, () => this.questionName.focus());
+    this.setState({ showQuestionTemplateModal: false, step: 3 });
   }
 
   hideQuestionTemplateModal() {
@@ -60,7 +69,7 @@ class QuestionBuilder extends React.Component {
         try {
           const fileContentObj = JSON.parse(fileContents);
           this.props.store.machineQuestionSpecToPanelState(fileContentObj);
-          this.setState({ step: 2 }, () => this.questionName.focus());
+          this.setState({ step: 3 });
         } catch (err) {
           console.error(err);
           window.alert('Failed to read this Question template. Are you sure this is valid?');
@@ -76,6 +85,34 @@ class QuestionBuilder extends React.Component {
     });
   }
 
+  getQuestions() {
+    this.appConfig.questionList(
+      (data) => {
+        this.setState({ questions: data.data.questions, questionsReady: true });
+      },
+      (err) => {
+        console.log(err);
+        this.setState({ questionsReady: false });
+      },
+    );
+  }
+
+  questionSelected(qid) {
+    this.appConfig.questionData(
+      qid,
+      (data) => {
+        this.props.store.machineQuestionSpecToPanelState(data.data.question);
+        this.setState({ step: 3, questionsReady: false });
+      },
+      (err) => {
+        console.log(err);
+        this.props.store.resetQuestion();
+        this.props.store.setGraphState(graphStates.error);
+        this.setState({ step: 1, questionsReady: false });
+      },
+    );
+  }
+
   submitQuestionName() {
     this.setState({ step: 3 });
   }
@@ -86,7 +123,9 @@ class QuestionBuilder extends React.Component {
   }
 
   render() {
-    const { step, showQuestionTemplateModal } = this.state;
+    const {
+      step, showQuestionTemplateModal, questionsReady, questions,
+    } = this.state;
     const {
       store, download, submit, width,
     } = this.props;
@@ -123,6 +162,13 @@ class QuestionBuilder extends React.Component {
                 <p className="optionButtonDesc">Upload a JSON file containing a valid question.</p>
               </Dropzone>
             </Button>
+            <Button
+              className="optionsButton"
+              onClick={this.getQuestions}
+            >
+              <h3>Fork <span style={{ fontSize: '22px' }}><GoRepoForked style={{ cursor: 'pointer' }} /></span></h3>
+              <p className="optionButtonDesc">Load from a previously asked question.</p>
+            </Button>
           </Jumbotron>
         }
         {step !== 1 &&
@@ -130,7 +176,11 @@ class QuestionBuilder extends React.Component {
             <h3 style={{ display: 'inline-block' }}>
               {'Question Title'}
             </h3>
-            <Form horizontal onSubmit={e => e.preventDefault()}>
+            <Form
+              horizontal
+              onSubmit={e => e.preventDefault()}
+              autoComplete="off"
+            >
               <FormGroup
                 bsSize="large"
                 controlId="formHorizontalNodeIdName"
@@ -145,7 +195,16 @@ class QuestionBuilder extends React.Component {
                   placeholder="Please provide a title for your question."
                 />
               </FormGroup>
-              {step === 2 && <Button id="questionNameSubmit" type="submit" onClick={this.submitQuestionName}>Next</Button>}
+              {step === 2 &&
+                <Button
+                  id="questionNameSubmit"
+                  type="submit"
+                  onClick={this.submitQuestionName}
+                  disabled={store.questionName.length === 0}
+                >
+                  Next
+                </Button>
+              }
             </Form>
           </Col>
         }
@@ -167,17 +226,15 @@ class QuestionBuilder extends React.Component {
                 </Panel.Body>
               </Panel>
             </Col>
+            <Col md={12}>
+              <NewQuestionButtons
+                onDownloadQuestion={download}
+                onResetQuestion={this.reset}
+                onSubmitQuestion={submit}
+                graphValidationState={store.graphValidationState}
+              />
+            </Col>
           </div>
-        }
-        {step === 3 &&
-          <Col md={12}>
-            <NewQuestionButtons
-              onDownloadQuestion={download}
-              onResetQuestion={this.reset}
-              onSubmitQuestion={submit}
-              graphValidationState={store.graphValidationState}
-            />
-          </Col>
         }
         <QuestionTemplateModal
           showModal={showQuestionTemplateModal}
@@ -185,6 +242,12 @@ class QuestionBuilder extends React.Component {
           questions={questionList}
           selectQuestion={this.onQuestionTemplate}
           concepts={toJS(this.props.store.concepts)}
+        />
+        <QuestionListModal
+          show={questionsReady}
+          close={() => this.setState({ questionsReady: false })}
+          questions={questions}
+          questionSelected={this.questionSelected}
         />
       </div>
     );
