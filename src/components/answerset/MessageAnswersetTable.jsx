@@ -44,6 +44,13 @@ class MessageAnswersetTable extends React.Component {
     this.initializeState(columnHeaders, answers);
   }
 
+  componentDidMount() {
+    const { store } = this.props;
+    if (store.unknownNodes) {
+      window.alert('We were able to retrieve the answers to this question. However, it seems there was an error retrieving some of the nodes. If you would like complete answers, please try asking this question again.');
+    }
+  }
+
   // SubComponent displayed when expanding a Node column in table that represents a Set
   subComponentFactory = ({nodeId = null, activeButtonKey = answersetSubComponentEnum.graph} = {}) => (rowInfo) => { // eslint-disable-line
     // console.log('rowInfo', rowInfo, 'nodeId / activeButtonKey', nodeId, activeButtonKey);
