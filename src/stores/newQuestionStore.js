@@ -234,6 +234,7 @@ class NodePanel {
       this[node] = field === node;
     });
     if (!this.curieEnabled) this.name = '';
+    console.log(this);
   }
 
   // Returns lowest non-zero integer id not already used
@@ -308,6 +309,9 @@ class NodePanel {
   }
 
   @computed get isValidType() {
+    if (!this.type) {
+      return true;
+    }
     return this.store.concepts.indexOf(this.type) > -1;
   }
 

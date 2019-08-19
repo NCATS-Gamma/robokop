@@ -1,16 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Checkbox } from 'react-bootstrap';
 import { toJS } from 'mobx';
 import { observer, PropTypes as mobxPropTypes } from 'mobx-react';
-import { DropdownList } from 'react-widgets';
+import { FormControl, Button } from 'react-bootstrap';
+import { AutoSizer, List } from 'react-virtualized';
 
+import AppConfig from '../../../AppConfig';
+import { config } from '../../../index';
 import Loading from '../../Loading';
-import CurieSelectorContainer from '../../shared/curies/CurieSelectorContainer';
 import entityNameDisplay from '../../util/entityNameDisplay';
 import NodeProperties from './NodeProperties';
 
-const nodeFuntionList = ['regular', 'set', 'curieEnabled'];
 
 const propTypes = {
   activePanel: PropTypes.shape({
@@ -27,102 +27,156 @@ class NodePanel extends React.Component {
   constructor(props) {
     super(props);
 
+    this.appConfig = new AppConfig(config);
+
+    this.input = null; // ref to search input
+
+    this.state = {
+      term: '',
+      conceptsWithSets: [],
+      filteredConcepts: [],
+      curies: [],
+      selected: {
+        curie: false,
+        regular: false,
+        set: false,
+      },
+    };
+
+    this.addSetsToConcepts = this.addSetsToConcepts.bind(this);
     this.onSearch = this.onSearch.bind(this);
-    this.handleSetCheckbox = this.handleSetCheckbox.bind(this);
-    this.handleRegularButton = this.handleRegularButton.bind(this);
+    this.onSelect = this.onSelect.bind(this);
+    this.rowRenderer = this.rowRenderer.bind(this);
+    this.handleTermChange = this.handleTermChange.bind(this);
   }
 
-  onSearch(input, nodeType) {
-    return this.props.activePanel.store.appConfig.questionNewSearch(input, nodeType);
+  componentDidMount() {
+    this.input.focus();
+    this.addSetsToConcepts();
   }
 
-  handleSetCheckbox(event) {
-    const { activePanel } = this.props;
-    const { checked } = event.target;
-    if (checked) {
-      activePanel.changeNodeFunction('set');
+  addSetsToConcepts() {
+    const { concepts } = this.props.activePanel.store;
+    const conceptsWithSets = [];
+    concepts.forEach((concept) => {
+      conceptsWithSets.push({ name: concept, set: false });
+      conceptsWithSets.push({ name: `Set of ${concept}s`, set: true });
+    });
+    this.setState({ conceptsWithSets });
+  }
+
+  handleTermChange(event) {
+    const term = event.target.value;
+    this.setState({ term }, () => {
+      this.onSearch(term);
+    });
+  }
+
+  onSearch(input) {
+    const { conceptsWithSets } = this.state;
+    if (input.length > 2) {
+      this.appConfig.questionNewSearch(input)
+        .then((res) => {
+          console.log('results', res);
+          const filteredConcepts = conceptsWithSets.filter(concept => concept.name.includes(input));
+          this.setState({ curies: res.options, filteredConcepts });
+        })
+        .catch((err) => {
+          console.log('err', err);
+        });
     } else {
-      activePanel.changeNodeFunction('regular');
+      this.setState({ filteredConcepts: [], curies: [] });
     }
   }
 
-  handleRegularButton() {
+  onSelect(selected) {
     const { activePanel } = this.props;
-    const nodeFunction = nodeFuntionList.find(func => activePanel[func]);
-    if (!nodeFunction || nodeFunction === 'curieEnabled') {
-      activePanel.changeNodeFunction('regular');
+    let nodeFunction = 'regular';
+    if (selected.curie) {
+      nodeFunction = 'curieEnabled';
+      activePanel.updateCurie('', selected.label, selected.curie);
+    } else if (selected.set) {
+      nodeFunction = 'set';
     }
+    activePanel.changeNodeFunction(nodeFunction);
+    this.setState({ term: entityNameDisplay(selected.name) });
+  }
+
+  rowRenderer({
+    index,
+    key,
+    style,
+  }) {
+    const { filteredConcepts, curies } = this.state;
+    let value = '';
+    let entry = {};
+    if (index < filteredConcepts.length) {
+      value = entityNameDisplay(filteredConcepts[index].name);
+      entry = filteredConcepts[index];
+    } else {
+      const i = index - filteredConcepts.length;
+      value = entityNameDisplay(curies[i].name);
+      entry = curies[i];
+    }
+    return (
+      <div
+        key={key}
+        style={{ ...style }}
+        className="nodePanelSelector"
+      >
+        {value}
+        <Button
+          onClick={() => this.onSelect(entry)}
+        >
+          Select
+        </Button>
+      </div>
+    );
   }
 
   render() {
+    const {
+      filteredConcepts, curies, term, selected,
+    } = this.state;
     const { store } = this.props.activePanel;
     const ready = store.dataReady && store.conceptsReady && store.userReady && store.nodePropertiesReady;
     const { activePanel } = this.props;
-    const { isValidType } = activePanel;
-    const nodeFunction = nodeFuntionList.find(func => activePanel[func]);
-    const dropDownObjList = activePanel.store.concepts.map(c => ({ text: entityNameDisplay(c), value: c }));
-    const disableCurie = activePanel.type === 'named_thing' ? 'curieEnabled' : '';
-    let curie;
-    if (toJS(activePanel.curie).length !== 0) {
-      curie = { curie: activePanel.curie[0], type: activePanel.type, term: activePanel.name };
-    } else {
-      curie = { type: activePanel.type, curie: '', term: '' };
-    }
+    const showOptions = !activePanel.curie.length;
+    const rowHeight = 50;
+    const nRows = filteredConcepts.length + curies.length;
+    const height = Math.min(rowHeight * nRows, 225);
     return (
       <div>
         {ready ?
           <div>
-            <h2
-              style={{ textAlign: 'center' }}
-            >
-              {nodeFunction === 'curieEnabled' ? 'Specific' : nodeFunction === 'regular' ? 'General' : 'Set'} Node {/* eslint-disable-line */}
-            </h2>
-            {nodeFunction &&
-              <div>
-                <h4>Type</h4>
-                <DropdownList
-                  filter
-                  placeholder="Select a Biomedical Type"
-                  data={dropDownObjList}
-                  textField="text"
-                  valueField="value"
-                  value={activePanel.type}
-                  onChange={value => activePanel.updateField('type', value.value)}
-                  disabled={nodeFunction === 'curieEnabled' ? ['named_thing'] : []}
-                  containerClassName="nodePanelNodeType"
-                />
-              </div>
+            <FormControl
+              type="text"
+              className="curieSelectorInput"
+              placeholder="Start typing to search."
+              value={term}
+              inputRef={(ref) => { this.input = ref; }}
+              onChange={this.handleTermChange}
+            />
+            {showOptions &&
+              <AutoSizer disableHeight defaultWidth={100}>
+                {({ width }) => (
+                  <List
+                    style={{
+                      border: 'none',
+                      marginTop: '0px',
+                      outline: 'none',
+                    }}
+                    height={height}
+                    overscanRowCount={10}
+                    rowCount={nRows}
+                    rowHeight={rowHeight}
+                    rowRenderer={this.rowRenderer}
+                    width={width}
+                  />
+                )}
+              </AutoSizer>
             }
-            {isValidType && nodeFunction === 'curieEnabled' && !disableCurie &&
-              <div style={{ display: 'table', width: '100%', marginTop: '20px' }}>
-                <h4>Specific Node Identifier</h4>
-                <div
-                  style={{ display: 'table-row' }}
-                >
-                  <div
-                    style={{ display: 'table-cell', padding: '5px 0px' }}
-                  >
-                    <CurieSelectorContainer
-                      concepts={toJS(activePanel.store.concepts)}
-                      search={this.onSearch}
-                      disableType
-                      initialInputs={curie}
-                      onChangeHook={(ty, te, cu) => activePanel.updateCurie(ty, te, cu)}
-                    />
-                  </div>
-                </div>
-              </div>
-            }
-            {isValidType && nodeFunction && nodeFunction !== 'curieEnabled' &&
-              <Checkbox
-                checked={activePanel.set}
-                onChange={event => this.handleSetCheckbox(event)}
-                style={{ textAlign: 'right', margin: '20px 0px' }}
-              >
-                Allow this node to be a set
-              </Checkbox>
-            }
-            {isValidType && nodeFunction !== 'curieEnabled' &&
+            {selected.curie &&
               <div>
                 {store.nodePropertyList[activePanel.type] && store.nodePropertyList[activePanel.type].length > 0 ?
                   <NodeProperties activePanel={activePanel} validProperties={toJS(store.nodePropertyList)} />

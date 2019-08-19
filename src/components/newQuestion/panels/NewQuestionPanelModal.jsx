@@ -12,8 +12,6 @@ import getNodeTypeColorMap from '../../util/colorUtils';
 import EdgePanel from './EdgePanel';
 import NodePanel from './NodePanel';
 
-const nodeFuntionList = ['regular', 'set', 'curieEnabled'];
-
 @observer
 class NewQuestionPanelModal extends React.Component {
   constructor(props) {
@@ -21,7 +19,6 @@ class NewQuestionPanelModal extends React.Component {
     this.state = {};
 
     this.getBackgroundColor = this.getBackgroundColor.bind(this);
-    this.handleRegularButton = this.handleRegularButton.bind(this);
   }
 
   getBackgroundColor(nodePanel) {
@@ -38,16 +35,6 @@ class NewQuestionPanelModal extends React.Component {
     const color1 = panelColorMap(type1);
     const color2 = panelColorMap(type2);
     return { backgroundImage: `linear-gradient(80deg, ${color1} 50%, ${color2} 50%)` };
-  }
-
-  handleRegularButton() {
-    const { activePanelState } = this.props.store;
-    const nodeFunction = nodeFuntionList.find(func => activePanelState[func]);
-    if (nodeFunction === 'curieEnabled') {
-      activePanelState.changeNodeFunction('regular');
-    } else {
-      activePanelState.changeNodeFunction('curieEnabled');
-    }
   }
 
   render() {
@@ -71,22 +58,6 @@ class NewQuestionPanelModal extends React.Component {
                 {`${isNodePanel ? 'Node' : 'Edge'} ${activePanelState.panelName} `}
                 <HelpButton link="nedgePanel" />
               </Modal.Title>
-              {isNodePanel &&
-                <div style={{ display: 'inline-block', float: 'right', marginRight: '30px' }}>
-                  <h5
-                    style={{ display: 'inline-block', marginRight: '10px' }}
-                  >
-                    Toggle between this node being specific or general:
-                  </h5>
-                  <Button
-                    onClick={this.handleRegularButton}
-                    style={{ display: 'inline-block' }}
-                    bsSize="small"
-                  >
-                    {store.activePanelState.curieEnabled ? 'General' : 'Specific'} Node
-                  </Button>
-                </div>
-              }
             </Modal.Header>
             <Modal.Body style={{ minHeight: 300 }}>
               {isNodePanel ?
