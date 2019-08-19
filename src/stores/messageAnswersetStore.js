@@ -25,6 +25,7 @@ class AnswersetStore {
 
   // we don't want to include any of these in the filter
   keyBlacklist = ['isSet', 'labels', 'equivalent_identifiers', 'type', 'id', 'degree'];
+  unknownNodes = false;
 
   constructor(message) {
     runInAction(() => {
@@ -151,10 +152,17 @@ class AnswersetStore {
         answer[qnodeId] = [];
         kNodeIds.forEach((kNodeId) => {
           const kNode = this.getKgNode(kNodeId);
-          answer[qnodeId].push({
-            name: kNode.name,
-            id: kNode.id,
-          });
+          if (kNode) {
+            answer[qnodeId].push({
+              name: kNode.name,
+              id: kNode.id,
+            });
+          } else {
+            answer[qnodeId].push({
+              name: 'Missing Node',
+            });
+            this.unknownNodes = true;
+          }
         });
       });
       answer.score = ans.score;
@@ -621,29 +629,31 @@ class AnswersetStore {
       const qnodeFilter = filterKeys[qnodeId];
       Object.keys(filter[qnodeId]).forEach((knodeId) => {
         const knode = this.getKgNode(knodeId);
-        if (Object.keys(qnodeFilter).length === 0) {
-          // we are dealing with the first node
-          Object.keys(knode).forEach((propertyKey) => {
-            propertyKey = propertyKey.replace(/ /g, '_'); // for consistency, change all spaces to underscores
-            if (!this.keyBlacklist.includes(propertyKey)) {
-              qnodeFilter[propertyKey] = {};
-              qnodeFilter[propertyKey][knode[propertyKey]] = [true, true];
-            }
-          });
-        } else {
-          // we are adding a node to the existing filterKeys
-          Object.keys(knode).forEach((propertyKey) => {
-            propertyKey = propertyKey.replace(/ /g, '_'); // for consistency, change all spaces to underscores
-            if (!this.keyBlacklist.includes(propertyKey) && qnodeFilter[propertyKey]) {
-              qnodeFilter[propertyKey][knode[propertyKey]] = [true, true];
+        if (knode) {
+          if (Object.keys(qnodeFilter).length === 0) {
+            // we are dealing with the first node
+            Object.keys(knode).forEach((propertyKey) => {
+              propertyKey = propertyKey.replace(/ /g, '_'); // for consistency, change all spaces to underscores
+              if (!this.keyBlacklist.includes(propertyKey)) {
+                qnodeFilter[propertyKey] = {};
+                qnodeFilter[propertyKey][knode[propertyKey]] = [true, true];
+              }
+            });
+          } else {
+            // we are adding a node to the existing filterKeys
+            Object.keys(knode).forEach((propertyKey) => {
+              propertyKey = propertyKey.replace(/ /g, '_'); // for consistency, change all spaces to underscores
+              if (!this.keyBlacklist.includes(propertyKey) && qnodeFilter[propertyKey]) {
+                qnodeFilter[propertyKey][knode[propertyKey]] = [true, true];
+              }
+            });
+          }
+          Object.keys(qnodeFilter).forEach((propertyKey) => {
+            if (!Object.keys(knode).includes(propertyKey)) {
+              delete qnodeFilter[propertyKey];
             }
           });
         }
-        Object.keys(qnodeFilter).forEach((propertyKey) => {
-          if (!Object.keys(knode).includes(propertyKey)) {
-            delete qnodeFilter[propertyKey];
-          }
-        });
       });
     });
     this.filterKeys = filterKeys;
@@ -672,8 +682,10 @@ class AnswersetStore {
         let show;
         knodeIds.forEach((knodeId) => {
           const knode = this.getKgNode(knodeId);
-          show = !Object.keys(qnodeFilter).some(propertyKey => !qnodeFilter[propertyKey][knode[propertyKey]][0]);
-          filter[qnodeId][knodeId] = show;
+          if (knode) {
+            show = !Object.keys(qnodeFilter).some(propertyKey => !qnodeFilter[propertyKey][knode[propertyKey]][0]);
+            filter[qnodeId][knodeId] = show;
+          }
         });
       });
     });
@@ -730,7 +742,7 @@ class AnswersetStore {
     const qnodeIds = this.getQNodeIds();
     qnodeIds.forEach((qnodeId) => {
       row._original[qnodeId].forEach((knode) => {
-        if (!filter[qnodeId][knode.id]) {
+        if (knode.id && !filter[qnodeId][knode.id]) {
           show = false;
           return show;
         }
