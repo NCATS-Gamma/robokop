@@ -24,7 +24,7 @@ RUN apt-get install -yq \
 ## Set up home directory
 ARG UID=1000
 ARG GID=1000
-RUN groupadd -g $GID murphy
+RUN groupadd -o -g $GID murphy
 RUN useradd -m -u $UID -g $GID -s /bin/bash murphy
 WORKDIR /home/murphy
 
