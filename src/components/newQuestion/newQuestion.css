@@ -44,5 +44,38 @@
     border-radius: 5px;
 }
 .nodePanelSelector {
-    border: 1px solid black;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-right: 10px;
+    border: 1px solid #d4d4d4;
+    border-top: none;
+    background-color: #fff;
+    border-radius: 0px 0px 4px 4px;
+}
+.nodePanelSelector#lastConcept {
+    border-bottom: 3px solid black;
+}
+.colorStripesContainer {
+    display: flex;
+    height: 100%;
+}
+.curieName {
+    width: 50%;
+    margin-left: 10px;
+}
+.curieName > div {
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.curieDetails {
+    width: 50%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+.curieDetails > * {
+    margin: 0px 10px;
 }

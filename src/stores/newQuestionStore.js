@@ -64,6 +64,7 @@ class EdgePanel {
       let type1;
       let type2;
       this.store.panelState.forEach((panel) => {
+        console.log(panel);
         if (panel.panelType === 'node') {
           if (panel.id === this.source_id) {
             type1 = panel.type;
@@ -72,7 +73,7 @@ class EdgePanel {
           }
         }
       });
-      if (type1 === 'named_thing') {
+      if (type1 === 'named_thing' || !(type1 && type2)) {
         this.predicateList = [];
         this.predicatesReady = true;
         this.disablePredicates = false;
@@ -229,12 +230,21 @@ class NodePanel {
     });
   }
 
+  @action.bound resetNodePanel() {
+    this.curie = [];
+    this.name = '';
+    this.type = '';
+    this.properties = [];
+    this.curieEnabled = false;
+    this.set = false;
+    this.regular = false;
+  }
+
   @action.bound changeNodeFunction(field) {
     this._nodeFunctionTypes.forEach((node) => {
       this[node] = field === node;
     });
     if (!this.curieEnabled) this.name = '';
-    console.log(this);
   }
 
   // Returns lowest non-zero integer id not already used
@@ -306,6 +316,7 @@ class NodePanel {
 
   @action.bound resetCurie() {
     this.curie = [];
+    this.name = '';
   }
 
   @computed get isValidType() {

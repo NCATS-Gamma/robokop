@@ -41,6 +41,13 @@ class QuestionBuilder extends React.Component {
     this.hideQuestionTemplateModal = this.hideQuestionTemplateModal.bind(this);
   }
 
+  componentDidMount() {
+    const { store } = this.props;
+    if (store.questionName && store.graphState === graphStates.display) {
+      this.submitQuestionName();
+    }
+  }
+
   selectOption(option) {
     if (option === 'blank') {
       this.setState({ step: 2 }, () => this.questionName.focus());
