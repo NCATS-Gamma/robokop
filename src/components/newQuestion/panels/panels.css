@@ -1,0 +1,66 @@
+#nodeSelectorContainer {
+    margin: 20px 0px;
+}
+.curieSelectorInput {
+    font-size: 20px;
+}
+.nodePanelSelector {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-right: 10px;
+    border: 1px solid #d4d4d4;
+    border-top: none;
+    background-color: #fff;
+    border-radius: 0px 0px 4px 4px;
+}
+.nodePanelSelector#lastConcept {
+    border-bottom: 3px solid black;
+}
+.colorStripesContainer {
+    display: flex;
+    height: 100%;
+}
+.curieName {
+    width: 50%;
+    margin-left: 10px;
+}
+.curieName > div {
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.curieDetails {
+    width: 50%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+.curieDetails > * {
+    margin: 0px 10px;
+}
+#nodePropertiesContainer {
+    margin-top: 30px;
+}
+.nodePropertiesHeader {
+    width: 50%;
+    text-align: center;
+    padding-bottom: 12px;
+    color: #CCCCCC;
+}
+.constraintInput {
+    width: 100%;
+    border: 1px solid #CCCCCC;
+    border-radius: 4px;
+    padding: 7px;
+    /* background-color: #F5F5F5; */
+}
+#edgeArrow {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    height: 66px;
+    font-size: 30px;
+    color: #BAC4C6;
+}

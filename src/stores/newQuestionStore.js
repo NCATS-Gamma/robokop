@@ -43,6 +43,7 @@ class EdgePanel {
         }
       });
     });
+    this.getSourceAndTarget();
     this.getPredicateList();
   }
 
@@ -51,6 +52,17 @@ class EdgePanel {
     const candidateIds = _.range(this.store.panelState.length + 1);
     const currentIds = this.store.edgeIdList();
     return _.difference(candidateIds, currentIds).sort()[0];
+  }
+
+  getSourceAndTarget() {
+    for (let i = this.store.nodePanels.length - 1; i >= 0; i -= 1) {
+      if (this.target_id === null) {
+        this.target_id = this.store.nodePanels[i].id;
+      } else if (this.source_id === null) {
+        this.source_id = this.store.nodePanels[i].id;
+        break;
+      }
+    }
   }
 
   // Loads specific array of predicates based on soure and target ids
@@ -64,7 +76,6 @@ class EdgePanel {
       let type1;
       let type2;
       this.store.panelState.forEach((panel) => {
-        console.log(panel);
         if (panel.panelType === 'node') {
           if (panel.id === this.source_id) {
             type1 = panel.type;
@@ -162,8 +173,8 @@ class EdgePanel {
 
   // Make a deep clone of this instance
   clone() {
-    const userObj = {};
-    this._publicFields.forEach(field => (userObj[field] = toJS(this[field]))); // eslint-disable-line no-underscore-dangle
+    const userObj = this.toJsonObj();
+    // this._publicFields.forEach(field => (userObj[field] = toJS(this[field]))); // eslint-disable-line no-underscore-dangle
     return new EdgePanel(this.store, userObj);
   }
 
@@ -184,6 +195,7 @@ class NodePanel {
   @observable id = null;
   @observable type = '';
   @observable name = '';
+  @observable searchTerm = '';
   @observable curie = [];
   @observable properties = [];
   @observable curieEnabled = false;
@@ -221,11 +233,14 @@ class NodePanel {
       if ((typeof this.curie === 'string') || (this.curie instanceof String)) {
         this.curie = [this.curie];
       }
-      if (this.curie.length !== 0 || (this.store.panelState.length === 0 && Object.keys(userObj).length === 0)) {
+      if (this.curie.length !== 0) {
         this.curieEnabled = true;
       }
-      if (!this.set && !this.curieEnabled) {
+      if (Object.keys(userObj).length && !this.set && !this.curieEnabled && this.type) {
         this.regular = true;
+      }
+      if (Object.keys(userObj).length && this.type) {
+        this.searchTerm = this.name || (this.set && `Set Of ${this.type}s`) || this.type;
       }
     });
   }
@@ -267,6 +282,16 @@ class NodePanel {
       }
     }
     this[field] = value;
+  }
+
+  @action.bound updateSearchTerm(value) {
+    this.searchTerm = value;
+    if (this.curie.length) {
+      this.resetCurie();
+    }
+    if (this.type) {
+      this.type = '';
+    }
   }
 
   @action.bound addProperty() {
@@ -358,7 +383,14 @@ class NodePanel {
 
   // Prettified label for the panel
   @computed get panelName() {
-    return `${this.id}: ${this.name === '' ? entityNameDisplay(this.type) : this.name}${this.curieEnabled ? '*' : ''}`;
+    let name = this.name === '' ? entityNameDisplay(this.type) : this.name;
+    if (!this.type) {
+      name = 'Any';
+    }
+    if (this.set) {
+      name = `Set Of ${name}s`;
+    }
+    return `${this.id}: ${name}`;
   }
 
   /**
@@ -818,11 +850,12 @@ class NewQuestionStore {
     if (panelType === panelTypes.edge) {
       // If a node was previously selected when clicking "New Edge", the source-id
       // for the new edge is pre-populated with a reference to the initially selected node
-      if (this.activePanelInd && (this.panelState.length > this.activePanelInd) && this.isNode(this.panelState[this.activePanelInd])) {
-        this.activePanelState = new EdgePanel(this, { source_id: this.panelState[this.activePanelInd].id });
-      } else {
-        this.activePanelState = new EdgePanel(this);
-      }
+      // if (this.activePanelInd && (this.panelState.length > this.activePanelInd) && this.isNode(this.panelState[this.activePanelInd])) {
+      //   this.activePanelState = new EdgePanel(this, { source_id: this.panelState[this.activePanelInd].id });
+      // } else {
+      //   this.activePanelState = new EdgePanel(this);
+      // }
+      this.activePanelState = new EdgePanel(this);
     }
     this.activePanelInd = this.panelState.length;
   }

@@ -1,18 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Form, FormGroup, Col, ControlLabel } from 'react-bootstrap';
+import { Form, Col, Glyphicon } from 'react-bootstrap';
 import FaSpinner from 'react-icons/lib/fa/spinner';
 import { toJS } from 'mobx';
 import { observer, PropTypes as mobxPropTypes } from 'mobx-react';
 import { Multiselect, DropdownList } from 'react-widgets';
 
 import Loading from '../../Loading';
-import LabeledFormGroup from '../../shared/LabeledFormGroup';
-
-const classNames = {
-  formLabel: 'col-md-2 form-label',
-  formControl: 'col-md-10',
-};
 
 const propTypes = {
   activePanel: PropTypes.shape({
@@ -29,7 +23,6 @@ class EdgePanel extends React.Component {
     super(props);
 
     this.validateFormElement = this.validateFormElement.bind(this);
-    this.onSearch = this.onSearch.bind(this);
   }
 
   /**
@@ -54,10 +47,6 @@ class EdgePanel extends React.Component {
     return isValid ? 'success' : 'error';
   }
 
-  onSearch(input, nodeType) {
-    return this.props.activePanel.store.appConfig.questionNewSearch(input, nodeType);
-  }
-
   render() {
     const { store } = this.props.activePanel;
     const ready = store.dataReady && store.conceptsReady && store.userReady && store.predicatesReady;
@@ -71,12 +60,8 @@ class EdgePanel extends React.Component {
         {ready ?
           <div>
             <Form horizontal>
-              <LabeledFormGroup
-                formLabel={<span>Edge Source </span>}
-                value={activePanel.source_id}
-                validateForm={() => this.validateFormElement('source_id')}
-                classNames={classNames}
-              >
+              <Col sm={5}>
+                <h4 style={{ color: '#CCCCCC' }}>SOURCE</h4>
                 <DropdownList
                   filter="contains"
                   data={validNodeSelectionList}
@@ -86,13 +71,12 @@ class EdgePanel extends React.Component {
                   onChange={value => activePanel.updateField('source_id', value.id)}
                   containerClassName={activePanel.isValidSource ? 'valid' : 'invalid'}
                 />
-              </LabeledFormGroup>
-              <LabeledFormGroup
-                formLabel={<span>Edge Target </span>}
-                value={activePanel.target_id}
-                validateForm={() => this.validateFormElement('target_id')}
-                classNames={classNames}
-              >
+              </Col>
+              <Col sm={2} id="edgeArrow">
+                <Glyphicon glyph="arrow-right" />
+              </Col>
+              <Col sm={5}>
+                <h4 style={{ color: '#CCCCCC' }}>TARGET</h4>
                 <DropdownList
                   filter="contains"
                   data={validNodeSelectionList}
@@ -102,29 +86,25 @@ class EdgePanel extends React.Component {
                   onChange={value => activePanel.updateField('target_id', value.id)}
                   containerClassName={activePanel.isValidTarget ? 'valid' : 'invalid'}
                 />
-              </LabeledFormGroup>
-              <FormGroup controlId="formHorizontalNodeIdName">
-                <Col componentClass={ControlLabel} sm={2}>
-                  Predicates
-                </Col>
-                <Col sm={6}>
-                  <Multiselect
-                    allowCreate={false}
-                    onCreate={name => activePanel.updatePredicate(name)}
-                    data={toJS(predicateList)}
-                    // disabled={disablePredicates}
-                    busySpinner={<FaSpinner className="icon-spin" />}
-                    placeholder={predicateInputMsg}
-                    value={toJS(activePanel.predicate)}
-                    filter="contains"
-                    onChange={value => activePanel.updateField('predicate', value)}
-                    containerClassName={activePanel.isValidPredicate ? 'valid' : 'invalid'}
-                    messages={{
-                      emptyList: 'No predicates were found',
-                    }}
-                  />
-                </Col>
-              </FormGroup>
+              </Col>
+              <Col sm={12} style={{ marginTop: '40px' }}>
+                <h4 style={{ color: '#CCCCCC' }}>PREDICATES</h4>
+                <Multiselect
+                  allowCreate={false}
+                  onCreate={name => activePanel.updatePredicate(name)}
+                  data={toJS(predicateList)}
+                  // disabled={disablePredicates}
+                  busySpinner={<FaSpinner className="icon-spin" />}
+                  placeholder={predicateInputMsg}
+                  value={toJS(activePanel.predicate)}
+                  filter="contains"
+                  onChange={value => activePanel.updateField('predicate', value)}
+                  containerClassName={activePanel.isValidPredicate ? 'valid' : 'invalid'}
+                  messages={{
+                    emptyList: 'No predicates were found',
+                  }}
+                />
+              </Col>
             </Form>
           </div>
           :

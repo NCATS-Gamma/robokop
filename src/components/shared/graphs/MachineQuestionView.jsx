@@ -41,15 +41,17 @@ function defaultNodePreProc(n) {
   n.isSet = ('set' in n) && (((typeof n.set === typeof true) && n.set) || ((typeof n.set === 'string') && n.set === 'true'));
   n.chosen = false; // Not needed since borderWidth manually set below
   n.borderWidth = 1;
-  n.borderWidthSelected = 2;
   if (n.isSet) {
-    n.borderWidth = 3;
-    n.borderWidthSelected = 5;
-  } else {
-    n.borderWidth = 1;
+    n.shadow = {
+      enabled: true,
+      size: 10,
+      color: 'rgba(0,0,0,0.75)',
+      x: -10,
+      y: -10,
+    };
   }
-  if (n.isSelected) { // Override borderwidth when isSelected set by user thru props
-    n.borderWidth = n.borderWidthSelected;
+  if (n.curieEnabled) {
+    n.borderWidth = 2;
   }
   if (n.deleted) { // Set this node as hidden since it is flagged for deletion
     n.color = {
@@ -112,11 +114,7 @@ function defaultEdgePreProc(e) {
   e.from = e.source_id;
   e.to = e.target_id;
   e.chosen = false;
-  if (e.isSelected) {
-    e.width = 2;
-  } else {
-    e.width = 1;
-  }
+  e.width = 1;
   const defaultParams = {
     label,
     labelHighlightBold: false,

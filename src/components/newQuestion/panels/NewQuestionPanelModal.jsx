@@ -11,6 +11,7 @@ import HelpButton from '../../shared/HelpButton';
 import getNodeTypeColorMap from '../../util/colorUtils';
 import EdgePanel from './EdgePanel';
 import NodePanel from './NodePanel';
+import './panels.css';
 
 @observer
 class NewQuestionPanelModal extends React.Component {
@@ -42,9 +43,12 @@ class NewQuestionPanelModal extends React.Component {
     const { activePanelState } = store;
     const isNodePanel = activePanelState.panelType === panelTypes.node;
     const unsavedChanges = store.isUnsavedChanges;
-    const { isValid: isValidPanel } = store.activePanelState;
+    let { isValid: isValidPanel } = store.activePanelState;
     const isNewPanel = store.activePanelInd === store.panelState.length;
     const backgroundColor = this.getBackgroundColor(isNodePanel);
+    if (isNodePanel && activePanelState.searchTerm && !activePanelState.type) {
+      isValidPanel = false;
+    }
     return (
       <div>
         {activePanelState.panelType &&
@@ -68,7 +72,6 @@ class NewQuestionPanelModal extends React.Component {
             </Modal.Body>
             <Modal.Footer>
               <ButtonGroup className="pull-right">
-                <Button onClick={store.togglePanelModal}>Close</Button>
                 {(store.panelState.length > 0) &&
                   <Button onClick={store.deleteActivePanel} title={`${isNewPanel ? 'Discard' : 'Delete'} current node`}>
                     <FaTrash style={{ verticalAlign: 'text-top' }} />{` ${isNewPanel ? 'Discard' : 'Delete'}`}
