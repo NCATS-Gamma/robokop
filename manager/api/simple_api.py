@@ -322,14 +322,31 @@ class Quick(Resource):
         logger.info('   Answering question...')
 
         max_results = parse_args_max_results(request.args)
+        max_results = max_results or -1
         output_format = parse_args_output_format(request.args)
         max_connectivity = parse_args_max_connectivity(request.args)
+        max_connectivity = max_connectivity or -1
+
+        # machine_question => question_graph
+        if 'question_graph' not in question:
+            question['question_graph'] = question.pop('machine_question', {'nodes': [], 'edges': []})
+
+        # add ids to qedges
+        qedges = []
+        for idx, qedge in enumerate(question['question_graph']['edges']):
+            if 'id' not in qedge:
+                qedge['id'] = f'e{idx:03d}'
+            qedges.append(qedge)
+        question['question_graph']['edges'] = qedges
 
         logger.info('   Posting to Ranker...')
         response = requests.post(
             f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/?max_results={max_results}&output_format={output_format}&max_connectivity={max_connectivity}',
             json=question)
 
+        if response.status_code != 202:
+            logger.debug(response.content)
+            raise RuntimeError("Ranker failed.")
         if not isinstance(response.json(), dict):
             logger.debug(response.json())
             raise RuntimeError("The robokop ranker could not correctly initiate the task.")
