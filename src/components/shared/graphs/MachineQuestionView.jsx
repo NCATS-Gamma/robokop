@@ -99,7 +99,7 @@ function defaultEdgePreProc(e) {
     label = e.type;
   }
   if (Array.isArray(label)) {
-    label = label.join(', ');
+    label = label.map(p => p.name).join(', ');
   }
   if (!('type' in e) && !(e.predicate && e.predicate.length > 0)) {
     e.arrows = {

@@ -64,3 +64,8 @@
     font-size: 30px;
     color: #BAC4C6;
 }
+.listItem {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+}

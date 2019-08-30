@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Form, Col, Glyphicon } from 'react-bootstrap';
+import { Form, Col, Glyphicon, Badge } from 'react-bootstrap';
 import FaSpinner from 'react-icons/lib/fa/spinner';
 import { toJS } from 'mobx';
 import { observer, PropTypes as mobxPropTypes } from 'mobx-react';
@@ -13,9 +13,16 @@ const propTypes = {
     id: PropTypes.number.isRequired,
     source_id: PropTypes.number,
     target_id: PropTypes.number,
-    predicate: mobxPropTypes.observableArrayOf(PropTypes.string),
+    predicate: mobxPropTypes.observableArrayOf(PropTypes.object),
   }).isRequired,
 };
+
+const listItem = ({ item }) => (
+  <div className="listItem">
+    {item.name}
+    <Badge>{item.degree}</Badge>
+  </div>
+);
 
 @observer
 class EdgePanel extends React.Component {
@@ -51,10 +58,18 @@ class EdgePanel extends React.Component {
     const { store } = this.props.activePanel;
     const ready = store.dataReady && store.conceptsReady && store.userReady && store.predicatesReady;
     const { activePanel } = this.props;
-    const validNodeSelectionList = activePanel.store.visibleNodePanels.map(panel => ({ id: panel.id, label: panel.panelName }));
-    const { predicateList, disablePredicates } = activePanel;
+    const validNodeSelectionList = store.visibleNodePanels.map(panel => ({ id: panel.id, name: panel.panelName }));
+    const targetNodeList = activePanel.targetNodeList.map(panel => ({ id: panel.node.id, name: panel.node.panelName, degree: panel.node.connections }));
+    const {
+      predicateList, disablePredicates, predicatesReady, connectionsCountReady,
+    } = activePanel;
     // Determine default message for predicate selection component
-    const predicateInputMsg = disablePredicates ? 'Source and/or Target Nodes need to be specified...' : 'Enter optional predicate(s)...';
+    let predicateInputMsg = 'Choose optional predicate(s)...';
+    if (!predicatesReady) {
+      predicateInputMsg = 'Loading...';
+    } else if (disablePredicates) {
+      predicateInputMsg = 'Source and/or Target Nodes need to be specified...';
+    }
     return (
       <div>
         {ready ?
@@ -65,7 +80,8 @@ class EdgePanel extends React.Component {
                 <DropdownList
                   filter="contains"
                   data={validNodeSelectionList}
-                  textField="label"
+                  itemComponent={listItem}
+                  textField="name"
                   valueField="id"
                   value={activePanel.source_id}
                   onChange={value => activePanel.updateField('source_id', value.id)}
@@ -79,8 +95,12 @@ class EdgePanel extends React.Component {
                 <h4 style={{ color: '#CCCCCC' }}>TARGET</h4>
                 <DropdownList
                   filter="contains"
-                  data={validNodeSelectionList}
-                  textField="label"
+                  data={targetNodeList}
+                  readOnly={!connectionsCountReady}
+                  busy={!connectionsCountReady}
+                  busySpinner={<FaSpinner className="icon-spin" />}
+                  itemComponent={listItem}
+                  textField="name"
                   valueField="id"
                   value={activePanel.target_id}
                   onChange={value => activePanel.updateField('target_id', value.id)}
@@ -91,14 +111,15 @@ class EdgePanel extends React.Component {
                 <h4 style={{ color: '#CCCCCC' }}>PREDICATES</h4>
                 <Multiselect
                   allowCreate={false}
-                  onCreate={name => activePanel.updatePredicate(name)}
+                  busy={!predicatesReady}
                   data={toJS(predicateList)}
-                  // disabled={disablePredicates}
+                  itemComponent={listItem}
                   busySpinner={<FaSpinner className="icon-spin" />}
                   placeholder={predicateInputMsg}
+                  textField="name"
                   value={toJS(activePanel.predicate)}
                   filter="contains"
-                  onChange={value => activePanel.updateField('predicate', value)}
+                  onChange={value => activePanel.updatePredicate(value)}
                   containerClassName={activePanel.isValidPredicate ? 'valid' : 'invalid'}
                   messages={{
                     emptyList: 'No predicates were found',

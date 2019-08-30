@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""ROBOKOP manager layer"""
+"""ROBOKOP manager layer."""
 
 import os
 import sys
@@ -403,6 +403,60 @@ class Predicates(Resource):
         return Response(response.content, response.status_code)
 
 api.add_resource(Predicates, '/predicates/')
+
+class PredicateCount(Resource):
+    def post(self):
+        """
+        Get a JSON object of ranked predicates between two biomedical entities.
+        ---
+        tags: [util]
+        requestBody:
+            description: node specifications
+            required: true
+            content:
+                application/json:
+                    schema:
+                        type: array
+                        items:
+                            type: object
+                            properties:
+                                type:
+                                    type: string
+                                id:
+                                    type: string
+                        minItems: 2
+                        maxItems: 2
+                    example:
+                      - type: disease
+                        id: "MONDO:0005737"
+                      - type: gene
+        responses:
+            200:
+                description: ranked predicates with number of connections
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            additionalProperties:
+                                type: number
+        """
+        nodes = request.json
+        url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/count_predicates/"
+        r = requests.post(url, json=nodes)
+        results = []
+        error_status = {'isError': False}
+        if r.ok:
+            results = r.json()
+        else:
+            error_status['isError'] = True
+            error_status['code'] = r.status_code
+
+        if not results and error_status['isError']:
+            abort(error_status['code'], message=f"Ranker lookup endpoint returned {error_status['code']} error code {nodes}")
+        else:
+            return results, 200
+
+api.add_resource(PredicateCount, '/count_predicates/')
 
 class NodeProperties(Resource):
     def get(self):
