@@ -23,7 +23,7 @@ upstream broker_ui {
   server ${BROKER_HOST}:${BROKER_MONITOR_PORT};
 }
 upstream graphql_server {
-  server ${GRAPHQL_HOST}:${GRAPHQL_PORT};
+  server ${MANAGER_HOST}:${GRAPHQL_PORT};
 }
 
 
