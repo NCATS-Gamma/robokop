@@ -41,7 +41,7 @@ class NodeProperties extends React.Component {
                     {(!property.type || property.type === 'string') &&
                       <input
                         id="propertyValue"
-                        style={!property.type && { backgroundColor: '#CCCCCC' }}
+                        style={!property.type ? { backgroundColor: '#CCCCCC' } : {}}
                         placeholder="Enter a value here."
                         type="text"
                         onChange={e => activePanel.updateProperty(e.target.value, i, 'value')}

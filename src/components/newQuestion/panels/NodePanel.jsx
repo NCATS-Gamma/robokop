@@ -18,7 +18,7 @@ import NodeProperties from './NodeProperties';
 const propTypes = {
   activePanel: PropTypes.shape({
     id: PropTypes.number.isRequired,
-    type: PropTypes.string.isRequired,
+    type: PropTypes.string,
     set: PropTypes.bool.isRequired,
     curie: mobxPropTypes.observableArrayOf(PropTypes.string),
     name: PropTypes.string,
@@ -62,8 +62,8 @@ class NodePanel extends React.Component {
     const { concepts } = this.props.activePanel.store;
     const conceptsWithSets = [];
     concepts.forEach((concept) => {
-      conceptsWithSets.push({ name: concept, type: concept, set: false });
-      conceptsWithSets.push({ name: setify(concept), type: concept, set: true });
+      conceptsWithSets.push({ label: concept, type: concept, set: false });
+      conceptsWithSets.push({ label: setify(concept), type: concept, set: true });
     });
     this.setState({ conceptsWithSets });
   }
@@ -82,7 +82,7 @@ class NodePanel extends React.Component {
       this.appConfig.questionNewSearch(input)
         .then((res) => {
           let curies = [];
-          const filteredConcepts = conceptsWithSets.filter(concept => concept.name.includes(input.toLowerCase()));
+          const filteredConcepts = conceptsWithSets.filter(concept => concept.label.includes(input.toLowerCase()));
           if (res.options) {
             curies = res.options;
           }
@@ -98,7 +98,7 @@ class NodePanel extends React.Component {
 
   onSelect(selected) {
     const { activePanel } = this.props;
-    activePanel.updateSearchTerm(entityNameDisplay(selected.name));
+    activePanel.updateSearchTerm(entityNameDisplay(selected.label));
     if (selected.curie) {
       activePanel.changeNodeFunction('curieEnabled');
       activePanel.updateField('type', this.findCurieType(selected.type));
@@ -106,6 +106,10 @@ class NodePanel extends React.Component {
     } else if (selected.set) {
       activePanel.changeNodeFunction('set');
       activePanel.updateField('type', selected.type);
+    } else if (!selected.type) {
+      activePanel.updateField('type', 'named_thing');
+      activePanel.changeNodeFunction('curieEnabled');
+      activePanel.updateCurie('', selected.label, selected.value);
     } else {
       activePanel.changeNodeFunction('regular');
       activePanel.updateField('type', selected.type);
@@ -142,7 +146,7 @@ class NodePanel extends React.Component {
   }) {
     const { filteredConcepts, curies } = this.state;
     const isConcept = index < filteredConcepts.length;
-    let value = '';
+    let name = '';
     let entry = {};
     let degree;
     let links = '';
@@ -151,18 +155,18 @@ class NodePanel extends React.Component {
     let colorStripes = [];
     let typeColor = '';
     if (isConcept) {
-      value = filteredConcepts[index].name;
+      name = filteredConcepts[index].label;
       entry = filteredConcepts[index];
       ({ type } = filteredConcepts[index]); // this is a string
       const typeColorMap = getNodeTypeColorMap();
       typeColor = typeColorMap(type);
     } else {
       const i = index - filteredConcepts.length;
-      value = curies[i].name;
+      name = curies[i].label;
       entry = curies[i];
       ({ degree, type } = curies[i]); // destructuring magic, type is array
       curie = curies[i].value;
-      const urls = curieUrls(curies[i].name);
+      const urls = curieUrls(curie);
       links = (
         <span>
           {urls.map(u => (
@@ -170,19 +174,21 @@ class NodePanel extends React.Component {
           ))}
         </span>
       );
-      type = type.filter(t => t !== 'named_thing');
-      const typeColorMap = getNodeTypeColorMap(type);
-      colorStripes = type.map(t => (
-        <div
-          title={t}
-          style={{
-            backgroundColor: typeColorMap(t),
-            height: '100%',
-            width: '5px',
-          }}
-          key={shortid.generate()}
-        />
-      ));
+      if (Array.isArray(type)) {
+        type = type.filter(t => t !== 'named_thing');
+        const typeColorMap = getNodeTypeColorMap(type);
+        colorStripes = type.map(t => (
+          <div
+            title={t}
+            style={{
+              backgroundColor: typeColorMap(t),
+              height: '100%',
+              width: '5px',
+            }}
+            key={shortid.generate()}
+          />
+        ));
+      }
     }
 
     const fullColor = typeof type === 'string';
@@ -200,7 +206,7 @@ class NodePanel extends React.Component {
           </div>
         }
         <div className="curieName">
-          <div title={entityNameDisplay(value)}>{entityNameDisplay(value)}</div>
+          <div title={entityNameDisplay(name)}>{entityNameDisplay(name)}</div>
         </div>
         <div className="curieDetails">
           {curie}

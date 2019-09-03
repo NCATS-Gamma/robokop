@@ -43,12 +43,9 @@ class NewQuestionPanelModal extends React.Component {
     const { activePanelState } = store;
     const isNodePanel = activePanelState.panelType === panelTypes.node;
     const unsavedChanges = store.isUnsavedChanges;
-    let { isValid: isValidPanel } = store.activePanelState;
+    const { isValid: isValidPanel } = store.activePanelState;
     const isNewPanel = store.activePanelInd === store.panelState.length;
     const backgroundColor = this.getBackgroundColor(isNodePanel);
-    if (isNodePanel && activePanelState.searchTerm && !activePanelState.type) {
-      isValidPanel = false;
-    }
     return (
       <div>
         {activePanelState.panelType &&

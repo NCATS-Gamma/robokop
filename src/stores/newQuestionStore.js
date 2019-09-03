@@ -455,15 +455,26 @@ class NodePanel {
     return valid;
   }
 
+  @computed get isCompleted() {
+    if (this.searchTerm && !this.type && !this.curie.length) {
+      return false;
+    }
+    return true;
+  }
+
   @computed get isValid() {
-    return this.isValidType && this.isValidCurieList && !this.deleted && this.isValidProperties;
+    const valid = this.isValidType && this.isValidCurieList && !this.deleted && this.isValidProperties && this.isCompleted;
+    return valid;
   }
 
   // Prettified label for the panel
   @computed get panelName() {
-    let name = this.name === '' ? entityNameDisplay(this.type) : this.name;
-    if (!this.type) {
-      name = 'Any';
+    let name = 'Any';
+    if (this.type) {
+      name = entityNameDisplay(this.type);
+    }
+    if (this.name) {
+      ({ name } = this);
     }
     if (this.set) {
       name = `Set Of ${name}s`;
