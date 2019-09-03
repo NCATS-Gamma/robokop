@@ -184,7 +184,8 @@ class EdgePanel {
   }
 
   @action.bound updatePredicate(predicates) {
-    this.predicate = predicates;
+    const predicateList = predicates.map(p => p.name || p);
+    this.predicate = predicateList;
   }
 
   @computed get sourceNode() {
@@ -232,7 +233,7 @@ class EdgePanel {
       targetLabel = this.store.getPanelsByType(panelTypes.node)
         .filter(panel => panel.id === this.target_id)[0].panelName;
     }
-    let predicateLabel = this.predicate.map(p => p.name).join(', ');
+    let predicateLabel = this.predicate.join(', ');
     predicateLabel = predicateLabel ? `—[${predicateLabel}]` : '';
     return `${sourceLabel} ${predicateLabel}→ ${targetLabel}`;
   }

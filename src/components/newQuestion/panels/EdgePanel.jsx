@@ -13,7 +13,7 @@ const propTypes = {
     id: PropTypes.number.isRequired,
     source_id: PropTypes.number,
     target_id: PropTypes.number,
-    predicate: mobxPropTypes.observableArrayOf(PropTypes.object),
+    predicate: mobxPropTypes.observableArrayOf(PropTypes.string),
   }).isRequired,
 };
 
@@ -115,15 +115,16 @@ class EdgePanel extends React.Component {
               <Col sm={12} style={{ marginTop: '40px' }}>
                 <h4 style={{ color: '#CCCCCC' }}>PREDICATES</h4>
                 <Multiselect
+                  filter="contains"
                   allowCreate={false}
                   busy={!predicatesReady}
                   data={toJS(predicateList)}
                   itemComponent={listItem}
                   busySpinner={<FaSpinner className="icon-spin" />}
                   placeholder={predicateInputMsg}
-                  textField="name"
+                  textField={value => value.name || value}
                   value={toJS(activePanel.predicate)}
-                  filter="contains"
+                  valueField={value => value.name || value}
                   onChange={value => activePanel.updatePredicate(value)}
                   containerClassName={activePanel.isValidPredicate ? 'valid' : 'invalid'}
                   messages={{
