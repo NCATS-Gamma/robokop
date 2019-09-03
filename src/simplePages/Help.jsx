@@ -85,20 +85,16 @@ class Help extends React.Component {
                   </p>
                   <h2 id="questionNew">New Question</h2>
                   <hr style={{ border: '1px solid #eee' }} />
-                  <h3>New Question Buttons</h3>
+                  <h3>Getting started</h3>
                   <p>
-                    The Upload [<FaUpload size={14} />
-                    ], Download [<FaDownload size={14} />] and Reset [
-                    <FaTrash size={14} />] buttons at the top of the page can be
-                    clicked to import, export (as a JSON file) or reset the
-                    current question. The Submit [<FaPaperPlaneO size={14} />]
-                    button submits the current question to ROBOKOP. The user can
-                    also pre-populate the question graph from a list of
-                    pre-existing question templates by clicking the Use a
-                    Question Template [<FaFolder size={14} />] button.
+                    There are four options when starting with a new question. You can
+                    start from scratch, upload a JSON object of a valid question, choose
+                    a pre-built question template, or fork an old question. If you choose
+                    any of the latter three options, you still have full control over your
+                    question customization.
                   </p>
                   <hr style={{ border: '1px solid #eee' }} />
-                  <h3>Question Text Field</h3>
+                  <h3>Question Title</h3>
                   <p>
                     Text description of the question being constructed. This can
                     usually serve as a good starting point for further
@@ -111,9 +107,9 @@ class Help extends React.Component {
                     This graph provides an updated view of the Machine question
                     as it is constructed by the user. Each node and edge in the
                     graph can be clicked on to display and edit the relevant
-                    node/edge details in the popup window. The active Node or
-                    Edge is indicated by a thicker edge width. Any node that
-                    represents a set is indicated by a thicker border.
+                    node/edge details in the popup window. Any node that
+                    represents a set is indicated by a dark shadow, and a specific
+                    node is represented by a thicker border.
                   </p>
                   <p>
                     Note: Deleted nodes are still shown in grey with a dashed
@@ -124,36 +120,30 @@ class Help extends React.Component {
                   <h3 id="questionGraphOptions">Question Graph Options</h3>
                   <p>
                     The user can create a new Node [<FaPlusSquare size={14} />
-                    ], new Edge [<FaPlus size={14} />
-                    ], or Edit [<FaWrench size={14} />] the graph specification
-                    in a JSON editor by clicking the buttons in the top left
-                    corner of the question graph section.
+                    ] or new Edge [<FaPlus size={14} />
+                    ] by clicking the buttons in the top left
+                    corner of the question graph section. If starting from scratch,
+                    these buttons will appear in the middle of the graph.
+                  </p>
+                  <p>
+                    An extra feature for more advanced customization can be found at the
+                    bottom left of the graph. This &quot;Advanced&quot; button will open a JSON editor
+                    where you can fully customize the question specification.
                   </p>
                   <hr style={{ border: '1px solid #eee' }} />
                   <h3 id="nedgePanel">Node / Edge Panel</h3>
                   <p>
-                    The toolbar at the top of the Node / Edge panel enables the
-                    user to Save [<FaFloppyO size={14} />] or Undo [
-                    <FaUndo size={14} />
-                    ] any changes, or Delete [<FaTrash size={14} />] the current
-                    Node / Edge.
-                  </p>
-                  <p>
-                    Each Node <strong>must</strong> have a valid Node Type
-                    specified. If the user wants to treat the node as a specific
-                    entry, then the next input area must have a valid name
-                    selected. Nodes with a name associated with them are
-                    highlighted with an asterisk [*] at the end of the node
-                    name.
-                  </p>
-                  <p>
-                    The Specific Entry selector can be used to specify a name
-                    for the specified Node type. Typing text in the search field
-                    will attempt to find matches via Bionames. Users can always
-                    specify a custom name by directly typing it into the field -
-                    eg: &quot;MONDO:123456&quot;. A name must always be selected
-                    by clicking the &quot;Select&quot; button for the name in
-                    the search popup box.
+                    When adding a node, you can leave the text field empty to signify that this node
+                    can be anything. Otherwise, you can start typing what type of node you want and
+                    you will get a dropdown list of types (signified by a solid colored background)
+                    and named nodes (signified by small colored stripes denoting the types associated
+                    with that node, the name of the node, and other important details). A name must always
+                    be selected by clicking the &quot;Select&quot; button for the name on the far right. If
+                    you select a node type, depending on what type it is, you will have the option of applying
+                    constraints to that node. If you click on the button to add a constraint, a table will
+                    appear where you can choose a constraint from the dropdown list and then specify its
+                    value. Users can always specify a custom name by directly typing it into the field -
+                    eg: &quot;MONDO:123456&quot;.
                   </p>
                   <p>
                     Each Edge <strong>must</strong> have a valid Source and
@@ -163,22 +153,31 @@ class Help extends React.Component {
                     different node, or be deleted.
                   </p>
                   <p>
-                    An edge can optionally have a predicate (if supported by
-                    Robokop). Predicates can be chosen from the dropdown list.
+                    An edge can optionally have predicates (if supported by
+                    Robokop). Predicates can be chosen from the dropdown list. Each
+                    predicate in this list is denoted by a number, which shows how
+                    many edges in the full knowledge graph have that predicate.
                   </p>
-                  <h2>Terms</h2>
+                  <p>
+                    The toolbar at the bottom of the Node / Edge panel enables the
+                    user to Save [<FaFloppyO size={14} />] or Undo [
+                    <FaUndo size={14} />
+                    ] any changes, or Delete [<FaTrash size={14} />] the current
+                    Node / Edge.
+                  </p>
                   <hr style={{ border: '1px solid #eee' }} />
+                  <h3>New Question Buttons</h3>
                   <p>
-                    <b>Predicate</b> - The edge relationship between two nodes. This is an optional edge property, and leaving blank includes all edges.
+                    The Download [<FaDownload size={14} />] and Reset [
+                    <FaTrash size={14} />] buttons at the bottom of the page can be
+                    clicked to export (as a JSON file) or reset the
+                    current question. The Submit [<FaPaperPlaneO size={14} />]
+                    button submits the current question to ROBOKOP.
                   </p>
                   <p>
-                    <b>Treat As</b> - When asking a question, there are three different general node types, specific entry, collection of unspecified entries, and single unspecified entry.
+                    Note: Resetting the question will take you all the way back to
+                    your original four New Question options.
                   </p>
-                  <ul>
-                    <li>For a specific entry, the user must assign an identifier to that node.</li>
-                    <li>For a collection of unspecified entries, the user wants that node to be a &quot;set&quot;, meaning Robokop will condense all nodes of that type into a single answer rather than separate answers.</li>
-                    <li>For a single unspecified entry, the user wants Robokop to find all nodes of that type in its answers.</li>
-                  </ul>
                   <h2>APIs</h2>
                   <hr style={{ border: '1px solid #eee' }} />
                   <h3 id="expandAPI">Expand API</h3>
