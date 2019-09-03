@@ -440,21 +440,13 @@ class PredicateCount(Resource):
                             additionalProperties:
                                 type: number
         """
-        nodes = request.json
         url = f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/count_predicates/"
-        r = requests.post(url, json=nodes)
-        results = []
-        error_status = {'isError': False}
-        if r.ok:
-            results = r.json()
-        else:
-            error_status['isError'] = True
-            error_status['code'] = r.status_code
+        r = requests.post(url, json=request.json)
+        if not r.ok:
+            abort(r.status_code, message=f"Ranker lookup endpoint returned {r.status_code} error code")
 
-        if not results and error_status['isError']:
-            abort(error_status['code'], message=f"Ranker lookup endpoint returned {error_status['code']} error code {nodes}")
-        else:
-            return results, 200
+        results = r.json()
+        return results, 200
 
 api.add_resource(PredicateCount, '/count_predicates/')
 

@@ -175,6 +175,14 @@ class EdgePanel {
     }
   }
 
+  @action.bound switchSourceTarget() {
+    const source = this.source_id;
+    this.source_id = this.target_id;
+    this.target_id = source;
+    this.getConnectionsCount();
+    this.getPredicates();
+  }
+
   @action.bound updatePredicate(predicates) {
     this.predicate = predicates;
   }

@@ -191,8 +191,8 @@ You'll need to supply values for the secret things at the end.
 For each container listed above you will need to build the container with specified user and group permissions so that log file ownership does not get elevated. For example for the primary robokop UI container
 
 ```
-$ cd robokop/deploy/manager
-$ docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t robokop_manager .
+$ cd robokop/
+$ docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t robokop_manager -f deploy/manager/Dockerfile .
 ```
 
 This process should be repeated for `robokop-interfaces/deploy` and `robokop-rank/deploy/ranker`. Other containers can be built using `docker-compose build`.

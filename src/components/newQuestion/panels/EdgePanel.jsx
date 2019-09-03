@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Form, Col, Glyphicon, Badge } from 'react-bootstrap';
+import { Form, Col, Glyphicon, Badge, Button } from 'react-bootstrap';
 import FaSpinner from 'react-icons/lib/fa/spinner';
 import { toJS } from 'mobx';
 import { observer, PropTypes as mobxPropTypes } from 'mobx-react';
@@ -88,8 +88,13 @@ class EdgePanel extends React.Component {
                   containerClassName={activePanel.isValidSource ? 'valid' : 'invalid'}
                 />
               </Col>
-              <Col sm={2} id="edgeArrow">
-                <Glyphicon glyph="arrow-right" />
+              <Col sm={2} id="nodesSwitch">
+                <Button
+                  onClick={activePanel.switchSourceTarget}
+                  id="nodeSwitchButton"
+                >
+                  <Glyphicon glyph="transfer" />
+                </Button>
               </Col>
               <Col sm={5}>
                 <h4 style={{ color: '#CCCCCC' }}>TARGET</h4>
