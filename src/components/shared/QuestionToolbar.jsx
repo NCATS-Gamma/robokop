@@ -3,7 +3,7 @@ import React from 'react';
 import { DropdownButton, MenuItem } from 'react-bootstrap';
 
 import GoGear from 'react-icons/lib/go/gear';
-import GoSync from 'react-icons/lib/go/sync';
+// import GoSync from 'react-icons/lib/go/sync';
 import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
 import GoRepoForked from 'react-icons/lib/go/repo-forked';
 import GoMilestone from 'react-icons/lib/go/milestone';
@@ -22,13 +22,13 @@ class QuestionToolbar extends React.PureComponent {
         pullRight
         style={{ padding: '3px 6px 3px 6px', marginRight: '15px' }}
       >
-        <MenuItem
+        {/* <MenuItem
           eventKey="1"
           disabled={!this.props.enableQuestionRefresh}
           onSelect={this.props.callbackRefresh}
         >
           <GoSync /> Update Knowledge Graph
-        </MenuItem>
+        </MenuItem> */}
         <MenuItem
           eventKey="2"
           disabled={!this.props.enableNewAnswersets}
