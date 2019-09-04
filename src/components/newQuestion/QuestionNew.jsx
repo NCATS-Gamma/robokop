@@ -2,23 +2,17 @@ import React from 'react';
 import Dialog from 'react-bootstrap-dialog';
 import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
-import {
-  Grid, Row, Col, Panel,
-  Form, FormControl, FormGroup,
-} from 'react-bootstrap';
+import { Grid, Row } from 'react-bootstrap';
 
-import AppConfig from './AppConfig';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import Loading from './components/Loading';
-import MachineQuestionViewContainer, { graphStates } from './components/shared/MachineQuestionViewContainer';
-import HelpButton from './components/shared/HelpButton';
-import LoadingNlpQuestionModal from './components/shared/modals/LoadingNlpQuestion';
-import NewQuestionButtons from './components/shared/NewQuestionButtons';
-import questionTemplates from '../queries/index';
-import QuestionTemplateModal from './components/shared/modals/QuestionTemplate';
 
-const _ = require('lodash');
+import './newQuestion.css';
+import AppConfig from '../../AppConfig';
+import Header from '../Header';
+import Footer from '../Footer';
+import Loading from '../Loading';
+import LoadingNlpQuestionModal from '../shared/modals/LoadingNlpQuestion';
+import QuestionBuilder from './subComponents/QuestionBuilder';
+
 
 @inject(({ store }) => ({ store }))
 @observer
@@ -30,15 +24,8 @@ class QuestionNew extends React.Component {
     this.onCreate = this.onCreate.bind(this);
     this.onResetQuestion = this.onResetQuestion.bind(this);
     this.onDownloadQuestion = this.onDownloadQuestion.bind(this);
-    this.onDropFile = this.onDropFile.bind(this);
     this.onSubmitQuestion = this.onSubmitQuestion.bind(this);
-    this.onQuestionTemplate = this.onQuestionTemplate.bind(this);
     this.getNlpParsedQuestion = this.getNlpParsedQuestion.bind(this);
-    this.toggleModal = this.toggleModal.bind(this);
-
-    this.state = {
-      showQuestionTemplateModal: false,
-    };
   }
 
   componentDidMount() {
@@ -72,31 +59,6 @@ class QuestionNew extends React.Component {
   onDownloadQuestion() {
     const data = this.props.store.getMachineQuestionSpecJson;
     this.provideJsonDownload(data, 'robokopMachineQuestion.json');
-  }
-
-  onDropFile(acceptedFiles, rejectedFiles) { // eslint-disable-line no-unused-vars
-    acceptedFiles.forEach((file) => {
-      const fr = new window.FileReader();
-      fr.onloadstart = () => this.props.store.setGraphState(graphStates.fetching);
-      // fr.onloadend = () => this.setState({ graphState: graphStates.fetching });
-      fr.onload = (e) => {
-        const fileContents = e.target.result;
-        try {
-          const fileContentObj = JSON.parse(fileContents);
-          this.props.store.machineQuestionSpecToPanelState(fileContentObj);
-        } catch (err) {
-          console.error(err);
-          window.alert('Failed to read this Question template. Are you sure this is valid?');
-          this.props.store.setGraphState(graphStates.error);
-        }
-      };
-      fr.onerror = () => {
-        window.alert('Sorry but there was a problem uploading the file. The file may be invalid JSON.');
-        this.props.store.resetQuestion();
-        this.props.store.setGraphState(graphStates.error);
-      };
-      fr.readAsText(file);
-    });
   }
 
   onSubmitQuestion() {
@@ -137,15 +99,6 @@ class QuestionNew extends React.Component {
         });
       },
     );
-  }
-
-  // Loads the question template and updates the MobX store/UI
-  onQuestionTemplate(question) {
-    this.props.store.machineQuestionSpecToPanelState(question);
-  }
-
-  toggleModal() {
-    this.setState(prevState => ({ showQuestionTemplateModal: !prevState.showQuestionTemplateModal }));
   }
 
   // Prevent default form submit and make call to parse NLP question via store method
@@ -211,8 +164,6 @@ class QuestionNew extends React.Component {
   render() {
     const { store } = this.props;
     const ready = store.conceptsReady && store.dataReady && store.userReady && store.predicatesReady;
-    const questionList = _.cloneDeep(questionTemplates);
-    const { showQuestionTemplateModal } = this.state;
     return (
       <div>
         {ready ?
@@ -223,64 +174,23 @@ class QuestionNew extends React.Component {
             />
             <Grid>
               <Row>
-                <Col md={12}>
-                  <NewQuestionButtons
-                    onDownloadQuestion={this.onDownloadQuestion}
-                    onDropFile={this.onDropFile}
-                    onResetQuestion={this.onResetQuestion}
-                    onSubmitQuestion={this.onSubmitQuestion}
-                    toggleModal={this.toggleModal}
-                    graphValidationState={store.graphValidationState}
-                  />
-                </Col>
-                <Col md={12}>
-                  <h3 style={{ display: 'inline-block' }}>
-                    {'Question '}
-                    <HelpButton link="questionNew" />
-                  </h3>
-                  <Form horizontal onSubmit={e => e.preventDefault()}>
-                    <FormGroup
-                      bsSize="large"
-                      controlId="formHorizontalNodeIdName"
-                      validationState={store.questionName.length > 0 ? 'success' : 'error'}
-                      style={{ margin: '0' }}
-                    >
-                      <FormControl
-                        type="text"
-                        value={store.questionName}
-                        onChange={e => store.updateQuestionName(e.target.value)}
-                      />
-                    </FormGroup>
-                  </Form>
-                </Col>
-                <Col md={12}>
-                  <Panel>
-                    <Panel.Heading>
-                      <Panel.Title>
-                        {'Machine Question Editor - Question Graph '}
-                        <HelpButton link="machineQuestionEditor" />
-                      </Panel.Title>
-                    </Panel.Heading>
-                    <Panel.Body style={{ padding: '0px' }}>
-                      <MachineQuestionViewContainer
-                        height="350px"
-                        width={this.props.width}
-                      />
-                    </Panel.Body>
-                  </Panel>
-                </Col>
+                <h1 className="robokopApp">
+                  Ask a Question
+                </h1>
+              </Row>
+              <Row>
+                <QuestionBuilder
+                  store={store}
+                  download={this.onDownloadQuestion}
+                  reset={this.onResetQuestion}
+                  submit={this.onSubmitQuestion}
+                  width={this.props.width}
+                />
               </Row>
             </Grid>
             <Footer config={this.props.config} />
             <Dialog ref={(el) => { this.dialog = el; }} />
             {store.nlpFetching && <LoadingNlpQuestionModal />}
-            <QuestionTemplateModal
-              showModal={showQuestionTemplateModal}
-              toggleModal={this.toggleModal}
-              questions={questionList}
-              selectQuestion={this.onQuestionTemplate}
-              concepts={toJS(store.concepts)}
-            />
           </div>
           :
           <Loading />

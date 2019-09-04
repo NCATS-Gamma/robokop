@@ -19,6 +19,7 @@ const propTypes = {
   onTermChange: PropTypes.func.isRequired, // When term input field is typed in
   onSelect: PropTypes.func.isRequired, // When entity is selected: (type, term, curie) => {}
   disableType: PropTypes.bool, // Whether to display the Type drop-down
+  disableTypeFilter: PropTypes.bool, // Whether to show things only specified by the type parameter the Type drop-down
   width: PropTypes.number,
   search: PropTypes.func,
   size: PropTypes.string, // undefined (default size) or 'small', 'xsmall', 'large'
@@ -27,7 +28,8 @@ const propTypes = {
 const defaultProps = {
   search: () => Promise.resolve({ options: [] }),
   width: 0, // will be ignored
-  disableType: true,
+  disableType: false,
+  disableTypeFilter: false,
   size: undefined,
 };
 
@@ -90,7 +92,8 @@ class CurieSelector extends React.Component {
     if (!input || (input.length < 3)) {
       return Promise.resolve({ options: null });
     }
-    return this.props.search(input, nodeType);
+    const searchNodeType = this.props.disableTypeFilter ? '' : nodeType;
+    return this.props.search(input, searchNodeType);
   }
   handleTermChange(event) {
     this.props.onTermChange(event);
@@ -117,6 +120,7 @@ class CurieSelector extends React.Component {
 
     const width = this.props.width ? this.props.width : '100%';
     const browserWidth = this.props.width ? this.props.width - 10 : 0;
+    const formStyle = disableType ? { borderRight: 0 } : { borderLeft: 0, borderRight: 0 };
     return (
       <div
         id="bionames"
@@ -131,23 +135,24 @@ class CurieSelector extends React.Component {
         <div>
           <FormGroup style={{ marginBottom: 0 }}>
             <InputGroup>
-              <DropdownList
-                filter
-                // dropUp
-                disabled={disableType}
-                style={{ display: 'table-cell', verticalAlign: 'middle', width: '200px' }}
-                data={dropDownObjList}
-                textField="text"
-                valueField="value"
-                value={type}
-                onChange={value => this.handleTypeChange(value.value)}
-              />
+              {!disableType &&
+                <DropdownList
+                  filter
+                  disabled={disableType}
+                  style={{ display: 'table-cell', verticalAlign: 'middle', width: '200px' }}
+                  data={dropDownObjList}
+                  textField="text"
+                  valueField="value"
+                  value={type}
+                  onChange={value => this.handleTypeChange(value.value)}
+                />
+              }
               <FormControl
                 type="text"
                 className="curieSelectorInput"
                 bsSize={size}
                 disabled={!type}
-                style={{ borderLeft: 0, borderRight: 0 }}
+                style={formStyle}
                 placeholder="Start typing to search."
                 value={term}
                 inputRef={(ref) => {
@@ -193,9 +198,11 @@ class CurieSelector extends React.Component {
             <BionamesBrowser
               thinking={this.state.loadingOptions}
               data={this.state.options}
-              type={this.props.type}
               onSelect={this.handleSelect}
               width={browserWidth}
+              concepts={concepts}
+              disableTypeFilter={this.props.disableTypeFilter}
+              type={type}
             />
           </div>
         }

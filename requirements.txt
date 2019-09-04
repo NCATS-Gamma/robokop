@@ -3,7 +3,7 @@ celery
 eventlet
 flask
 flask-mail
-flask-security
+-e git+https://github.com/mattupstate/flask-security@a401fb47018fbbbe0b899ea55afadfd0e3cd847a#egg=flask-security
 flask-sqlalchemy
 flask-restful
 flask-graphql

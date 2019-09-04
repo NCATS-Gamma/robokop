@@ -55,6 +55,7 @@ class AppConfig {
       feedbackNew: this.url('api/feedback/'), // POST new feedback
       feedback: (questionId, answersetId) => this.url(`api/a/${questionId}_${answersetId}/feedback/`),
       search: this.url('api/search/'), // POST for Bionames search
+      rankedPredicates: this.url('api/count_predicates/'), // POST to ranker for valid predicates
       viewData: id => this.url(`api/simple/view/${id}/`),
       simpleEnriched: (type1, type2) => this.url(`api/simple/enriched/${type1}/${type2}/`), // POST for simple enriched
       simpleSimilarity: (type1, type2, id, simType, threshold, maxResults) => (
@@ -245,23 +246,23 @@ class AppConfig {
     // This function is a little more general purpose and could be moved and used elsewhere
     // but let's avoid that if possible.
     function formPost(path, parameters) {
-      const form = $('<form></form>');
+      const form = document.createElement('FORM');
 
-      form.attr('method', 'post');
-      form.attr('action', path);
+      form.method = 'POST';
+      form.action = path;
 
-      $.each(parameters, (key, value) => {
-        const field = $('<input></input>');
-        field.attr('type', 'hidden');
-        field.attr('name', key);
-        field.attr('value', value);
+      Object.entries(parameters).forEach((keyVal) => {
+        const field = document.createElement('INPUT');
+        field.type = 'HIDDEN';
+        [field.name] = keyVal;
+        [, field.value] = keyVal;
 
-        form.append(field);
+        form.appendChild(field);
       });
 
       // The form needs to be a part of the document in
       // order for us to be able to submit it.
-      $(document.body).append(form);
+      document.body.appendChild(form);
       form.submit();
     }
 
@@ -417,22 +418,33 @@ class AppConfig {
     );
   }
 
+  getRankedPredicates(nodes, successFunction, failureFunction) {
+    this.postRequest(
+      this.apis.rankedPredicates,
+      nodes,
+      successFunction,
+      failureFunction,
+    );
+  }
+
   // Requests curie from bionames and returns an object of form
   // { options: [{ value, label }, ...] }. Returned object is an
   // empty object {} if request is cancelled
-  questionNewSearch(input, category) {
+  questionNewSearch(input, nodeType) {
     if (this.questionNewSearchCancelToken) {
       this.questionNewSearchCancelToken.cancel();
     }
     // Inclusion of direct identifiers bypasses API lookup
     if (input.includes(':')) {
-      return Promise.resolve({ options: [{ value: input, label: input }] });
+      return Promise.resolve({ options: [{ value: input, label: input, type: nodeType }] });
     }
+    const searchTerm = input.replace(/[\W_]+/g, ' ');
     this.questionNewSearchCancelToken = axios.CancelToken.source();
-    const addr = `${this.apis.search}${encodeURIComponent(input)}/${encodeURIComponent(category)}`;
+
+    const url = nodeType ? `${this.apis.search}${nodeType}` : this.apis.search;
     // Because this method is called by react-select Async we must return a promise that will return the values
-    return this.comms.get(addr, { cancelToken: this.questionNewSearchCancelToken.token }).then((result) => {
-      const options = result.data.map(d => ({ value: d.id, label: d.label }));
+    return this.comms.post(url, searchTerm, { cancelToken: this.questionNewSearchCancelToken.token }).then((result) => {
+      const options = result.data.map(d => ({ ...d, value: d.curie, label: d.name }));
       return { options };
     }, (thrown) => {
       if (axios.isCancel(thrown)) {

@@ -1,6 +1,6 @@
 import { observable, action, computed, flow, toJS, configure, reaction, runInAction } from 'mobx';
 
-import { graphStates } from '../components/shared/MachineQuestionViewContainer';
+import { graphStates } from '../components/newQuestion/subComponents/MachineQuestionViewContainer';
 import entityNameDisplay from '../components/util/entityNameDisplay';
 import AppConfig from '../AppConfig';
 
@@ -21,6 +21,8 @@ class EdgePanel {
   @observable source_id = null;
   @observable target_id = null;
   @observable predicate = [];
+  @observable targetNodeList = [];
+  @observable connectionsCountReady = false;
 
   @observable broken = false; // If source_id or target_id refer to a deleted node
 
@@ -34,6 +36,7 @@ class EdgePanel {
 
   constructor(store, userObj = {}) {
     this.store = store;
+    this.appConfig = new AppConfig(config);
     runInAction(() => {
       this.id = this.getUniqueId();
       // Assign any supplied params to this instance
@@ -43,7 +46,9 @@ class EdgePanel {
         }
       });
     });
-    this.getPredicateList();
+    this.getSourceAndTarget();
+    this.getConnectionsCount();
+    this.getPredicates();
   }
 
   // Returns lowest non-zero integer id not already used
@@ -53,63 +58,148 @@ class EdgePanel {
     return _.difference(candidateIds, currentIds).sort()[0];
   }
 
-  // Loads specific array of predicates based on soure and target ids
-  getPredicateList() {
-    if (this.store.predicatesReady) {
-      if (this.source_id === null || this.target_id === null) {
-        this.predicateList = [];
-        this.disablePredicates = true;
-        return;
+  getSourceAndTarget() {
+    for (let i = this.store.nodePanels.length - 1; i >= 0; i -= 1) {
+      if (this.target_id === null) {
+        this.target_id = this.store.nodePanels[i].id;
+      } else if (this.source_id === null) {
+        this.source_id = this.store.nodePanels[i].id;
+        break;
       }
-      let type1;
-      let type2;
-      this.store.panelState.forEach((panel) => {
-        if (panel.panelType === 'node') {
-          if (panel.id === this.source_id) {
-            type1 = panel.type;
-          } else if (panel.id === this.target_id) {
-            type2 = panel.type;
-          }
-        }
-      });
-      if (type1 === 'named_thing') {
-        this.predicateList = [];
-        this.predicatesReady = true;
-        this.disablePredicates = false;
-        return;
-      }
-      this.predicateList = [...new Set(this.store.predicateList[type1][type2])];
-      this.predicatesReady = true;
-      this.disablePredicates = false;
     }
+  }
+
+  getConnectionsCount() {
+    if (this.source_id !== null && this.target_id !== null) {
+      this.connectionsCountReady = false;
+      const allTargetNodes = this.store.visibleNodePanels.filter(panel => this.source_id !== panel.id);
+      const sourceNode = this.store.getNodePanelById(this.source_id);
+      const node1 = { type: sourceNode.type };
+      if (sourceNode.curie.length) {
+        [node1.id] = sourceNode.curie;
+      }
+      const connectionsPromises = allTargetNodes.map((node) => {
+        const node2 = { type: node.type };
+        if (node.curie.length) {
+          [node2.id] = node.curie;
+        }
+        return new Promise((resolve, reject) => this.appConfig.getRankedPredicates(
+          [node1, node2],
+          (res) => {
+            resolve({ predicates: res, target: node });
+          },
+          (err) => {
+            console.log('error', err);
+            reject(err);
+          },
+        ));
+      });
+      Promise.all(connectionsPromises)
+        .then((res) => {
+          const targetList = res.map((e) => {
+            let predicateCount = 0;
+            Object.keys(e.predicates).forEach((predicate) => {
+              predicateCount += e.predicates[predicate];
+            });
+            e.target.connections = predicateCount;
+            return { node: e.target };
+          });
+          this.setTargetList(targetList);
+        })
+        .catch((err) => {
+          console.log('error', err);
+          this.setTargetList([]);
+        });
+    } else {
+      this.setTargetList([]);
+    }
+  }
+
+  @action.bound setTargetList(targetList) {
+    this.targetNodeList = targetList;
+    this.connectionsCountReady = true;
+  }
+
+  getPredicates() {
+    if (this.source_id !== null && this.target_id !== null) {
+      this.disablePredicates = true;
+      const sourceNode = this.store.getNodePanelById(this.source_id);
+      const targetNode = this.store.getNodePanelById(this.target_id);
+      const node1 = { type: sourceNode.type };
+      if (sourceNode.curie.length) {
+        [node1.id] = sourceNode.curie;
+      }
+      const node2 = { type: targetNode.type };
+      if (targetNode.curie.length) {
+        [node2.id] = targetNode.curie;
+      }
+      this.appConfig.getRankedPredicates(
+        [node1, node2],
+        (res) => {
+          const predicates = Object.keys(res).map(predicate => (
+            { name: predicate, degree: res[predicate] }
+          ));
+          this.setPredicateList(predicates, false);
+        },
+        (err) => {
+          console.log('error', err);
+          this.setPredicateList([], false);
+        },
+      );
+    } else {
+      this.setPredicateList([], true);
+    }
+  }
+
+  @action.bound setPredicateList(predicates, disabled) {
+    this.predicateList = predicates;
+    this.predicatesReady = true;
+    this.disablePredicates = disabled;
   }
 
   @action.bound updateField(field, value) { // eslint-disable-line consistent-return
     if (this._publicFields.indexOf(field) > -1) {
       this[field] = value;
-      this.getPredicateList();
+      if (this.source_id === this.target_id) {
+        this.target_id = null;
+      }
+      if (field === 'source_id') {
+        this.getConnectionsCount();
+      }
+      if (field === 'source_id' || field === 'target_id') {
+        this.predicatesReady = false;
+        this.predicateList = this.getPredicates();
+      }
     } else {
       console.error(`Invalid field - ${field} supplied to EdgePanel.updateField action`);
     }
   }
 
-  // If user creates a predicate, it is provided as a string and should be appended
-  @action.bound updatePredicate(name) {
-    this.predicate.push(name);
+  @action.bound switchSourceTarget() {
+    const source = this.source_id;
+    this.source_id = this.target_id;
+    this.target_id = source;
+    this.getConnectionsCount();
+    this.getPredicates();
+  }
+
+  @action.bound updatePredicate(predicates) {
+    const predicateList = predicates.map(p => p.name || p);
+    this.predicate = predicateList;
   }
 
   @computed get sourceNode() {
-    const sourceNode = this.store.nodePanels.filter(panel => panel.id === this.source_id);
-    if (sourceNode.length > 0) {
-      return sourceNode[0];
+    const sourceNode = this.store.nodePanels.find(panel => panel.id === this.source_id);
+    if (sourceNode) {
+      return sourceNode;
     }
     return null;
   }
 
   @computed get targetNode() {
-    const targetNode = this.store.nodePanels.filter(panel => panel.id === this.target_id);
-    if (targetNode.length > 0) {
-      return targetNode[0];
+    const targetNode = this.store.nodePanels.find(panel => panel.id === this.target_id);
+    if (targetNode) {
+      return targetNode;
     }
     return null;
   }
@@ -161,8 +251,8 @@ class EdgePanel {
 
   // Make a deep clone of this instance
   clone() {
-    const userObj = {};
-    this._publicFields.forEach(field => (userObj[field] = toJS(this[field]))); // eslint-disable-line no-underscore-dangle
+    const userObj = this.toJsonObj();
+    // this._publicFields.forEach(field => (userObj[field] = toJS(this[field]))); // eslint-disable-line no-underscore-dangle
     return new EdgePanel(this.store, userObj);
   }
 
@@ -183,6 +273,7 @@ class NodePanel {
   @observable id = null;
   @observable type = '';
   @observable name = '';
+  @observable searchTerm = '';
   @observable curie = [];
   @observable properties = [];
   @observable curieEnabled = false;
@@ -223,16 +314,30 @@ class NodePanel {
       if (this.curie.length !== 0) {
         this.curieEnabled = true;
       }
-      if (!this.set && !this.curieEnabled) {
+      if (Object.keys(userObj).length && !this.set && !this.curieEnabled && this.type) {
         this.regular = true;
       }
+      if (Object.keys(userObj).length && this.type) {
+        this.searchTerm = this.name || (this.set && `Set Of ${this.type}s`) || this.type;
+      }
     });
+  }
+
+  @action.bound resetNodePanel() {
+    this.curie = [];
+    this.name = '';
+    this.type = '';
+    this.properties = [];
+    this.curieEnabled = false;
+    this.set = false;
+    this.regular = false;
   }
 
   @action.bound changeNodeFunction(field) {
     this._nodeFunctionTypes.forEach((node) => {
       this[node] = field === node;
     });
+    if (!this.curieEnabled) this.name = '';
   }
 
   // Returns lowest non-zero integer id not already used
@@ -254,15 +359,16 @@ class NodePanel {
         this.curieEnabled = false;
       }
     }
-    if (field === 'curie') {
-      // Ensure that only valid curies are written into the data structure
-      let curieVal = value;
-      if ((typeof curieVal === 'string') || (curieVal instanceof String)) {
-        curieVal = [curieVal];
-      }
-      this[field] = curieVal;
-    } else {
-      this[field] = value;
+    this[field] = value;
+  }
+
+  @action.bound updateSearchTerm(value) {
+    this.searchTerm = value;
+    if (this.curie.length) {
+      this.resetCurie();
+    }
+    if (this.type) {
+      this.type = '';
     }
   }
 
@@ -313,9 +419,13 @@ class NodePanel {
 
   @action.bound resetCurie() {
     this.curie = [];
+    this.name = '';
   }
 
   @computed get isValidType() {
+    if (!this.type) {
+      return true;
+    }
     return this.store.concepts.indexOf(this.type) > -1;
   }
 
@@ -345,13 +455,31 @@ class NodePanel {
     return valid;
   }
 
+  @computed get isCompleted() {
+    if (this.searchTerm && !this.type && !this.curie.length) {
+      return false;
+    }
+    return true;
+  }
+
   @computed get isValid() {
-    return this.isValidType && this.isValidCurieList && !this.deleted && this.isValidProperties;
+    const valid = this.isValidType && this.isValidCurieList && !this.deleted && this.isValidProperties && this.isCompleted;
+    return valid;
   }
 
   // Prettified label for the panel
   @computed get panelName() {
-    return `${this.id}: ${this.name === '' ? entityNameDisplay(this.type) : this.name}${this.curieEnabled ? '*' : ''}`;
+    let name = 'Any';
+    if (this.type) {
+      name = entityNameDisplay(this.type);
+    }
+    if (this.name) {
+      ({ name } = this);
+    }
+    if (this.set) {
+      name = `Set Of ${name}s`;
+    }
+    return `${this.id}: ${name}`;
   }
 
   /**
@@ -530,6 +658,10 @@ class NewQuestionStore {
 
   @computed get nodePanels() {
     return this.getPanelsByType(panelTypes.node);
+  }
+
+  getNodePanelById(id) {
+    return this.nodePanels.find(panel => panel.id === id);
   }
 
   @computed get edgePanels() {
@@ -811,11 +943,12 @@ class NewQuestionStore {
     if (panelType === panelTypes.edge) {
       // If a node was previously selected when clicking "New Edge", the source-id
       // for the new edge is pre-populated with a reference to the initially selected node
-      if (this.activePanelInd && (this.panelState.length > this.activePanelInd) && this.isNode(this.panelState[this.activePanelInd])) {
-        this.activePanelState = new EdgePanel(this, { source_id: this.panelState[this.activePanelInd].id });
-      } else {
-        this.activePanelState = new EdgePanel(this);
-      }
+      // if (this.activePanelInd && (this.panelState.length > this.activePanelInd) && this.isNode(this.panelState[this.activePanelInd])) {
+      //   this.activePanelState = new EdgePanel(this, { source_id: this.panelState[this.activePanelInd].id });
+      // } else {
+      //   this.activePanelState = new EdgePanel(this);
+      // }
+      this.activePanelState = new EdgePanel(this);
     }
     this.activePanelInd = this.panelState.length;
   }

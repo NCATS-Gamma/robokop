@@ -1,0 +1,38 @@
+#newQuestionOptions {
+    width: 100%;
+    margin: 30px auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    flex-wrap: wrap;
+
+}
+.optionsButton {
+    width: 45%;
+    height: 200px;
+    margin: 20px 0px;
+}
+.optionButtonDesc {
+    white-space: normal;
+}
+#questionNameSubmit {
+    float: right;
+    margin: 20px;
+}
+#centeredQuestionTemplateMenu {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+}
+#centeredQuestionTemplateMenu > .dropdown > .dropdown-menu {
+    left: -150%;
+}
+.questionTemplateDropdown > .dropdown > .dropdown-menu {
+    max-height: 250px;
+    overflow: auto;
+}
+.questionListModal {
+    border: 1px solid grey;
+    border-radius: 5px;
+}

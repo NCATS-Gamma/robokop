@@ -31,7 +31,7 @@ class ActivityPres extends React.Component {
   }
 
   getTableHeight() {
-    let h = $(window).height() - 250;
+    let h = window.innerHeight - 250;
     if (h < 250) {
       h = 250;
     }

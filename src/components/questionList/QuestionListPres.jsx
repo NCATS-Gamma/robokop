@@ -24,7 +24,7 @@ class QuestionListPres extends React.Component {
   }
 
   getTableHeight() {
-    let h = $(window).height() - 300;
+    let h = window.innerHeight - 300;
     if (h < 300) {
       h = 300;
     }

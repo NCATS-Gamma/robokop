@@ -3,12 +3,14 @@ import PropTypes from 'prop-types';
 import { FaSpinner } from 'react-icons/lib/fa';
 import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
-import { Modal } from 'react-bootstrap';
+import { Modal, Button } from 'react-bootstrap';
+import FaPlusSquare from 'react-icons/lib/fa/plus-square';
 
-import MachineQuestionView from './graphs/MachineQuestionView';
-import NewQuestionPanelModal from './modals/NewQuestionPanelModal';
+import MachineQuestionView from '../../shared/graphs/MachineQuestionView';
+import NewQuestionPanelModal from '../panels/NewQuestionPanelModal';
 import ButtonGroupPanel from './ButtonGroupPanel';
 import MachineQuestionEditor from './MachineQuestionEditor';
+import { panelTypes } from '../../../stores/newQuestionStore';
 
 const graphStates = {
   fetching: 'fetching',
@@ -41,43 +43,27 @@ class MachineQuestionViewContainer extends React.Component {
 
     this.getHeight = this.getHeight.bind(this);
     this.getWidth = this.getWidth.bind(this);
-    // this.nodeSelectCallback = this.nodeSelectCallback.bind(this);
-    // this.edgeSelectCallback = this.edgeSelectCallback.bind(this);
     this.graphClickCallback = this.graphClickCallback.bind(this);
     this.toggleJsonEditor = this.toggleJsonEditor.bind(this);
     this.saveJsonEditor = this.saveJsonEditor.bind(this);
   }
 
+  // componentDidMount() {
+  //   const { store } = this.props;
+  //   if (store.graphState === graphStates.empty) setTimeout(() => store.newActivePanel(panelTypes.node), 1000);
+  // }
+
   getHeight() {
-    const h = $(window).height() - 50;
+    const h = window.innerHeight - 50;
     return `${h}px`;
   }
 
   getWidth() {
     // let w = 500;
-    const w = $(`#${this.divId}`).innerWidth();
+    const w = document.getElementById(`${this.divId}`).innerWidth;
     // Ask how big the parent div is?
     return `${w}px`;
   }
-
-  // nodeSelectCallback(data) {
-  //   let nodeId = -1;
-  //   if (data.nodes.length > 0) {
-  //     nodeId = data.nodes[0]; // eslint-disable-line prefer-destructuring
-  //   }
-  //   if (nodeId > -1) {
-  //     this.props.store.updateActivePanelFromNodeId(nodeId);
-  //   }
-  // }
-  // edgeSelectCallback(data) {
-  //   let edgeId = -1;
-  //   if (data.edges.length > 0) {
-  //     edgeId = data.edges[0]; // eslint-disable-line prefer-destructuring
-  //   }
-  //   if (edgeId > -1) {
-  //     this.props.store.updateActivePanelFromEdgeId(edgeId);
-  //   }
-  // }
 
   graphClickCallback(data) {
     if (data.nodes.length > 0) {
@@ -116,6 +102,7 @@ class MachineQuestionViewContainer extends React.Component {
     const showGraph = (!(graph === null) && (store.graphState === graphStates.display));
     const showFetching = store.graphState === graphStates.fetching;
     const notInitialized = store.graphState === graphStates.empty;
+    const numNodes = store.panelState.length;
     const error = store.graphState === graphStates.error;
 
     const height = this.props.height ? this.props.height : this.getHeight();
@@ -123,8 +110,8 @@ class MachineQuestionViewContainer extends React.Component {
 
     return (
       <div id={this.divId}>
-        <ButtonGroupPanel store={store} openJsonEditor={this.toggleJsonEditor} />
-        {showGraph &&
+        <ButtonGroupPanel store={store} toggleJsonEditor={this.toggleJsonEditor} />
+        {showGraph ?
           <MachineQuestionView
             height={height}
             width={width}
@@ -132,40 +119,39 @@ class MachineQuestionViewContainer extends React.Component {
             concepts={toJS(store.concepts)}
             graphState={toJS(store.graphState)}
             selectable
-            // nodeSelectCallback={this.nodeSelectCallback}
-            // edgeSelectCallback={this.edgeSelectCallback}
             graphClickCallback={this.graphClickCallback}
           />
-        }
-        {showFetching &&
-          <div style={{
-            margin: '15px', height, display: 'table', width: '100%',
+          :
+          <div
+            style={{
+              height, display: 'table', width: '100%',
             }}
           >
             <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
-              <FaSpinner className="icon-spin" style={{ marginRight: '10px', verticalAlign: 'text-top' }} />
-              Graph update in progress... Please wait.
+              {showFetching && (
+                <div>
+                  <FaSpinner className="icon-spin" style={{ marginRight: '10px', verticalAlign: 'text-top' }} />
+                  Graph update in progress... Please wait.
+                </div>
+              )}
+              {notInitialized &&
+                <Button bsSize="large" onClick={() => store.newActivePanel(panelTypes.node)}>
+                  <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{' Add Node'}
+                </Button>
+              }
+              {error &&
+                <span>
+                  There was an error with the query graph specification
+                </span>
+              }
             </div>
           </div>
         }
-        {notInitialized &&
-          <div style={{
-            margin: '15px', height, display: 'table', width: '100%',
-            }}
-          >
-            <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
-              Please setup nodes and edges to generate query graph.
-            </div>
-          </div>
-        }
-        {error &&
-          <div style={{
-            margin: '15px', height, display: 'table', width: '100%',
-            }}
-          >
-            <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'center' }}>
-              There was an error with the query graph specification
-            </div>
+        {(numNodes === 1 || numNodes === 2) &&
+          <div style={{ position: 'absolute', top: '47%', right: '20%' }}>
+            <Button bsSize="large" onClick={() => store.newActivePanel(numNodes === 1 ? panelTypes.node : panelTypes.edge)}>
+              <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{` Add ${numNodes === 1 ? 'Node' : 'Edge'}`}
+            </Button>
           </div>
         }
         <NewQuestionPanelModal

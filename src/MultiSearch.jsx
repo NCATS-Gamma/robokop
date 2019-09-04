@@ -11,8 +11,6 @@ import Footer from './components/Footer';
 
 import CurieSelectorContainer from './components/shared/curies/CurieSelectorContainer';
 
-const _ = require('lodash');
-
 class MultiSearch extends React.Component {
   constructor(props) {
     super(props);
@@ -24,16 +22,16 @@ class MultiSearch extends React.Component {
       userReady: false,
       user: {},
       concepts: [],
-      rawInputJson: '',
-      submittedJSON: this.stringify([this.defaultCurie()]),
+      submittedJSON: [this.defaultCurie()],
+      disableType: false,
+      disableTypeFilter: false,
     };
 
     this.onSearch = this.onSearch.bind(this);
-    this.handleRawJsonChange = this.handleRawJsonChange.bind(this);
     this.updateCurie = this.updateCurie.bind(this);
     this.addCurie = this.addCurie.bind(this);
     this.deleteCurie = this.deleteCurie.bind(this);
-    this.curieListFromSubmittedJSON = this.curieListFromSubmittedJSON.bind(this);
+    this.toggleDisableType = this.toggleDisableType.bind(this);
   }
 
   componentDidMount() {
@@ -52,35 +50,30 @@ class MultiSearch extends React.Component {
   onSearch(input, nodeType) {
     return this.appConfig.questionNewSearch(input, nodeType);
   }
-  stringify(jsonObj, spaces = 2) {
-    // Stringifies while retaining desired order
-    return JSON.stringify(jsonObj, ['type', 'term', 'curie'], spaces);
-  }
   defaultCurie() {
     return { type: 'disease', term: '', curie: '' };
   }
   deleteCurie(i) {
-    const submittedJSONObj = JSON.parse(this.state.submittedJSON);
-    submittedJSONObj.splice(i, 1);
-    this.setState({ submittedJSON: this.stringify(submittedJSONObj) });
+    const { submittedJSON } = this.state;
+    submittedJSON.splice(i, 1);
+    this.setState({ submittedJSON });
   }
   addCurie() {
-    const submittedJSONObj = JSON.parse(this.state.submittedJSON);
-    submittedJSONObj.push(this.defaultCurie());
-    this.setState({ submittedJSON: this.stringify(submittedJSONObj) });
+    const { submittedJSON } = this.state;
+    submittedJSON.push(this.defaultCurie());
+    this.setState({ submittedJSON });
   }
   updateCurie(i, type, term, curie) {
-    const submittedJSONObj = JSON.parse(this.state.submittedJSON);
-    submittedJSONObj[i] = { type, term, curie };
-    this.setState({ submittedJSON: this.stringify(submittedJSONObj) });
+    const { submittedJSON } = this.state;
+    submittedJSON[i] = { type, term, curie };
+    this.setState({ submittedJSON });
   }
-  curieListFromSubmittedJSON() {
-    const submittedJSON = JSON.parse(this.state.submittedJSON);
-    submittedJSON.map(blob => (blob.label = blob.term));
-    return submittedJSON;
-  }
-  handleRawJsonChange(event) {
-    this.setState({ rawInputJson: event.target.value });
+  toggleDisableType() {
+    const { submittedJSON } = this.state;
+    submittedJSON.forEach((curie, i) => {
+      submittedJSON[i] = this.defaultCurie();
+    });
+    this.setState(prevState => ({ disableType: !prevState.disableType, disableTypeFilter: !prevState.disableTypeFilter }));
   }
   renderLoading() {
     return (
@@ -88,62 +81,44 @@ class MultiSearch extends React.Component {
     );
   }
   renderLoaded() {
-    const isEmptyJsonInput = this.state.submittedJSON === '';
-    let curieSelectorElements;
-    if (isEmptyJsonInput) {
-      curieSelectorElements = width => (
-        <CurieSelectorContainer
-          concepts={this.state.concepts}
-          search={(input, nodeType) => this.onSearch(input, nodeType)}
-          width={width}
-          displayType
-        />
-      );
-    } else {
-      let submittedJSON = JSON.parse(this.state.submittedJSON);
-      if (_.isPlainObject(submittedJSON)) {
-        submittedJSON = [submittedJSON];
-      }
-      if (Array.isArray(submittedJSON)) {
-        curieSelectorElements = width => (
-          submittedJSON.map((jsonBlob, i) => {
-            const curieSelectorElement = (
-              <div key={['curie', i].join('_')} style={{ display: 'flex' }}>
-                <div
-                  style={{ flexBasis: '100%', padding: '5px 0px' }}
+    const { submittedJSON } = this.state;
+    const curieSelectorElements = width => (
+      submittedJSON.map((jsonBlob, i) => {
+        const curieSelectorElement = (
+          <div key={['curie', i].join('_')} style={{ display: 'flex' }}>
+            <div
+              style={{ flexBasis: '100%', padding: '5px 0px' }}
+            >
+              <CurieSelectorContainer
+                concepts={this.state.concepts}
+                search={(input, nodeType) => this.onSearch(input, nodeType)}
+                width={width}
+                disableType={this.state.disableType}
+                disableTypeFilter={this.state.disableTypeFilter}
+                initialInputs={jsonBlob}
+                onChangeHook={(ty, te, cu) => this.updateCurie(i, ty, te, cu)}
+              />
+            </div>
+            <div
+              style={{
+                width: '30px', verticalAlign: 'top', padding: '5px 10px',
+              }}
+            >
+              {(i !== 0) &&
+                <Button
+                  bsStyle="default"
+                  onClick={() => this.deleteCurie(i)}
+                  style={{ padding: '8px' }}
                 >
-                  <CurieSelectorContainer
-                    concepts={this.state.concepts}
-                    search={(input, nodeType) => this.onSearch(input, nodeType)}
-                    width={width}
-                    displayType
-                    initialInputs={jsonBlob}
-                    // key={shortid.generate()}
-                    onChangeHook={(ty, te, cu) => this.updateCurie(i, ty, te, cu)}
-                  />
-                </div>
-                <div
-                  style={{
-                    width: '30px', verticalAlign: 'top', padding: '5px 10px',
-                  }}
-                >
-                  {(i !== 0) &&
-                    <Button
-                      bsStyle="default"
-                      onClick={() => this.deleteCurie(i)}
-                      style={{ padding: '8px' }}
-                    >
-                      <Glyphicon glyph="trash" />
-                    </Button>
-                  }
-                </div>
-              </div>
-            );
-            return curieSelectorElement;
-          })
+                  <Glyphicon glyph="trash" />
+                </Button>
+              }
+            </div>
+          </div>
         );
-      }
-    }
+        return curieSelectorElement;
+      })
+    );
     return (
       <div>
         <Header
@@ -159,13 +134,18 @@ class MultiSearch extends React.Component {
                 }}
               >
                 <h2>
-                  Bionames Lookup
+                  Robokop Search
                   <br />
                   <small>
-                    An easy to use interface for the <a href="https://bionames.renci.org/apidocs/">Bionames service</a>
+                    Find nodes within the Robokop KG by their common name
                   </small>
                 </h2>
               </div>
+              <Button
+                onClick={this.toggleDisableType}
+              >
+                Filter on Node Type
+              </Button>
               <AutoSizer disableHeight>
                 {({ width }) => (
                   <div

@@ -15,6 +15,7 @@
       "class-methods-use-this": "off",
       "max-len": "off",
       "no-return-assign": ["error", "except-parens"],
+      "react/no-did-mount-set-state": "off",
       "react/sort-comp": ["error", {
         "order": [
           "static-methods",

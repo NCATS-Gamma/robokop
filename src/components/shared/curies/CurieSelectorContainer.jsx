@@ -15,6 +15,7 @@ const propTypes = {
   }),
   onChangeHook: PropTypes.func, // Hook to be notified any time there is any user activated changes: (type, term, curie) => {}
   disableType: PropTypes.bool,
+  disableTypeFilter: PropTypes.bool,
   width: PropTypes.number,
   search: PropTypes.func,
   size: PropTypes.string,
@@ -28,6 +29,7 @@ const defaultProps = {
   size: undefined,
   width: 0, // will be ignored
   disableType: false,
+  disableTypeFilter: false,
   onChangeHook: () => {},
 };
 
@@ -103,7 +105,7 @@ class CurieSelectorContainter extends React.Component {
 
   render() {
     const {
-      concepts, search, width, size, disableType,
+      concepts, search, width, size, disableType, disableTypeFilter,
     } = this.props;
     const { type, term, curie } = this.state;
     return (
@@ -119,6 +121,7 @@ class CurieSelectorContainter extends React.Component {
         onTermChange={this.onTermChange}
         onSelect={this.onSelect}
         disableType={disableType}
+        disableTypeFilter={disableTypeFilter}
         search={search}
         width={width}
         size={size}

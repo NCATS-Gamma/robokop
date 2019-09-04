@@ -8,7 +8,7 @@ import QuestionHeader from '../shared/QuestionHeader';
 import AnswersetGraph from './AnswersetGraph';
 import MessageAnswersetTable from './MessageAnswersetTable';
 import AnswersetStore from './../../stores/messageAnswersetStore';
-import SimpleQuestionGraph from '../shared/graphs/SimpleQuestionGraph';
+import SimpleQuestionGraph from '../newQuestion/subComponents/SimpleQuestionGraph';
 
 export const answerSetTabEnum = {
   // answerList: 1,
