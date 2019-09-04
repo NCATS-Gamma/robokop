@@ -219,7 +219,7 @@ class Question extends React.Component {
       } else if (noAnswers) {
         this.notificationSystem.addNotification({
           title: 'No Answers Were Found',
-          message: 'We were not able to find any answers to this question. You may want to request a knowledge graph update.',
+          message: 'We were not able to find any answers to this question.',
           level: 'warning',
           dismissible: 'click',
           position: 'tr',
