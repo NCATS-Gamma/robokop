@@ -19,4 +19,4 @@ psycopg2
 psycopg2-binary
 redis
 requests
--e git+https://github.com/Supervisor/supervisor@master#egg=supervisor
+-e git+https://github.com/Supervisor/supervisor@dbff619f79c48da0776178e627221da6e40a3261#egg=supervisor

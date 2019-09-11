@@ -677,7 +677,7 @@ class Search(Resource):
         else:
             return results, 200
 
-api.add_resource(Search, '/search')
+api.add_resource(Search, '/search/')
 
 class SearchType(Resource):
     def post(self, node_type):
@@ -731,7 +731,7 @@ class SearchType(Resource):
         else:
             return results, 200
 
-api.add_resource(SearchType, '/search/<node_type>')
+api.add_resource(SearchType, '/search/<node_type>/')
 
 class User(Resource):
     def get(self):
