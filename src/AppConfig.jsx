@@ -441,7 +441,7 @@ class AppConfig {
     const searchTerm = input.replace(/[\W_]+/g, ' ');
     this.questionNewSearchCancelToken = axios.CancelToken.source();
 
-    const url = nodeType ? `${this.apis.search}${nodeType}` : this.apis.search;
+    const url = nodeType ? `${this.apis.search}${nodeType}/` : this.apis.search;
     // Because this method is called by react-select Async we must return a promise that will return the values
     return this.comms.post(url, searchTerm, { cancelToken: this.questionNewSearchCancelToken.token }).then((result) => {
       const options = result.data.map(d => ({ ...d, value: d.curie, label: d.name }));
