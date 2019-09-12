@@ -321,6 +321,7 @@ class AnswersetStore {
       const kgNodeIdToKgNodeIndMap = {};
 
       graph = toJS(graph);
+
       // Iterate through each node in knowledgeGraph and score them
       graph.nodes.forEach((n, i) => {
         kgNodeIdToKgNodeIndMap[n.id] = i; // Store map of kGNodeId to kGNodeInd
@@ -488,8 +489,10 @@ class AnswersetStore {
       let nodes = [];
       let isSet = true;
 
-      if (!Array.isArray(nodeIds)) {
-        nodes = [{ id: nodeIds }];
+      if (!qNode.set) {
+        // if the node is not a set but is still an array
+        const nodeId = Array.isArray(nodeIds) ? nodeIds[0] : nodeIds;
+        nodes = [{ id: nodeId }];
         isSet = false;
         // Node is not a set
         // We will make it an array so we can follow the same code path
