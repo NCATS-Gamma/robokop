@@ -89,7 +89,7 @@ swagger = Swagger(app, template=template, config=swagger_config)
 def handle_error(ex):
     """Handle all server errors."""
     if isinstance(ex, werkzeug.exceptions.HTTPException):
-        raise ex
+        return ex
     tb = traceback.format_exception(etype=type(ex), value=ex, tb=ex.__traceback__)
     logger.exception(ex)
     # return tb[-1], 500
