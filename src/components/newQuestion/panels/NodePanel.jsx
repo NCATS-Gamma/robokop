@@ -5,6 +5,7 @@ import { observer, PropTypes as mobxPropTypes } from 'mobx-react';
 import { FormControl, Button, Badge, InputGroup, Glyphicon } from 'react-bootstrap';
 import { AutoSizer, List } from 'react-virtualized';
 import shortid from 'shortid';
+import _ from 'lodash';
 
 import AppConfig from '../../../AppConfig';
 import { config } from '../../../index';
@@ -45,6 +46,7 @@ class NodePanel extends React.Component {
 
     this.addSetsToConcepts = this.addSetsToConcepts.bind(this);
     this.onSearch = this.onSearch.bind(this);
+    this.deboundedSearch = _.debounce(this.onSearch, 250);
     this.reSearch = this.reSearch.bind(this);
     this.onSelect = this.onSelect.bind(this);
     this.findCurieType = this.findCurieType.bind(this);
@@ -72,15 +74,19 @@ class NodePanel extends React.Component {
     const { activePanel } = this.props;
     const term = event.target.value;
     activePanel.updateSearchTerm(term);
-    this.onSearch(term);
+    this.setState({ loading: true }, () => {
+      this.deboundedSearch(term);
+    });
   }
 
   onSearch(input) {
     const { conceptsWithSets } = this.state;
     if (input.length > 2) {
-      this.setState({ loading: true });
       this.appConfig.questionNewSearch(input)
         .then((res) => {
+          if (res.cancelled) {
+            return;
+          }
           let curies = [];
           const filteredConcepts = conceptsWithSets.filter(concept => concept.label.includes(input.toLowerCase()));
           if (res.options) {
@@ -127,6 +133,7 @@ class NodePanel extends React.Component {
     const { activePanel } = this.props;
     activePanel.resetNodePanel();
     activePanel.updateSearchTerm('');
+    this.input.focus();
     this.setState({ filteredConcepts: [], curies: [] });
   }
 
@@ -266,7 +273,7 @@ class NodePanel extends React.Component {
               </InputGroup>
               {showOptions &&
                 <div style={{ margin: '0px 10px' }}>
-                  {!isEmpty ?
+                  {!isEmpty && !loading ?
                     <AutoSizer disableHeight defaultWidth={100}>
                       {({ width }) => (
                         <List

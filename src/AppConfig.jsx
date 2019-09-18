@@ -418,13 +418,25 @@ class AppConfig {
     );
   }
 
-  getRankedPredicates(nodes, successFunction, failureFunction) {
-    this.postRequest(
-      this.apis.rankedPredicates,
-      nodes,
-      successFunction,
-      failureFunction,
-    );
+  getRankedPredicates(nodes, cancelToken, cancel) {
+    if (cancel) {
+      cancelToken.cancel();
+    }
+    const url = this.apis.rankedPredicates;
+    return this.comms.post(url, nodes, { cancelToken: cancelToken.token })
+      .then(
+        res => res,
+        (thrown) => {
+          if (axios.isCancel(thrown)) {
+            // console.log('ranked predicates cancelled', thrown);
+          }
+          return { data: {} };
+        },
+      )
+      .catch((err) => {
+        console.log('ranked predicates error', err);
+        return {};
+      });
   }
 
   // Requests curie from bionames and returns an object of form
@@ -449,7 +461,7 @@ class AppConfig {
     }, (thrown) => {
       if (axios.isCancel(thrown)) {
         // console.log('questionNewSearch Request canceled', thrown.message);
-        return Promise.resolve({});
+        return Promise.resolve({ cancelled: true });
       }
       return Promise.resolve({ options: [] });
     });
