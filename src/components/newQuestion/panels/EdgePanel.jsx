@@ -20,7 +20,9 @@ const propTypes = {
 const listItem = ({ item }) => (
   <div className="listItem">
     {item.name}
-    <Badge>{item.degree}</Badge>
+    {item.degree !== undefined &&
+      <Badge>{item.degree}</Badge>
+    }
   </div>
 );
 
@@ -30,6 +32,12 @@ class EdgePanel extends React.Component {
     super(props);
 
     this.validateFormElement = this.validateFormElement.bind(this);
+  }
+
+  componentWillUnmount() {
+    const { activePanel } = this.props;
+    activePanel.cancelConnectionsCall();
+    activePanel.cancelPredicatesCall();
   }
 
   /**
@@ -59,9 +67,8 @@ class EdgePanel extends React.Component {
     const ready = store.dataReady && store.conceptsReady && store.userReady && store.predicatesReady;
     const { activePanel } = this.props;
     const validNodeSelectionList = store.visibleNodePanels.map(panel => ({ id: panel.id, name: panel.panelName }));
-    const targetNodeList = activePanel.targetNodeList.map(panel => ({ id: panel.node.id, name: panel.node.panelName, degree: panel.node.connections }));
     const {
-      predicateList, disablePredicates, predicatesReady, connectionsCountReady,
+      predicateList, targetNodeList, disablePredicates, predicatesReady, connectionsCountReady,
     } = activePanel;
     // Determine default message for predicate selection component
     let predicateInputMsg = 'Choose optional predicate(s)...';
@@ -70,6 +77,7 @@ class EdgePanel extends React.Component {
     } else if (disablePredicates) {
       predicateInputMsg = 'Source and/or Target Nodes need to be specified...';
     }
+    const disabledSwitch = activePanel.source_id === null || activePanel.target_id === null;
     return (
       <div>
         {ready ?
@@ -92,6 +100,7 @@ class EdgePanel extends React.Component {
                 <Button
                   onClick={activePanel.switchSourceTarget}
                   id="nodeSwitchButton"
+                  disabled={disabledSwitch}
                 >
                   <Glyphicon glyph="transfer" />
                 </Button>
@@ -100,8 +109,7 @@ class EdgePanel extends React.Component {
                 <h4 style={{ color: '#CCCCCC' }}>TARGET</h4>
                 <DropdownList
                   filter="contains"
-                  data={targetNodeList}
-                  readOnly={!connectionsCountReady}
+                  data={toJS(targetNodeList)}
                   busy={!connectionsCountReady}
                   busySpinner={<FaSpinner className="icon-spin" />}
                   itemComponent={listItem}
@@ -117,6 +125,7 @@ class EdgePanel extends React.Component {
                 <Multiselect
                   filter="contains"
                   allowCreate={false}
+                  readOnly={!predicatesReady || disablePredicates}
                   busy={!predicatesReady}
                   data={toJS(predicateList)}
                   itemComponent={listItem}

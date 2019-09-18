@@ -35,7 +35,7 @@ class NewQuestionPanelModal extends React.Component {
     const type2 = (nodeList[store.activePanelState.target_id] && nodeList[store.activePanelState.target_id].type) || 'edge';
     const color1 = panelColorMap(type1);
     const color2 = panelColorMap(type2);
-    return { backgroundImage: `linear-gradient(80deg, ${color1} 50%, ${color2} 50%)` };
+    return { backgroundImage: `linear-gradient(80deg, ${color1} 50%, ${color2} 50%)`, borderRadius: '5px 5px 0px 0px' };
   }
 
   render() {
