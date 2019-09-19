@@ -857,7 +857,7 @@ def get_node_info(curie):
 
     return results, error_status
 
-def get_links(curies, types):
+def get_links(primary_curie, other_curies, types):
 
     def get_links_from_curie(curie, types):
 
@@ -884,38 +884,45 @@ def get_links(curies, types):
                 'iconUrl': 'https://www.genenames.org/sites/genenames.org/files/genenames_favicon_0.ico'
             })
         
-        # # http://purl.obolibrary.org/obo/MONDO_0022308
-        # ontobee_url = f'http://purl.obolibrary.org/obo/{curie_no_colon}'
-        # urls.append({
-        #     'label': 'Ontobee',
-        #     'url': ontobee_url,
-        #     'iconUrl': 'http://berkeleybop.org/favicon.ico'
-        # })
-
-        # # https://www.ebi.ac.uk/ols/ontologies/mondo/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMONDO_0022308
-        # ontobee_url_encoded = quote(ontobee_url, safe='~()*!.\'')
-        # urls.append({
-        #     'label': 'EMBL-EBI',
-        #     'url': f'https://www.ebi.ac.uk/ols/ontologies/{ontology}/terms?iri=${ontobee_url_encoded}',
-        #     'iconUrl': 'https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.3/images/logos/EMBL-EBI/favicons/favicon-32x32.png'
-        # })
-
-        # # http://n2t.net/{curie}
-        # urls.append({
-        #     'label': 'N2T',
-        #     'url': f'http://n2t.net/${curie}',
-        #     'iconUrl': 'http://n2t.net/e/images/favicon.ico?v=2'
-        # })
-
         return urls
 
     urls = []
-    for curie in curies:
+    all_curies = [primary_curie] + other_curies 
+    for curie in all_curies:
         urls = urls + get_links_from_curie(curie, types)
+
+    curie_no_colon = primary_curie.replace(':','')
+    curie_parts = primary_curie.split(":")
+    ontology = curie_parts[0]
+    ontology = ontology.lower()
+
+    # http://purl.obolibrary.org/obo/MONDO_0022308
+    ontobee_url = f'http://purl.obolibrary.org/obo/{curie_no_colon}'
+    urls.append({
+        'label': 'Ontobee',
+        'url': ontobee_url,
+        'iconUrl': 'http://berkeleybop.org/favicon.ico'
+    })
+
+    # https://www.ebi.ac.uk/ols/ontologies/mondo/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FMONDO_0022308
+    ontobee_url_encoded = quote(ontobee_url, safe='~()*!.\'')
+    urls.append({
+        'label': 'EMBL-EBI',
+        'url': f'https://www.ebi.ac.uk/ols/ontologies/{ontology}/terms?iri=${ontobee_url_encoded}',
+        'iconUrl': 'https://ebi.emblstatic.net/web_guidelines/EBI-Framework/v1.3/images/logos/EMBL-EBI/favicons/favicon-32x32.png'
+    })
+
+    # http://n2t.net/{curie}
+    urls.append({
+        'label': 'N2T',
+        'url': f'http://n2t.net/${curie}',
+        'iconUrl': 'http://n2t.net/e/images/favicon.ico?v=2'
+    })
+        
 
     return urls
 
-class LinkOut(Resource):
+class Details(Resource):
     def get(self, identifier):
         """
         Get list of urls for a given identifier
@@ -940,13 +947,16 @@ class LinkOut(Resource):
             return 'identifier not found', 404
 
         types = node_information['type']
-        identifiers = [identifier] + node_information['equivalent_identifiers']
 
-        urls = get_links(identifiers, types)
+        urls = get_links(identifier, node_information['equivalent_identifiers'], types)
 
-        return urls, 200
+        details = {
+            "node_information": node_information,
+            "other_sources": urls
+        }
+        return details, 200
 
-api.add_resource(LinkOut, '/other_sources/<identifier>')
+api.add_resource(Details, '/details/<identifier>')
 
 
 class NeighborhoodGraph(Resource):
@@ -1007,6 +1017,5 @@ class NeighborhoodGraph(Resource):
         answerset = response.json()
 
         return answerset, 200
-
 
 api.add_resource(NeighborhoodGraph, '/neighborhood/<identifier>')
