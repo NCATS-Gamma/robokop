@@ -106,10 +106,11 @@ const robokop = {
       document.getElementById('reactEntry'),
     );
   },
-  alpha: () => {
+  alpha: (identifier) => {
     ReactDOM.render(
       <Alpha
         config={config}
+        identifier={identifier}
       />,
       document.getElementById('reactEntry'),
     );
