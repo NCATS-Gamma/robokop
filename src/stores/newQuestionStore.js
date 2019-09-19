@@ -1,4 +1,5 @@
 import { observable, action, computed, flow, toJS, configure, reaction, runInAction } from 'mobx';
+import axios from 'axios';
 
 import { graphStates } from '../components/newQuestion/subComponents/MachineQuestionViewContainer';
 import entityNameDisplay from '../components/util/entityNameDisplay';
@@ -31,6 +32,8 @@ class EdgePanel {
   @observable disablePredicates = false;
 
   panelType = panelTypes.edge;
+  connectionsCancel = null;
+  predicatesCancel = null;
 
   _publicFields = ['id', 'source_id', 'target_id', 'predicate'];
 
@@ -69,10 +72,32 @@ class EdgePanel {
     }
   }
 
+  cancelConnectionsCall() {
+    if (this.connectionsCancel) {
+      this.appConfig.getRankedPredicates(
+        [],
+        this.connectionsCancel,
+        true,
+      );
+      this.connectionsCancel = null;
+    }
+  }
+
   getConnectionsCount() {
-    if (this.source_id !== null && this.target_id !== null) {
-      this.connectionsCountReady = false;
+    if (this.connectionsCancel) { // if there's already a request out there
+      this.cancelConnectionsCall();
+      this.getConnectionsCount();
+    } else {
+      const { CancelToken } = axios;
+      this.connectionsCancel = CancelToken.source();
       const allTargetNodes = this.store.visibleNodePanels.filter(panel => this.source_id !== panel.id);
+      const targetNodes = allTargetNodes.map((targNode) => {
+        const target = {};
+        target.id = targNode.id;
+        target.name = targNode.panelName;
+        return target;
+      });
+      this.setTargetList(targetNodes, false);
       const sourceNode = this.store.getNodePanelById(this.source_id);
       const node1 = { type: sourceNode.type };
       if (sourceNode.curie.length) {
@@ -83,92 +108,121 @@ class EdgePanel {
         if (node.curie.length) {
           [node2.id] = node.curie;
         }
-        return new Promise((resolve, reject) => this.appConfig.getRankedPredicates(
-          [node1, node2],
-          (res) => {
-            resolve({ predicates: res, target: node });
-          },
-          (err) => {
-            console.log('error', err);
-            reject(err);
-          },
-        ));
+        return new Promise((resolve, reject) => (
+          this.appConfig.getRankedPredicates(
+            [node1, node2],
+            this.connectionsCancel,
+            false,
+          )
+            .then((res) => {
+              resolve({ predicates: res.data, target: node });
+            })
+            .catch((err) => {
+              console.log('connection count error', err);
+              reject(err);
+            })));
       });
       Promise.all(connectionsPromises)
         .then((res) => {
           const targetList = res.map((e) => {
+            const target = {};
             let predicateCount = 0;
             Object.keys(e.predicates).forEach((predicate) => {
               predicateCount += e.predicates[predicate];
             });
-            e.target.connections = predicateCount;
-            return { node: e.target };
+            target.id = e.target.id;
+            target.name = e.target.panelName;
+            target.degree = predicateCount;
+            return target;
           });
-          this.setTargetList(targetList);
+          this.setTargetList(targetList, true);
+          this.connectionsCancel = null;
         })
         .catch((err) => {
           console.log('error', err);
-          this.setTargetList([]);
+          this.setTargetList([], true);
+          this.connectionsCancel = null;
         });
-    } else {
-      this.setTargetList([]);
     }
   }
 
-  @action.bound setTargetList(targetList) {
-    this.targetNodeList = targetList;
-    this.connectionsCountReady = true;
+  @action.bound setTargetList(targetList, ready) {
+    this.targetNodeList = [...targetList];
+    this.connectionsCountReady = ready;
+  }
+
+  cancelPredicatesCall() {
+    if (this.predicatesCancel) {
+      this.appConfig.getRankedPredicates(
+        [],
+        this.predicatesCancel,
+        true,
+      );
+      this.predicatesCancel = null;
+    }
   }
 
   getPredicates() {
     if (this.source_id !== null && this.target_id !== null) {
-      this.disablePredicates = true;
-      const sourceNode = this.store.getNodePanelById(this.source_id);
-      const targetNode = this.store.getNodePanelById(this.target_id);
-      const node1 = { type: sourceNode.type };
-      if (sourceNode.curie.length) {
-        [node1.id] = sourceNode.curie;
+      if (this.predicatesCancel) {
+        this.cancelPredicatesCall();
+        this.getPredicates();
+      } else {
+        this.setPredicateList([], false, false);
+        const { CancelToken } = axios;
+        this.predicatesCancel = CancelToken.source();
+        const sourceNode = this.store.getNodePanelById(this.source_id);
+        const targetNode = this.store.getNodePanelById(this.target_id);
+        const node1 = { type: sourceNode.type };
+        if (sourceNode.curie.length) {
+          [node1.id] = sourceNode.curie;
+        }
+        const node2 = { type: targetNode.type };
+        if (targetNode.curie.length) {
+          [node2.id] = targetNode.curie;
+        }
+        this.appConfig.getRankedPredicates(
+          [node1, node2],
+          this.predicatesCancel,
+          false,
+        )
+          .then((res) => {
+            const data = { ...res.data };
+            const predicates = Object.keys(data).map(predicate => (
+              { name: predicate, degree: data[predicate] }
+            ));
+            this.setPredicateList(predicates, true, false);
+            this.predicatesCancel = null;
+          })
+          .catch((err) => {
+            console.log('Predicate error', err);
+            this.setPredicateList([], true, false);
+            this.predicatesCancel = null;
+          });
       }
-      const node2 = { type: targetNode.type };
-      if (targetNode.curie.length) {
-        [node2.id] = targetNode.curie;
-      }
-      this.appConfig.getRankedPredicates(
-        [node1, node2],
-        (res) => {
-          const predicates = Object.keys(res).map(predicate => (
-            { name: predicate, degree: res[predicate] }
-          ));
-          this.setPredicateList(predicates, false);
-        },
-        (err) => {
-          console.log('error', err);
-          this.setPredicateList([], false);
-        },
-      );
     } else {
-      this.setPredicateList([], true);
+      this.setPredicateList([], true, true);
     }
   }
 
-  @action.bound setPredicateList(predicates, disabled) {
-    this.predicateList = predicates;
-    this.predicatesReady = true;
+  @action.bound setPredicateList(predicates, ready, disabled) {
+    this.predicateList = [...predicates];
+    this.predicatesReady = ready;
     this.disablePredicates = disabled;
   }
 
   @action.bound updateField(field, value) { // eslint-disable-line consistent-return
     if (this._publicFields.indexOf(field) > -1) {
       this[field] = value;
+      if (field === 'source_id') {
+        this.targetNodeList = [];
+        this.getConnectionsCount(); // this needs to happen before we reset the target_id
+      }
       if (this.source_id === this.target_id) {
         this.target_id = null;
       }
-      if (field === 'source_id') {
-        this.getConnectionsCount();
-      }
       if (field === 'source_id' || field === 'target_id') {
-        this.predicatesReady = false;
-        this.predicateList = this.getPredicates();
+        this.getPredicates();
       }
     } else {
       console.error(`Invalid field - ${field} supplied to EdgePanel.updateField action`);
@@ -218,7 +272,7 @@ class EdgePanel {
   }
 
   @computed get isValid() {
-    return this.isValidSource && this.isValidTarget && !this.broken && this.isValidPredicate;
+    return this.isValidSource && this.isValidTarget && !this.broken;
   }
 
   // Prettified label for the panel

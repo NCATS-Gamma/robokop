@@ -414,8 +414,10 @@ class AnswersetStore {
       // allowing for majority vote across all answers for the type
       const qNodes = this.message.question_graph.nodes;
       const qNodeBindings = qNodes.map(q => q.id);
+      console.log('q node bindings', qNodeBindings);
 
       prunedGraph.nodes.forEach((n) => {
+        console.log('answerset node', n);
         if ((('type' in n) && Array.isArray(n.type)) || (!('type' in n) && ('labels' in n))) {
           // if a prunedGraph node doesn't have a type
           // We will look through all answers
@@ -446,6 +448,14 @@ class AnswersetStore {
 
           // Use that Q Nodes Type
           n.type = qNodes[qNodeIndex].type; // eslint-disable-line no-param-reassign
+          if (n.type === 'named_thing') { // we don't actually want any named_things
+            let kgNodeType = this.getKgNode(n.id).type;
+            if (!Array.isArray(kgNodeType)) { // so the type will always be an array
+              kgNodeType = [kgNodeType];
+            }
+            console.log('kg node type object', kgNodeType);
+            n.type = toJS(kgNodeType); // eslint-disable-line no-param-reassign
+          }
         }
       });
       // }
