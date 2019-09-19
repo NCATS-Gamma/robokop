@@ -934,10 +934,7 @@ class LinkOut(Resource):
         """
 
         # Get the type of the id
-        
-        logger.info('Making request')
         node_information, node_lookup_results = get_node_info(unquote(identifier))
-        logger.info('Request back')
         if not node_information:
             # bad identifier
             return 'identifier not found', 404
@@ -950,3 +947,66 @@ class LinkOut(Resource):
         return urls, 200
 
 api.add_resource(LinkOut, '/other_sources/<identifier>')
+
+
+class NeighborhoodGraph(Resource):
+    def get(self, identifier):
+        """
+        Get a message containing all neighbors surrounding a node
+        ---
+        tags: [util]
+        parameters:
+          - in: path
+            name: identifier
+            description: Identifier of node of interest
+            schema:
+                type: string
+            required: true
+        responses:
+            200:
+                description: json
+        """
+
+        # Get the type of the id
+        identifier = unquote(identifier)
+        node_information, node_lookup_results = get_node_info(identifier)
+        if not node_information:
+            # bad identifier
+            return 'identifier not found', 404
+        
+        question = {
+            "message": {
+                "query_graph": {
+                    "edges": [
+                        {
+                        "id": "e00",
+                        "source_id": "n00",
+                        "target_id": "n01"
+                        }
+                    ],
+                    "nodes": [
+                        {
+                        "curie": identifier,
+                        "id": "n00",
+                        "type": node_information['type'][0]
+                        },
+                        {
+                        "id": "n01",
+                        "type": "named_thing"
+                        }
+                    ]
+                }
+            }
+        }
+
+        logger.info('   Posting to Ranker...')
+        response = requests.post(
+            f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/query/?&output_format=MESSAGE',
+            json=question)
+
+        answerset = response.json()
+
+        return answerset, 200
+
+
+api.add_resource(NeighborhoodGraph, '/neighborhood/<identifier>')
