@@ -151,7 +151,7 @@ class CurieSelector extends React.Component {
                 type="text"
                 className="curieSelectorInput"
                 bsSize={size}
-                disabled={!type}
+                disabled={!type && !disableType}
                 style={formStyle}
                 placeholder="Start typing to search."
                 value={term}

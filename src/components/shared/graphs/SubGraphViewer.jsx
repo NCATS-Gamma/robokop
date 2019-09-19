@@ -224,7 +224,13 @@ class SubGraphViewer extends React.Component {
     });
 
     g.nodes.forEach((n) => {
-      const backgroundColor = nodeTypeColorMap(n.type);
+      console.log('graph node', n);
+      let backgroundColor;
+      if (Array.isArray(n.type)) {
+        backgroundColor = 'green';
+      } else {
+        backgroundColor = nodeTypeColorMap(n.type);
+      }
       n.color = {
         border: '#000000',
         background: backgroundColor,

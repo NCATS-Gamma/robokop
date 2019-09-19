@@ -24,6 +24,7 @@ class AppConfig {
       about: this.url('about/'),
       guide: this.url('guide/'),
       apps: this.url('apps/'),
+      alpha: this.url('alpha/'),
       search: this.url('search/'),
       view: this.url('simple/view/'),
       simpleQuestion: this.url('simple/question/'),
@@ -69,6 +70,8 @@ class AppConfig {
       publications: (id1, id2) => this.url(`api/omnicorp/${id1}/${id2}/`), // GET publications for one identifier or a pair of identifiers
       publication: id => this.url(`api/omnicorp/${id}/`), // Get publications for one identifier
       pubmedPublications: id => this.url(`api/pubmed/${id}/`), // GET pubmed publications for given id
+      explore: id => this.url(`api/other_sources/${id}/`), // GET urls for specified node
+      neighborhood: id => this.url(`api/neighborhood/${id}/`), // GET all one-hop neighbor nodes
     };
 
     this.url = this.url.bind(this);
@@ -415,6 +418,24 @@ class AppConfig {
       `"${questionText}"`,
       successFunction,
       failureFunction,
+    );
+  }
+
+  explore(curie, success, failure) {
+    const url = this.apis.explore(curie);
+    this.getRequest(
+      url,
+      success,
+      failure,
+    );
+  }
+
+  neighborhood(curie, success, failure) {
+    const url = this.apis.neighborhood(curie);
+    this.getRequest(
+      url,
+      success,
+      failure,
     );
   }
 
