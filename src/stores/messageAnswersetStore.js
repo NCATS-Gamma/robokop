@@ -172,6 +172,51 @@ class AnswersetStore {
     return toJS({ columnHeaders, answers });
   }
 
+  @action getAlphaTable(concepts) {
+    const columnHeaders = [];
+    const answers = [];
+    const colHeaders = ['name', 'id', 'type'];
+    colHeaders.forEach((header) => {
+      columnHeaders.push({
+        Header: entityNameDisplay(header),
+        id: header,
+      });
+    });
+    // get the names and score from each answer for the table
+    this.message.answers.forEach((ans) => {
+      const nodeBindings = ans.node_bindings;
+      const answer = {};
+      Object.keys(nodeBindings).forEach((qnodeId) => {
+        let kNodeIds = nodeBindings[qnodeId];
+        if (!isObservableArray(kNodeIds)) {
+          kNodeIds = [kNodeIds];
+        }
+        answer[qnodeId] = [];
+        kNodeIds.forEach((kNodeId) => {
+          const kNode = this.getKgNode(kNodeId);
+          if (kNode) {
+            const type = concepts.find(concept => concept !== 'named_thing' && kNode.type.includes(concept));
+            answer[qnodeId].push({
+              name: kNode.name,
+              id: kNode.id,
+              type,
+              color: type,
+            });
+          } else {
+            answer[qnodeId].push({
+              name: 'Missing Node',
+            });
+            this.unknownNodes = true;
+          }
+        });
+      });
+      answer.score = ans.score;
+      answer.id = ans.id;
+      answers.push(answer);
+    });
+    return toJS({ columnHeaders, answers });
+  }
+
   @action getSetNodes(answerId, nodeId) {
     const setNodeIds = this.message.answers[answerId].node_bindings[nodeId];
     const setNodes = setNodeIds.map(id => this.getKgNode(id));
@@ -446,9 +491,15 @@ class AnswersetStore {
 
           // Use that Q Nodes Type
           n.type = qNodes[qNodeIndex].type; // eslint-disable-line no-param-reassign
+          if (n.type === 'named_thing') { // we don't actually want any named_things
+            let kgNodeType = toJS(this.getKgNode(n.id).type);
+            if (!Array.isArray(kgNodeType)) { // so the type will always be an array
+              kgNodeType = [kgNodeType];
+            }
+            n.type = kgNodeType; // eslint-disable-line no-param-reassign
+          }
         }
       });
-      // }
 
       return toJS(prunedGraph);
     }

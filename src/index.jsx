@@ -15,6 +15,7 @@ import Landing from './simplePages/Landing';
 import About from './simplePages/About';
 import Help from './simplePages/Help';
 import Guide from './simplePages/Guide';
+import Alpha from './pages/alpha/Alpha';
 import SimpleQuestion from './components/newQuestion/SimpleQuestion';
 import Apps from './simplePages/Apps';
 import TermsofService from './TermsofService';
@@ -101,6 +102,15 @@ const robokop = {
     ReactDOM.render(
       <TermsofService
         config={config}
+      />,
+      document.getElementById('reactEntry'),
+    );
+  },
+  alpha: (identifier) => {
+    ReactDOM.render(
+      <Alpha
+        config={config}
+        identifier={identifier}
       />,
       document.getElementById('reactEntry'),
     );

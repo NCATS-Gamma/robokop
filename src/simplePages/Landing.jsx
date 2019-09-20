@@ -166,6 +166,12 @@ class Landing extends React.Component {
                       text="Provide a list of defined identifiers and receive the publications that they share."
                       href={this.appConfig.urls.publications}
                     />
+                    <this.CustomComponent
+                      glyph="screenshot"
+                      header="Neighborhood"
+                      text="Explore many sources and one-hop neighbors from specified node."
+                      href={this.appConfig.urls.alpha}
+                    />
                   </Row>
                 </ListGroup>
               </Jumbotron>

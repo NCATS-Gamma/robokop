@@ -200,9 +200,10 @@ class SubGraphViewer extends React.Component {
 
   // Method to add requisite tags to graph definition JSON before passing to vis.js
   addTagsToGraph(graph) {
+    const { concepts } = this.props;
     // Adds vis.js specific tags primarily to style graph as desired
     const g = _.cloneDeep(graph);
-    const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts); // We could put standardized concepts here
+    const nodeTypeColorMap = getNodeTypeColorMap(concepts); // We could put standardized concepts here
 
     // remove all duplicate nodes
     const nodeIds = new Set();
@@ -224,6 +225,9 @@ class SubGraphViewer extends React.Component {
     });
 
     g.nodes.forEach((n) => {
+      if (Array.isArray(n.type)) {
+        n.type = concepts.find(concept => concept !== 'named_thing' && n.type.includes(concept));
+      }
       const backgroundColor = nodeTypeColorMap(n.type);
       n.color = {
         border: '#000000',
