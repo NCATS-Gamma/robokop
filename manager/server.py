@@ -59,6 +59,18 @@ def guide():
     return render_template('guide.html')
 
 
+@app.route('/alpha/')
+def alpha():
+    """Get alpha page."""
+    return render_template('alpha.html', identifier='')
+
+
+@app.route('/alpha/<identifier>/')
+def alpha_identifier(identifier):
+    """Get alpha page."""
+    return render_template('alpha.html', identifier=identifier)
+
+
 @app.route('/apps/')
 def apps():
     """Get apps page."""
