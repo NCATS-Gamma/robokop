@@ -172,6 +172,51 @@ class AnswersetStore {
     return toJS({ columnHeaders, answers });
   }
 
+  @action getAlphaTable(concepts) {
+    const columnHeaders = [];
+    const answers = [];
+    const colHeaders = ['name', 'id', 'type'];
+    colHeaders.forEach((header) => {
+      columnHeaders.push({
+        Header: entityNameDisplay(header),
+        id: header,
+      });
+    });
+    // get the names and score from each answer for the table
+    this.message.answers.forEach((ans) => {
+      const nodeBindings = ans.node_bindings;
+      const answer = {};
+      Object.keys(nodeBindings).forEach((qnodeId) => {
+        let kNodeIds = nodeBindings[qnodeId];
+        if (!isObservableArray(kNodeIds)) {
+          kNodeIds = [kNodeIds];
+        }
+        answer[qnodeId] = [];
+        kNodeIds.forEach((kNodeId) => {
+          const kNode = this.getKgNode(kNodeId);
+          if (kNode) {
+            const type = concepts.find(concept => concept !== 'named_thing' && kNode.type.includes(concept));
+            answer[qnodeId].push({
+              name: kNode.name,
+              id: kNode.id,
+              type,
+              color: type,
+            });
+          } else {
+            answer[qnodeId].push({
+              name: 'Missing Node',
+            });
+            this.unknownNodes = true;
+          }
+        });
+      });
+      answer.score = ans.score;
+      answer.id = ans.id;
+      answers.push(answer);
+    });
+    return toJS({ columnHeaders, answers });
+  }
+
   @action getSetNodes(answerId, nodeId) {
     const setNodeIds = this.message.answers[answerId].node_bindings[nodeId];
     const setNodes = setNodeIds.map(id => this.getKgNode(id));
@@ -414,10 +459,8 @@ class AnswersetStore {
       // allowing for majority vote across all answers for the type
       const qNodes = this.message.question_graph.nodes;
       const qNodeBindings = qNodes.map(q => q.id);
-      console.log('q node bindings', qNodeBindings);
 
       prunedGraph.nodes.forEach((n) => {
-        console.log('answerset node', n);
         if ((('type' in n) && Array.isArray(n.type)) || (!('type' in n) && ('labels' in n))) {
           // if a prunedGraph node doesn't have a type
           // We will look through all answers
@@ -449,16 +492,14 @@ class AnswersetStore {
           // Use that Q Nodes Type
           n.type = qNodes[qNodeIndex].type; // eslint-disable-line no-param-reassign
           if (n.type === 'named_thing') { // we don't actually want any named_things
-            let kgNodeType = this.getKgNode(n.id).type;
+            let kgNodeType = toJS(this.getKgNode(n.id).type);
             if (!Array.isArray(kgNodeType)) { // so the type will always be an array
               kgNodeType = [kgNodeType];
             }
-            console.log('kg node type object', kgNodeType);
-            n.type = toJS(kgNodeType); // eslint-disable-line no-param-reassign
+            n.type = kgNodeType; // eslint-disable-line no-param-reassign
           }
         }
       });
-      // }
 
       return toJS(prunedGraph);
     }

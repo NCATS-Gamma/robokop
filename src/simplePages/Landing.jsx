@@ -168,7 +168,7 @@ class Landing extends React.Component {
                     />
                     <this.CustomComponent
                       glyph="screenshot"
-                      header="Mr. Rogers"
+                      header="Neighborhood"
                       text="Explore many sources and one-hop neighbors from specified node."
                       href={this.appConfig.urls.alpha}
                     />

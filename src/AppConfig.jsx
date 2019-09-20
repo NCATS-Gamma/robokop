@@ -70,7 +70,7 @@ class AppConfig {
       publications: (id1, id2) => this.url(`api/omnicorp/${id1}/${id2}/`), // GET publications for one identifier or a pair of identifiers
       publication: id => this.url(`api/omnicorp/${id}/`), // Get publications for one identifier
       pubmedPublications: id => this.url(`api/pubmed/${id}/`), // GET pubmed publications for given id
-      explore: id => this.url(`api/other_sources/${id}/`), // GET urls for specified node
+      details: id => this.url(`api/details/${id}/`), // GET urls for specified node
       neighborhood: id => this.url(`api/neighborhood/${id}/`), // GET all one-hop neighbor nodes
     };
 
@@ -421,8 +421,8 @@ class AppConfig {
     );
   }
 
-  explore(curie, success, failure) {
-    const url = this.apis.explore(curie);
+  details(curie, success, failure) {
+    const url = this.apis.details(curie);
     this.getRequest(
       url,
       success,

@@ -115,7 +115,7 @@ class CurieSelector extends React.Component {
     const dropDownObjList = concepts.map(c => ({ text: entityNameDisplay(c), value: c }));
     const showOptions = curie === '';
 
-    const rightButtonCallback = showOptions ? onClear : this.handleReopen;
+    const rightButtonCallback = showOptions ? () => { onClear(); this.input.focus(); } : this.handleReopen;
     const rightButtonContents = showOptions ? (<Glyphicon glyph="remove" />) : (<Glyphicon glyph="triangle-bottom" />);
 
     const width = this.props.width ? this.props.width : '100%';

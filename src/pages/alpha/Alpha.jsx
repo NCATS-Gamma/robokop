@@ -1,6 +1,7 @@
 import React from 'react';
 import AppConfig from '../../AppConfig';
 import { config } from '../../index';
+import './alpha.css';
 
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
@@ -34,12 +35,14 @@ class Alpha extends React.Component {
 
   render() {
     const { user, concepts } = this.state;
+    const { identifier } = this.props;
     return (
       <div>
         <Header config={config} user={user} />
         <AlphaMainContents
           concepts={concepts}
           appConfig={this.appConfig}
+          identifier={identifier}
         />
         <Footer config={config} />
       </div>
