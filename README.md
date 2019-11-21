@@ -99,6 +99,7 @@ NEO4J_HOST=robokopdb.renci.org
 # This references an external instance
 # The machine hosting this env file will not start the graph container
 NEO4J_HTTP_PORT=7474
+NEO4J_HTTPS_PORT=7473
 NEO4J_BOLT_PORT=7687
 NEO4J_HEAP_MEMORY=32G
 # Only used by the machine that runs this container
