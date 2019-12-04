@@ -49,6 +49,7 @@ Robokop uses a collection of docker containers managed through several instances
 * robokop-rank/deploy/ranker - API server for ranking service
 * robokop-rank/deploy/omnicorp - Postgres storage for omnicorp pairs
 * robokop-interfaces/deploy - API server for knowledge graph construction service
+* robokop-messenger - API server for ranking backend 
 
 Each of these docker-compose files will control one or more docker containers. Some of these containers such as the Neo4j database (robokop/deploy/graph) and the Omnicorp (robokop-rank/deploy/omnicorp) can be rather resource intensive. It may be advantageous to place those containers on different machines.  Communications between all of these containers can then be done using a common Docker network or WAN. These settings are configurable through environmental variables.
 
@@ -63,6 +64,10 @@ Each of these docker-compose files will control one or more docker containers. S
 ROBOKOP_HOST=127.0.0.1
 ROBOKOP_PROTOCOL=http
 MANAGER_PORT=80
+
+#Messenger host and port 
+MESSENGER_HOST=messenger
+MESSENGER_PORT=4868
 
 # Number of celery works to answer tasks and rebuild graphs
 MANAGER_NUM_ANSWER_WORKERS=4
