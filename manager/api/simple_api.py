@@ -672,7 +672,7 @@ class SimilaritySearch(Resource):
 
         #Now we're ready to calculate sim
 
-        sim_params = {'threshhold':request.args.get('threshhold', default = None),
+        sim_params = {'threshold':request.args.get('threshhold', default = None),
                       'max_results': parse_args_max_results(request.args)}
         sim_params = {k:v for k,v in sim_params.items() if v is not None}
         response = requests.get( f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/similarity/{type1}/{sid1}/{type2}/{by_type}', params=sim_params)
