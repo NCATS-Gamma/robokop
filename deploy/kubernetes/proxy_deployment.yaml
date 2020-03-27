@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: robokop-proxy-deployment
+  labels:
+    app: robokop-manager
+    service: robokop-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: robokop-proxy
+  template:
+    metadata:
+      labels:
+        app: robokop-proxy
+    spec:
+      containers:
+      - name: nginx-container
+        image: renciorg/robokop_proxy:latest
+        envFrom:
+          - configMapRef:
+              name: robokop-env
+        ports:
+          - containerPort: 80
+        volumeMounts:
+          - mountPath: /var/log/nginx/
+            name: logs-volume
+      restartPolicy: Always
+      volumes:
+        - name: logs-volume
+          persistentVolumeClaim:
+            claimName: robokop-logs-pvc

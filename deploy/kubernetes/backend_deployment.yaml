@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  labels:
+    app: robokop-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: robokop-backend
+  template:
+    metadata:
+      labels:
+        app: robokop-backend
+    spec:
+      containers:
+      - name: celery-results-container
+        image: redis:latest
+        envFrom:
+          - configMapRef:
+              name: robokop-env
+        ports:
+        - containerPort: 6381
+        args:
+          - "--port"
+          - "$(RESULTS_PORT)"
+          - "--requirepass"
+          - "$(RESULTS_PASSWORD)"
+        resources:
+          requests:
+            memory: "1Gi"
+      - name: broker
+        image: patrickkwang/robokop-rabbitmq
+        # configure env using config map
+        envFrom:
+          - configMapRef:
+              name: robokop-env
+        ports:
+          - containerPort: 5672
+          - containerPort: 15672
+        command:
+          - "/init.sh"
+        args:
+          - "manager"
+          - "builder"
+          - "ranker"
+      - name: nlp
+        image: patrickkwang/robokop-nlp
+        ports:
+          - containerPort: 9475
