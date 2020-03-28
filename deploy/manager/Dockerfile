@@ -31,7 +31,7 @@ WORKDIR /home/murphy
 ## Get ROBOKOP software
 ADD ./requirements.txt /home/murphy/requirements.txt
 RUN pip install -r /home/murphy/requirements.txt --src /usr/local/src
-
+RUN git clone https://github.com/NCATS-Gamma/robokop.git
 ## Set up the website
 # RUN npm install
 # RUN npm run webpackProd
@@ -41,6 +41,6 @@ WORKDIR /home/murphy
 ## Finish up
 ENV HOME=/home/murphy
 ENV USER=murphy
-
+USER murphy
 ENTRYPOINT ["./robokop/deploy/manager/startup.sh"]
 CMD ["supervisord", "-c", "./robokop/deploy/manager/supervisord.conf"]

@@ -1,0 +1,31 @@
+### Shared persistence volumes and claims to be used by most
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: robokop-shared-pv
+  spec:
+    accessModes:
+    - ReadWriteMany
+    capacity:
+      storage: 2Mi
+#    nfs:
+#      path: /opt/robokop/shared
+#      server: arrival.edc.renci.org
+    hostPath:
+      path: "/mnt/data/shared"
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: robokop-shared-pv
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: robokop-shared-pvc
+  spec:
+    accessModes:
+    - ReadWriteMany
+    resources:
+      requests:
+        storage: 2Mi
+    storageClassName: robokop-shared-pv
+kind: List

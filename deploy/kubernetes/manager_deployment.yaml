@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: manager-deployment
+  labels:
+    app: robokop-manager
+    service: manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: robokop-manager
+  template:
+    metadata:
+      labels:
+        app: robokop-manager
+    spec:
+      containers:
+      - name: postgres-container
+        image: postgres:latest
+        envFrom:
+          - configMapRef:
+              name: robokop-env
+        ports:
+          - containerPort: 5432
+      - name: manager-container
+        image: renciorg/robokop_manager
+        envFrom:
+          - configMapRef:
+              name: robokop-env
+        env:
+          - name: CELERY_BROKER_URL
+            value: amqp://$(BROKER_USER):$(ADMIN_PASSWORD)@$(BROKER_HOST):$(BROKER_PORT)/manager
+          - name: CELERY_RESULT_BACKEND
+            value: redis://:$(RESULTS_PASSWORD)@$(RESULTS_HOST):$(RESULTS_PORT)/$(MANAGER_RESULTS_DB)
+          - name: SUPERVISOR_PORT
+            value: $(MANAGER_SUPERVISOR_PORT)
+          - name: PYTHONPATH
+            value: $(ROBOKOP_HOME)/robokop
+          - name: POSTGRES_HOST
+            value: localhost
+        ports:
+          # manager webservice
+          - containerPort: 80
+          # manager supervisor
+          - containerPort: 9001
+          # manager graphql
+          - containerPort: 6498
+          # manager pubmed cache
+          - containerPort: 6382
+        volumeMounts:
+          - mountPath: /home/murphy/logs
+            name: logs-volume
+          - mountPath: /home/murphy/shared
+            name: shared-volume
+      restartPolicy: Always
+      volumes:
+        - name: logs-volume
+          persistentVolumeClaim:
+            claimName: robokop-logs-pvc
+        - name: shared-volume
+          persistentVolumeClaim:
+            claimName: robokop-shared-pvc
