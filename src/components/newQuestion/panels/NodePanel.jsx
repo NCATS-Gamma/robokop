@@ -88,7 +88,8 @@ class NodePanel extends React.Component {
             return;
           }
           let curies = [];
-          const filteredConcepts = conceptsWithSets.filter(concept => concept.label.includes(input.toLowerCase()));
+          const setSearch = input.replace(' ', '_');
+          const filteredConcepts = conceptsWithSets.filter(concept => concept.label.includes(setSearch.toLowerCase()));
           if (res.options) {
             curies = res.options;
           }
