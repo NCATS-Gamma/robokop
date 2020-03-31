@@ -281,6 +281,10 @@ class Omnicorp1(Resource):
         """
 
         r = requests.get(f"http://{os.environ['RANKER_HOST']}:{os.environ['RANKER_PORT']}/api/omnicorp/{id1}")
+
+        if not r.ok:
+            abort(r.status_code, message=f"Ranker lookup endpoint returned {r.status_code} error code")
+        
         return r.json()
 
 api.add_resource(Omnicorp1, '/omnicorp/<id1>/')
@@ -623,7 +627,9 @@ def search_request(term, node_type=None):
     r = requests.post(url, data=term)
     if r.ok:
         results = r.json()
+        error_status = None
     else:
+        results = None
         error_status['isError'] = True
         error_status['code'] = r.status_code
 
@@ -873,15 +879,17 @@ def get_links(primary_curie, other_curies, types):
             urls.append({
                 'label': 'Drug Bank',
                 'url': f'https://www.drugbank.ca/drugs/{curie_no_colon}',
-                'iconUrl': 'https://www.drugbank.ca/favicons/favicon-16x16.png'
+                'iconUrl': 'https://www.drugbank.ca/favicons/favicon-16x16.png',
+                'identifier': curie
             })
         
         if ontology == 'hgnc':
             # HGNC - https://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id=HGNC:8856
             urls.append({
                 'label': 'HGNC',
-                'url': f'https://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id=${curie}',
-                'iconUrl': 'https://www.genenames.org/sites/genenames.org/files/genenames_favicon_0.ico'
+                'url': f'https://www.genenames.org/cgi-bin/gene_symbol_report?hgnc_id={curie}',
+                'iconUrl': 'https://www.genenames.org/sites/genenames.org/files/genenames_favicon_0.ico',
+                'identifier': curie
             })
         
         return urls
@@ -1013,6 +1021,9 @@ class NeighborhoodGraph(Resource):
         response = requests.post(
             f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/query/?&output_format=MESSAGE',
             json=question)
+
+        if not response.ok:
+            abort(response.status_code, message=f"Ranker lookup endpoint returned {r.status_code} error code")
 
         answerset = response.json()
 
