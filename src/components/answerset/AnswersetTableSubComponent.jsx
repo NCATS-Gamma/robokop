@@ -278,29 +278,27 @@ class AnswersetTableSubComponent extends React.Component {
       <div>
         {loadedGraph ?
           <div>
-            {maxSetNodes > 10 && // only show pruner if there are more than 10 set nodes
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 10,
-                  right: 10,
-                  width: '270px',
-                  backgroundColor: '#fff',
-                  boxShadow: '-2px 2px 5px 0px #7777777d',
-                  zIndex: 100,
-                }}
-              >
-                <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={sliderPopover}>
-                  <div
-                    style={{
-                      width: '100%', textAlign: 'center', cursor: 'pointer', padding: '10px', fontSize: '12px',
-                    }}
-                  >
-                    Graph Options <FaAngleDown />
-                  </div>
-                </OverlayTrigger>
-              </div>
-            }
+            <div
+              style={{
+                position: 'absolute',
+                top: 10,
+                right: 10,
+                width: '270px',
+                backgroundColor: '#fff',
+                boxShadow: '-2px 2px 5px 0px #7777777d',
+                zIndex: 100,
+              }}
+            >
+              <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={sliderPopover}>
+                <div
+                  style={{
+                    width: '100%', textAlign: 'center', cursor: 'pointer', padding: '10px', fontSize: '12px',
+                  }}
+                >
+                  Graph Options <FaAngleDown />
+                </div>
+              </OverlayTrigger>
+            </div>
             <SubGraphViewer
               subgraph={graph}
               concepts={concepts}
