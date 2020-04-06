@@ -488,6 +488,8 @@ class AnswersetStore {
           // See what question node this was mapped to most
           const maxCounts = qNodeCounts.reduce((m, val) => Math.max(m, val));
           const qNodeIndex = qNodeCounts.indexOf(maxCounts);
+          // level is added to let the user display the graph hierarchically
+          n.level = qNodeIndex;
 
           // Use that Q Nodes Type
           n.type = qNodes[qNodeIndex].type; // eslint-disable-line no-param-reassign
