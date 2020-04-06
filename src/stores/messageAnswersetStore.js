@@ -571,6 +571,8 @@ class AnswersetStore {
           kgNode.type = qNode.type;
           kgNode.isSet = isSet;
           kgNode.binding = keyId;
+          // level is needed for hierarchical view
+          kgNode.level = this.qNodeIdToIndMap.get(keyId);
           newNodes.push(kgNode);
         }
       });

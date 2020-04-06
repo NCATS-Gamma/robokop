@@ -6,7 +6,7 @@ const Graph = require('react-graph-vis').default;
 const shortid = require('shortid');
 const _ = require('lodash');
 
-const keyBlacklist = ['isSet', 'labels', 'label', 'equivalent_identifiers', 'type', 'id', 'degree', 'name', 'title', 'color', 'binding', 'scoreVector', 'aggScore'];
+const keyBlacklist = ['isSet', 'labels', 'label', 'equivalent_identifiers', 'type', 'id', 'degree', 'name', 'title', 'color', 'binding', 'scoreVector', 'aggScore', 'level'];
 
 class SubGraphViewer extends React.Component {
   constructor(props) {
