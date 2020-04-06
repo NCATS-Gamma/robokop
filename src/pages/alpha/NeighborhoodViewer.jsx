@@ -113,7 +113,7 @@ class NeightborhoodViewer extends React.Component {
           pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
           minRows={10}
           filterable
-          className="-highlight"
+          className="-highlight neighborhoodViewerReactTable"
           defaultSorted={[
             {
               id: 'score',
