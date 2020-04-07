@@ -6,7 +6,7 @@ const Graph = require('react-graph-vis').default;
 const shortid = require('shortid');
 const _ = require('lodash');
 
-const keyBlacklist = ['isSet', 'labels', 'label', 'equivalent_identifiers', 'type', 'id', 'degree', 'name', 'title', 'color', 'binding', 'scoreVector', 'aggScore'];
+const keyBlacklist = ['isSet', 'labels', 'label', 'equivalent_identifiers', 'type', 'id', 'degree', 'name', 'title', 'color', 'binding', 'scoreVector', 'aggScore', 'level'];
 
 class SubGraphViewer extends React.Component {
   constructor(props) {
@@ -88,7 +88,7 @@ class SubGraphViewer extends React.Component {
 
   shouldComponentUpdate(nextProps) {
     // Only redraw/remount component if subgraph components change
-    if (_.isEqual(this.props.subgraph, nextProps.subgraph) && this.network) {
+    if (_.isEqual(this.props.subgraph, nextProps.subgraph) && this.network && (this.props.layoutStyle === nextProps.layoutStyle)) {
       return false;
     }
     return true;
@@ -101,7 +101,7 @@ class SubGraphViewer extends React.Component {
     if (isValid) {
       graph = this.addTagsToGraph(graph);
     }
-    const graphOptions = this.getGraphOptions(graph);
+    const graphOptions = this.getGraphOptions(graph, newProps);
 
     this.setState({ displayGraph: graph, displayGraphOptions: graphOptions }, this.setNetworkCallbacks);
   }
@@ -147,7 +147,7 @@ class SubGraphViewer extends React.Component {
     }
   }
 
-  getGraphOptions(graph) {
+  getGraphOptions(graph, newProps) {
     const { graphOptions } = this;
     const nNodes = 'nodes' in graph ? graph.nodes.length : 0;
 
@@ -156,7 +156,7 @@ class SubGraphViewer extends React.Component {
     if (this.props.layoutStyle === 'auto') {
       modifiedOptions = {
         layout: {
-          randomSeed: this.props.layoutRandomSeed,
+          randomSeed: newProps.layoutRandomSeed,
           // improvedLayout: true,
         },
       };
@@ -165,7 +165,7 @@ class SubGraphViewer extends React.Component {
     // Check for graph duplicate edges
     // In the event of duplicate edges directed layout doesn't work, we must stick with physics and auto
     const duplicateEdges = graph.edges.reduce((val, e) => (val || e.moreThanOneEdge), false);
-    if (!duplicateEdges && ((this.props.layoutStyle === 'vertical') || (this.props.layoutStyle === 'horizontal') || nNodes < 3)) {
+    if (!duplicateEdges && ((newProps.layoutStyle === 'vertical') || (newProps.layoutStyle === 'horizontal') || nNodes < 3)) {
       let direction = 'LR';
       if (this.props.layoutStyle === 'vertical') {
         direction = 'UD';
@@ -183,6 +183,26 @@ class SubGraphViewer extends React.Component {
             edgeMinimization: true,
             parentCentralization: true,
             direction,
+            sortMethod: 'directed',
+          },
+        },
+        physics: false,
+      };
+    }
+
+    if (newProps.layoutStyle === 'hierarchical') {
+      modifiedOptions = {
+        layout: {
+          randomSeed: undefined,
+          hierarchical: {
+            enabled: true,
+            levelSeparation: 400,
+            nodeSpacing: 50,
+            treeSpacing: 70,
+            blockShifting: true,
+            edgeMinimization: true,
+            parentCentralization: true,
+            direction: 'LR',
             sortMethod: 'directed',
           },
         },

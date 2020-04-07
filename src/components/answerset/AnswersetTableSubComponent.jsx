@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { ButtonGroup, Button, Modal, OverlayTrigger, Popover } from 'react-bootstrap';
+import { ButtonGroup, Button, Modal, OverlayTrigger, Popover, Checkbox } from 'react-bootstrap';
 import { observer } from 'mobx-react';
 import { observable, action } from 'mobx';
 import { DropdownList } from 'react-widgets';
@@ -84,12 +84,14 @@ class AnswersetTableSubComponent extends React.Component {
       loadedGraph: false,
       selectedEdge: {},
       showModal: false,
+      hierarchical: '',
     };
 
     this.syncPropsWithState = this.syncPropsWithState.bind(this);
     this.fetchGraphSupport = this.fetchGraphSupport.bind(this);
     this.onGraphClick = this.onGraphClick.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
+    this.handleHierarchical = this.handleHierarchical.bind(this);
     this.modalClose = this.modalClose.bind(this);
   }
 
@@ -239,14 +241,27 @@ class AnswersetTableSubComponent extends React.Component {
     this.setState({ loadedGraph: false });
   }
 
+  handleHierarchical(checked) {
+    const horizon = checked ? 'hierarchical' : '';
+    this.setState({ hierarchical: horizon });
+  }
+
   renderSubGraph() {
     const { store, concepts } = this.props;
+    const {
+      graph, selectedEdge, loadedGraph, showModal, hierarchical,
+    } = this.state;
     let sliderPopover = <div>No answerset</div>;
     const maxSetNodes = store.maxNumAgNodes || 0;
     if (this.state.loadedGraph) {
       sliderPopover = (
         <Popover id={shortid.generate()}>
-          <div style={{ marginTop: '10px', width: '200px' }}>
+          <div style={{ marginTop: '10px', width: '300px' }}>
+            {store.isAgPruned() ? (
+              `Pruned graph showing top ${store.numAgSetNodes} set nodes`
+            ) : (
+              'Prune Graph'
+            )}
             <Slider
               min={1}
               max={maxSetNodes}
@@ -254,51 +269,41 @@ class AnswersetTableSubComponent extends React.Component {
               onAfterChange={this.handleSliderChange}
               handle={handle}
             />
+            <Checkbox checked={hierarchical} onChange={e => this.handleHierarchical(e.target.checked)}>Hierarchical</Checkbox>
           </div>
         </Popover>
       );
     }
     return (
       <div>
-        {this.state.loadedGraph ?
+        {loadedGraph ?
           <div>
-            {maxSetNodes > 10 && // only show pruner if there are more than 10 set nodes
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 10,
-                  right: 10,
-                  width: '270px',
-                  backgroundColor: '#fff',
-                  boxShadow: '-2px 2px 5px 0px #7777777d',
-                  zIndex: 100,
-                }}
-              >
-                <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={sliderPopover}>
-                  {store.isAgPruned() ?
-                    <div
-                      style={{
-                        width: '100%', textAlign: 'center', cursor: 'pointer', padding: '10px', fontSize: '12px',
-                      }}
-                    >
-                      Pruned graph showing top {store.numAgSetNodes} set nodes <FaAngleDown />
-                    </div>
-                    :
-                    <div
-                      style={{
-                        width: '100%', textAlign: 'center', cursor: 'pointer', padding: '10px',
-                      }}
-                    >
-                      Prune Graph <FaAngleDown />
-                    </div>
-                  }
-                </OverlayTrigger>
-              </div>
-            }
+            <div
+              style={{
+                position: 'absolute',
+                top: 10,
+                right: 10,
+                width: '270px',
+                backgroundColor: '#fff',
+                boxShadow: '-2px 2px 5px 0px #7777777d',
+                zIndex: 100,
+              }}
+            >
+              <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={sliderPopover}>
+                <div
+                  style={{
+                    width: '100%', textAlign: 'center', cursor: 'pointer', padding: '10px', fontSize: '12px',
+                  }}
+                >
+                  Graph Options <FaAngleDown />
+                </div>
+              </OverlayTrigger>
+            </div>
             <SubGraphViewer
-              subgraph={this.state.graph}
+              subgraph={graph}
               concepts={concepts}
               layoutRandomSeed={Math.floor(Math.random() * 100)}
+              layoutStyle={hierarchical}
               callbackOnGraphClick={this.onGraphClick}
               showSupport
               varyEdgeSmoothRoundness
@@ -306,7 +311,7 @@ class AnswersetTableSubComponent extends React.Component {
               height={350}
             />
             <Modal
-              show={this.state.showModal}
+              show={showModal}
               onHide={this.modalClose}
               container={this}
               bsSize="large"
@@ -317,8 +322,8 @@ class AnswersetTableSubComponent extends React.Component {
               </Modal.Header>
               <Modal.Body>
                 <AnswerExplorerInfo
-                  graph={this.state.graph}
-                  selectedEdge={this.state.selectedEdge}
+                  graph={graph}
+                  selectedEdge={selectedEdge}
                   concepts={concepts}
                 />
               </Modal.Body>

@@ -1,3 +1,6 @@
 .no-padding {
     padding: 0;
 }
+.neighborhoodViewerReactTable .rt-tr-group {
+    height: 34px;
+}

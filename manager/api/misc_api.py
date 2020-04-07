@@ -1023,7 +1023,7 @@ class NeighborhoodGraph(Resource):
             json=question)
 
         if not response.ok:
-            abort(response.status_code, message=f"Ranker lookup endpoint returned {r.status_code} error code")
+            abort(response.status_code, message=f"Ranker lookup endpoint returned {response.status_code} error code")
 
         answerset = response.json()
 

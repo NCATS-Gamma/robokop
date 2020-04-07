@@ -4,7 +4,7 @@ import Slider from 'rc-slider';
 import Tooltip from 'rc-tooltip';
 import 'rc-slider/assets/index.css';
 import 'rc-tooltip/assets/bootstrap.css';
-import { OverlayTrigger, Popover } from 'react-bootstrap';
+import { OverlayTrigger, Popover, Checkbox } from 'react-bootstrap';
 import FaAngleDown from 'react-icons/lib/fa/angle-down';
 
 import AnswersetSelector from './AnswersetSelector';
@@ -47,11 +47,13 @@ class AnswersetList extends React.Component {
       loadedAnswersetId: null,
       loadedAnswerset: false,
       height: 400,
+      hierarchical: '',
     };
 
     this.setGraphSize = this.setGraphSize.bind(this);
     this.onAnswersetSelect = this.onAnswersetSelect.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
+    this.handleHierarchical = this.handleHierarchical.bind(this);
   }
 
   componentDidMount() {
@@ -65,6 +67,11 @@ class AnswersetList extends React.Component {
 
   handleSliderChange(value) {
     this.answersetStore.updateNumKGNodes(value);
+  }
+
+  handleHierarchical(checked) {
+    const horizon = checked ? 'hierarchical' : '';
+    this.setState({ hierarchical: horizon });
   }
 
   onAnswersetSelect(aid) {
@@ -101,7 +108,7 @@ class AnswersetList extends React.Component {
 
   render() {
     const {
-      height, loadingAnswerset, loadedAnswerset,
+      height, loadingAnswerset, loadedAnswerset, hierarchical,
     } = this.state;
     let kg = {};
     let sliderPopover = <div>No answerset</div>;
@@ -109,7 +116,12 @@ class AnswersetList extends React.Component {
       kg = this.answersetStore.annotatedPrunedKnowledgeGraph;
       sliderPopover = (
         <Popover id={shortid.generate()}>
-          <div style={{ marginTop: '10px', width: '200px' }}>
+          <div style={{ marginTop: '10px', width: '300px' }}>
+            {this.answersetStore.isKgPruned() ? (
+              `Pruned graph showing top ${this.answersetStore.numKGNodes} nodes`
+            ) : (
+              'Prune Graph'
+            )}
             <Slider
               min={this.answersetStore.numQNodes}
               max={this.answersetStore.maxNumKGNodes}
@@ -117,6 +129,7 @@ class AnswersetList extends React.Component {
               onAfterChange={this.handleSliderChange}
               handle={handle}
             />
+            <Checkbox checked={hierarchical} onChange={e => this.handleHierarchical(e.target.checked)}>Hierarchical</Checkbox>
           </div>
         </Popover>
       );
@@ -168,23 +181,13 @@ class AnswersetList extends React.Component {
                 }}
               >
                 <OverlayTrigger trigger={['click']} placement="bottom" rootClose overlay={sliderPopover}>
-                  {this.answersetStore.isKgPruned() ?
-                    <div
-                      style={{
-                        width: '100%', textAlign: 'center', cursor: 'pointer', padding: '10px',
-                      }}
-                    >
-                      Pruned graph showing top {this.answersetStore.numKGNodes} nodes <FaAngleDown />
-                    </div>
-                    :
-                    <div
-                      style={{
-                        width: '100%', textAlign: 'center', cursor: 'pointer', padding: '10px',
-                      }}
-                    >
-                      Prune Graph <FaAngleDown />
-                    </div>
-                  }
+                  <div
+                    style={{
+                      width: '100%', textAlign: 'center', cursor: 'pointer', padding: '10px',
+                    }}
+                  >
+                    Graph Options <FaAngleDown />
+                  </div>
                 </OverlayTrigger>
               </div>
               <SubGraphViewer
@@ -195,6 +198,7 @@ class AnswersetList extends React.Component {
                 height={height}
                 omitEdgeLabel
                 callbackOnGraphClick={() => {}}
+                layoutStyle={hierarchical}
               />
             </div>
           }

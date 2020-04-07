@@ -4,7 +4,7 @@ import { Grid, Row, Col, Form } from 'react-bootstrap';
 
 import Loading from '../../components/Loading';
 import CurieSelectorContainer from '../../components/shared/curies/CurieSelectorContainer';
-import NeightborhoodViewer from './NeighborhoodViewer';
+import NeighborhoodViewer from './NeighborhoodViewer';
 import NodeDetails from './NodeDetails';
 
 class AlphaMainContents extends React.Component {
@@ -128,7 +128,7 @@ class AlphaMainContents extends React.Component {
           />
         )}
         {neighborhoodLoaded && (
-          <NeightborhoodViewer
+          <NeighborhoodViewer
             data={neighborhood}
             concepts={concepts}
             sourceNode={term}
