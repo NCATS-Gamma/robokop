@@ -17,12 +17,16 @@ spec:
     spec:
       containers:
       - name: nginx-container
-        image: renciorg/robokop_proxy:latest
+        image: renciorg/robokop_nginx_gateway:latest
         envFrom:
           - configMapRef:
               name: robokop-env
         ports:
           - containerPort: 80
+        command:
+          - '/startup.sh'
+        args:
+          - 'no-ssl'
         volumeMounts:
           - mountPath: /var/log/nginx/
             name: logs-volume
