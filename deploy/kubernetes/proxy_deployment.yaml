@@ -22,16 +22,19 @@ spec:
           - configMapRef:
               name: robokop-env
         ports:
-          - containerPort: 80
+          - containerPort: 443
         command:
           - '/startup.sh'
-        args:
-          - 'no-ssl'
         volumeMounts:
           - mountPath: /var/log/nginx/
             name: logs-volume
+          - mountPath: /etc/ssl/certs
+            name: ssl-volume
       restartPolicy: Always
       volumes:
         - name: logs-volume
           persistentVolumeClaim:
             claimName: robokop-logs-pvc
+        - name: ssl-volume
+          persistentVolumeClaim:
+            claimName: robokop-ssl-pvc
