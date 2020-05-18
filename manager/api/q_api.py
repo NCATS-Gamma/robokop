@@ -109,12 +109,12 @@ class AnswersetAPI(Resource):
 api.add_resource(AnswersetAPI, '/a/<qid_aid>/')
 
 
-class PublishAPI(Resource):
+class QuestionVisibilityAPI(Resource):
 
     @auth_required('session', 'basic')
     def post(self, question_id):
         """
-        Toggle question published
+        Set Question Visiblity.
         ---
         tags: [questions]
         parameters:
@@ -124,9 +124,21 @@ class PublishAPI(Resource):
             schema:
                 type: string
             required: true
+          - in: query
+            name: visibility
+            description: "question visibility"
+            required: true
+            schema:
+                type: string
+                enum:
+                  - private
+                  - public
+                  - promoted
+                default: private
+                example: private
         responses:
             200:
-                description: "question edited"
+                description: "question visibility edited"
                 content:
                     text/plain:
                         schema:
@@ -144,6 +156,7 @@ class PublishAPI(Resource):
                         schema:
                             type: string
         """
+
         auth = request.authorization
         if auth:
             user_email = auth.username
@@ -159,19 +172,26 @@ class PublishAPI(Resource):
         except Exception as err:
             return "Invalid question id.", 404
 
-        if not (user_email == question['owner_email'] or user['is_admin']):
+        visibility = request.args.get('visibility', default='private')
+
+        user_is_admin = any(role['name'] == 'admin' for role in user['roles'])
+
+        if not (user_email == question['owner_email'] or user_is_admin):
             return "UNAUTHORIZED", 401  # not authorized
+
+        if visibility == 'promoted' and not user_is_admin:
+            return "UNAUTHORIZED", 401
 
         # User is authorized
         mods = {
-            'published': not question['published']
+            'visibility': visibility
         }
 
         modify_question_by_id(question_id, mods)
 
         return "SUCCESS", 200
 
-api.add_resource(PublishAPI, '/q/<question_id>/publish/')
+api.add_resource(QuestionVisibilityAPI, '/q/<question_id>/visibility/')
 
 
 class QuestionAPI(Resource):

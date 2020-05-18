@@ -168,13 +168,15 @@ class AppConfig {
       const query = `{
         questions: allQuestionsList (filter: {or: [
           {ownerId: {equalTo: ${user.user_id}}}
-          {published: {equalTo: true}}
+          {visibility: {equalTo: PUBLIC}}
+          {visibility: {equalTo: PROMOTED}}
         ]}) {
           id
           naturalQuestion
           ownerId
           notes
           timestamp
+          visibility
           tasks: tasksByQuestionIdList {
             id
             initiator
