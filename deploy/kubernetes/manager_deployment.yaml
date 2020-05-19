@@ -23,6 +23,9 @@ spec:
               name: robokop-env
         ports:
           - containerPort: 5432
+        volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: postgres-data
       - name: manager-container
         image: renciorg/robokop_manager
         envFrom:
@@ -61,3 +64,6 @@ spec:
         - name: shared-volume
           persistentVolumeClaim:
             claimName: robokop-shared-pvc
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: robokop-postgres-pvc
