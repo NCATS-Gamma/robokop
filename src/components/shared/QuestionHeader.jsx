@@ -43,34 +43,6 @@ class QuestionHeader extends React.Component {
   componentDidMount() {
     this.syncPropsAndState(this.props);
   }
-  shouldComponentUpdate(newProps, newState) {
-    const propsAllMatch = (newProps.editedNatural === this.props.editedNatural) &&
-      (newProps.editedNotes === this.props.editedNotes) &&
-      (('natural_question' in newProps.question) && ('natural_question' in this.props.question) && (newProps.question.natural_question === this.props.question.natural_question)) &&
-      (('notes' in newProps.question) && ('notes' in this.props.question) && (newProps.question.notes === this.props.question.notes)) &&
-      (newProps.showToolbar === this.props.showToolbar) &&
-      (newProps.refreshBusy === this.props.refreshBusy) &&
-      (newProps.answerBusy === this.props.answerBusy) &&
-      (newProps.enableNewAnswersets === this.props.enableNewAnswersets) &&
-      (newProps.enableQuestionRefresh === this.props.enableQuestionRefresh) &&
-      (newProps.enableQuestionEdit === this.props.enableQuestionEdit) &&
-      (newProps.enableQuestionDelete === this.props.enableQuestionDelete) &&
-      (newProps.enableQuestionFork === this.props.enableQuestionFork) &&
-      (newProps.enableTaskStatus === this.props.enableTaskStatus) &&
-      (newProps.enableQuestionSelect === this.props.enableQuestionSelect) &&
-      (newProps.showOtherQuestions === this.props.showOtherQuestions) &&
-      _.isEqual(newProps.otherQuestions, this.props.otherQuestions) &&
-      (newProps.showOtherAnswersets === this.props.showOtherAnswersets) &&
-      _.isEqual(newProps.otherAnswersets, this.props.otherAnswersets) &&
-      (newProps.showDownload === this.props.showDownload);
-
-    const stateAllMatch = (newState.editedNatural === this.state.editedNatural) &&
-      (newState.editedNotes === this.state.editedNotes) &&
-      (newState.notes === this.state.notes) &&
-      (newState.natural === this.state.natural);
-
-    return !(propsAllMatch && stateAllMatch);
-  }
 
   onEditNatural(e) {
     this.setState({ editedNatural: true, natural: e.target.value });
@@ -200,6 +172,8 @@ class QuestionHeader extends React.Component {
       </MenuItem>,
     ].concat(otherQuestionsMenuItemList);
 
+    console.log('user', this.props.user);
+
     return (
       <div>
         <Row>
@@ -268,6 +242,9 @@ class QuestionHeader extends React.Component {
                     callbackFork={this.props.callbackFork}
                     callbackTaskStatus={this.props.callbackTaskStatus}
                     callbackDelete={this.props.callbackDelete}
+                    callbackQuestionVisibility={this.props.callbackQuestionVisibility}
+                    visibility={this.props.question.visibility}
+                    isAdmin={this.props.user.is_admin}
 
                     enableNewAnswersets={this.props.enableNewAnswersets && !active}
                     enableQuestionRefresh={this.props.enableQuestionRefresh && !active}

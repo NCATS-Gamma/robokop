@@ -45,9 +45,14 @@ class AppConfig {
       nodeProperties: this.url('api/node_properties/'), // GET valid node properties
       operations: this.url('api/operations/'), // GET operations contained in global potential KG
       questions: this.url('api/questions/'), // POST to store a new question
-      question: questionId => this.url(`api/q/${questionId}/`), // POST to update meta data, DELETE to delete the question
-      questionAnswer: questionId => this.url(`api/q/${questionId}/answer/`), // POST to initiate creation of a new answer set
-      questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg/`), // POST to initiate an update of the KG for this question
+      // POST to update meta data, DELETE to delete the question
+      question: questionId => this.url(`api/q/${questionId}/`),
+      // POST to initiate creation of a new answer set
+      questionAnswer: questionId => this.url(`api/q/${questionId}/answer/`),
+      // POST to initiate an update of the KG for this question
+      questionRefreshKG: questionId => this.url(`api/q/${questionId}/refresh_kg/`),
+      // POST to change question visibility
+      questionVisibility: (questionId, visibility) => this.url(`api/q/${questionId}/visibility/?visibility=${visibility}`),
       simpleQuick: this.url('api/simple/quick/'), // POST to answer question without caching
       answersetData: qid_aid => this.url(`api/a/${qid_aid}/?include_kg=true`), // GET complete message
       parse: this.url('api/nlp/'),
@@ -135,6 +140,7 @@ class AppConfig {
         ownerId
         natural_question: naturalQuestion
         notes
+        visibility
         machine_question: qgraphByQgraphId {
           body
         }
@@ -157,7 +163,7 @@ class AppConfig {
     }`;
     this.postRequest(this.apis.graphql, { query }, successFun, failureFun);
   }
-  questionList(successFun, failtureFun) {
+  questionList(successFun, failureFun) {
     this.user((data) => {
       const user = this.ensureUser(data);
       // guest users have user_id = null
@@ -176,7 +182,6 @@ class AppConfig {
           ownerId
           notes
           timestamp
-          visibility
           tasks: tasksByQuestionIdList {
             id
             initiator
@@ -194,8 +199,34 @@ class AppConfig {
           }
         }
       }`;
-      this.postRequest(this.apis.graphql, { query }, successFun, failtureFun);
+      this.postRequest(this.apis.graphql, { query }, successFun, failureFun);
     });
+  }
+  promotedQuestions(successFun, failureFun) {
+    const query = `{
+      questions: allQuestionsList (filter: {visibility: {equalTo: PROMOTED}}) {
+        id
+        naturalQuestion
+        ownerId
+        notes
+        timestamp
+        qgraphs: qgraphByQgraphId {
+          answersets: answersetsByQgraphIdList {
+            id
+            timestamp
+          }
+        }
+      }
+    }`;
+    this.postRequest(this.apis.graphql, { query }, successFun, failureFun);
+  }
+  questionVisibility(questionId, visibility, callback, failureFunc) {
+    this.postRequest(
+      this.apis.questionVisibility(questionId, visibility),
+      {},
+      callback,
+      failureFunc,
+    );
   }
   questionCreate(data, successFun, failureFun) {
     // Data must contain a complete specification for a new question

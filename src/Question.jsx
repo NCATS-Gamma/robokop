@@ -52,6 +52,7 @@ class Question extends React.Component {
     this.callbackFork = this.callbackFork.bind(this);
     this.callbackTaskStatus = this.callbackTaskStatus.bind(this);
     this.callbackDelete = this.callbackDelete.bind(this);
+    this.callbackQuestionVisibility = this.callbackQuestionVisibility.bind(this);
 
     this.dialogMessage = this.dialogMessage.bind(this);
     this.dialogConfirm = this.dialogConfirm.bind(this);
@@ -312,6 +313,32 @@ class Question extends React.Component {
     this.toggleModal();
   }
 
+  callbackQuestionVisibility(visibility) {
+    this.appConfig.questionVisibility(
+      this.props.id,
+      visibility,
+      () => {
+        const { question } = this.state;
+        question.visibility = visibility.toUpperCase();
+        this.setState({ question });
+        this.notificationSystem.addNotification({
+          title: 'Question visibility has been set successfully',
+          message: `Question visibility has been set to ${visibility}.`,
+          level: 'success',
+          dismissible: 'click',
+          position: 'tr',
+        });
+      },
+      () => this.notificationSystem.addNotification({
+        title: 'Unable to set question visibility',
+        message: 'We apologize. We were unable to change this question\'s visiblity.',
+        level: 'error',
+        dismissible: 'click',
+        position: 'tr',
+      }),
+    );
+  }
+
   callbackDelete() {
     this.dialogConfirm(
       () => {
@@ -533,6 +560,7 @@ class Question extends React.Component {
                   callbackDelete={this.callbackDelete}
                   callbackTaskStatus={this.callbackTaskStatus}
                   callbackFetchAnswerset={this.callbackFetchAnswerset}
+                  callbackQuestionVisibility={this.callbackQuestionVisibility}
                   answersetUrl={(a) => {
                     if (a && (typeof a === 'object') && 'id' in a) {
                       return this.appConfig.urls.answerset(this.props.id, a.id);
