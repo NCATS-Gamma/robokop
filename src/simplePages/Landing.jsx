@@ -1,8 +1,10 @@
 import React from 'react';
 import {
   Grid, Jumbotron, ButtonToolbar, Button, ListGroup,
-  ListGroupItem, Glyphicon, Col, Row,
+  ListGroupItem, Glyphicon, Col, Row, Carousel,
 } from 'react-bootstrap';
+import shortid from 'shortid';
+
 import './simplecss.css';
 import AppConfig from '../AppConfig';
 import Loading from '../components/Loading';
@@ -18,10 +20,12 @@ class Landing extends React.Component {
     this.state = {
       ready: false,
       user: {},
+      promotedQuestions: [],
     };
   }
 
   componentDidMount() {
+    /* eslint-disable no-console */
     this.appConfig.user(
       data =>
         this.setState({
@@ -33,6 +37,15 @@ class Landing extends React.Component {
         console.log(err);
       },
     );
+    this.appConfig.promotedQuestions(
+      (data) => {
+        this.setState({ promotedQuestions: data.data.questions });
+      },
+      (err) => {
+        console.log('Unable to get promoted questions:', err);
+      },
+    );
+    /* eslint-enable no-console */
   }
 
   CustomComponent({
@@ -63,7 +76,7 @@ class Landing extends React.Component {
   }
 
   render() {
-    const { user, ready } = this.state;
+    const { user, ready, promotedQuestions } = this.state;
     const validUser = this.appConfig.ensureUser(user);
     const showLogIn = !validUser.is_authenticated;
     const shownNewQuestion = !showLogIn && this.appConfig.enableNewQuestions;
@@ -113,6 +126,26 @@ class Landing extends React.Component {
                     </Button>
                   }
                 </ButtonToolbar>
+              </Jumbotron>
+              <Jumbotron>
+                <h2>Check out these questions!</h2>
+                <Carousel interval={60000} indicators={false}>
+                  {promotedQuestions.map(question => (
+                    <Carousel.Item key={shortid.generate()}>
+                      <div className="promotedQuestionBackground" />
+                      <Carousel.Caption>
+                        <p className="promotedQuestionText">{question.naturalQuestion}</p>
+                        <Button
+                          onClick={() => this.appConfig.open(this.appConfig.urls.question(question.id))}
+                          className="promotedQuestionButton"
+                          bsSize="large"
+                        >
+                          Open Question
+                        </Button>
+                      </Carousel.Caption>
+                    </Carousel.Item>
+                  ))}
+                </Carousel>
               </Jumbotron>
               <Jumbotron>
                 <h2>Robokop Apps</h2>
