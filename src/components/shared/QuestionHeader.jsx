@@ -172,8 +172,6 @@ class QuestionHeader extends React.Component {
       </MenuItem>,
     ].concat(otherQuestionsMenuItemList);
 
-    console.log('user', this.props.user);
-
     return (
       <div>
         <Row>

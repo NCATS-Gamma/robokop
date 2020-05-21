@@ -140,6 +140,7 @@ class QuestionPres extends React.Component {
           height={250}
           concepts={this.props.concepts}
           question={questionGraph}
+          graphClickCallback={() => {}}
         />
       </Popover>
     );

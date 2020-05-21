@@ -63,6 +63,7 @@ class Question extends React.Component {
       this.props.id,
       (data) => {
         const { question } = data.data;
+        console.log('question', question);
         question.machine_question = JSON.parse(question.machine_question.body);
         const { answersets } = question.question_graph;
 
