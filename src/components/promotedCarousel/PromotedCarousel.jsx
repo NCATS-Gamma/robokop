@@ -71,6 +71,7 @@ class PromotedCarousel extends React.Component {
       carouselIndex, carouselDir, promotedQuestions,
       concepts, questionGraphs,
     } = this.state;
+    const { appConfig } = this.props;
     return (
       <Jumbotron>
         <h2>Check out these questions!</h2>
@@ -94,7 +95,7 @@ class PromotedCarousel extends React.Component {
                   />
                 )}
                 <Button
-                  onClick={() => this.appConfig.open(this.appConfig.urls.question(question.id))}
+                  onClick={() => appConfig.open(appConfig.urls.question(question.id))}
                   className="promotedQuestionButton"
                   bsSize="large"
                 >
