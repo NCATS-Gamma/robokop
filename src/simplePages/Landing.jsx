@@ -74,15 +74,32 @@ class Landing extends React.Component {
             <Header config={this.props.config} user={this.state.user} />
             <Grid>
               <Jumbotron>
-                <h1>Robokop</h1>
+                <h1>Covid-KOP</h1>
                 <p>
-                  <b>R</b>easoning <b>O</b>ver <b>B</b>iomedical <b> O</b>bjects
-                  linked in <b>K</b>nowledge <b>O</b>riented <b>P</b>athways
+                  <b>Covid</b> linked in <b>K</b>nowledge <b>O</b>riented <b>P</b>athways
                 </p>
                 <p>
                   {
-                    'Robokop is a biomedical reasoning system that interacts with many biomedical knowledge sources to answer questions. Robokop is one of several prototype systems under active development with '
+                    'Covid-KOP is a biomedical reasoning system combining the knowledge existing in the ROBOKOP ' +
+                    'knowledge graph and data collected about the COVID-19 pandemic.'
                   }
+                </p>
+                <p>
+                  {
+                    'Data presented through Covid-KOP includes:'
+                  }
+                  <ul>
+                    <li>{ 'Drugs in clinical trials against COVID-19 (from ' }
+                      <a href="https://www.drugbank.ca/covid-19" target='_blank'>DrugBank</a>
+                      {')'}</li>
+                    <li>
+                      Literature Co-occurrences from <a href="https://www.semanticscholar.org/cord19">CORD-19</a>
+                    </li>
+                    <li>Viral Proteome annotations from <a href="https://www.ebi.ac.uk/GOA/">GOA</a></li>
+                    <li>COVID-19 phenotypes</li>
+                  </ul>
+                </p>
+                <p>
                   <a href="https://ncats.nih.gov/">NIH NCATS</a>.
                 </p>
                 <p>

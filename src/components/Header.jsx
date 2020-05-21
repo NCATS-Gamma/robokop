@@ -49,7 +49,7 @@ class Header extends React.Component {
       >
         <Navbar.Header>
           <Navbar.Brand>
-            <a href="/">Robokop</a>
+            <a href="/">Covid-KOP</a>
           </Navbar.Brand>
           <Navbar.Toggle />
         </Navbar.Header>
