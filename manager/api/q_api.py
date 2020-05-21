@@ -174,7 +174,10 @@ class QuestionVisibilityAPI(Resource):
 
         visibility = request.args.get('visibility', default='private')
 
-        user_is_admin = any(role['name'] == 'admin' for role in user['roles'])
+        if 'roles' in user:
+            user_is_admin = any(role['name'] == 'admin' for role in user['roles'])
+        else:
+            user_is_admin = user['is_admin']
 
         if not (user_email == question['owner_email'] or user_is_admin):
             return "UNAUTHORIZED", 401  # not authorized
