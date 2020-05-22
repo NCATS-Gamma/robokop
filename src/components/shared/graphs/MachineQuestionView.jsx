@@ -279,8 +279,6 @@ class MachineQuestionView extends React.Component {
       };
     }
 
-    console.log(interaction);
-
     return ({
       height,
       autoResize: true,
