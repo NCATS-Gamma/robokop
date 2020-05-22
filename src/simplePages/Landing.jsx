@@ -74,19 +74,19 @@ class Landing extends React.Component {
             <Header config={this.props.config} user={this.state.user} />
             <Grid>
               <Jumbotron>
-                <h1>Covid-KOP</h1>
+                <h1>COVID-KOP</h1>
                 <p>
-                  <b>Covid</b> linked in <b>K</b>nowledge <b>O</b>riented <b>P</b>athways
+                  <b>COVID</b> linked in <b>K</b>nowledge <b>O</b>riented <b>P</b>athways
                 </p>
                 <p>
                   {
-                    'Covid-KOP is a biomedical reasoning system combining the knowledge existing in the ROBOKOP ' +
+                    'COVID-KOP is a biomedical reasoning system combining the knowledge existing in the ROBOKOP ' +
                     'knowledge graph and data collected about the COVID-19 pandemic.'
                   }
                 </p>
                 <p>
                   {
-                    'Data presented through Covid-KOP includes:'
+                    'Data presented through COVID-KOP includes:'
                   }
                   <ul>
                     <li>{ 'Drugs in clinical trials against COVID-19 (from ' }
