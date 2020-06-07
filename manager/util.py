@@ -25,6 +25,7 @@ def getAuthData():
     #   This property should return True if this is an anonymous user. (Actual users should return False instead.)
     
     session_user_id = session.get('user_id')
+
     if session_user_id:
         # logger.debug(f'Got session_user_id {session_user_id} ')
         # We have an authenticated user
