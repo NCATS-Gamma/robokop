@@ -3,11 +3,13 @@ import {
   Grid, Jumbotron, ButtonToolbar, Button, ListGroup,
   ListGroupItem, Glyphicon, Col, Row,
 } from 'react-bootstrap';
+
 import './simplecss.css';
 import AppConfig from '../AppConfig';
 import Loading from '../components/Loading';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import PromotedCarousel from '../components/promotedCarousel/PromotedCarousel';
 
 class Landing extends React.Component {
   constructor(props) {
@@ -22,6 +24,7 @@ class Landing extends React.Component {
   }
 
   componentDidMount() {
+    /* eslint-disable no-console */
     this.appConfig.user(
       data =>
         this.setState({
@@ -33,6 +36,7 @@ class Landing extends React.Component {
         console.log(err);
       },
     );
+    /* eslint-enable no-console */
   }
 
   CustomComponent({
@@ -63,7 +67,9 @@ class Landing extends React.Component {
   }
 
   render() {
-    const { user, ready } = this.state;
+    const {
+      user, ready,
+    } = this.state;
     const validUser = this.appConfig.ensureUser(user);
     const showLogIn = !validUser.is_authenticated;
     const shownNewQuestion = !showLogIn && this.appConfig.enableNewQuestions;
@@ -114,6 +120,9 @@ class Landing extends React.Component {
                   }
                 </ButtonToolbar>
               </Jumbotron>
+              <PromotedCarousel
+                appConfig={this.appConfig}
+              />
               <Jumbotron>
                 <h2>Robokop Apps</h2>
                 <ListGroup>

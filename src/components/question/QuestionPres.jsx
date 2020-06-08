@@ -140,6 +140,7 @@ class QuestionPres extends React.Component {
           height={250}
           concepts={this.props.concepts}
           question={questionGraph}
+          graphClickCallback={() => {}}
         />
       </Popover>
     );
@@ -161,6 +162,7 @@ class QuestionPres extends React.Component {
           callbackFork={this.props.callbackFork}
           callbackTaskStatus={this.props.callbackTaskStatus}
           callbackDelete={this.props.callbackDelete}
+          callbackQuestionVisibility={this.props.callbackQuestionVisibility}
 
           enableNewAnswersets={enableNewAnswersets}
           enableQuestionRefresh={enableQuestionRefresh}
