@@ -16,6 +16,10 @@ spec:
         app: robokop-manager
     spec:
       containers:
+      - name: pubmed-cache-container
+        image: redis:latest
+        ports:
+          - containerPort: 6382
       - name: postgres-container
         image: postgres:latest
         envFrom:
@@ -49,8 +53,6 @@ spec:
           - containerPort: 9001
           # manager graphql
           - containerPort: 6498
-          # manager pubmed cache
-          - containerPort: 6382
         volumeMounts:
           - mountPath: /home/murphy/logs
             name: logs-volume

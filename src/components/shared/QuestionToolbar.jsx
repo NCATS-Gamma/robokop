@@ -8,11 +8,14 @@ import GoPlaybackPlay from 'react-icons/lib/go/playback-play';
 import GoRepoForked from 'react-icons/lib/go/repo-forked';
 import GoMilestone from 'react-icons/lib/go/milestone';
 import GoTrashcan from 'react-icons/lib/go/trashcan';
+import FaEye from 'react-icons/lib/fa/eye';
+import FaCheck from 'react-icons/lib/fa/check';
 
 const shortid = require('shortid');
 
 class QuestionToolbar extends React.PureComponent {
   render() {
+    const { visibility, isAdmin } = this.props;
     return (
       <DropdownButton
         bsStyle="default"
@@ -50,8 +53,39 @@ class QuestionToolbar extends React.PureComponent {
           <GoMilestone /> Tasks
         </MenuItem>
         <MenuItem divider />
+        <MenuItem header><FaEye /> Question Visibility</MenuItem>
         <MenuItem
           eventKey="5"
+          onSelect={() => this.props.callbackQuestionVisibility('private')}
+        >
+          {'Private '}
+          {visibility === 'PRIVATE' && (
+            <FaCheck />
+          )}
+        </MenuItem>
+        <MenuItem
+          eventKey="6"
+          onSelect={() => this.props.callbackQuestionVisibility('public')}
+        >
+          {'Public '}
+          {visibility === 'PUBLIC' && (
+            <FaCheck />
+          )}
+        </MenuItem>
+        {isAdmin && (
+          <MenuItem
+            eventKey="7"
+            onSelect={() => this.props.callbackQuestionVisibility('promoted')}
+          >
+            {'Promoted '}
+            {visibility === 'PROMOTED' && (
+              <FaCheck />
+            )}
+          </MenuItem>
+        )}
+        <MenuItem divider />
+        <MenuItem
+          eventKey="8"
           disabled={!this.props.enableQuestionDelete}
           onSelect={this.props.callbackDelete}
         >

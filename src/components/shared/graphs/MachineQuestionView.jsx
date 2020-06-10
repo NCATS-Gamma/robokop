@@ -18,6 +18,7 @@ const propTypes = {
   width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   selectable: PropTypes.bool, // Whether node and edge can be selected
+  interactable: PropTypes.bool, // whether you can do anything with the graph
   nodePreProcFn: PropTypes.func,
   edgePreProcFn: PropTypes.func,
   // nodeSelectCallback: PropTypes.func,
@@ -29,6 +30,7 @@ const defaultProps = {
   width: '100%',
   question: { nodes: [], edges: [] },
   selectable: false,
+  interactable: true,
   nodePreProcFn: defaultNodePreProc, // eslint-disable-line no-use-before-define
   edgePreProcFn: defaultEdgePreProc, // eslint-disable-line no-use-before-define
   // nodeSelectCallback: () => {},
@@ -172,7 +174,11 @@ class MachineQuestionView extends React.Component {
     }
     const graphOptions = this.getDisplayOptions(graph);
 
-    this.setState({ displayGraph: graph, displayOptions: graphOptions }, this.setNetworkCallbacks);
+    this.setState({ displayGraph: graph, displayOptions: graphOptions }, () => {
+      if (this.props.interactable) {
+        this.setNetworkCallbacks();
+      }
+    });
   }
 
   // Bind network fit callbacks to resize graph and cancel fit callbacks on start of zoom/pan
@@ -208,6 +214,7 @@ class MachineQuestionView extends React.Component {
   getDisplayOptions(graph) {
     // potential change display depending on size/shape of graph
     let { height } = this.props;
+    const { interactable } = this.props;
     if (!(typeof height === 'string' || height instanceof String)) {
       // height is not a string must convert it
       height = `${height}px`;
@@ -254,6 +261,24 @@ class MachineQuestionView extends React.Component {
       };
     }
 
+    let interaction = {
+      zoomView: false,
+      dragView: false,
+      selectable: false,
+      dragNodes: false,
+    };
+    if (interactable) {
+      interaction = {
+        hover: false,
+        zoomView: true,
+        dragView: true,
+        hoverConnectedEdges: false,
+        selectConnectedEdges: false,
+        selectable: this.props.selectable,
+        tooltipDelay: 50,
+      };
+    }
+
     return ({
       height,
       autoResize: true,
@@ -272,15 +297,7 @@ class MachineQuestionView extends React.Component {
         shape: 'box',
         labelHighlightBold: false,
       },
-      interaction: {
-        hover: false,
-        zoomView: true,
-        dragView: true,
-        hoverConnectedEdges: false,
-        selectConnectedEdges: false,
-        selectable: this.props.selectable,
-        tooltipDelay: 50,
-      },
+      interaction,
     });
   }
   render() {

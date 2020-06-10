@@ -1,8 +1,9 @@
 """Classes for SQLAlchemy implementation of Message structure."""
 import logging
 import datetime
+import enum
 
-from sqlalchemy import Column, String, Integer, ForeignKeyConstraint, DateTime, Boolean
+from sqlalchemy import Column, String, Integer, ForeignKeyConstraint, DateTime, Boolean, Enum
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy import inspect
@@ -93,6 +94,14 @@ class QGraph(Base, FromDictMixin):
         return self.body
 
 
+class QuestionVisibility(enum.Enum):
+    """Question visibility enum class for db."""
+
+    private = 0
+    public = 1
+    promoted = 2
+
+
 class Question(Base, FromDictMixin):
     """Question class."""
 
@@ -109,7 +118,7 @@ class Question(Base, FromDictMixin):
     qgraph_id = Column(QGRAPH_ID_TYPE)
     etc = Column(JSON)
     timestamp = Column(DateTime)
-    published = Column(Boolean, default=False)
+    visibility = Column(Enum(QuestionVisibility), default=QuestionVisibility.private)
 
     owner = relationship(
         'User',
@@ -132,7 +141,7 @@ class Question(Base, FromDictMixin):
         'question_graph': QGraph
     }
 
-    dump_attributes = ['id', 'owner_email', 'natural_question', 'question_graph', 'timestamp', 'notes', 'published']
+    dump_attributes = ['id', 'owner_email', 'natural_question', 'question_graph', 'timestamp', 'notes', 'visibility']
 
     def __init__(self, *args, **kwargs):
         """Initialize Question."""

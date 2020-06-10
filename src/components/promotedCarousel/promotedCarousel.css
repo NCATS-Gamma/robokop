@@ -1,0 +1,19 @@
+.promotedQuestionBackground {
+    height: 475px;
+    background-color: #fff;
+    border-radius: 25px;
+}
+.carousel-control {
+    background: white !important;
+    border-radius: 25px;
+}
+.carousel-control > .glyphicon {
+    color: black;
+}
+.promotedQuestionText {
+    color: black;
+    text-decoration: none;
+}
+.carousel-inner {
+    border-radius: 25px !important;
+}
