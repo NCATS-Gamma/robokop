@@ -555,7 +555,9 @@ class AnswersetStore {
           let score = 0;
           this.message.knowledge_graph.edges.forEach((edge) => {
             if (nodeId === edge.source_id || nodeId === edge.target_id) {
-              score += edge.publications.length;
+              if ('publications' in edge) {
+                score += edge.publications.length;
+              }
             }
           });
           node.score = score;
