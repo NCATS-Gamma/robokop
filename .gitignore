@@ -1,6 +1,6 @@
 .DS_Store
-/node_modules/*
-/pack/*
+ui/node_modules
+ui/pack
 /logs/*
 /dist
 *.log

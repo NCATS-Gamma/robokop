@@ -1,0 +1,61 @@
+{
+  "name": "robokop",
+  "productName": "ROBOKOP",
+  "version": "0.0.1",
+  "description": "ROBOKOP - A user interface for biomedical knowledge graph construction and reasoning.",
+  "author": "ROBOKOP Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.10.5",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/plugin-proposal-decorators": "^7.10.5",
+    "@babel/preset-env": "^7.10.4",
+    "@babel/preset-react": "^7.10.4",
+    "babel-loader": "^8.1.0",
+    "css-loader": "^3.6.0",
+    "dotenv-webpack": "^2.0.0",
+    "file-loader": "^6.0.0",
+    "style-loader": "^1.2.1",
+    "url-loader": "^4.1.0",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-merge": "^5.0.9"
+  },
+  "dependencies": {
+    "ag-grid": "^18.1.2",
+    "ag-grid-community": "^23.2.1",
+    "ag-grid-react": "^23.2.1",
+    "axios": "^0.19.2",
+    "axios-retry": "^3.1.8",
+    "bootstrap": "^4.5.0",
+    "core-js": "^3.6.5",
+    "mobx": "^5.15.4",
+    "mobx-react": "^6.2.2",
+    "rc-slider": "^9.3.1",
+    "rc-tooltip": "^4.2.1",
+    "react": "^16.13.1",
+    "react-bootstrap": "^0.33.1",
+    "react-bootstrap-dialog": "^0.13.0",
+    "react-css-loaders": "0.0.5",
+    "react-dom": "^16.13.1",
+    "react-dropzone": "^11.0.2",
+    "react-graph-vis": "^1.0.5",
+    "react-icons": "^3.10.0",
+    "react-json-view": "^1.19.1",
+    "react-notification-system": "^0.4.0",
+    "react-select": "^3.1.0",
+    "react-splitter-layout": "^4.0.0",
+    "react-table": "^7.3.2",
+    "react-virtualized": "^9.21.2",
+    "react-widgets": "^4.5.0",
+    "shortid": "^2.2.15"
+  },
+  "scripts": {
+    "build": "webpack --mode=development --config webpack.dev.js",
+    "webpackProd": "webpack --mode=production --config webpack.prod.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ncats-gamma/robokop.git"
+  }
+}

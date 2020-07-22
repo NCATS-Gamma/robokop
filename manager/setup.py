@@ -15,7 +15,7 @@ from manager import logging_config
 
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__, static_folder='../pack', template_folder='../templates')
+app = Flask(__name__, static_folder='../ui/pack', template_folder='../ui/templates')
 # Set default static folder to point to parent static folder where all
 # static assets can be stored and linked
 app.config.from_pyfile('robokop_flask_config.py')
