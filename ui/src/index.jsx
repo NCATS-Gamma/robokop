@@ -13,21 +13,23 @@ import Landing from './simplePages/Landing';
 import About from './simplePages/About';
 import Help from './simplePages/Help';
 import Guide from './simplePages/Guide';
-import Alpha from './pages/alpha/Alpha';
-import SimpleQuestion from './components/newQuestion/SimpleQuestion';
 import TermsofService from './simplePages/TermsofService';
-import QuestionNew from './components/newQuestion/QuestionNew';
-import Question from './pages/question/Question';
-import QuestionList from './pages/questionList/QuestionList';
-import Answerset from './pages/answers/Answerset';
-import Activity from './pages/activity/Activity';
 import MultiSearch from './simplePages/MultiSearch';
 import SimpleViewer from './simplePages/SimpleViewer';
 import SimpleEnriched from './simplePages/SimpleEnriched';
 import SimpleSimilarity from './simplePages/SimpleSimilarity';
 import SimpleExpand from './simplePages/SimpleExpand';
-import Synonymize from './simplePages/Synonymize';
+import SimpleSynonymize from './simplePages/SimpleSynonymize';
 import SimplePublications from './simplePages/SimplePublications';
+
+import Alpha from './pages/alpha/Alpha';
+import SimpleQuestion from './pages/newQuestion/SimpleQuestion';
+import QuestionNew from './pages/newQuestion/QuestionNew';
+import Question from './pages/question/Question';
+import QuestionList from './pages/questionList/QuestionList';
+import Answerset from './pages/answers/Answerset';
+import Activity from './pages/activity/Activity';
+
 import NewQuestionStore from './stores/newQuestionStore';
 
 // Our actual CSS and other images etc.
@@ -53,7 +55,6 @@ const config = {
 };
 
 const robokop = {
-  config,
   landing: () => {
     ReactDOM.render(
       <Landing
@@ -203,9 +204,9 @@ const robokop = {
       document.getElementById('reactEntry'),
     );
   },
-  synonymize: () => {
+  simpleSynonymize: () => {
     ReactDOM.render(
-      <Synonymize
+      <SimpleSynonymize
         config={config}
       />,
       document.getElementById('reactEntry'),

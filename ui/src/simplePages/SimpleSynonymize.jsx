@@ -12,7 +12,7 @@ import CurieSelectorContainer from './components/shared/curies/CurieSelectorCont
 import DownloadButton from './components/shared/DownloadButton';
 
 
-class Synonymize extends React.Component {
+class SimpleSynonymize extends React.Component {
   constructor(props) {
     super(props);
     // We only read the communications config on creation
@@ -188,4 +188,4 @@ class Synonymize extends React.Component {
   }
 }
 
-export default Synonymize;
+export default SimpleSynonymize;

@@ -126,7 +126,7 @@ def expand():
 @app.route('/simple/synonymize/')
 def synonymize():
     """Get synonymous curie identifiers."""
-    return render_template('synonymize.html')
+    return render_template('simpleSynonymize.html')
 
 @app.route('/simple/publications/')
 def publications():
