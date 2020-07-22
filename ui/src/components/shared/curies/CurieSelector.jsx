@@ -6,6 +6,8 @@ import { DropdownList } from 'react-widgets';
 import BionamesBrowser from './BionamesBrowser';
 import entityNameDisplay from '../../util/entityNameDisplay';
 
+import './curies.css';
+
 const _ = require('lodash');
 
 const propTypes = {

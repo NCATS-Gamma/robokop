@@ -1,0 +1,16 @@
+.nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
+    color: #5e5e5e;
+    background-color: #b8c6db;
+}
+.nav-pills > li > a {
+    border-radius: 0px;
+}
+/* Custom tweak to Bootstrap tabs */
+.nav-tabs > li > a {
+    border: 1px solid #ededed;
+    border-bottom-color: transparent;
+}  
+.nav > li.disabled > a {
+    color: #999;
+    background-color: #eee;
+}

@@ -1,0 +1,33 @@
+.ag-row:hover {
+  cursor: hand;
+}
+
+/* When you click on AG grid rows it highlights the cell for some reason */
+.ag-theme-material .ag-cell:focus {
+  outline: none;
+}
+.ag-theme-material .ag-cell-focus {
+  border: none !important;
+  outline: initial;
+}
+
+.ag-theme-material .question-row-is-owned {
+  background-color: #f5f7fa !important;
+}
+
+.ag-theme-material .question-row-is-unowned {
+  background-color: #fff !important;
+}
+
+/* .ag-theme-material .ag-cell {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+  */
+.no-padding {
+  padding: 0px !important;
+  text-align: center;
+}
+.ag-header-cell-text {
+  flex: 1;
+}

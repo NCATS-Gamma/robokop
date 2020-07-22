@@ -1,0 +1,9 @@
+/* Vertically align icons and text in buttons */
+.valign-center {
+    display: inline-flex;
+    vertical-align: middle;
+    align-items: center;
+}
+.rw-popup-container {
+    min-width: 300px;
+}

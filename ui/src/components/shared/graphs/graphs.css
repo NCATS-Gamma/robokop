@@ -1,0 +1,31 @@
+/* Tooltip for vis.js Network Graphs */
+div.vis-tooltip {
+    position: absolute;
+    padding: 20px;
+}
+div.vis-tooltip-inner {
+    margin: 0px;
+    padding: 7px 10px 10px 10px;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.85);
+    box-shadow: 2px 2px 5px 0px #444;
+    font-family: sans-serif;
+    font-size: 0.9em;
+    color: #eee;
+    max-height: 200px;
+    max-width: 200px;
+    overflow: auto;
+}
+div.vis-tooltip .invalid-node {
+    background-color: rgba(134, 0, 0, 0.85);
+}
+.vis-tooltip span.title {
+    color:#60adec;
+    font-weight: bolder;
+    font-size: 1.2em;
+}
+.vis-tooltip .field-name {
+    font-weight: bold;
+    padding-right: 5px;
+}

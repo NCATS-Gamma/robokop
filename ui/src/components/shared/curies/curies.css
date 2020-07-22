@@ -1,0 +1,5 @@
+#bionames .form-control:focus {
+    border-color: #ccc;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}

@@ -4,6 +4,9 @@
 .curieSelectorInput {
     font-size: 20px;
 }
+.curieSelectorInput:focus {
+    border: 1px solid black !important;
+}
 .nodePanelSelector {
     display: flex;
     align-items: center;

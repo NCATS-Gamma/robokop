@@ -1,0 +1,28 @@
+#QuestionInput {
+    font-size: 22;
+}  
+#QuestionInput .Select-input > input {
+    padding: 4px 0 12px;
+}
+/* A dropdown that doesn't look like a button */
+#diminisheddropdown {
+    border: none;
+    color: #aaa;
+}
+#diminisheddropdown:hover, #diminisheddropdown:active, #diminisheddropdown:focus {
+    background-color: inherit;
+    color:  #aaa;
+}
+
+.answersetFilter {
+    min-width: 30%;
+    max-width: 50%;
+    max-height: 30%;
+    overflow: scroll;
+    padding: 10px;
+    background-color: white;
+    z-index: 10;
+}
+.answersetFilter hr {
+    margin: 0;
+}

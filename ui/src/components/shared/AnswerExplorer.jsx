@@ -58,7 +58,6 @@ class AnswerExplorer extends React.Component {
     const modalIsFeedback = modalType === 'feedback';
     const modalIsInfo = modalType === 'info';
     const modalTitle = modalIsFeedback ? 'Answer Feedback' : (modalIsInfo ? 'Edge Explorer' : '');
-    // className="modal-container"
     let feedbackRight = -8;
     if (this.props.enabledAnswerLink) {
       feedbackRight = 25;

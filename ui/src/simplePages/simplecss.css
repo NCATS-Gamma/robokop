@@ -10,3 +10,18 @@ a .list-group-item-heading {
 a .list-group-item-text {
     font-size: 16px !important;
 }
+/* Submit button on api pages. greyed out when disabled. */
+#submitAPI:disabled {
+    cursor: not-allowed;
+    background-color: #eee;
+}
+.robokopApp {
+    margin: 20px 0px;
+}
+.appQueryOptions input {
+    width: 200px;
+    float: right;
+}
+.appQueryOptions label {
+    float: right;
+}

@@ -7,6 +7,8 @@ import Footer from './components/Footer';
 import QuestionListPres from './components/questionList/QuestionListPres';
 import TasksModal from './components/shared/modals/TasksModal';
 
+import './quesitonlist.css';
+
 class QuestionList extends React.Component {
   constructor(props) {
     super(props);

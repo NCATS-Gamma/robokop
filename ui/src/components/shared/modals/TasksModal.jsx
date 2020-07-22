@@ -5,6 +5,8 @@ import AppConfig from '../../../AppConfig';
 import TaskLogs from './TaskLogs';
 import { config } from '../../../index';
 
+import './modals.css';
+
 const _ = require('lodash');
 
 const timestampToDate = (ts) => {

@@ -31,7 +31,7 @@ import SimplePublications from './simplePages/SimplePublications';
 import NewQuestionStore from './stores/newQuestionStore';
 
 // Our actual CSS and other images etc.
-import '../assets/css/style.css';
+import './app.css';
 import '../assets/images/favicon.ico';
 
 const config = {

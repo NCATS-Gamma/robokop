@@ -8,6 +8,8 @@ import Footer from './components/Footer';
 import Loading from './components/Loading';
 import MessageAnswersetPres from './components/answerset/MessageAnswersetPres';
 
+import './answers.css';
+
 const _ = require('lodash');
 
 class Answerset extends React.Component {
