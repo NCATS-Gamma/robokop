@@ -22,15 +22,12 @@
     "webpack-merge": "^5.0.9"
   },
   "dependencies": {
-    "ag-grid": "^18.1.2",
     "ag-grid-community": "^23.2.1",
     "ag-grid-react": "^23.2.1",
     "axios": "^0.19.2",
     "axios-retry": "^3.1.8",
     "bootstrap": "^4.5.0",
     "core-js": "^3.6.5",
-    "mobx": "^5.15.4",
-    "mobx-react": "^6.2.2",
     "rc-slider": "^9.3.1",
     "rc-tooltip": "^4.2.1",
     "react": "^16.13.1",
