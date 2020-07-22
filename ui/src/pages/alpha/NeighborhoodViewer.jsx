@@ -7,8 +7,6 @@ import AnswersetGraph from '../../components/answerset/AnswersetGraph';
 import getNodeTypeColorMap from '../../utils/colorUtils';
 import getColumnWidth from '../../utils/rtColumnWidth';
 
-// import AnswersetFilter from '../../components/shared/AnswersetFilter';
-
 class NeightborhoodViewer extends React.Component {
   constructor(props) {
     super(props);
