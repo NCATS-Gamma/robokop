@@ -1,81 +1,55 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { Grid, Row, Col } from 'react-bootstrap';
 import Dropzone from 'react-dropzone';
 import { FaCloudUploadAlt } from 'react-icons/fa';
 
-import AppConfig from './AppConfig';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import Loading from './components/Loading';
-import MessageAnswersetPres from './components/answerset/MessageAnswersetPres';
-import AnswersetStore from './stores/messageAnswersetStore';
-import useMessageStore from './stores/useMessageStore';
+import AppConfig from '../AppConfig';
+import Header from '../components/header/Header';
+import Footer from '../components/footer/Footer';
+import Loading from '../components/shared/Loading';
+// import MessageAnswersetPres from '../pages/answers/answerset/MessageAnswersetPres';
+// import AnswersetStore from './stores/messageAnswersetStore';
+import useMessageStore from '../stores/useMessageStore';
 
 const _ = require('lodash');
 
-class SimpleViewer extends React.Component {
-  constructor(props) {
-    super(props);
-    // We only read the communications config on creation
-    this.appConfig = new AppConfig(props.config);
-    this.answersetStore = null;
+export default function SimpleViewer(props) {
+  // We only read the communications config on creation
+  const [appConfig, setAppConfig] = useState(new AppConfig(props.config));
+  const [hasMessage, setHasMessage] = useState(false);
+  const [loading, toggleLoading] = useState(true);
+  const [user, setUser] = useState({});
+  const [concepts, setConcepts] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('Getting server data...');
+  const store = useMessageStore();
 
-    this.state = {
-      userReady: false,
-      conceptsReady: false,
-      hasMessage: false,
-      isReading: true,
-      user: {},
-      concepts: [],
-      hasError: false,
-      errorMessage: '',
-    };
-
-    this.parseMessage = this.parseMessage.bind(this);
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     // makes the appropriate GET request from server.py,
-    // uses the result to set this.state
-    this.appConfig.user(data => this.setState({
-      user: this.appConfig.ensureUser(data),
-      userReady: true,
-    }));
-    this.appConfig.concepts((data) => {
-      this.setState({
-        concepts: data,
-        conceptsReady: true,
-      });
-    });
+    // uses the result to set state
+    appConfig.user((data) => setUser(appConfig.ensureUser(data)));
+    appConfig.concepts((data) => setConcepts(data));
 
-    if (this.props.id) {
+    if (props.id) {
       // request the file
-      this.appConfig.viewData(
-        this.props.id,
+      appConfig.viewData(
+        props.id,
         (object) => {
-          this.parseMessage(object); // This will set state
+          parseMessage(object); // This will set state
         },
         (err) => {
           console.log(err);
-          this.setState({
-            isReading: false,
-            hasError: true,
-            hasMessage: false,
-            errorMessage: 'There was a problem fetching the stored file from the server. This may be an invalid identifier.',
-          });
+          toggleLoading(false);
+          setErrorMessage('There was a problem fetching the stored file from the server. This may be an invalid identifier.');
         },
       );
     } else {
-      this.setState({
-        isReading: false,
-        hasError: false,
-        hasMessage: false,
-        errorMessage: '',
-      });
+      toggleLoading(false);
     }
-  }
-  parseMessage(message) {
+  }, []);
+
+  function parseMessage(message) {
     const hasMessage = _.isObject(message);
     if (hasMessage && 'query_graph' in message) {
       message['question_graph'] = message['query_graph'];
@@ -92,13 +66,9 @@ class SimpleViewer extends React.Component {
     let allOk = hasQGraph && hasKG && hasAnswers;
 
     if (allOk) {
-      this.answersetStore = useMessageStore(message);
-      this.setState({
-        hasMessage: true,
-        hasError: false,
-        errorMessage: '',
-        isReading: false,
-      });
+      store.setMessage(message);
+      setHasMessage(true);
+      toggleLoading(false);
       return;
     }
 
@@ -144,67 +114,58 @@ class SimpleViewer extends React.Component {
       message.question_graph = message.query_graph;
       message.answers = message.results;
 
-      this.answersetStore = useMessageStore(message);
-
-      this.setState({
-        hasMessage: true,
-        hasError: false,
-        errorMessage: '',
-        isReading: false,
-      });
+      store.setMessage(message);
+      setHasMessage(true);
+      toggleLoading(false);
       return;
     }
 
-    let errorMessage = '';
+    let errMsg = '';
     if (!hasMessage) {
-      errorMessage = `${errorMessage} The uploaded file does not appear to be a valid JSON object.`;
+      errMsg = `${errMsg} The uploaded file does not appear to be a valid JSON object.`;
     }
     if (!hasQGraph) {
-      errorMessage = `${errorMessage} A question_graph must be provided.`;
+      errMsg = `${errMsg} A question_graph must be provided.`;
     }
     if (!hasKG) {
-      errorMessage = `${errorMessage} A knowledge_graph must be provided.`;
+      errMsg = `${errMsg} A knowledge_graph must be provided.`;
     }
     if (!hasAnswers) {
-      errorMessage = `${errorMessage} An answers array must be provided.`;
+      errMsg = `${errMsg} An answers array must be provided.`;
     }
-    this.setState({
-      hasMessage: false,
-      hasError: true,
-      isReading: false,
-      errorMessage,
-    });
+    setHasMessage(false);
+    toggleLoading(false);
+    setErrorMessage(errMsg);
   }
-  onDrop(acceptedFiles, rejectedFiles) {
+
+  function onDrop(acceptedFiles, rejectedFiles) {
     acceptedFiles.forEach((file) => {
       const fr = new window.FileReader();
-      fr.onloadstart = () => this.setState({ isReading: true });
-      fr.onloadend = () => this.setState({ isReading: false });
+      fr.onloadstart = () => {
+        toggleLoading(true);
+        setLoadingMessage('Loading Answers...');
+      };
+      fr.onloadend = () => toggleLoading(false);
       fr.onload = (e) => {
         const fileContents = e.target.result;
         try {
           const object = JSON.parse(fileContents);
-          this.parseMessage(object);
+          parseMessage(object);
         } catch (err) {
           console.log(err);
           // window.alert('Failed to load this Answerset file. Are you sure this is valid?');
-          this.setState({ hasError: true, errorMessage: 'There was the problem loading the file. Is this valid JSON?' });
+          setErrorMessage('There was the problem loading the file. Is this valid JSON?');
         }
       };
       fr.onerror = () => {
         // window.alert('Sorry but there was a problem uploading the file. The file may be invalid.');
-        this.setState({ hasError: true, errorMessage: 'There was the problem loading the file. Is this valid JSON?' });
+        setErrorMessage('There was the problem loading the file. Is this valid JSON?');
       };
       fr.readAsText(file);
     });
   }
 
-  renderLoading() {
-    return (
-      <p />
-    );
-  }
-  renderBodyUpload() {
+  function renderBodyUpload() {
     return (
       <Row>
         <Col md={12}>
@@ -216,12 +177,12 @@ class SimpleViewer extends React.Component {
             </small>
           </h1>
           <Dropzone
-            onDrop={(acceptedFiles, rejectedFiles) => this.onDrop(acceptedFiles, rejectedFiles)}
+            onDrop={(acceptedFiles, rejectedFiles) => onDrop(acceptedFiles, rejectedFiles)}
             multiple={false}
             style={{
               width: '100%',
               height: '400px',
-              backgroundColor: this.appConfig.colors.bluegray,
+              backgroundColor: appConfig.colors.bluegray,
               textAlign: 'center',
               display: 'table',
               border: '1px solid transparent',
@@ -252,21 +213,8 @@ class SimpleViewer extends React.Component {
       </Row>
     );
   }
-  renderBodyReading() {
-    return (
-      <Row>
-        <Col md={12}>
-          <h1>
-            Loading Answers...
-            <br />
-          </h1>
-          <Loading />
-        </Col>
-      </Row>
-    );
-  }
 
-  renderBodyError() {
+  function renderBodyError() {
     return (
       <Row>
         <Col md={12}>
@@ -275,14 +223,15 @@ class SimpleViewer extends React.Component {
             <br />
           </h1>
           <p>
-            {this.state.errorMessage}
+            {errorMessage}
           </p>
         </Col>
       </Row>
     );
   }
 
-  renderBodyValid() {
+  function renderBodyValid() {
+    return <div id="test">Test</div>;
     return (
       <MessageAnswersetPres
         user={this.state.user}
@@ -292,33 +241,31 @@ class SimpleViewer extends React.Component {
       />
     );
   }
-  renderLoaded() {
-    const { hasMessage, isReading, hasError } = this.state;
-    return (
-      <div>
-        <Header
-          config={this.props.config}
-          user={this.state.user}
-        />
-        <Grid>
-          {!hasMessage && !isReading && !hasError && this.renderBodyUpload()}
-          {!hasMessage && isReading && !hasError && this.renderBodyReading()}
-          {!hasMessage && !isReading && hasError && this.renderBodyError()}
-          {hasMessage && !isReading && !hasError && this.renderBodyValid()}
-        </Grid>
-        <Footer config={this.props.config} />
-      </div>
-    );
-  }
-  render() {
-    const ready = this.state.userReady && this.state.conceptsReady;
-    return (
-      <div>
-        {!ready && this.renderLoading()}
-        {ready && this.renderLoaded()}
-      </div>
-    );
-  }
-}
 
-export default SimpleViewer;
+  return (
+    <div>
+      <Header
+        config={props.config}
+        user={user}
+      />
+      {loading ? (
+        <Row>
+          <Col md={12}>
+            <h1>
+              {loadingMessage}
+              <br />
+            </h1>
+            <Loading />
+          </Col>
+        </Row>
+      ) : (
+        <Grid>
+          {!hasMessage && !errorMessage && renderBodyUpload()}
+          {!hasMessage && errorMessage && renderBodyError()}
+          {hasMessage && !errorMessage && renderBodyValid()}
+        </Grid>
+      )}
+      <Footer config={props.config} />
+    </div>
+  );
+}

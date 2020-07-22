@@ -3,9 +3,9 @@ import React from 'react';
 import { Grid, Row, Col, Panel } from 'react-bootstrap';
 
 import AppConfig from '../AppConfig';
-import Loading from '../components/Loading';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Loading from '../components/shared/Loading';
+import Header from '../components/header/Header';
+import Footer from '../components/footer/Footer';
 
 class About extends React.Component {
   constructor(props) {

@@ -1,12 +1,12 @@
 import 'core-js/stable';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Provider } from 'mobx-react';
+// import { Provider } from 'mobx-react';
 
 // Import static css, image, and font assets so that they can be found by webpack.
 import 'bootstrap/dist/css/bootstrap.css'; // path search within node_modules
-import 'ag-grid/dist/styles/ag-grid.css';
-import 'ag-grid/dist/styles/ag-theme-material.css';
+import "ag-grid-community/dist/styles/ag-grid.css";
+import "ag-grid-community/dist/styles/ag-theme-material.css";
 import 'react-widgets/dist/css/react-widgets.css';
 
 import Landing from './simplePages/Landing';
@@ -14,23 +14,23 @@ import About from './simplePages/About';
 import Help from './simplePages/Help';
 import Guide from './simplePages/Guide';
 import TermsofService from './simplePages/TermsofService';
-import MultiSearch from './simplePages/MultiSearch';
+// import MultiSearch from './simplePages/MultiSearch';
 import SimpleViewer from './simplePages/SimpleViewer';
-import SimpleEnriched from './simplePages/SimpleEnriched';
-import SimpleSimilarity from './simplePages/SimpleSimilarity';
-import SimpleExpand from './simplePages/SimpleExpand';
-import SimpleSynonymize from './simplePages/SimpleSynonymize';
-import SimplePublications from './simplePages/SimplePublications';
+// import SimpleEnriched from './simplePages/SimpleEnriched';
+// import SimpleSimilarity from './simplePages/SimpleSimilarity';
+// import SimpleExpand from './simplePages/SimpleExpand';
+// import SimpleSynonymize from './simplePages/SimpleSynonymize';
+// import SimplePublications from './simplePages/SimplePublications';
 
-import Alpha from './pages/alpha/Alpha';
-import SimpleQuestion from './pages/newQuestion/SimpleQuestion';
-import QuestionNew from './pages/newQuestion/QuestionNew';
-import Question from './pages/question/Question';
-import QuestionList from './pages/questionList/QuestionList';
-import Answerset from './pages/answers/Answerset';
-import Activity from './pages/activity/Activity';
+// import Alpha from './pages/alpha/Alpha';
+// import SimpleQuestion from './pages/newQuestion/SimpleQuestion';
+// import QuestionNew from './pages/newQuestion/QuestionNew';
+// import Question from './pages/question/Question';
+// import QuestionList from './pages/questionList/QuestionList';
+// import Answerset from './pages/answers/Answerset';
+// import Activity from './pages/activity/Activity';
 
-import NewQuestionStore from './stores/newQuestionStore';
+// import NewQuestionStore from './stores/newQuestionStore';
 
 // Our actual CSS and other images etc.
 import './app.css';

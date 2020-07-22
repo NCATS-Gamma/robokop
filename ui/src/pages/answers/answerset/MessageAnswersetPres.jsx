@@ -3,12 +3,11 @@ import PropTypes from 'prop-types';
 
 import { Row, Col, Grid, Tabs, Tab } from 'react-bootstrap';
 
-import QuestionHeader from '../shared/QuestionHeader';
+import QuestionHeader from '../../../components/shared/questionHeader/QuestionHeader';
 
 import AnswersetGraph from './AnswersetGraph';
 import MessageAnswersetTable from './MessageAnswersetTable';
-import AnswersetStore from './../../stores/messageAnswersetStore';
-import SimpleQuestionGraph from '../newQuestion/subComponents/SimpleQuestionGraph';
+import SimpleQuestionGraph from '../../../components/shared/graphs/SimpleQuestionGraph';
 
 export const answerSetTabEnum = {
   // answerList: 1,

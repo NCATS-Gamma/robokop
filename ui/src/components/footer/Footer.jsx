@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Grid, Row, Col } from 'react-bootstrap';
 
-import AppConfig from '../AppConfig';
+import AppConfig from '../../AppConfig';
 import './footer.css';
 
 class Footer extends React.Component {

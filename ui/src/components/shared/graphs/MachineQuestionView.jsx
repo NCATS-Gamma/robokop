@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import CardTypes from '../../util/questionNewCardTypes';
-import getNodeTypeColorMap from '../../util/colorUtils';
-import entityNameDisplay from '../../util/entityNameDisplay';
+import CardTypes from '../../../utils/questionNewCardTypes';
+import getNodeTypeColorMap from '../../../utils/colorUtils';
+import entityNameDisplay from '../../../utils/entityNameDisplay';
 
 const Graph = require('react-graph-vis').default;
 

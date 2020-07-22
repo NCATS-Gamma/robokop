@@ -4,13 +4,13 @@ import { Grid, Row, Col } from 'react-bootstrap';
 
 import {
   FaDownload, FaUpload, FaTrash, FaUndo,
-  FaPaperPlaneO, FaFloppyO, FaPlusSquare, FaPlus,
+  FaRegPaperPlane, FaRegSave, FaPlusSquare, FaPlus,
 } from 'react-icons/fa';
 
 import AppConfig from '../AppConfig';
-import Loading from '../components/Loading';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Loading from '../components/shared/Loading';
+import Header from '../components/header/Header';
+import Footer from '../components/footer/Footer';
 
 class Help extends React.Component {
   constructor(props) {
@@ -154,7 +154,7 @@ class Help extends React.Component {
                   </p>
                   <p>
                     The toolbar at the bottom of the Node / Edge panel enables the
-                    user to Save [<FaFloppyO size={14} />] or Undo [
+                    user to Save [<FaRegSave size={14} />] or Undo [
                     <FaUndo size={14} />
                     ] any changes, or Delete [<FaTrash size={14} />] the current
                     Node / Edge.
@@ -165,7 +165,7 @@ class Help extends React.Component {
                     The Download [<FaDownload size={14} />] and Reset [
                     <FaTrash size={14} />] buttons at the bottom of the page can be
                     clicked to export (as a JSON file) or reset the
-                    current question. The Submit [<FaPaperPlaneO size={14} />]
+                    current question. The Submit [<FaRegPaperPlane size={14} />]
                     button submits the current question to ROBOKOP.
                   </p>
                   <p>

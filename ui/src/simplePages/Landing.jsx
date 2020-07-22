@@ -4,12 +4,13 @@ import {
   ListGroupItem, Glyphicon, Col, Row,
 } from 'react-bootstrap';
 
-import './simplecss.css';
 import AppConfig from '../AppConfig';
-import Loading from '../components/Loading';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Loading from '../components/shared/Loading';
+import Header from '../components/header/Header';
+import Footer from '../components//footer/Footer';
 import PromotedCarousel from '../components/promotedCarousel/PromotedCarousel';
+
+import './simplecss.css';
 
 class Landing extends React.Component {
   constructor(props) {

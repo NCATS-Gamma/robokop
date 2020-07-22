@@ -1,9 +1,8 @@
 import React from 'react';
-import { toJS } from 'mobx';
 import { Row, Col, Panel } from 'react-bootstrap';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import MachineQuestionView from '../../shared/graphs/MachineQuestionView';
-import entityNameDisplay from '../../util/entityNameDisplay';
+import MachineQuestionView from './MachineQuestionView';
+import entityNameDisplay from '../../../utils/entityNameDisplay';
 
 /* eslint-disable no-param-reassign */
 const nodePreProcFn = (n) => {
@@ -89,7 +88,7 @@ class SimpleQuestionGraph extends React.Component {
                 <MachineQuestionView
                   height={200}
                   // width={width}
-                  question={toJS(store.message.question_graph)}
+                  question={store.message.question_graph}
                   concepts={concepts}
                   graphState="display"
                   selectable
