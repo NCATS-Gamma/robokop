@@ -15,7 +15,6 @@ import Help from './simplePages/Help';
 import Guide from './simplePages/Guide';
 import Alpha from './pages/alpha/Alpha';
 import SimpleQuestion from './components/newQuestion/SimpleQuestion';
-import Apps from './simplePages/Apps';
 import TermsofService from './simplePages/TermsofService';
 import QuestionNew from './components/newQuestion/QuestionNew';
 import Question from './pages/question/Question';
@@ -82,14 +81,6 @@ const robokop = {
   guide: () => {
     ReactDOM.render(
       <Guide
-        config={config}
-      />,
-      document.getElementById('reactEntry'),
-    );
-  },
-  apps: () => {
-    ReactDOM.render(
-      <Apps
         config={config}
       />,
       document.getElementById('reactEntry'),
