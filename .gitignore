@@ -16,8 +16,6 @@ bundle.js
 *.pid
 sandbox
 neo4j_plugins
-.eslintrc.json
-.babelrc
 *.tsv
 *.tsv.gz
 deploy/src

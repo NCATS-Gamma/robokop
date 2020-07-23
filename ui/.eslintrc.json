@@ -1,0 +1,39 @@
+{
+  "extends": "airbnb",
+  "plugins": [
+      "react",
+      "jsx-a11y",
+      "import",
+      "react-hooks"
+  ],
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true
+  },
+  "rules": {
+    "react/prop-types": "off",
+    "max-len": "off",
+    "no-return-assign": ["error", "except-parens"],
+    "no-param-reassign": ["error", { "props": false }],
+    "operator-linebreak": "off",
+    "react/no-array-index-key": "off",
+    "react/sort-comp": ["error", {
+      "order": [
+        "static-methods",
+        "instance-variables",
+        "lifecycle",
+        "instance-methods",
+        "everything-else",
+        "rendering"
+      ],
+      "groups": {
+        "rendering": [
+          "/^render.+$/",
+          "render"
+        ]
+      }
+    }],
+    "react-hooks/rules-of-hooks": "error"
+  }
+}
