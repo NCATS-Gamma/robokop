@@ -1,10 +1,10 @@
 import React from 'react';
 import { Media, Button } from 'react-bootstrap';
 
-import { FaExternalLink } from 'react-icons/fa';
+import { FaExternalLinkAlt } from 'react-icons/fa';
 
-import AppConfig from '../../AppConfig';
-import { config } from '../../index';
+import AppConfig from '../../../AppConfig';
+import { config } from '../../../index';
 
 const shortid = require('shortid');
 
@@ -82,7 +82,7 @@ class PubmedEntry extends React.Component {
             <Media.Left>
               <Button disabled={linkDisable} onClick={() => window.open(linkUrl, '_blank')}>
                 <div style={{ fontSize: '36px' }}>
-                  <FaExternalLink />
+                  <FaExternalLinkAlt />
                 </div>
               </Button>
             </Media.Left>

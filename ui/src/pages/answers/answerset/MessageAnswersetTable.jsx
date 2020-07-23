@@ -1,21 +1,18 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Row, Col } from 'react-bootstrap';
-import { observer } from 'mobx-react';
 import ReactTable from 'react-table';
 
 // import { DropdownList } from 'react-widgets';
 
-import AnswersetFilter from '../shared/AnswersetFilter';
-import DownloadButton from '../shared/DownloadButton';
+import AnswersetFilter from './AnswersetFilter';
+import DownloadButton from '../../../components/shared/DownloadButton';
 import AnswersetTableSubComponent, { answersetSubComponentEnum } from './AnswersetTableSubComponent';
-import entityNameDisplay from './../util/entityNameDisplay';
-import getNodeTypeColorMap from './../util/colorUtils';
-import getColumnWidth from '../util/rtColumnWidth';
+import entityNameDisplay from '../../../utils/entityNameDisplay';
+import getNodeTypeColorMap from '../../../utils/colorUtils';
+import getColumnWidth from '../../../utils/rtColumnWidth';
 
 const _ = require('lodash');
 
-@observer
 class MessageAnswersetTable extends React.Component {
   constructor(props) {
     super(props);
@@ -259,9 +256,5 @@ class MessageAnswersetTable extends React.Component {
     );
   }
 }
-
-MessageAnswersetTable.propTypes = {
-  store: PropTypes.any.isRequired, // eslint-disable-line react/forbid-prop-types
-};
 
 export default MessageAnswersetTable;

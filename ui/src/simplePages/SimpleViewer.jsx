@@ -8,7 +8,7 @@ import AppConfig from '../AppConfig';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 import Loading from '../components/shared/Loading';
-// import MessageAnswersetPres from '../pages/answers/answerset/MessageAnswersetPres';
+import MessageAnswersetPres from '../pages/answers/answerset/MessageAnswersetPres';
 // import AnswersetStore from './stores/messageAnswersetStore';
 import useMessageStore from '../stores/useMessageStore';
 
@@ -69,6 +69,7 @@ export default function SimpleViewer(props) {
       store.setMessage(message);
       setHasMessage(true);
       toggleLoading(false);
+      setErrorMessage('');
       return;
     }
 
@@ -117,6 +118,7 @@ export default function SimpleViewer(props) {
       store.setMessage(message);
       setHasMessage(true);
       toggleLoading(false);
+      setErrorMessage('');
       return;
     }
 
@@ -165,107 +167,82 @@ export default function SimpleViewer(props) {
     });
   }
 
-  function renderBodyUpload() {
-    return (
-      <Row>
-        <Col md={12}>
-          <h1>
-            Answer Set Explorer
-            <br />
-            <small>
-              {'Explore answers and visualize knowledge graphs.'}
-            </small>
-          </h1>
-          <Dropzone
-            onDrop={(acceptedFiles, rejectedFiles) => onDrop(acceptedFiles, rejectedFiles)}
-            multiple={false}
-            style={{
-              width: '100%',
-              height: '400px',
-              backgroundColor: appConfig.colors.bluegray,
-              textAlign: 'center',
-              display: 'table',
-              border: '1px solid transparent',
-              borderColor: '#e7e7e7',
-              borderRadius: '4px',
-              marginBottom: '20px',
-              cursor: 'pointer',
-            }}
-          >
-            {({getRootProps, getInputProps}) => (
-              <section>
-                <div {...getRootProps()}>
-                  <input {...getInputProps()} />
-                  <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
-                    <h1 style={{ fontSize: '48px' }}>
-                      <FaCloudUploadAlt />
-                    </h1>
-                    <h3>
-                      Drag and drop an answerset file, or click to browse.
-                    </h3>
-                  </div>
-                </div>
-              </section>
-            )}
-            
-          </Dropzone>
-        </Col>
-      </Row>
-    );
-  }
-
-  function renderBodyError() {
-    return (
-      <Row>
-        <Col md={12}>
-          <h1>
-            There was a problem loading the file.
-            <br />
-          </h1>
-          <p>
-            {errorMessage}
-          </p>
-        </Col>
-      </Row>
-    );
-  }
-
-  function renderBodyValid() {
-    return <div id="test">Test</div>;
-    return (
-      <MessageAnswersetPres
-        user={this.state.user}
-        concepts={this.state.concepts}
-        store={this.answersetStore}
-        omitHeader
-      />
-    );
-  }
-
   return (
-    <div>
+    <>
       <Header
         config={props.config}
         user={user}
       />
-      {loading ? (
-        <Row>
-          <Col md={12}>
-            <h1>
-              {loadingMessage}
-              <br />
-            </h1>
-            <Loading />
-          </Col>
-        </Row>
-      ) : (
-        <Grid>
-          {!hasMessage && !errorMessage && renderBodyUpload()}
-          {!hasMessage && errorMessage && renderBodyError()}
-          {hasMessage && !errorMessage && renderBodyValid()}
-        </Grid>
-      )}
+      <Grid>
+        {loading ? (
+          <Row>
+            <Col md={12}>
+              <h1>
+                {loadingMessage}
+                <br />
+              </h1>
+              <Loading />
+            </Col>
+          </Row>
+        ) : (
+          <>
+            {hasMessage && !errorMessage && (
+              <MessageAnswersetPres
+                user={user}
+                concepts={concepts}
+                store={store}
+                omitHeader
+              />
+            )}
+            {!errorMessage && !hasMessage && (
+              <Row>
+                <Col md={12}>
+                  <h1>
+                    Answer Set Explorer
+                    <br />
+                    <small>
+                      {'Explore answers and visualize knowledge graphs.'}
+                    </small>
+                  </h1>
+                  <Dropzone
+                    onDrop={(acceptedFiles, rejectedFiles) => onDrop(acceptedFiles, rejectedFiles)}
+                    multiple={false}
+                  >
+                    {({getRootProps, getInputProps}) => (
+                      <section>
+                        <div id='dropzone' {...getRootProps()} style={{ backgroundColor: appConfig.colors.bluegray }}>
+                          <input {...getInputProps()} />
+                          <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
+                            <h1 style={{ fontSize: '48px' }}>
+                              <FaCloudUploadAlt />
+                            </h1>
+                            <h3>
+                              Drag and drop an answerset file, or click to browse.
+                            </h3>
+                          </div>
+                        </div>
+                      </section>
+                    )}
+                    
+                  </Dropzone>
+                </Col>
+              </Row>
+            )}
+            {errorMessage && (
+              <>
+                <h1>
+                  There was a problem loading the file.
+                </h1>
+                <br />
+                <p>
+                  {errorMessage}
+                </p>
+              </>
+            )}
+          </>
+        )}
+      </Grid>
       <Footer config={props.config} />
-    </div>
+    </>
   );
 }

@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import { Row, Col, Grid, Tabs, Tab } from 'react-bootstrap';
 
@@ -159,88 +158,5 @@ class MessageAnswersetPres extends React.Component {
     );
   }
 }
-
-
-MessageAnswersetPres.defaultProps = {
-  enableUrlChange: false,
-  enableQuestionSelect: false,
-  enableFeedbackSubmit: false,
-  enableFeedbackView: false,
-
-  omitHeader: false,
-  question: {},
-
-  callbackNoAnswerSelected: () => {},
-  callbackAnswerSelected: () => {},
-  callbackAnswersetSelect: () => {},
-  callbackQuestionSelect: () => {},
-  callbackFeedbackSubmit: () => {},
-  callbackQuestionUpdateMeta: () => {},
-  urlQuestion: () => {},
-  urlAnswerset: () => {},
-
-  otherQuestions: [],
-  otherAnswersets: [],
-
-  answerId: [],
-  answersetGraph: { nodes: [], edges: [] },
-
-  enabledAnswerLink: false,
-  getAnswerUrl: () => '',
-
-  style: {},
-};
-
-MessageAnswersetPres.propTypes = {
-  enableUrlChange: PropTypes.bool,
-  enableQuestionSelect: PropTypes.bool,
-  enableFeedbackSubmit: PropTypes.bool,
-  enableFeedbackView: PropTypes.bool,
-
-  omitHeader: PropTypes.bool,
-
-  callbackNoAnswerSelected: PropTypes.func,
-  callbackAnswerSelected: PropTypes.func,
-  callbackAnswersetSelect: PropTypes.func,
-  callbackQuestionSelect: PropTypes.func,
-  callbackFeedbackSubmit: PropTypes.func,
-  urlQuestion: PropTypes.func,
-  urlAnswerset: PropTypes.func,
-
-  // otherQuestions: PropTypes.arrayOf(PropTypes.object),
-  // otherAnswersets: PropTypes.arrayOf(PropTypes.object),
-
-  answerId: PropTypes.oneOfType([PropTypes.number, PropTypes.array]),
-
-  user: PropTypes.object.isRequired,
-  question: PropTypes.object,
-
-  message: PropTypes.shape({
-    question_graph: PropTypes.shape({
-      nodes: PropTypes.arrayOf(PropTypes.object),
-      edges: PropTypes.arrayOf(PropTypes.object),
-    }).isRequired,
-    knowledge_graph: PropTypes.shape({
-      nodes: PropTypes.arrayOf(PropTypes.object),
-      edges: PropTypes.arrayOf(PropTypes.object),
-    }).isRequired,
-    answers: PropTypes.arrayOf(PropTypes.shape({
-      edge_bindings: PropTypes.object.isRequired,
-      node_bindings: PropTypes.object.isRequired,
-      score: PropTypes.number,
-    })).isRequired, // ISO Timestamp
-  }).isRequired,
-
-  // answers: PropTypes.arrayOf(PropTypes.object).isRequired,
-  // answersetGraph: PropTypes.shape({
-  //   nodes: PropTypes.arrayOf(PropTypes.object),
-  //   edges: PropTypes.arrayOf(PropTypes.object),
-  // }),
-
-  enabledAnswerLink: PropTypes.bool,
-  getAnswerUrl: PropTypes.func,
-
-  style: PropTypes.object,
-};
 
 export default MessageAnswersetPres;

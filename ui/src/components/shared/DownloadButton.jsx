@@ -1,5 +1,4 @@
 import React from 'react';
-import { toJS } from 'mobx';
 import { Button, OverlayTrigger, Popover } from 'react-bootstrap';
 
 import { FaDownload, FaBars } from 'react-icons/fa';
@@ -19,7 +18,7 @@ class DownloadButton extends React.Component {
     const { results, fileName } = this.props;
     let { columnHeaders, answers } = results.answerSetTableData;
     if (results.filteredAnswers.length) {
-      answers = toJS(results.filteredAnswers);
+      answers = results.filteredAnswers;
     }
 
     // get the keys from the first answer, dropping any that start with an underscore
@@ -61,7 +60,7 @@ class DownloadButton extends React.Component {
     const { results, fileName } = this.props;
     let { answers } = results.answerSetTableData;
     if (results.filteredAnswers.length) {
-      answers = toJS(results.filteredAnswers);
+      answers = results.filteredAnswers;
     }
     if (answers[0]._original) {
       // the json we want is nested, so we need to dig into it.

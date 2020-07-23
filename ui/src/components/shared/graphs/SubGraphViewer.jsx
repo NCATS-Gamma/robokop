@@ -1,6 +1,6 @@
 import React from 'react';
-import getNodeTypeColorMap from '../../util/colorUtils';
-import entityNameDisplay from '../../util/entityNameDisplay';
+import getNodeTypeColorMap from '../../../utils/colorUtils';
+import entityNameDisplay from '../../../utils/entityNameDisplay';
 
 const Graph = require('react-graph-vis').default;
 const shortid = require('shortid');

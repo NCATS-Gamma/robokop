@@ -1,6 +1,4 @@
 import React from 'react';
-import { observer } from 'mobx-react';
-import PropTypes from 'prop-types';
 import { Row, Col, Panel, OverlayTrigger, Popover, Checkbox } from 'react-bootstrap';
 import Slider from 'rc-slider';
 import Tooltip from 'rc-tooltip';
@@ -9,13 +7,9 @@ import { FaAngleDown } from 'react-icons/fa';
 import 'rc-slider/assets/index.css';
 import 'rc-tooltip/assets/bootstrap.css';
 
-import SubGraphViewer from '../shared/graphs/SubGraphViewer';
+import SubGraphViewer from '../../../components/shared/graphs/SubGraphViewer';
 
 const shortid = require('shortid');
-
-const propTypes = {
-  concepts: PropTypes.arrayOf(PropTypes.string).isRequired,
-};
 
 const { Handle } = Slider;
 
@@ -37,7 +31,6 @@ const handle = (props) => {
   );
 };
 
-@observer
 class AnswersetGraph extends React.Component {
   constructor(props) {
     super(props);
@@ -133,7 +126,5 @@ class AnswersetGraph extends React.Component {
     );
   }
 }
-
-AnswersetGraph.propTypes = propTypes;
 
 export default AnswersetGraph;

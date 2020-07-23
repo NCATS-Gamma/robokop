@@ -1,13 +1,11 @@
 import React from 'react';
-import { observer } from 'mobx-react';
 import { FaFilter, FaCheck, FaPlus, FaMinus } from 'react-icons/fa';
 import { OverlayTrigger, Popover, Button, Panel } from 'react-bootstrap';
 
-import entityNameDisplay from '../util/entityNameDisplay';
+import entityNameDisplay from '../../../utils/entityNameDisplay';
 
 const shortid = require('shortid');
 
-@observer
 class AnswersetFilter extends React.Component {
   constructor(props) {
     super(props);

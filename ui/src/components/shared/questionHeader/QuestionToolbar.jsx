@@ -2,8 +2,8 @@ import React from 'react';
 
 import { DropdownButton, MenuItem } from 'react-bootstrap';
 
-import { GoGear, GoPlaybackPlay, GoRepoForked, GoMilestone, GoTrashcan } from 'react-icons/go';
-import { FaEye, FaCheck } from 'react-icons/fa';
+import { GoGear, GoRepoForked, GoMilestone, GoTrashcan } from 'react-icons/go';
+import { FaEye, FaCheck, FaPlay } from 'react-icons/fa';
 
 const shortid = require('shortid');
 
@@ -31,7 +31,7 @@ class QuestionToolbar extends React.PureComponent {
           disabled={!this.props.enableNewAnswersets}
           onSelect={this.props.callbackNewAnswerset}
         >
-          <GoPlaybackPlay /> Find New Answers
+          <FaPlay /> Find New Answers
         </MenuItem>
         <MenuItem
           eventKey="3"

@@ -3,16 +3,16 @@ import React from 'react';
 import { Row, Col, Panel } from 'react-bootstrap';
 import { FaDownload } from 'react-icons/fa';
 
-import AppConfig from '../../AppConfig';
-import { config } from '../../index';
+import AppConfig from '../../../AppConfig';
+import { config } from '../../../index';
 
-import SubGraphViewer from './graphs/SubGraphViewer';
-import PubmedList from './PubmedList';
+import SubGraphViewer from '../../../components/shared/graphs/SubGraphViewer';
+import PubmedList from '../../../components/shared/pubmedList/PubmedList';
 
-import curieUrls from '../util/curieUrls';
-import ctdUrls from '../util/ctdUrls';
-import getNodeTypeColorMap from '../util/colorUtils';
-import entityNameDisplay from '../util/entityNameDisplay';
+import curieUrls from '../../../utils/curieUrls';
+import ctdUrls from '../../../utils/ctdUrls';
+import getNodeTypeColorMap from '../../../utils/colorUtils';
+import entityNameDisplay from '../../../utils/entityNameDisplay';
 
 const shortid = require('shortid');
 

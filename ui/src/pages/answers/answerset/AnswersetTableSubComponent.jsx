@@ -1,11 +1,8 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { ButtonGroup, Button, Modal, OverlayTrigger, Popover, Checkbox } from 'react-bootstrap';
-import { observer } from 'mobx-react';
-import { observable, action } from 'mobx';
 import { DropdownList } from 'react-widgets';
-import { FaThList, FaClone, FaEllipsisH, FaFileText, FaAngleDown } from 'react-icons/fa';
-import { IoNetwork } from 'react-icons/io';
+import { FaThList, FaClone, FaEllipsisH, FaRegFileAlt, FaAngleDown } from 'react-icons/fa';
+import { IoIosGitNetwork } from 'react-icons/io';
 import ReactJson from 'react-json-view';
 import ReactTable from 'react-table';
 import axios from 'axios';
@@ -15,13 +12,13 @@ import Tooltip from 'rc-tooltip';
 import 'rc-slider/assets/index.css';
 import 'rc-tooltip/assets/bootstrap.css';
 
-import entityNameDisplay from './../util/entityNameDisplay';
-import getColumnWidth from '../util/rtColumnWidth';
-import SubGraphViewer from '../shared/graphs/SubGraphViewer';
-import Loading from '../Loading';
-import AnswerExplorerInfo from '../shared/AnswerExplorerInfo';
-import { config } from '../../index';
-import getNodeTypeColorMap from './../util/colorUtils';
+import entityNameDisplay from '../../../utils/entityNameDisplay';
+import getColumnWidth from '../../../utils/rtColumnWidth';
+import SubGraphViewer from '../../../components/shared/graphs/SubGraphViewer';
+import Loading from '../../../components/shared/Loading';
+import AnswerExplorerInfo from './AnswerExplorerInfo';
+import { config } from '../../../index';
+import getNodeTypeColorMap from '../../../utils/colorUtils';
 
 const shortid = require('shortid');
 
@@ -34,12 +31,6 @@ const answersetSubComponentEnum = {
 const defaultProps = {
   nodeId: null, // NodeId for the set being explored
   activeButtonKey: answersetSubComponentEnum.graph,
-};
-
-const propTypes = {
-  store: PropTypes.any.isRequired, // eslint-disable-line react/forbid-prop-types
-  nodeId: PropTypes.any, // eslint-disable-line react/forbid-prop-types
-  activeButtonKey: PropTypes.any, // eslint-disable-line react/forbid-prop-types
 };
 
 const { Handle } = Slider;
@@ -62,13 +53,7 @@ const handle = (props) => {
   );
 };
 
-@observer
 class AnswersetTableSubComponent extends React.Component {
-  @observable activeState = {
-    activeButton: answersetSubComponentEnum.graph,
-    nodeId: null,
-  };
-
   constructor(props) {
     super(props);
 
@@ -79,6 +64,8 @@ class AnswersetTableSubComponent extends React.Component {
       selectedEdge: {},
       showModal: false,
       hierarchical: '',
+      activeButton: answersetSubComponentEnum.graph,
+      nodeId: null,
     };
 
     this.syncPropsWithState = this.syncPropsWithState.bind(this);
@@ -100,11 +87,11 @@ class AnswersetTableSubComponent extends React.Component {
     }
   }
 
-  @action.bound updateNodeId(id) {
-    this.activeState.nodeId = id;
+  updateNodeId(id) {
+    this.setState({ nodeId: id });
   }
-  @action.bound updateActiveButton(activeButtonKey) {
-    this.activeState.activeButton = activeButtonKey;
+  updateActiveButton(activeButtonKey) {
+    this.setState({ activeButton: activeButtonKey });
   }
 
   // Method that updates local mobx state with activeButton and nodeId based on props
@@ -512,14 +499,14 @@ class AnswersetTableSubComponent extends React.Component {
               style={{ textAlign: 'left' }}
               onClick={() => this.updateActiveButton(answersetSubComponentEnum.json)}
             >
-              <span className="valign-center"><FaFileText /><span style={{ paddingLeft: '5px' }}>JSON</span></span>
+              <span className="valign-center"><FaRegFileAlt /><span style={{ paddingLeft: '5px' }}>JSON</span></span>
             </Button>
             <Button
               active={isGraphActive}
               style={{ textAlign: 'left' }}
               onClick={() => this.updateActiveButton(answersetSubComponentEnum.graph)}
             >
-              <div className="valign-center"><IoNetwork /><span style={{ paddingLeft: '5px' }}>Graph</span></div>
+              <div className="valign-center"><IoIosGitNetwork /><span style={{ paddingLeft: '5px' }}>Graph</span></div>
             </Button>
             <Button
               active={isMetadataActive}
@@ -539,7 +526,6 @@ class AnswersetTableSubComponent extends React.Component {
 }
 
 AnswersetTableSubComponent.defaultProps = defaultProps;
-AnswersetTableSubComponent.propTypes = propTypes;
 
 export default AnswersetTableSubComponent;
 export { answersetSubComponentEnum };
