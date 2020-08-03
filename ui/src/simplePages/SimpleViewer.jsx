@@ -15,59 +15,36 @@ import useMessageStore from '../stores/useMessageStore';
 const _ = require('lodash');
 
 export default function SimpleViewer(props) {
+  const { config } = props;
   // We only read the communications config on creation
-  const [appConfig, setAppConfig] = useState(new AppConfig(props.config));
-  const [hasMessage, setHasMessage] = useState(false);
+  const [appConfig, setAppConfig] = useState(new AppConfig(config));
+  const [messageSaved, setMessageSaved] = useState(false);
   const [loading, toggleLoading] = useState(true);
   const [user, setUser] = useState({});
   const [concepts, setConcepts] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [loadingMessage, setLoadingMessage] = useState('Getting server data...');
-  const store = useMessageStore();
-
-  useEffect(() => {
-    // makes the appropriate GET request from server.py,
-    // uses the result to set state
-    appConfig.user((data) => setUser(appConfig.ensureUser(data)));
-    appConfig.concepts((data) => setConcepts(data));
-
-    if (props.id) {
-      // request the file
-      appConfig.viewData(
-        props.id,
-        (object) => {
-          parseMessage(object); // This will set state
-        },
-        (err) => {
-          console.log(err);
-          toggleLoading(false);
-          setErrorMessage('There was a problem fetching the stored file from the server. This may be an invalid identifier.');
-        },
-      );
-    } else {
-      toggleLoading(false);
-    }
-  }, []);
+  const messageStore = useMessageStore();
 
   function parseMessage(message) {
     const hasMessage = _.isObject(message);
     if (hasMessage && 'query_graph' in message) {
-      message['question_graph'] = message['query_graph'];
-      delete message['query_graph'];
+      message.question_graph = message.query_graph;
+      delete message.query_graph;
     }
     let hasQGraph = hasMessage && 'question_graph' in message;
     let hasKG = hasMessage && 'knowledge_graph' in message;
     if (hasMessage && 'results' in message) {
-      message['answers'] = message['results'];
-      delete message['results'];
+      message.answers = message.results;
+      delete message.results;
     }
     let hasAnswers = hasMessage && 'answers' in message && Array.isArray(message.answers) && message.answers.length > 0;
 
     let allOk = hasQGraph && hasKG && hasAnswers;
 
     if (allOk) {
-      store.setMessage(message);
-      setHasMessage(true);
+      messageStore.setMessage(message);
+      setMessageSaved(true);
       toggleLoading(false);
       setErrorMessage('');
       return;
@@ -115,8 +92,8 @@ export default function SimpleViewer(props) {
       message.question_graph = message.query_graph;
       message.answers = message.results;
 
-      store.setMessage(message);
-      setHasMessage(true);
+      messageStore.setMessage(message);
+      setMessageSaved(true);
       toggleLoading(false);
       setErrorMessage('');
       return;
@@ -135,7 +112,7 @@ export default function SimpleViewer(props) {
     if (!hasAnswers) {
       errMsg = `${errMsg} An answers array must be provided.`;
     }
-    setHasMessage(false);
+    setMessageSaved(false);
     toggleLoading(false);
     setErrorMessage(errMsg);
   }
@@ -167,10 +144,34 @@ export default function SimpleViewer(props) {
     });
   }
 
+  useEffect(() => {
+    // makes the appropriate GET request from server.py,
+    // uses the result to set state
+    appConfig.user((data) => setUser(appConfig.ensureUser(data)));
+    appConfig.concepts((data) => setConcepts(data));
+
+    if (props.id) {
+      // request the file
+      appConfig.viewData(
+        props.id,
+        (object) => {
+          parseMessage(object); // This will set state
+        },
+        (err) => {
+          console.log(err);
+          toggleLoading(false);
+          setErrorMessage('There was a problem fetching the stored file from the server. This may be an invalid identifier.');
+        },
+      );
+    } else {
+      toggleLoading(false);
+    }
+  }, []);
+
   return (
     <>
       <Header
-        config={props.config}
+        config={config}
         user={user}
       />
       <Grid>
@@ -186,31 +187,31 @@ export default function SimpleViewer(props) {
           </Row>
         ) : (
           <>
-            {hasMessage && !errorMessage && (
+            {messageSaved && !errorMessage && (
               <MessageAnswersetPres
                 user={user}
                 concepts={concepts}
-                store={store}
+                messageStore={messageStore}
                 omitHeader
               />
             )}
-            {!errorMessage && !hasMessage && (
+            {!errorMessage && !messageSaved && (
               <Row>
                 <Col md={12}>
                   <h1>
                     Answer Set Explorer
                     <br />
                     <small>
-                      {'Explore answers and visualize knowledge graphs.'}
+                      Explore answers and visualize knowledge graphs.
                     </small>
                   </h1>
                   <Dropzone
                     onDrop={(acceptedFiles, rejectedFiles) => onDrop(acceptedFiles, rejectedFiles)}
                     multiple={false}
                   >
-                    {({getRootProps, getInputProps}) => (
+                    {({ getRootProps, getInputProps }) => (
                       <section>
-                        <div id='dropzone' {...getRootProps()} style={{ backgroundColor: appConfig.colors.bluegray }}>
+                        <div id="dropzone" {...getRootProps()} style={{ backgroundColor: appConfig.colors.bluegray }}>
                           <input {...getInputProps()} />
                           <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
                             <h1 style={{ fontSize: '48px' }}>
@@ -223,7 +224,6 @@ export default function SimpleViewer(props) {
                         </div>
                       </section>
                     )}
-                    
                   </Dropzone>
                 </Col>
               </Row>
@@ -242,7 +242,7 @@ export default function SimpleViewer(props) {
           </>
         )}
       </Grid>
-      <Footer config={props.config} />
+      <Footer config={config} />
     </>
   );
 }

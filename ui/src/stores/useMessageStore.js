@@ -23,18 +23,6 @@ export default function useMessageStore() {
   const [filteredAnswers, setFilteredAnswers] = useState([]);
   const [answers, setAnswers] = useState([]);
 
-  useEffect(() => {
-    if (message) {
-      message.answers.forEach((a, i) => {
-        if (!a.id) {
-          a.id = i;
-        }
-      });
-      makeMaps();
-    }
-    // updateActiveAnswerId(message.answers[0].id);
-  }, [message]);
-
   const keyBlacklist = ['isSet', 'labels', 'equivalent_identifiers', 'type', 'id', 'degree'];
   let unknownNodes = false;
 
@@ -63,6 +51,18 @@ export default function useMessageStore() {
       }
     });
   }
+
+  useEffect(() => {
+    if (message) {
+      message.answers.forEach((a, i) => {
+        if (!a.id) {
+          a.id = i;
+        }
+      });
+      makeMaps();
+    }
+    // updateActiveAnswerId(message.answers[0].id);
+  }, [message]);
 
   function ansIdToIndMap() {
     const indMap = new Map();
@@ -123,8 +123,7 @@ export default function useMessageStore() {
       // Then check labels and use the corresponding type
 
       const { results, knowledge_graph: kg, question_graph: qg } = message;
-      const numQgNodes = numNodes('question_graph');
-      const Nj = Math.round(pruneNum / numQgNodes);
+      const Nj = Math.round(pruneNum / numQgNodes());
 
       // Create a map between qGraph index to node id (for scoreVector)
       const qgNodeIndToIdMap = {};
@@ -307,7 +306,7 @@ export default function useMessageStore() {
   // }
   function answerSetTableData() {
     const columnHeaders = [];
-    const answers = [];
+    const tempAnswers = [];
     // set the column headers object
     message.question_graph.nodes.forEach((n) => {
       columnHeaders.push({
@@ -344,11 +343,11 @@ export default function useMessageStore() {
       });
       answer.score = ans.score;
       answer.id = ans.id;
-      answers.push(answer);
+      tempAnswers.push(answer);
     });
-    setFilteredAnswers(answers);
-    setAnswers(answers);
-    return { columnHeaders, answers };
+    setFilteredAnswers(tempAnswers);
+    setAnswers(tempAnswers);
+    return { columnHeaders, answers: tempAnswers };
   }
 
   // builds dense answer
@@ -495,6 +494,20 @@ export default function useMessageStore() {
       }
     });
     return maxNumAgNodes;
+  }
+
+  // Determines if annotatedPrunedKnowledgeGraph had to prune KG
+  function isKgPruned(ansId) {
+    if (message.knowledge_graph) {
+      return getMaxNumAgNodes(ansId) > numKgNodes();
+    }
+    return false;
+  }
+
+  function getSetNodes(answerId, nodeId) {
+    const setNodeIds = message.answers[answerId].node_bindings[nodeId];
+    const setNodes = setNodeIds.map((id) => getKgNode(id));
+    return setNodes;
   }
 
   /**
@@ -744,6 +757,8 @@ export default function useMessageStore() {
     updateNumAgSetNodes,
     numAgSetNodes,
     getMaxNumAgNodes,
+    getSetNodes,
+    isKgPruned,
     filterKeys,
     initializeFilter,
     updateFilterKeys,

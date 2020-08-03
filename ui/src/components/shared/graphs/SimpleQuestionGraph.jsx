@@ -55,22 +55,23 @@ class SimpleQuestionGraph extends React.Component {
   }
 
   toggleGraphVisibility() {
-    this.setState(state => ({ graphVisible: !state.graphVisible }));
+    this.setState((state) => ({ graphVisible: !state.graphVisible }));
   }
 
   render() {
     const { graphVisible } = this.state;
-    const { store, concepts } = this.props;
+    const { messageStore, concepts } = this.props;
     return (
       <Row>
         <div className="col-md-12" style={{ height: '20px' }} />
         <Col md={12}>
-          <Panel expanded={graphVisible} onToggle={() => {}} >
+          <Panel expanded={graphVisible} onToggle={() => {}}>
             <Panel.Heading>
               <Panel.Title>
                 {'Question Graph '}
                 <div style={{ position: 'relative', float: 'right', top: '-3px' }}>
                   <button
+                    type="button"
                     style={{ padding: '2px', marginLeft: '5px' }}
                     className="btn btn-default"
                     title="Toggle visibility of Question graph"
@@ -88,7 +89,7 @@ class SimpleQuestionGraph extends React.Component {
                 <MachineQuestionView
                   height={200}
                   // width={width}
-                  question={store.message.question_graph}
+                  question={messageStore.message.question_graph}
                   concepts={concepts}
                   graphState="display"
                   selectable

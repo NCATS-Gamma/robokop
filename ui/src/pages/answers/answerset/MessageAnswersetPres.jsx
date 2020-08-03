@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-import { Row, Col, Grid, Tabs, Tab } from 'react-bootstrap';
+import {
+  Row, Col, Grid, Tabs, Tab,
+} from 'react-bootstrap';
 
 import QuestionHeader from '../../../components/shared/questionHeader/QuestionHeader';
 
@@ -15,22 +17,16 @@ export const answerSetTabEnum = {
   aggregate: 2,
 };
 
+export default function MessageAnswersetPres(props) {
+  const {
+    messageStore, concepts, question, style, omitHeader, enableQuestionSelect,
+    enableQuestionEdit, callbackQuestionUpdateMeta, callbackQuestionSelect, urlQuestion,
+    callbackAnswersetSelect, urlAnswerset,
+  } = props;
+  const [tabKey, setTabKey] = useState(answerSetTabEnum.answerTable);
 
-class MessageAnswersetPres extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      tabKey: answerSetTabEnum.answerTable,
-    };
-
-    this.handleTabSelect = this.handleTabSelect.bind(this);
-    this.onDownload = this.onDownload.bind(this);
-    this.renderNoAnswers = this.renderNoAnswers.bind(this);
-    this.renderAnswers = this.renderAnswers.bind(this);
-  }
-  onDownload() {
-    const data = this.props.store.message;
+  function onDownload() {
+    const data = messageStore.message;
 
     // Transform the data into a json blob and give it a url
     const json = JSON.stringify(data);
@@ -48,115 +44,96 @@ class MessageAnswersetPres extends React.Component {
     a.remove();
   }
 
-  handleTabSelect(tabKey) {
-    this.setState({ tabKey });
-  }
+  const hasAnswers = messageStore.message.answers && Array.isArray(messageStore.message.answers) && messageStore.message.answers.length > 0;
+  return (
+    <div>
+      {hasAnswers ? (
+        <div style={style}>
+          {!omitHeader && (
+            <Row>
+              <Col md={12}>
+                <QuestionHeader
+                  question={question}
+                  answerset={messageStore.message}
 
-  renderNoAnswers() {
-    return (
-      <Grid>
-        <h4>
-          No answers were found.
-        </h4>
-      </Grid>
-    );
-  }
-  renderAnswers() {
-    // const showOtherQuestions = this.props.otherQuestions.length > 0;
-    // const showOtherAnswersets = this.props.otherQuestions.length > 0;
-    const { message } = this.props.store;
-    return (
-      <div style={this.props.style}>
-        {!this.props.omitHeader &&
-        <Row>
-          <Col md={12}>
-            <QuestionHeader
-              question={this.props.question}
-              answerset={message}
+                  enableQuestionSelect={enableQuestionSelect}
+                  enableQuestionEdit={enableQuestionEdit}
+                  callbackUpdate={callbackQuestionUpdateMeta}
+                  callbackQuestionSelect={callbackQuestionSelect}
+                  urlQuestion={urlQuestion}
 
-              enableQuestionSelect={this.props.enableQuestionSelect}
-              enableQuestionEdit={this.props.enableQuestionEdit}
-              callbackUpdate={this.props.callbackQuestionUpdateMeta}
-              callbackQuestionSelect={this.props.callbackQuestionSelect}
-              urlQuestion={this.props.urlQuestion}
+                  callbackAnswersetSelect={callbackAnswersetSelect}
+                  urlAnswerset={urlAnswerset}
 
-              callbackAnswersetSelect={this.props.callbackAnswersetSelect}
-              urlAnswerset={this.props.urlAnswerset}
-
-              showDownload
-              callbackDownload={this.onDownload}
-            />
-          </Col>
-        </Row>
-        }
-        <SimpleQuestionGraph
-          store={this.props.store}
-          concepts={this.props.concepts}
-        />
-        <Tabs
-          activeKey={this.state.tabKey}
-          onSelect={this.handleTabSelect}
-          animation
-          id="answerset_tabs"
-          mountOnEnter
-        >
-          {/* <Tab
-            eventKey={answerSetTabEnum.answerList}
-            title="Answers List"
+                  showDownload
+                  callbackDownload={onDownload}
+                />
+              </Col>
+            </Row>
+          )}
+          <SimpleQuestionGraph
+            messageStore={messageStore}
+            concepts={concepts}
+          />
+          <Tabs
+            activeKey={tabKey}
+            onSelect={setTabKey}
+            animation
+            id="answerset_tabs"
+            mountOnEnter
           >
-            <AnswersetList
-              user={this.props.user} // Needed to parse feedback to know what is yours
-              answers={this.props.answers}
-              answersetFeedback={this.props.answersetFeedback}
-              answerId={this.props.answerId} // Monitored for select by parameter or page load
-              concepts={this.props.concepts}
+            {/* <Tab
+              eventKey={answerSetTabEnum.answerList}
+              title="Answers List"
+            >
+              <AnswersetList
+                user={this.props.user} // Needed to parse feedback to know what is yours
+                answers={this.props.answers}
+                answersetFeedback={this.props.answersetFeedback}
+                answerId={this.props.answerId} // Monitored for select by parameter or page load
+                concepts={this.props.concepts}
 
-              enableUrlChange={this.props.enableUrlChange}
-              enableFeedbackSubmit={this.props.enableFeedbackSubmit}
-              enableFeedbackView={this.props.enableFeedbackView}
+                enableUrlChange={this.props.enableUrlChange}
+                enableFeedbackSubmit={this.props.enableFeedbackSubmit}
+                enableFeedbackView={this.props.enableFeedbackView}
 
-              callbackAnswerSelected={this.props.callbackAnswerSelected}
-              callbackNoAnswerSelected={this.props.callbackNoAnswerSelected}
-              callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
-              enabledAnswerLink={this.props.enabledAnswerLink}
-              getAnswerUrl={this.props.getAnswerUrl}
+                callbackAnswerSelected={this.props.callbackAnswerSelected}
+                callbackNoAnswerSelected={this.props.callbackNoAnswerSelected}
+                callbackFeedbackSubmit={this.props.callbackFeedbackSubmit}
+                enabledAnswerLink={this.props.enabledAnswerLink}
+                getAnswerUrl={this.props.getAnswerUrl}
 
-              store={this.answersetStore}
-            />
-          </Tab> */}
-          <Tab
-            eventKey={answerSetTabEnum.answerTable}
-            title="Answers Table"
-          >
-            <MessageAnswersetTable
-              concepts={this.props.concepts}
-              // callbackAnswerSelected={this.props.callbackAnswerSelected}
-              store={this.props.store}
-            />
-          </Tab>
-          <Tab
-            eventKey={answerSetTabEnum.aggregate}
-            title="Aggregate Graph"
-          >
-            <AnswersetGraph
-              concepts={this.props.concepts}
-              store={this.props.store}
-            />
-          </Tab>
-        </Tabs>
-      </div>
-    );
-  }
-  render() {
-    const { message } = this.props.store;
-    const hasAnswers = message.answers && Array.isArray(message.answers) && message.answers.length > 0;
-    return (
-      <div>
-        {!hasAnswers && this.renderNoAnswers()}
-        {hasAnswers && this.renderAnswers()}
-      </div>
-    );
-  }
+                store={this.answersetStore}
+              />
+            </Tab> */}
+            <Tab
+              eventKey={answerSetTabEnum.answerTable}
+              title="Answers Table"
+            >
+              <MessageAnswersetTable
+                concepts={concepts}
+                // callbackAnswerSelected={this.props.callbackAnswerSelected}
+                messageStore={messageStore}
+              />
+            </Tab>
+            <Tab
+              eventKey={answerSetTabEnum.aggregate}
+              title="Aggregate Graph"
+            >
+              <AnswersetGraph
+                concepts={concepts}
+                messageStore={messageStore}
+              />
+            </Tab>
+          </Tabs>
+        </div>
+      ) : (
+        <Grid>
+          <h4>
+            No answers were found.
+          </h4>
+        </Grid>
+      )}
+    </div>
+  );
 }
-
-export default MessageAnswersetPres;
