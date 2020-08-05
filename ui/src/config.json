@@ -1,0 +1,39 @@
+{
+  "routes": {
+    "landing": "/landing",
+    "login": "/login",
+    "logout": "/logout",
+    "questions": "/questions/",
+    "questionDesign": "/q/new/",
+    "question": "/q/",
+    "answerset": "/a/",
+    "help": "/help/",
+    "about": "/about/",
+    "guide": "/guide/",
+    "apps": "/apps/",
+    "alpha": "/alpha/",
+    "search": "/search/",
+    "view": "/simple/view/",
+    "simpleQuestion": "/simple/question/",
+    "enrich": "/simple/enriched",
+    "similarity": "/simple/similarity",
+    "expand": "/simple/expand",
+    "synonymize": "/simple/synonymize",
+    "publications": "/simple/publications",
+    "termsofservice": "/termsofservice"
+  },
+  "settings": {
+    "enableNewAnswersets": true,
+    "enableNewQuestions": true,
+    "enableQuestionRefresh": true,
+    "enableQuestionEdit": true,
+    "enableQuestionDelete": true,
+    "enableQuestionFork": true,
+    "enableTaskStatus": true,
+    "enableAnswerFeedback": true
+  },
+  "colors" : {
+    "bluegray": "#f5f7fa",
+    "blue": "#b8c6db"
+  }
+}
