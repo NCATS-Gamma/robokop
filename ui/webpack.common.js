@@ -1,5 +1,5 @@
 const path = require('path');
-const Dotenv = require('dotenv-webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const config = {
   entry: ['./src/index.jsx'],
@@ -32,8 +32,8 @@ const config = {
     ],
   },
   output: {
-    path: path.resolve(__dirname, 'pack', '.'),
-    publicPath: './pack/',
+    path: path.resolve(__dirname, 'pack'),
+    publicPath: '/',
     filename: 'bundle.js',
     // https://github.com/webpack/webpack/issues/1114
     // libraryTarget: 'commonjs2'
@@ -51,9 +51,8 @@ const config = {
     ],
   },
   plugins: [
-    new Dotenv({
-      path: '../../shared/robokop.env',
-      systemvars: true, // load all the predefined 'process.env' variables which will trump anything local per dotenv specs.
+    new HtmlWebpackPlugin({
+      template: './public/index.html',
     }),
   ],
 };

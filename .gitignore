@@ -1,6 +1,7 @@
 .DS_Store
 ui/node_modules
 ui/pack
+ui/.env
 /logs/*
 /dist
 *.log
@@ -11,7 +12,6 @@ ui/pack
 .pylintrc
 *.rdb
 *.sqlite
-bundle.js
 .vscode/
 *.pid
 sandbox

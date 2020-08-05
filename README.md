@@ -208,14 +208,15 @@ This process should be repeated for `robokop-interfaces/deploy` and `robokop-ran
 The web front end is built in React and transpiled using webpack. Node.js must be installed. Following that the necessary dependencies must be downloaded.
 
 ```
-$ cd robokop/
+$ cd robokop/ui
 $ npm install
 ```
+A symlink of the robokop.env file needs to be placed in the ui directory for the UI to read it.
 
 And the source must be transpiled
 
 ```
-$ cd robokop/
+$ cd robokop/ui
 $ npm run webpackProd
 ```
 
