@@ -1,14 +1,15 @@
 import React from 'react';
 
-import { Navbar, Nav, NavItem, NavDropdown, MenuItem } from 'react-bootstrap';
+import {
+  Navbar, Nav, NavItem, NavDropdown, MenuItem,
+} from 'react-bootstrap';
 
 import './header.css';
 
-import ensureUser from '../../utils/ensureUser';
 import config from '../../config.json';
 
 export default function Header(props) {
-  const user = ensureUser(props.user);
+  const { user } = props;
 
   const isAuth = user.is_authenticated;
   const showNewQuestion = isAuth && config.settings.enableNewQuestions;

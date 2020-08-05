@@ -9,7 +9,6 @@ import {
 
 export default function Help() {
   useEffect(() => {
-    // we need to wait for user obj to be ready before moving to anchor tag
     const { hash } = window.location;
     if (hash) {
       const a = document.createElement('a');

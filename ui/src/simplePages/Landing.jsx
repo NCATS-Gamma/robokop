@@ -74,9 +74,8 @@ export default function Landing() {
                 linked in <b>K</b>nowledge <b>O</b>riented <b>P</b>athways
               </p>
               <p>
-                {
-                  'Robokop is a biomedical reasoning system that interacts with many biomedical knowledge sources to answer questions. Robokop is one of several prototype systems under active development with '
-                }
+                Robokop is a biomedical reasoning system that interacts with many biomedical knowledge
+                sources to answer questions. Robokop is one of several prototype systems under active development with
                 <a href="https://ncats.nih.gov/">NIH NCATS</a>.
               </p>
               <p>
