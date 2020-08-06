@@ -8,6 +8,7 @@ dotenv.config();
 const protocol = process.env.ROBOKOP_PROTOCOL;
 const host = process.env.ROBOKOP_HOST;
 const port = process.env.MANAGER_PORT;
+const graphqlPort = process.env.GRAPHQL_PORT_UI;
 
 const comms = axios.create();
 const cancelToken = axios.CancelToken.source();

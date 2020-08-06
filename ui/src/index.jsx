@@ -13,27 +13,7 @@ import App from './App';
 // Our actual CSS and other images etc.
 import './app.css';
 
-const config = {
-  ui: {
-    enableNewAnswersets: true,
-    enableNewQuestions: true,
-    enableQuestionRefresh: true,
-    enableQuestionEdit: true,
-    enableQuestionDelete: true,
-    enableQuestionFork: true,
-    enableTaskStatus: true,
-    enableAnswerFeedback: true,
-  },
-  // Add environmental dependent variables to config here.
-  host: process.env.ROBOKOP_HOST,
-  port: process.env.MANAGER_PORT_UI,
-  protocol: process.env.ROBOKOP_PROTOCOL,
-  graphqlPort: process.env.GRAPHQL_PORT_UI, // With our NGINX setup we no longer require a seperate more for the graphql
-};
-
 ReactDOM.render(<App />, document.getElementById('root'));
-
-export default config;
 
 // const robokop = {
 //   landing: () => {
