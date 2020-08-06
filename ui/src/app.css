@@ -1,11 +1,12 @@
-html {
+#pageContainer {
+    min-height: 100vh;
     position: relative;
-    min-height: 100%;
 }
-body {
-    /* Margin bottom by footer height */
-    margin-bottom: 25px;
+#contentContainer {
+    /* padding bottom by footer height */
+    padding-bottom: 29px;
 }
+
 body :focus {
     outline: none;
 }
