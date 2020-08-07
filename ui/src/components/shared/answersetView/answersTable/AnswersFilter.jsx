@@ -1,12 +1,15 @@
 import React from 'react';
-import { FaFilter, FaCheck, FaPlus, FaMinus } from 'react-icons/fa';
-import { OverlayTrigger, Popover, Button, Panel } from 'react-bootstrap';
+import {
+  FaFilter, FaCheck, FaPlus, FaMinus,
+} from 'react-icons/fa';
+import {
+  OverlayTrigger, Popover, Button, Panel,
+} from 'react-bootstrap';
+import shortid from 'shortid';
 
-import entityNameDisplay from '../../../utils/entityNameDisplay';
+import entityNameDisplay from '../../../../utils/entityNameDisplay';
 
-const shortid = require('shortid');
-
-class AnswersetFilter extends React.Component {
+class AnswersFilter extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -30,21 +33,21 @@ class AnswersetFilter extends React.Component {
   }
 
   check(propertyKey, propertyValue) {
-    const { qnodeId, store } = this.props;
+    const { qnodeId, store, onChange } = this.props;
     store.updateFilterKeys(qnodeId, propertyKey, propertyValue);
-    this.props.onChange({});
+    onChange({});
   }
 
   checkAll(propertyKey) {
-    const { qnodeId, store } = this.props;
+    const { qnodeId, store, onChange } = this.props;
     store.checkAll(qnodeId, propertyKey);
-    this.props.onChange({});
+    onChange({});
   }
 
   reset() {
-    const { qnodeId, store } = this.props;
+    const { qnodeId, store, onChange } = this.props;
     store.reset(qnodeId);
-    this.props.onChange({});
+    onChange({});
     this.setState({ search: '' });
   }
 
@@ -62,7 +65,7 @@ class AnswersetFilter extends React.Component {
     const isFiltered = store.isFiltered(qnodeId);
     const { search, openPanels } = this.state;
     const filterPopover = (
-      <Popover id={shortid.generate()} className="answersetFilter" >
+      <Popover id={shortid.generate()} className="answersetFilter">
         <input
           value={search}
           onChange={this.handleSearch}
@@ -78,7 +81,12 @@ class AnswersetFilter extends React.Component {
                 <Panel expanded={openPanels[index]} onToggle={() => {}}>
                   <Panel.Heading>
                     <Panel.Title>
-                      <button onClick={() => this.togglePanel(index)}>{this.state.openPanels[index] ? <FaMinus /> : <FaPlus />}</button>
+                      <button
+                        onClick={() => this.togglePanel(index)}
+                        type="button"
+                      >
+                        {openPanels[index] ? <FaMinus /> : <FaPlus />}
+                      </button>
                       <span style={{ marginLeft: 10, fontWeight: 'bold' }}>{entityNameDisplay(propertyKey)}</span>
                       <label htmlFor={`${propertyKey}-select`} className="pull-right">
                         <input
@@ -141,4 +149,4 @@ class AnswersetFilter extends React.Component {
   }
 }
 
-export default AnswersetFilter;
+export default AnswersFilter;
