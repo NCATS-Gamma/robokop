@@ -1,31 +1,15 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { FormGroup, FormControl, InputGroup, Glyphicon } from 'react-bootstrap';
+import {
+  FormGroup, FormControl, InputGroup, Glyphicon,
+} from 'react-bootstrap';
 import { DropdownList } from 'react-widgets';
 
 import BionamesBrowser from './BionamesBrowser';
-import entityNameDisplay from '../../util/entityNameDisplay';
+import entityNameDisplay from '../../../utils/entityNameDisplay';
 
 import './curies.css';
 
 const _ = require('lodash');
-
-const propTypes = {
-  term: PropTypes.string.isRequired,
-  type: PropTypes.string.isRequired,
-  curie: PropTypes.string.isRequired,
-  concepts: PropTypes.arrayOf(PropTypes.string).isRequired,
-  onClear: PropTypes.func.isRequired, // When X icon is clicked to clear input
-  onReopen: PropTypes.func.isRequired, // When triangle drop-down icon is clicked
-  onTypeChange: PropTypes.func.isRequired, // When type changed by drop-down selection
-  onTermChange: PropTypes.func.isRequired, // When term input field is typed in
-  onSelect: PropTypes.func.isRequired, // When entity is selected: (type, term, curie) => {}
-  disableType: PropTypes.bool, // Whether to display the Type drop-down
-  disableTypeFilter: PropTypes.bool, // Whether to show things only specified by the type parameter the Type drop-down
-  width: PropTypes.number,
-  search: PropTypes.func,
-  size: PropTypes.string, // undefined (default size) or 'small', 'xsmall', 'large'
-};
 
 const defaultProps = {
   search: () => Promise.resolve({ options: [] }),
@@ -213,7 +197,6 @@ class CurieSelector extends React.Component {
   }
 }
 
-CurieSelector.propTypes = propTypes;
 CurieSelector.defaultProps = defaultProps;
 
 export default CurieSelector;

@@ -1,153 +1,107 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { DropdownList } from 'react-widgets';
-import ReactTable from 'react-table';
-import { Grid, Row, Col, Button, Glyphicon, Form, FormGroup } from 'react-bootstrap';
+import ReactTable from 'react-table-6';
+import {
+  Grid, Row, Col, Button, Glyphicon, Form, FormGroup,
+} from 'react-bootstrap';
 import { FaPlus } from 'react-icons/fa';
 
-import AppConfig from './AppConfig';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import Loading from './components/Loading';
-import CurieSelectorContainer from './components/shared/curies/CurieSelectorContainer';
-import entityNameDisplay from './components/util/entityNameDisplay';
-import DownloadButton from './components/shared/DownloadButton';
+import Loading from '../components/shared/Loading';
+import CurieSelectorContainer from '../components/shared/curies/CurieSelectorContainer';
+import entityNameDisplay from '../utils/entityNameDisplay';
+import DownloadButton from '../components/shared/DownloadButton';
+import config from '../config.json';
 
+// TODO: This doesn't do anything
+export default function SimpleEnriched(props) {
+  const { user } = props;
+  const [type1, setType1] = useState('');
+  const [type2, setType2] = useState('');
+  const [curies, updateCuries] = useState(['']);
+  const [terms, updateTerms] = useState(['']);
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [fail, setFail] = useState(false);
+  const [includeDescendants, toggleDescendants] = useState(false);
+  const [maxResults, setMaxResults] = useState(100);
+  const [threshold, setThreshold] = useState(0.5);
 
-class SimpleEnriched extends React.Component {
-  constructor(props) {
-    super(props);
-    // We only read the communications config on creation
-    this.appConfig = new AppConfig(props.config);
+  useEffect(() => {
+    // this.appConfig.user(data => this.setState({
+    //   user: this.appConfig.ensureUser(data),
+    //   // userReady: true,
+    // }));
+    // this.appConfig.concepts(data => this.setState({
+    //   concepts: data,
+    // }));
+  }, []);
 
-    this.state = {
-      user: {},
-      concepts: [],
-      type1: '',
-      type2: '',
-      curies: [''],
-      terms: [''],
-      results: [],
-      resultsLoading: false,
-      resultsReady: false,
-      resultsFail: false,
-      includeDescendants: false,
-      maxResults: 100,
-      threshold: 0.5,
-    };
-
-    this.initializeState = this.initializeState.bind(this);
-    this.updateType = this.updateType.bind(this);
-    this.onSearch = this.onSearch.bind(this);
-    this.handleCurieChange = this.handleCurieChange.bind(this);
-    this.getResults = this.getResults.bind(this);
-    this.getTableColumns = this.getTableColumns.bind(this);
-    this.addCuries = this.addCuries.bind(this);
-    this.deleteCuries = this.deleteCuries.bind(this);
-    this.toggleDescendants = this.toggleDescendants.bind(this);
-    this.changeMaxResults = this.changeMaxResults.bind(this);
-    this.changeThreshold = this.changeThreshold.bind(this);
+  function onSearch(input, type) {
+    // TODO: reimplement
+    return 'test';
+    // return this.appConfig.questionNewSearch(input, type);
   }
 
-  componentDidMount() {
-    this.initializeState();
-  }
-
-  initializeState() {
-    // makes the appropriate GET request from server.py,
-    // uses the result to set this.state
-    this.appConfig.user(data => this.setState({
-      user: this.appConfig.ensureUser(data),
-      // userReady: true,
-    }));
-    this.appConfig.concepts(data => this.setState({
-      concepts: data,
-    }));
-  }
-
-  updateType(typeObj) {
-    this.setState(typeObj);
-  }
-
-  toggleDescendants() {
-    this.setState(prevState => ({ includeDescendants: !prevState.includeDescendants }));
-  }
-
-  changeMaxResults(event) {
-    // some reason why react is changing these to strings
-    const maxResults = Number(event.target.value);
-    this.setState({ maxResults });
-  }
-
-  changeThreshold(event) {
-    // some reason why react is changing these to strings
-    const threshold = Number(event.target.value);
-    this.setState({ threshold });
-  }
-
-  onSearch(input, type) {
-    return this.appConfig.questionNewSearch(input, type);
-  }
-
-  handleCurieChange(i, ty, te, cu) {
+  function handleCurieChange(i, ty, te, cu) {
     if (cu || !te) {
-      const { curies, terms } = this.state;
       curies[i] = cu;
       terms[i] = te;
-      this.setState({ curies, terms });
+      updateCuries([...curies]);
+      updateTerms([...terms]);
     }
   }
 
-  addCuries() {
-    const { curies, terms } = this.state;
+  function addCuries() {
     curies.push('');
     terms.push('');
-    this.setState({ curies, terms });
+    updateCuries([...curies]);
+    updateTerms([...terms]);
   }
 
-  deleteCuries(i) {
-    const { curies, terms } = this.state;
+  function deleteCuries(i) {
     curies.splice(i, 1);
     terms.splice(i, 1);
-    this.setState({ curies, terms });
+    updateCuries([...curies]);
+    updateTerms([...terms]);
   }
 
-  getResults(event) {
+  function getResults(event) {
     event.preventDefault();
-    this.setState({ resultsLoading: true, resultsReady: false, resultsFail: false });
-    const {
-      type1, type2, curies, includeDescendants, maxResults, threshold,
-    } = this.state;
-    const identifiers = curies.filter(id => id && id);
+    setLoading(true);
+    setReady(false);
+    setFail(false);
+    const identifiers = curies.filter((id) => id && id);
     const data = {
       identifiers,
       include_descendants: includeDescendants,
-      max_results: maxResults,
+      max_results: Number(maxResults),
       // someone can't spell
-      threshhold: threshold,
+      threshhold: Number(threshold),
     };
-    this.appConfig.simpleEnriched(
-      type1,
-      type2,
-      data,
-      (results) => {
-        this.setState({
-          results, resultsReady: true, resultsLoading: false,
-        });
-      },
-      () => {
-        this.setState({
-          resultsFail: true, resultsLoading: false,
-        });
-      },
-    );
+    // this.appConfig.simpleEnriched(
+    //   type1,
+    //   type2,
+    //   data,
+    //   (results) => {
+    //     this.setState({
+    //       results, resultsReady: true, resultsLoading: false,
+    //     });
+    //   },
+    //   () => {
+    //     this.setState({
+    //       resultsFail: true, resultsLoading: false,
+    //     });
+    //   },
+    // );
   }
 
-  getTableColumns(results) {
-    if (results.length === 0) {
+  function getTableColumns(res) {
+    if (res.length === 0) {
       return [{ Header: 'No data found', width: '100%', className: 'center' }];
     }
-    const colHeaders = Object.keys(results[0]).map((col) => {
+    const colHeaders = Object.keys(res[0]).map((col) => {
       const colSpecObj = {};
       colSpecObj.Header = entityNameDisplay(col);
       colSpecObj.accessor = col;
@@ -158,166 +112,172 @@ class SimpleEnriched extends React.Component {
     return colHeaders;
   }
 
-  render() {
-    const { config } = this.props;
-    const {
-      user, concepts, type1, type2, curies, results, resultsReady, resultsLoading, resultsFail, terms,
-      includeDescendants, maxResults, threshold,
-    } = this.state;
-    // if we don't have all the info, disable the submit.
-    const disableSubmit = !(type1 && type2 && curies[0]) || resultsLoading;
-    const types = concepts.map(concept => ({ text: entityNameDisplay(concept), value: concept }));
-    return (
-      <div>
-        <Header config={config} user={user} />
-        <Grid>
-          <h1 className="robokopApp">
-            Enrichment
-            <br />
-            <small>
-              Use the Robokop Enrich API. This API takes a list of entities of one type, and returns a list of entities that connect to the input more frequently than would be expected by chance.
-            </small>
-          </h1>
-          <Form>
-            <Row>
-              <Col md={6}>
-                <FormGroup controlId="node1">
-                  <h3>
-                    Type 1
-                  </h3>
-                  <DropdownList
-                    filter
-                    data={types}
-                    textField="text"
-                    valueField="value"
-                    value={type1}
-                    onChange={value => this.updateType({ type1: value.value })}
-                  />
-                </FormGroup>
-              </Col>
-              <Col md={6}>
-                <FormGroup controlId="node2">
-                  <h3>
-                    Type 2
-                  </h3>
-                  <DropdownList
-                    filter
-                    data={types}
-                    textField="text"
-                    valueField="value"
-                    value={type2}
-                    onChange={value => this.updateType({ type2: value.value })}
-                  />
-                </FormGroup>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={12}>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <h3>
-                    Type 1 Identifiers
-                  </h3>
-                  {curies.map((curie, i) => (
-                    <div
-                      key={['curieSelector', i].join('_')}
-                      style={{ display: 'flex' }}
-                    >
-                      <div
-                        style={{
-                          padding: '5px 0px',
-                          flexBasis: '100%',
-                        }}
+  // if we don't have all the info, disable the submit.
+  const disableSubmit = !(type1 && type2 && curies[0]) || loading;
+  const types = config.concepts.map((concept) => ({ text: entityNameDisplay(concept), value: concept }));
+  return (
+    <Grid>
+      <h1 className="robokopApp">
+        Enrichment
+        <br />
+        <small>
+          Use the Robokop Enrich API. This API takes a list of entities of one type, and returns a list of entities that connect to the input more frequently than would be expected by chance.
+        </small>
+      </h1>
+      <Form>
+        <Row>
+          <Col md={6}>
+            <FormGroup controlId="node1">
+              <h3>
+                Type 1
+              </h3>
+              <DropdownList
+                filter
+                data={types}
+                textField="text"
+                valueField="value"
+                value={type1}
+                onChange={(value) => setType1(value.value)}
+              />
+            </FormGroup>
+          </Col>
+          <Col md={6}>
+            <FormGroup controlId="node2">
+              <h3>
+                Type 2
+              </h3>
+              <DropdownList
+                filter
+                data={types}
+                textField="text"
+                valueField="value"
+                value={type2}
+                onChange={(value) => setType2(value.value)}
+              />
+            </FormGroup>
+          </Col>
+        </Row>
+        <Row>
+          <Col md={12}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <h3>
+                Type 1 Identifiers
+              </h3>
+              {curies.map((curie, i) => (
+                <div
+                  key={['curieSelector', i].join('_')}
+                  style={{ display: 'flex' }}
+                >
+                  <div
+                    style={{
+                      padding: '5px 0px',
+                      flexBasis: '100%',
+                    }}
+                  >
+                    <CurieSelectorContainer
+                      concepts={config.concepts}
+                      search={onSearch}
+                      disableType
+                      initialInputs={{ type: type1, term: terms[i], curie: curies[i] }}
+                      onChangeHook={(ty, te, cu) => handleCurieChange(i, ty, te, cu)}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      width: '30px', verticalAlign: 'top', padding: '5px 10px',
+                    }}
+                  >
+                    {i !== 0 && (
+                      <Button
+                        bsStyle="default"
+                        onClick={() => deleteCuries(i)}
+                        style={{ padding: '8px' }}
                       >
-                        <CurieSelectorContainer
-                          concepts={concepts}
-                          search={this.onSearch}
-                          disableType
-                          initialInputs={{ type: type1, term: terms[i], curie: curies[i] }}
-                          onChangeHook={(ty, te, cu) => this.handleCurieChange(i, ty, te, cu)}
-                        />
-                      </div>
-                      <div
-                        style={{
-                          width: '30px', verticalAlign: 'top', padding: '5px 10px',
-                        }}
-                      >
-                        {(i !== 0) &&
-                          <Button
-                            bsStyle="default"
-                            onClick={() => this.deleteCuries(i)}
-                            style={{ padding: '8px' }}
-                          >
-                            <Glyphicon glyph="trash" />
-                          </Button>
-                        }
-                      </div>
-                    </div>
-                  ))}
-                  <div style={{ display: 'table-row', textAlign: 'center' }}>
-                    <Button style={{ marginTop: '10px' }} onClick={this.addCuries}>
-                      <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Identifier'}
-                    </Button>
+                        <Glyphicon glyph="trash" />
+                      </Button>
+                    )}
                   </div>
                 </div>
-              </Col>
-            </Row>
-            <Row style={{ margin: '20px' }}>
-              <Col md={5} className="appQueryOptions">
-                <label htmlFor="descendants" style={{ display: 'block', margin: '10px 0px' }}>
-                  Include Descendants?
-                  <input id="descendants" style={{ marginLeft: '10px' }} type="checkbox" onChange={this.toggleDescendants} checked={includeDescendants} />
-                </label>
-                <label htmlFor="maxResults" style={{ display: 'block', margin: '10px 0px' }}>
-                  Maximum Results
-                  <input id="maxResults" style={{ marginLeft: '10px' }} type="number" min="0" onChange={this.changeMaxResults} value={maxResults} />
-                </label>
-                <label htmlFor="threshold" style={{ display: 'block', margin: '10px 0px' }}>
-                  Threshold
-                  <input id="threshold" style={{ marginLeft: '10px' }} type="number" min="0" step="0.1" onChange={this.changeThreshold} value={threshold} />
-                </label>
-              </Col>
-            </Row>
-            <Row style={{ textAlign: 'center', margin: '20px' }}>
-              <Button id="submitAPI" bsSize="large" onClick={this.getResults} disabled={disableSubmit}>Submit</Button>
-            </Row>
-          </Form>
-          <Row style={{ margin: '40px 0px 20px 0px' }}>
-            {resultsLoading &&
-              <Loading />
-            }
-            {resultsReady &&
-              <div style={{ position: 'relative' }}>
-                {results.length > 0 && <DownloadButton results={results} source="enriched" fileName={`${type1}_to_${type2}_enriched`} />}
-                <ReactTable
-                  data={results}
-                  columns={[{
-                    Header: 'Enriched Nodes',
-                    columns: this.getTableColumns(results),
-                  }]}
-                  defaultPageSize={10}
-                  pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
-                  minRows={7}
-                  className="-striped -highlight"
-                  defaultSorted={[
-                    {
-                      id: 'p',
-                      desc: true,
-                    },
-                  ]}
-                />
+              ))}
+              <div style={{ display: 'table-row', textAlign: 'center' }}>
+                <Button style={{ marginTop: '10px' }} onClick={addCuries}>
+                  <FaPlus style={{ verticalAlign: 'text-top' }} />{' Add Identifier'}
+                </Button>
               </div>
-            }
-            {resultsFail &&
-              <h3>
-                No results came back. Please try a different query.
-              </h3>
-            }
-          </Row>
-        </Grid>
-        <Footer config={config} />
-      </div>
-    );
-  }
+            </div>
+          </Col>
+        </Row>
+        <Row style={{ margin: '20px' }}>
+          <Col md={5} className="appQueryOptions">
+            <label htmlFor="descendants" style={{ display: 'block', margin: '10px 0px' }}>
+              Include Descendants?
+              <input
+                id="descendants"
+                style={{ marginLeft: '10px' }}
+                type="checkbox"
+                onChange={(e) => toggleDescendants(e.target.checked)}
+                checked={includeDescendants}
+              />
+            </label>
+            <label htmlFor="maxResults" style={{ display: 'block', margin: '10px 0px' }}>
+              Maximum Results
+              <input
+                id="maxResults"
+                style={{ marginLeft: '10px' }}
+                type="number"
+                min="0"
+                onChange={(e) => setMaxResults(e.target.value)}
+                value={maxResults}
+              />
+            </label>
+            <label htmlFor="threshold" style={{ display: 'block', margin: '10px 0px' }}>
+              Threshold
+              <input
+                id="threshold"
+                style={{ marginLeft: '10px' }}
+                type="number"
+                min="0"
+                step="0.1"
+                onChange={(e) => setThreshold(e.target.value)}
+                value={threshold}
+              />
+            </label>
+          </Col>
+        </Row>
+        <Row style={{ textAlign: 'center', margin: '20px' }}>
+          <Button id="submitAPI" bsSize="large" onClick={getResults} disabled={disableSubmit}>Submit</Button>
+        </Row>
+      </Form>
+      <Row style={{ margin: '40px 0px 20px 0px' }}>
+        {loading && <Loading />}
+        {ready && (
+          <div style={{ position: 'relative' }}>
+            {results.length > 0 && <DownloadButton results={results} source="enriched" fileName={`${type1}_to_${type2}_enriched`} />}
+            <ReactTable
+              data={results}
+              columns={[{
+                Header: 'Enriched Nodes',
+                columns: getTableColumns(results),
+              }]}
+              defaultPageSize={10}
+              pageSizeOptions={[5, 10, 15, 20, 25, 30, 50]}
+              minRows={7}
+              className="-striped -highlight"
+              defaultSorted={[
+                {
+                  id: 'p',
+                  desc: true,
+                },
+              ]}
+            />
+          </div>
+        )}
+        {fail && (
+          <h3>
+            No results came back. Please try a different query.
+          </h3>
+        )}
+      </Row>
+    </Grid>
+  );
 }
-
-export default SimpleEnriched;

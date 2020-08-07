@@ -1,25 +1,7 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { observer } from 'mobx-react';
+import _ from 'lodash';
 
 import CurieSelector from './CurieSelector';
-
-const _ = require('lodash');
-
-const propTypes = {
-  concepts: PropTypes.arrayOf(PropTypes.string).isRequired,
-  initialInputs: PropTypes.shape({
-    type: PropTypes.string.isRequired,
-    term: PropTypes.string.isRequired,
-    curie: PropTypes.string.isRequired,
-  }),
-  onChangeHook: PropTypes.func, // Hook to be notified any time there is any user activated changes: (type, term, curie) => {}
-  disableType: PropTypes.bool,
-  disableTypeFilter: PropTypes.bool,
-  width: PropTypes.number,
-  search: PropTypes.func,
-  size: PropTypes.string,
-};
 
 const defaultProps = {
   initialInputs: {
@@ -33,7 +15,6 @@ const defaultProps = {
   onChangeHook: () => {},
 };
 
-@observer
 class CurieSelectorContainter extends React.Component {
   constructor(props) {
     super(props);
@@ -130,7 +111,6 @@ class CurieSelectorContainter extends React.Component {
   }
 }
 
-CurieSelectorContainter.propTypes = propTypes;
 CurieSelectorContainter.defaultProps = defaultProps;
 
 export default CurieSelectorContainter;

@@ -11,7 +11,7 @@ import Help from './simplePages/Help';
 import Guide from './simplePages/Guide';
 import TermsofService from './simplePages/TermsofService';
 import SimpleViewer from './simplePages/SimpleViewer';
-// import SimpleEnriched from './simplePages/SimpleEnriched';
+import SimpleEnriched from './simplePages/SimpleEnriched';
 // import SimpleSimilarity from './simplePages/SimpleSimilarity';
 // import SimpleExpand from './simplePages/SimpleExpand';
 // import SimpleSynonymize from './simplePages/SimpleSynonymize';
@@ -49,22 +49,15 @@ export default function App() {
             <Route path="/alpha">
               <About />
             </Route>
-            <Route path="/search">
-              <About />
-            </Route>
             <Route
               path="/simple"
               render={({ match: { url } }) => (
                 <>
                   <Route path={`${url}/view`} component={() => SimpleViewer({ user: ensuredUser })} exact />
+                  <Route path={`${url}/enriched`} component={() => SimpleEnriched({ user: ensuredUser })} exact />
                 </>
               )}
             />
-            {/* <Route path="/simple">
-              <Route path="/view">
-                <SimpleViewer user={ensuredUser} />
-              </Route>
-            </Route> */}
             <Route path="/compare">
               <About />
             </Route>

@@ -1,28 +1,13 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import { Button, Badge } from 'react-bootstrap';
 import { AutoSizer, List } from 'react-virtualized';
 
-import curieUrls from '../../util/curieUrls';
-import getNodeTypeColorMap from '../../util/colorUtils';
-import entityNameDisplay from '../../util/entityNameDisplay';
+import curieUrls from '../../../utils/curieUrls';
+import getNodeTypeColorMap from '../../../utils/colorUtils';
+import entityNameDisplay from '../../../utils/entityNameDisplay';
 
 const shortid = require('shortid');
-
-const propTypes = {
-  data: PropTypes.arrayOf(PropTypes.shape({
-    value: PropTypes.string,
-    label: PropTypes.string,
-  })),
-  concepts: PropTypes.arrayOf(PropTypes.string).isRequired,
-  thinking: PropTypes.bool,
-  disableTypeFilter: PropTypes.bool,
-  type: PropTypes.string,
-  // type: PropTypes.string,
-  onSelect: PropTypes.func,
-  width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-};
 
 const defaultProps = {
   thinking: false,
@@ -271,7 +256,6 @@ class BionamesBrowser extends React.Component {
   }
 }
 
-BionamesBrowser.propTypes = propTypes;
 BionamesBrowser.defaultProps = defaultProps;
 
 export default BionamesBrowser;
