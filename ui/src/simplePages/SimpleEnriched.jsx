@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 import { DropdownList } from 'react-widgets';
 import ReactTable from 'react-table-6';
@@ -13,66 +13,20 @@ import entityNameDisplay from '../utils/entityNameDisplay';
 import DownloadButton from '../components/shared/DownloadButton';
 import config from '../config.json';
 
+import useSimpleStore from '../stores/useSimpleStore';
+
 // TODO: This doesn't do anything
 export default function SimpleEnriched(props) {
-  const { user } = props;
-  const [type1, setType1] = useState('');
-  const [type2, setType2] = useState('');
-  const [curies, updateCuries] = useState(['']);
-  const [terms, updateTerms] = useState(['']);
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [ready, setReady] = useState(false);
-  const [fail, setFail] = useState(false);
-  const [includeDescendants, toggleDescendants] = useState(false);
-  const [maxResults, setMaxResults] = useState(100);
-  const [threshold, setThreshold] = useState(0.5);
-
-  useEffect(() => {
-    // this.appConfig.user(data => this.setState({
-    //   user: this.appConfig.ensureUser(data),
-    //   // userReady: true,
-    // }));
-    // this.appConfig.concepts(data => this.setState({
-    //   concepts: data,
-    // }));
-  }, []);
-
-  function onSearch(input, type) {
-    // TODO: reimplement
-    return 'test';
-    // return this.appConfig.questionNewSearch(input, type);
-  }
-
-  function handleCurieChange(i, ty, te, cu) {
-    if (cu || !te) {
-      curies[i] = cu;
-      terms[i] = te;
-      updateCuries([...curies]);
-      updateTerms([...terms]);
-    }
-  }
-
-  function addCuries() {
-    curies.push('');
-    terms.push('');
-    updateCuries([...curies]);
-    updateTerms([...terms]);
-  }
-
-  function deleteCuries(i) {
-    curies.splice(i, 1);
-    terms.splice(i, 1);
-    updateCuries([...curies]);
-    updateTerms([...terms]);
-  }
+  // const { concepts } = props;
+  const simpleStore = useSimpleStore();
 
   function getResults(event) {
     event.preventDefault();
-    setLoading(true);
-    setReady(false);
-    setFail(false);
-    const identifiers = curies.filter((id) => id && id);
+    simpleStore.setLoading(true);
+    simpleStore.setReady(false);
+    simpleStore.setFail(false);
+    const identifiers = simpleStore.curies.filter((id) => id && id);
+    const { includeDescendants, maxResults, threshold } = simpleStore;
     const data = {
       identifiers,
       include_descendants: includeDescendants,
@@ -113,6 +67,12 @@ export default function SimpleEnriched(props) {
   }
 
   // if we don't have all the info, disable the submit.
+  const {
+    type1, type2, curies, loading, setType1, setType2,
+    onSearch, terms, handleCurieChange, deleteCuries,
+    addCuries, toggleDescendants, setMaxResults, includeDescendants,
+    maxResults, setThreshold, threshold, ready, results, fail,
+  } = simpleStore;
   const disableSubmit = !(type1 && type2 && curies[0]) || loading;
   const types = config.concepts.map((concept) => ({ text: entityNameDisplay(concept), value: concept }));
   return (
@@ -249,10 +209,16 @@ export default function SimpleEnriched(props) {
         </Row>
       </Form>
       <Row style={{ margin: '40px 0px 20px 0px' }}>
-        {loading && <Loading />}
+        {simpleStore.loading && <Loading />}
         {ready && (
           <div style={{ position: 'relative' }}>
-            {results.length > 0 && <DownloadButton results={results} source="enriched" fileName={`${type1}_to_${type2}_enriched`} />}
+            {results.length > 0 && (
+              <DownloadButton
+                results={results}
+                source="enriched"
+                fileName={`${type1}_to_${type2}_enriched`}
+              />
+            )}
             <ReactTable
               data={results}
               columns={[{

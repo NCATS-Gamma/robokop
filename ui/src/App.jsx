@@ -12,7 +12,7 @@ import Guide from './simplePages/Guide';
 import TermsofService from './simplePages/TermsofService';
 import SimpleViewer from './simplePages/SimpleViewer';
 import SimpleEnriched from './simplePages/SimpleEnriched';
-// import SimpleSimilarity from './simplePages/SimpleSimilarity';
+import SimpleSimilarity from './simplePages/SimpleSimilarity';
 // import SimpleExpand from './simplePages/SimpleExpand';
 // import SimpleSynonymize from './simplePages/SimpleSynonymize';
 // import SimplePublications from './simplePages/SimplePublications';
@@ -54,7 +54,8 @@ export default function App() {
               render={({ match: { url } }) => (
                 <>
                   <Route path={`${url}/view`} component={() => SimpleViewer({ user: ensuredUser })} exact />
-                  <Route path={`${url}/enriched`} component={() => SimpleEnriched({ user: ensuredUser })} exact />
+                  <Route path={`${url}/enriched`} component={() => SimpleEnriched({ concepts: {} })} exact />
+                  <Route path={`${url}/similarity`} component={() => SimpleSimilarity({ user: ensuredUser })} exact />
                 </>
               )}
             />
