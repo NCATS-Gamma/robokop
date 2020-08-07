@@ -4,7 +4,7 @@ import { Row, Col, Panel } from 'react-bootstrap';
 import { FaDownload } from 'react-icons/fa';
 
 import AppConfig from '../../../AppConfig';
-import { config } from '../../../index';
+import config from '../../../config.json';
 
 import SubGraphViewer from '../../../components/shared/graphs/SubGraphViewer';
 import PubmedList from '../../../components/shared/pubmedList/PubmedList';

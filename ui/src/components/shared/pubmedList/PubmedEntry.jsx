@@ -4,7 +4,7 @@ import { Media, Button } from 'react-bootstrap';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import AppConfig from '../../../AppConfig';
-import { config } from '../../../index';
+import config from '../../../config.json';
 
 const shortid = require('shortid');
 

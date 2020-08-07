@@ -8,20 +8,20 @@ import 'react-table-6/react-table.css';
 // import { DropdownList } from 'react-widgets';
 
 // import AnswersetFilter from './AnswersetFilter';
-import DownloadButton from '../../../components/shared/DownloadButton';
-import AnswersetTableSubComponent from './AnswersetTableSubComponent';
-import entityNameDisplay from '../../../utils/entityNameDisplay';
-import getNodeTypeColorMap from '../../../utils/colorUtils';
-import getColumnWidth from '../../../utils/rtColumnWidth';
+import DownloadButton from '../../DownloadButton';
+import AnswersetTableSubComponent from './AnswersTableSubComponent';
+import entityNameDisplay from '../../../../utils/entityNameDisplay';
+import getNodeTypeColorMap from '../../../../utils/colorUtils';
+import getColumnWidth from '../../../../utils/rtColumnWidth';
 
-import useAnswersetTable from './useAnswersetTable';
+import useAnswersetTable from './useAnswersTable';
 
-export default function MessageAnswersetTable(props) {
+export default function AnswersTable(props) {
   const { messageStore, concepts, simpleExpand } = props;
   let { fileName } = props;
   const [expanded, setExpanded] = useState({});
   const reactTable = useRef('');
-  const answersetTableStore = useAnswersetTable();
+  const answersTableStore = useAnswersetTable();
 
   function isSelected(rowInfo) {
     return Boolean(expanded[rowInfo.viewIndex]);
@@ -109,8 +109,8 @@ export default function MessageAnswersetTable(props) {
 
   function initializeState(columnHeaders, newAnswers) {
     const newColumns = getReactTableColumnSpec(columnHeaders, newAnswers);
-    answersetTableStore.setAnswers(newAnswers);
-    answersetTableStore.setColumns(newColumns);
+    answersTableStore.setAnswers(newAnswers);
+    answersTableStore.setColumns(newColumns);
   }
 
   useEffect(() => {
@@ -149,7 +149,7 @@ export default function MessageAnswersetTable(props) {
       <AnswersetTableSubComponent
         rowInfo={rowInfo}
         messageStore={messageStore}
-        answersetTableStore={answersetTableStore}
+        answersTableStore={answersTableStore}
         concepts={concepts}
       />
     );
@@ -157,21 +157,21 @@ export default function MessageAnswersetTable(props) {
 
   const column = [{
     Header: 'Answer Set',
-    columns: answersetTableStore.columns,
+    columns: answersTableStore.columns,
   }];
   // these are for the download button
   const source = simpleExpand ? 'expand' : 'message';
   fileName = fileName || 'answers';
   return (
     <>
-      {Object.keys(answersetTableStore.answers).length ? (
+      {Object.keys(answersTableStore.answers).length ? (
         <Row style={{ marginTop: '10px' }}>
           <Col md={12}>
             <div style={{ marginBottom: '10px', position: 'relative' }}>
               <DownloadButton results={messageStore} source={source} fileName={fileName} />
               <ReactTable
                 ref={reactTable}
-                data={answersetTableStore.answers}
+                data={answersTableStore.answers}
                 columns={column}
                 defaultPageSize={10}
                 defaultFilterMethod={defaultFilterMethod}
@@ -204,12 +204,12 @@ export default function MessageAnswersetTable(props) {
                       }
                       // Trigger appropriate subcomponent depending on where user clicked
                       if (column.isSet) { // Handle user clicking on a "Set" element in a row
-                        answersetTableStore.setNodeId(column.id);
-                        answersetTableStore.setActiveButton(answersetTableStore.subComponentEnum.metadata);
+                        answersTableStore.setNodeId(column.id);
+                        answersTableStore.setActiveButton(answersTableStore.subComponentEnum.metadata);
                         updateExpanded(rowInfo.viewIndex);
                       } else if (column.expander) { // Handle user clicking on the row Expander element (1st column)
-                        answersetTableStore.setNodeId(null);
-                        answersetTableStore.setActiveButton(answersetTableStore.subComponentEnum.json);
+                        answersTableStore.setNodeId(null);
+                        answersTableStore.setActiveButton(answersTableStore.subComponentEnum.json);
                         updateExpanded(rowInfo.viewIndex);
                       }
                     },

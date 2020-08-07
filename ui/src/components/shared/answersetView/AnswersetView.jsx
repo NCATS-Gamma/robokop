@@ -4,11 +4,11 @@ import {
   Row, Col, Grid, Tabs, Tab,
 } from 'react-bootstrap';
 
-import QuestionHeader from '../../../components/shared/questionHeader/QuestionHeader';
+import QuestionHeader from '../questionHeader/QuestionHeader';
 
-import AnswersetGraph from './AnswersetGraph';
-import MessageAnswersetTable from './MessageAnswersetTable';
-import SimpleQuestionGraph from '../../../components/shared/graphs/SimpleQuestionGraph';
+import AnswersetGraph from '../graphs/AnswersetGraph';
+import AnswersTable from './answersTable/AnswersTable';
+import SimpleQuestionGraph from '../graphs/SimpleQuestionGraph';
 
 export const answerSetTabEnum = {
   // answerList: 1,
@@ -17,7 +17,7 @@ export const answerSetTabEnum = {
   aggregate: 2,
 };
 
-export default function MessageAnswersetPres(props) {
+export default function AnswersetView(props) {
   const {
     messageStore, concepts, question, style, omitHeader, enableQuestionSelect,
     enableQuestionEdit, callbackQuestionUpdateMeta, callbackQuestionSelect, urlQuestion,
@@ -110,7 +110,7 @@ export default function MessageAnswersetPres(props) {
               eventKey={answerSetTabEnum.answerTable}
               title="Answers Table"
             >
-              <MessageAnswersetTable
+              <AnswersTable
                 concepts={concepts}
                 // callbackAnswerSelected={this.props.callbackAnswerSelected}
                 messageStore={messageStore}

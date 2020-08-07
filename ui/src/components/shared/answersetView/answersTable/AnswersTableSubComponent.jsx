@@ -4,7 +4,7 @@ import { FaThList, FaRegFileAlt } from 'react-icons/fa';
 import { IoIosGitNetwork } from 'react-icons/io';
 import axios from 'axios';
 
-import { config } from '../../../index';
+import config from '../../../../config.json';
 import JsonView from './tableSubComponents/JsonView';
 import MetaDataView from './tableSubComponents/MetaDataView';
 import SubgraphView from './tableSubComponents/SubgraphView';
@@ -89,9 +89,9 @@ function fetchGraphSupport(axiosCalls) {
   return Promise.all(axiosCalls);
 }
 
-export default function AnswersetTableSubComponent(props) {
+export default function AnswersTableSubComponent(props) {
   const {
-    concepts, messageStore, rowInfo, answersetTableStore,
+    concepts, messageStore, rowInfo, answersTableStore,
   } = props;
 
   function getGraph(answerId) {
@@ -109,8 +109,8 @@ export default function AnswersetTableSubComponent(props) {
         newGraph = addSupportEdges(newGraph, pubs, nodes);
         console.log('new new graph', newGraph);
         // this signifies that the graph is updated and to display the SubGraphViewer
-        answersetTableStore.setGraph(newGraph);
-        answersetTableStore.setLoadedGraph(true);
+        answersTableStore.setGraph(newGraph);
+        answersTableStore.setLoadedGraph(true);
       })
       .catch((error) => {
         console.log('Error: ', error);
@@ -119,20 +119,20 @@ export default function AnswersetTableSubComponent(props) {
 
   useEffect(() => {
     const newRowData = messageStore.getDenseAnswer(rowInfo.original.id);
-    answersetTableStore.setRowData(newRowData);
+    answersTableStore.setRowData(newRowData);
   }, [rowInfo.original.id]);
 
   useEffect(() => {
     const {
       loadedGraph, activeButton, rowData, subComponentEnum,
-    } = answersetTableStore;
+    } = answersTableStore;
     if (!loadedGraph && activeButton === subComponentEnum.graph) {
       const answerId = rowData.id;
       getGraph(answerId);
     }
-  }, [answersetTableStore.activeButton, answersetTableStore.rowData, answersetTableStore.loadedGraph]);
+  }, [answersTableStore.activeButton, answersTableStore.rowData, answersTableStore.loadedGraph]);
 
-  const { activeButton, subComponentEnum } = answersetTableStore;
+  const { activeButton, subComponentEnum } = answersTableStore;
   const isJsonActive = activeButton === subComponentEnum.json;
   const isGraphActive = activeButton === subComponentEnum.graph;
   const isMetadataActive = activeButton === subComponentEnum.metadata;
@@ -163,7 +163,7 @@ export default function AnswersetTableSubComponent(props) {
           <Button
             active={isJsonActive}
             style={{ textAlign: 'left' }}
-            onClick={() => answersetTableStore.setActiveButton(answersetTableStore.subComponentEnum.json)}
+            onClick={() => answersTableStore.setActiveButton(answersTableStore.subComponentEnum.json)}
           >
             <span className="valign-center">
               <FaRegFileAlt />
@@ -173,7 +173,7 @@ export default function AnswersetTableSubComponent(props) {
           <Button
             active={isGraphActive}
             style={{ textAlign: 'left' }}
-            onClick={() => answersetTableStore.setActiveButton(answersetTableStore.subComponentEnum.graph)}
+            onClick={() => answersTableStore.setActiveButton(answersTableStore.subComponentEnum.graph)}
           >
             <div className="valign-center">
               <IoIosGitNetwork />
@@ -183,7 +183,7 @@ export default function AnswersetTableSubComponent(props) {
           <Button
             active={isMetadataActive}
             style={{ textAlign: 'left' }}
-            onClick={() => answersetTableStore.setActiveButton(answersetTableStore.subComponentEnum.metadata)}
+            onClick={() => answersTableStore.setActiveButton(answersTableStore.subComponentEnum.metadata)}
           >
             <span className="valign-center">
               <FaThList />
@@ -193,20 +193,20 @@ export default function AnswersetTableSubComponent(props) {
         </ButtonGroup>
         {isJsonActive && (
           <JsonView
-            rowData={answersetTableStore.rowData}
+            rowData={answersTableStore.rowData}
           />
         )}
         {isGraphActive && (
           <SubgraphView
             messageStore={messageStore}
-            answersetTableStore={answersetTableStore}
+            answersTableStore={answersTableStore}
             concepts={concepts}
           />
         )}
         {isMetadataActive && (
           <MetaDataView
             concepts={concepts}
-            answersetTableStore={answersetTableStore}
+            answersTableStore={answersTableStore}
           />
         )}
       </div>

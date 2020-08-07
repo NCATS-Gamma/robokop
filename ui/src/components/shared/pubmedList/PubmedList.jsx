@@ -4,7 +4,7 @@ import { AutoSizer, List } from 'react-virtualized';
 import PubmedEntry from './PubmedEntry';
 
 import AppConfig from '../../../AppConfig';
-import { config } from '../../../index';
+import config from '../../../config.json';
 
 class PubmedList extends React.Component {
   constructor(props) {

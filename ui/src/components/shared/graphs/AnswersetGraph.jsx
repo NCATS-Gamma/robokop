@@ -1,5 +1,7 @@
 import React from 'react';
-import { Row, Col, Panel, OverlayTrigger, Popover, Checkbox } from 'react-bootstrap';
+import {
+  Row, Col, Panel, OverlayTrigger, Popover, Checkbox,
+} from 'react-bootstrap';
 import Slider from 'rc-slider';
 import Tooltip from 'rc-tooltip';
 import { FaAngleDown } from 'react-icons/fa';
@@ -7,7 +9,7 @@ import { FaAngleDown } from 'react-icons/fa';
 import 'rc-slider/assets/index.css';
 import 'rc-tooltip/assets/bootstrap.css';
 
-import SubGraphViewer from '../../../components/shared/graphs/SubGraphViewer';
+import SubGraphViewer from './SubGraphViewer';
 
 const shortid = require('shortid');
 

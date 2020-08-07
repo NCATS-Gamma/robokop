@@ -11,9 +11,9 @@ import Tooltip from 'rc-tooltip';
 import 'rc-slider/assets/index.css';
 import 'rc-tooltip/assets/bootstrap.css';
 
-import SubGraphViewer from '../../../../components/shared/graphs/SubGraphViewer';
-import Loading from '../../../../components/shared/Loading';
-import AnswerExplorerInfo from '../AnswerExplorerInfo';
+import SubGraphViewer from '../../../graphs/SubGraphViewer';
+import Loading from '../../../Loading';
+import AnswerExplorerInfo from '../../../answerExplorer/AnswerExplorerInfo';
 
 const { Handle } = Slider;
 
@@ -37,9 +37,9 @@ const handle = (props) => {
 
 export default function SubgraphView(props) {
   const {
-    messageStore, answersetTableStore, concepts,
+    messageStore, answersTableStore, concepts,
   } = props;
-  const { rowData, loadedGraph } = answersetTableStore;
+  const { rowData, loadedGraph } = answersTableStore;
   const [showModal, toggleModal] = useState(false);
   const [hierarchical, setHierarchy] = useState('');
   let sliderPopover = <div>No answerset</div>;
@@ -47,17 +47,17 @@ export default function SubgraphView(props) {
 
   function onGraphClick(event) {
     if (event.edges.length !== 0) { // Clicked on an Edge
-      answersetTableStore.setSelectedEdge(event.edgeObjects[0]);
+      answersTableStore.setSelectedEdge(event.edgeObjects[0]);
       toggleModal(true);
     } else { // Reset things since something else was clicked
-      answersetTableStore.setSelectedEdge(null);
+      answersTableStore.setSelectedEdge(null);
       toggleModal(false);
     }
   }
 
   function handleSliderChange(value) {
     messageStore.updateNumAgNodes(value);
-    answersetTableStore.setLoadedGraph(false);
+    answersTableStore.setLoadedGraph(false);
   }
 
   function handleHierarchical(checked) {
@@ -116,7 +116,7 @@ export default function SubgraphView(props) {
             </OverlayTrigger>
           </div>
           <SubGraphViewer
-            subgraph={answersetTableStore.graph}
+            subgraph={answersTableStore.graph}
             concepts={concepts}
             layoutRandomSeed={Math.floor(Math.random() * 100)}
             layoutStyle={hierarchical}
@@ -138,8 +138,8 @@ export default function SubgraphView(props) {
             </Modal.Header>
             <Modal.Body>
               <AnswerExplorerInfo
-                graph={answersetTableStore.graph}
-                selectedEdge={answersetTableStore.selectedEdge}
+                graph={answersTableStore.graph}
+                selectedEdge={answersTableStore.selectedEdge}
                 concepts={concepts}
               />
             </Modal.Body>

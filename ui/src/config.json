@@ -35,5 +35,28 @@
   "colors" : {
     "bluegray": "#f5f7fa",
     "blue": "#b8c6db"
-  }
+  },
+  "concepts": [
+    "anatomical_entity",
+    "biological_entity",
+    "biological_process",
+    "biological_process_or_activity",
+    "cell",
+    "cellular_component",
+    "chemical_substance",
+    "disease",
+    "disease_or_phenotypic_feature",
+    "drug",
+    "gene",
+    "gene_family",
+    "genetic_condition",
+    "gross_anatomical_structure",
+    "metabolite",
+    "molecular_activity",
+    "molecular_entity",
+    "named_thing",
+    "pathway",
+    "phenotypic_feature",
+    "sequence_variant"
+  ]
 }

@@ -1,27 +1,26 @@
 import React, { useState, useEffect } from 'react';
 
-import { Grid, Row, Col } from 'react-bootstrap';
+import { Row, Col } from 'react-bootstrap';
 import Dropzone from 'react-dropzone';
 import { FaCloudUploadAlt } from 'react-icons/fa';
 
-import AppConfig from '../AppConfig';
-import Header from '../components/header/Header';
-import Footer from '../components/footer/Footer';
+// import AppConfig from '../AppConfig';
 import Loading from '../components/shared/Loading';
-import MessageAnswersetPres from '../pages/answers/answerset/MessageAnswersetPres';
+import AnswersetView from '../components/shared/answersetView/AnswersetView';
 // import AnswersetStore from './stores/messageAnswersetStore';
 import useMessageStore from '../stores/useMessageStore';
+import config from '../config.json';
 
 const _ = require('lodash');
 
 export default function SimpleViewer(props) {
-  const { config } = props;
+  const { user } = props;
   // We only read the communications config on creation
-  const [appConfig, setAppConfig] = useState(new AppConfig(config));
+  // const [appConfig, setAppConfig] = useState(new AppConfig(config));
   const [messageSaved, setMessageSaved] = useState(false);
   const [loading, toggleLoading] = useState(true);
-  const [user, setUser] = useState({});
-  const [concepts, setConcepts] = useState([]);
+  // const [user, setUser] = useState({});
+  // const [concepts, setConcepts] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [loadingMessage, setLoadingMessage] = useState('Getting server data...');
   const messageStore = useMessageStore();
@@ -147,22 +146,22 @@ export default function SimpleViewer(props) {
   useEffect(() => {
     // makes the appropriate GET request from server.py,
     // uses the result to set state
-    appConfig.user((data) => setUser(appConfig.ensureUser(data)));
-    appConfig.concepts((data) => setConcepts(data));
+    // appConfig.user((data) => setUser(appConfig.ensureUser(data)));
+    // appConfig.concepts((data) => setConcepts(data));
 
     if (props.id) {
       // request the file
-      appConfig.viewData(
-        props.id,
-        (object) => {
-          parseMessage(object); // This will set state
-        },
-        (err) => {
-          console.log(err);
-          toggleLoading(false);
-          setErrorMessage('There was a problem fetching the stored file from the server. This may be an invalid identifier.');
-        },
-      );
+      // appConfig.viewData(
+      //   props.id,
+      //   (object) => {
+      //     parseMessage(object); // This will set state
+      //   },
+      //   (err) => {
+      //     console.log(err);
+      //     toggleLoading(false);
+      //     setErrorMessage('There was a problem fetching the stored file from the server. This may be an invalid identifier.');
+      //   },
+      // );
     } else {
       toggleLoading(false);
     }
@@ -170,79 +169,72 @@ export default function SimpleViewer(props) {
 
   return (
     <>
-      <Header
-        config={config}
-        user={user}
-      />
-      <Grid>
-        {loading ? (
-          <Row>
-            <Col md={12}>
-              <h1>
-                {loadingMessage}
-                <br />
-              </h1>
-              <Loading />
-            </Col>
-          </Row>
-        ) : (
-          <>
-            {messageSaved && !errorMessage && (
-              <MessageAnswersetPres
-                user={user}
-                concepts={concepts}
-                messageStore={messageStore}
-                omitHeader
-              />
-            )}
-            {!errorMessage && !messageSaved && (
-              <Row>
-                <Col md={12}>
-                  <h1>
-                    Answer Set Explorer
-                    <br />
-                    <small>
-                      Explore answers and visualize knowledge graphs.
-                    </small>
-                  </h1>
-                  <Dropzone
-                    onDrop={(acceptedFiles, rejectedFiles) => onDrop(acceptedFiles, rejectedFiles)}
-                    multiple={false}
-                  >
-                    {({ getRootProps, getInputProps }) => (
-                      <section>
-                        <div id="dropzone" {...getRootProps()} style={{ backgroundColor: appConfig.colors.bluegray }}>
-                          <input {...getInputProps()} />
-                          <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
-                            <h1 style={{ fontSize: '48px' }}>
-                              <FaCloudUploadAlt />
-                            </h1>
-                            <h3>
-                              Drag and drop an answerset file, or click to browse.
-                            </h3>
-                          </div>
-                        </div>
-                      </section>
-                    )}
-                  </Dropzone>
-                </Col>
-              </Row>
-            )}
-            {errorMessage && (
-              <>
+      {loading ? (
+        <Row>
+          <Col md={12}>
+            <h1>
+              {loadingMessage}
+              <br />
+            </h1>
+            <Loading />
+          </Col>
+        </Row>
+      ) : (
+        <>
+          {messageSaved && !errorMessage && (
+            <AnswersetView
+              user={user}
+              concepts={config.concepts}
+              messageStore={messageStore}
+              omitHeader
+            />
+          )}
+          {!errorMessage && !messageSaved && (
+            <Row>
+              <Col md={12}>
                 <h1>
-                  There was a problem loading the file.
+                  Answer Set Explorer
+                  <br />
+                  <small>
+                    Explore answers and visualize knowledge graphs.
+                  </small>
                 </h1>
-                <br />
-                <p>
-                  {errorMessage}
-                </p>
-              </>
-            )}
-          </>
-        )}
-      </Grid>
-      <Footer config={config} />
+                <Dropzone
+                  onDrop={(acceptedFiles, rejectedFiles) => onDrop(acceptedFiles, rejectedFiles)}
+                  multiple={false}
+                >
+                  {({ getRootProps, getInputProps }) => (
+                    <section>
+                      <div id="dropzone" {...getRootProps()} style={{ backgroundColor: config.colors.bluegray }}>
+                        <input {...getInputProps()} />
+                        <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
+                          <h1 style={{ fontSize: '48px' }}>
+                            <FaCloudUploadAlt />
+                          </h1>
+                          <h3>
+                            Drag and drop an answerset file, or click to browse.
+                          </h3>
+                        </div>
+                      </div>
+                    </section>
+                  )}
+                </Dropzone>
+              </Col>
+            </Row>
+          )}
+          {errorMessage && (
+            <>
+              <h1>
+                There was a problem loading the file.
+              </h1>
+              <br />
+              <p>
+                {errorMessage}
+              </p>
+            </>
+          )}
+        </>
+      )}
     </>
   );
 }

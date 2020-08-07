@@ -4,7 +4,7 @@
 }
 #contentContainer {
     /* padding bottom by footer height */
-    padding-bottom: 29px;
+    padding: 0px 30px 29px 30px;
 }
 
 body :focus {

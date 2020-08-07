@@ -7,15 +7,15 @@ import {
   OverlayTrigger, Popover,
 } from 'react-bootstrap';
 
-import entityNameDisplay from '../../../../utils/entityNameDisplay';
-import getColumnWidth from '../../../../utils/rtColumnWidth';
-import getNodeTypeColorMap from '../../../../utils/colorUtils';
+import entityNameDisplay from '../../../../../utils/entityNameDisplay';
+import getColumnWidth from '../../../../../utils/rtColumnWidth';
+import getNodeTypeColorMap from '../../../../../utils/colorUtils';
 
 export default function MetaDataView(props) {
   const {
-    concepts, answersetTableStore,
+    concepts, answersTableStore,
   } = props;
-  const { rowData, nodeId, setNodeId } = answersetTableStore;
+  const { rowData, nodeId, setNodeId } = answersTableStore;
   if (!Object.keys(rowData).length) { // if user clicks on gene in table to show metadata, we need to sync props with state before continuing
     return null;
   }
