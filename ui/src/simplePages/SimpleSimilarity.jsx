@@ -16,7 +16,7 @@ import config from '../config.json';
 
 export default function SimpleSimilarity(props) {
   // const { concepts } = props;
-  const simpleStore = useSimpleStore();
+  const simpleStore = useSimpleStore({ maxResults: 100 });
 
   function getResults(event) {
     event.preventDefault();

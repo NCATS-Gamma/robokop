@@ -18,7 +18,7 @@ import useSimpleStore from '../stores/useSimpleStore';
 // TODO: This doesn't do anything
 export default function SimpleEnriched(props) {
   // const { concepts } = props;
-  const simpleStore = useSimpleStore();
+  const simpleStore = useSimpleStore({ maxResults: 100 });
 
   function getResults(event) {
     event.preventDefault();

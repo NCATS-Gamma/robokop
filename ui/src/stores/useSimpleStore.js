@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import entityNameDisplay from '../utils/entityNameDisplay';
 
-export default function useSimpleStore() {
+export default function useSimpleStore(initialValues) {
   const [type1, setType1] = useState('');
   const [type2, setType2] = useState('');
   const [identifier, setIdentifier] = useState('');
@@ -14,7 +14,7 @@ export default function useSimpleStore() {
   const [ready, setReady] = useState(false);
   const [fail, setFail] = useState(false);
   const [includeDescendants, toggleDescendants] = useState(false);
-  const [maxResults, setMaxResults] = useState(100);
+  const [maxResults, setMaxResults] = useState(initialValues.maxResults || 100);
   const [threshold, setThreshold] = useState(0.5);
 
   function onSearch(input, type) {
