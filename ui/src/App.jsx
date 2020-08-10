@@ -5,20 +5,20 @@ import {
   Route,
 } from 'react-router-dom';
 
-import Landing from './simplePages/Landing';
-import About from './simplePages/About';
-import Help from './simplePages/Help';
-import Guide from './simplePages/Guide';
-import TermsofService from './simplePages/TermsofService';
-import SimpleViewer from './simplePages/SimpleViewer';
-import SimpleEnriched from './simplePages/SimpleEnriched';
-import SimpleSimilarity from './simplePages/SimpleSimilarity';
-import SimpleExpand from './simplePages/SimpleExpand';
-import SimpleSynonymize from './simplePages/SimpleSynonymize';
-import SimplePublications from './simplePages/SimplePublications';
+import Landing from './pages/Landing';
+import About from './pages/About';
+import Help from './pages/Help';
+import Guide from './pages/Guide';
+import TermsofService from './pages/TermsofService';
+import SimpleViewer from './pages/SimpleViewer';
+import SimpleEnriched from './pages/SimpleEnriched';
+import SimpleSimilarity from './pages/SimpleSimilarity';
+import SimpleExpand from './pages/SimpleExpand';
+import SimpleSynonymize from './pages/SimpleSynonymize';
+import SimplePublications from './pages/SimplePublications';
 
 import Neighborhood from './pages/neighborhood/Neighborhood';
-// import SimpleQuestion from './pages/newQuestion/SimpleQuestion';
+import SimpleQuestion from './pages/newQuestion/SimpleQuestion';
 // import QuestionNew from './pages/newQuestion/QuestionNew';
 // import Question from './pages/question/Question';
 // import QuestionList from './pages/questionList/QuestionList';
@@ -53,6 +53,7 @@ export default function App() {
               path="/simple"
               render={({ match: { url } }) => (
                 <>
+                  <Route path={`${url}/question`} component={() => SimpleQuestion({ concepts: {} })} exact />
                   <Route path={`${url}/view`} component={() => SimpleViewer({ user: ensuredUser })} exact />
                   <Route path={`${url}/enriched`} component={() => SimpleEnriched({ concepts: {} })} exact />
                   <Route path={`${url}/similarity`} component={() => SimpleSimilarity({ concepts: {} })} exact />
