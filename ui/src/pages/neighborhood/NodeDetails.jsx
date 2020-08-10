@@ -1,18 +1,20 @@
 import React from 'react';
-import { ListGroup, ListGroupItem, Panel, Row, Col } from 'react-bootstrap';
+import {
+  ListGroup, ListGroupItem, Panel, Row, Col,
+} from 'react-bootstrap';
 import shortid from 'shortid';
 import entityNameDisplay from '../../utils/entityNameDisplay';
 
-const NodeDetails = (props) => {
+export default function NodeDetails(props) {
   const { details, sources, sourceNode } = props;
   const whitelist = ['name', 'id', 'type'];
   let sortedKeys = [];
 
   function sortDetails() {
     const keys = Object.keys(details);
-    let firstKeys = keys.filter(key => whitelist.includes(key));
+    let firstKeys = keys.filter((key) => whitelist.includes(key));
     firstKeys = firstKeys.sort();
-    sortedKeys = firstKeys.concat(keys.filter(key => !whitelist.includes(key)));
+    sortedKeys = firstKeys.concat(keys.filter((key) => !whitelist.includes(key)));
     keys.forEach((key) => {
       // true or false aren't showing up in react table, just making them more readable
       if (typeof details[key] === 'boolean') {
@@ -30,7 +32,7 @@ const NodeDetails = (props) => {
           <Panel.Title componentClass="h3">{sourceNode} Details</Panel.Title>
         </Panel.Heading>
         <Panel.Body style={{ maxHeight: '300px', overflow: 'auto' }}>
-          {sortedKeys.map(key => (
+          {sortedKeys.map((key) => (
             <Row key={shortid.generate()} style={{ margin: '20px 0px' }}>
               <Col sm={2} style={{ textAlign: 'right' }}>
                 <span style={{ margin: 0, color: 'lightgrey' }}>
@@ -38,18 +40,18 @@ const NodeDetails = (props) => {
                 </span>
               </Col>
               <Col sm={9}>
-                {Array.isArray(details[key]) ?
+                {Array.isArray(details[key]) ? (
                   <span>{details[key].join(', ')}</span>
-                :
+                ) : (
                   <span>{details[key].toString()}</span>
-                }
+                )}
               </Col>
             </Row>
           ))}
         </Panel.Body>
       </Panel>
       <ListGroup>
-        {sources.map(source => (
+        {sources.map((source) => (
           <ListGroupItem
             key={shortid.generate()}
             href={source.url}
@@ -67,6 +69,4 @@ const NodeDetails = (props) => {
       </ListGroup>
     </div>
   );
-};
-
-export default NodeDetails;
+}
