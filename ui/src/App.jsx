@@ -14,10 +14,10 @@ import SimpleViewer from './simplePages/SimpleViewer';
 import SimpleEnriched from './simplePages/SimpleEnriched';
 import SimpleSimilarity from './simplePages/SimpleSimilarity';
 import SimpleExpand from './simplePages/SimpleExpand';
-// import SimpleSynonymize from './simplePages/SimpleSynonymize';
-// import SimplePublications from './simplePages/SimplePublications';
+import SimpleSynonymize from './simplePages/SimpleSynonymize';
+import SimplePublications from './simplePages/SimplePublications';
 
-// import Alpha from './pages/alpha/Alpha';
+import Neighborhood from './pages/neighborhood/Neighborhood';
 // import SimpleQuestion from './pages/newQuestion/SimpleQuestion';
 // import QuestionNew from './pages/newQuestion/QuestionNew';
 // import Question from './pages/question/Question';
@@ -46,8 +46,8 @@ export default function App() {
             <Route path="/guide">
               <Guide user={ensuredUser} />
             </Route>
-            <Route path="/alpha">
-              <About />
+            <Route path="/neighborhood">
+              <Neighborhood />
             </Route>
             <Route
               path="/simple"
@@ -56,13 +56,12 @@ export default function App() {
                   <Route path={`${url}/view`} component={() => SimpleViewer({ user: ensuredUser })} exact />
                   <Route path={`${url}/enriched`} component={() => SimpleEnriched({ concepts: {} })} exact />
                   <Route path={`${url}/similarity`} component={() => SimpleSimilarity({ concepts: {} })} exact />
-                  <Route path={`${url}/expand`} component={() => SimpleExpand({ user: ensuredUser })} exact />
+                  <Route path={`${url}/expand`} component={() => SimpleExpand({ concepts: {} })} exact />
+                  <Route path={`${url}/synonymize`} component={() => SimpleSynonymize({ concepts: {} })} exact />
+                  <Route path={`${url}/publications`} component={() => SimplePublications({ concepts: {} })} exact />
                 </>
               )}
             />
-            <Route path="/compare">
-              <About />
-            </Route>
             <Route path="/termsofservice">
               <TermsofService />
             </Route>

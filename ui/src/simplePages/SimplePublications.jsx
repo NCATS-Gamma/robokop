@@ -1,81 +1,37 @@
-import React from 'react';
-import { Grid, Row, Col, Form, Panel, Button, Glyphicon } from 'react-bootstrap';
+import React, { useState } from 'react';
+import {
+  Grid, Row, Col, Form, Panel, Button, Glyphicon,
+} from 'react-bootstrap';
 import _ from 'lodash';
 import { FaDownload } from 'react-icons/fa';
 import { AutoSizer } from 'react-virtualized';
 
-import AppConfig from './AppConfig';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import Loading from './components/Loading';
-import CurieSelectorContainer from './components/shared/curies/CurieSelectorContainer';
-import PubmedList from './components/shared/PubmedList';
+import Loading from '../components/shared/Loading';
+import CurieSelectorContainer from '../components/shared/curies/CurieSelectorContainer';
+import PubmedList from '../components/shared/pubmedList/PubmedList';
 
+import useSimpleStore from '../stores/useSimpleStore';
+import config from '../config.json';
 
-class SimplePublications extends React.Component {
-  constructor(props) {
-    super(props);
-    // We only read the communications config on creation
-    this.appConfig = new AppConfig(props.config);
+export default function SimplePublications() {
+  const [entities, setEntities] = useState([
+    { type: 'disease', term: '', curie: '' },
+  ]);
+  const [publications, setPublications] = useState([]);
+  const [downloading, setDownloading] = useState(false);
+  const simpleStore = useSimpleStore({});
 
-    this.state = {
-      user: {},
-      concepts: [],
-      entities: [
-        { type: 'disease', term: '', curie: '' },
-      ],
-      pubs: [],
-      loading: false,
-      loaded: false,
-      fail: false,
-      downloadingPubs: false,
-    };
-
-    this.initializeState = this.initializeState.bind(this);
-    this.addCurie = this.addCurie.bind(this);
-    this.deleteCurie = this.deleteCurie.bind(this);
-    this.onSearch = this.onSearch.bind(this);
-    this.handleCurieChange = this.handleCurieChange.bind(this);
-    this.downloadPublicationsInfo = this.downloadPublicationsInfo.bind(this);
-    this.getResults = this.getResults.bind(this);
+  function addEntity() {
+    const newEntity = { type: 'disease', term: '', curie: '' };
+    setEntities((oldEntities) => [...oldEntities, newEntity]);
   }
 
-  componentDidMount() {
-    this.initializeState();
-  }
-
-  initializeState() {
-    this.appConfig.user(data => this.setState({
-      user: this.appConfig.ensureUser(data),
-    }));
-    this.appConfig.concepts(data => this.setState({
-      concepts: data,
-    }));
-  }
-
-  addCurie() {
-    const { entities } = this.state;
-    entities.push({ type: 'disease', term: '', curie: '' });
-    this.setState({ entities });
-  }
-
-  deleteCurie(i) {
-    const { entities } = this.state;
+  function removeEntity(i) {
     entities.splice(i, 1);
-    this.setState({ entities });
+    setEntities([...entities]);
   }
 
-  onSearch(input, type) {
-    return this.appConfig.questionNewSearch(input, type);
-  }
-
-  handleCurieChange(type, term, curie, i) {
-    const { entities } = this.state;
-    entities[i] = { type, term, curie };
-    this.setState({ entities });
-  }
-
-  downloadPublicationsInfo(publications) {
+  function downloadPublicationsInfo(pubs) {
     const defaultInfo = {
       id: '',
       title: 'Unable to fetch publication information',
@@ -121,7 +77,7 @@ class SimplePublications extends React.Component {
       });
     };
 
-    Promise.all(publications.map(pmid => new Promise(resolve => resolve(getPubmedInformation(pmid))))).then((data) => {
+    Promise.all(pubs.map((pmid) => new Promise((resolve) => resolve(getPubmedInformation(pmid))))).then((data) => {
       // Transform the data into a json blob and give it a url
       // const json = JSON.stringify(data);
       // const blob = new Blob([json], { type: 'application/json' });
@@ -130,7 +86,7 @@ class SimplePublications extends React.Component {
       const fields = ['url', 'title', 'journal', 'pubdate'];
       const replacer = (key, value) => value || '';
 
-      const csv = data.map(row => fields.map(f => JSON.stringify(row[f], replacer)).join(','));
+      const csv = data.map((row) => fields.map((f) => JSON.stringify(row[f], replacer)).join(','));
       csv.unshift(fields.join(','));
       const csvText = csv.join('\n');
 
@@ -143,14 +99,15 @@ class SimplePublications extends React.Component {
       a.href = url;
       a.click();
       a.remove();
-    }).then(() => this.setState({ downloadingPubs: false }));
+    }).then(() => simpleStore.setLoading(false));
   }
 
-  getResults(event) {
+  function getResults(event) {
     event.preventDefault();
-    const { entities } = this.state;
-    this.setState({ loading: true, loaded: false, fail: false });
-    const requests = entities.map(node => (
+    simpleStore.setLoading(true);
+    simpleStore.setReady(false);
+    simpleStore.setFail(false);
+    const requests = entities.map((node) => (
       new Promise((resolve, reject) => {
         this.appConfig.getPublication(
           node.curie,
@@ -166,131 +123,126 @@ class SimplePublications extends React.Component {
     Promise.all(requests)
       .then((res) => {
         const pubs = _.intersection(...res);
-        this.setState({ pubs, loading: false, loaded: true });
+        setPublications(pubs);
+        simpleStore.setLoading(false);
+        simpleStore.setReady(true);
       })
       .catch((err) => {
         console.log('Something went wrong', err);
-        this.setState({ loading: false, fail: true });
+        simpleStore.setLoading(false);
+        simpleStore.setFail(true);
       });
   }
 
-  render() {
-    const { config } = this.props;
-    const {
-      user, concepts, entities, pubs, loading, loaded, fail,
-    } = this.state;
-    const disabled = entities.some(entity => !entity.curie);
-    const downloadCallback = () => this.setState({ downloadingPubs: true }, () => this.downloadPublicationsInfo(pubs));
-    const showDownload = pubs.length >= 1;
+  const disabled = entities.some((entity) => !entity.curie);
+  // TODO: this is probably wrong
+  const downloadCallback = () => {
+    setDownloading(true);
+    return downloadPublicationsInfo(publications);
+  };
+  const showDownload = publications.length >= 1;
 
-    const cursor = this.state.downloadingPubs ? 'progress' : 'pointer';
-    const activeCallback = this.state.downloadingPubs ? () => { } : downloadCallback;
-    const downloadTitle = this.state.downloadingPubs ? 'Downloading Please Wait' : 'Download Publications';
-    const downloadColor = this.state.downloadingPubs ? '#333' : '#000';
-    return (
-      <div>
-        <Header config={config} user={user} />
-        <Grid>
-          <h1 className="robokopApp">
-            Omnicorp Shared Publications
-            <br />
-            <small>
-              Use the Robokop Omnicorp API. This API takes defined entities and returns the publications that they share.
-            </small>
-          </h1>
-          <Form>
-            <Row>
-              <Col md={12}>
-                <h3>
-                  Identifiers
-                </h3>
-                {entities.map((node, i) => (
-                  <Row key={`curie-${i}`} style={{ display: 'flex' }}> {/* eslint-disable-line */}
-                    <AutoSizer disableHeight>
-                      {({ width }) => (
-                        <div
-                          style={{ flexBasis: '100%', padding: '5px 0px' }}
-                        >
-                          <CurieSelectorContainer
-                            concepts={concepts}
-                            search={this.onSearch}
-                            width={width}
-                            initialInputs={{ type: node.type, term: node.term, curie: node.curie }}
-                            onChangeHook={(ty, te, cu) => this.handleCurieChange(ty, te, cu, i)}
-                            disableType
-                            disableTypeFilter
-                          />
-                        </div>
-                      )}
-                    </AutoSizer>
+  const cursor = downloading ? 'progress' : 'pointer';
+  const activeCallback = downloading ? () => {} : downloadCallback;
+  const downloadTitle = downloading ? 'Downloading Please Wait' : 'Download Publications';
+  const downloadColor = downloading ? '#333' : '#000';
+  return (
+    <Grid>
+      <h1 className="robokopApp">
+        Omnicorp Shared Publications
+        <br />
+        <small>
+          Use the Robokop Omnicorp API. This API takes defined entities and returns the publications that they share.
+        </small>
+      </h1>
+      <Form>
+        <Row>
+          <Col md={12}>
+            <h3>
+              Identifiers
+            </h3>
+            {entities.map((node, i) => (
+              <Row key={`curie-${i}`} style={{ display: 'flex' }}> {/* eslint-disable-line */}
+                <AutoSizer disableHeight>
+                  {({ width }) => (
                     <div
-                      style={{
-                        width: '30px', verticalAlign: 'top', padding: '5px 10px',
-                      }}
+                      style={{ flexBasis: '100%', padding: '5px 0px' }}
                     >
-                      {(i !== 0) &&
-                        <Button
-                          bsStyle="default"
-                          onClick={() => this.deleteCurie(i)}
-                          style={{ padding: '8px' }}
-                        >
-                          <Glyphicon glyph="trash" />
-                        </Button>
-                      }
+                      <CurieSelectorContainer
+                        concepts={config.concepts}
+                        search={simpleStore.onSearch}
+                        width={width}
+                        initialInputs={{ type: node.type, term: node.term, curie: node.curie }}
+                        onChangeHook={(ty, te, cu) => simpleStore.handleCurieChange(ty, te, cu, i)}
+                        disableType
+                        disableTypeFilter
+                      />
                     </div>
-                  </Row>
-                ))}
-                <div style={{ width: '100%', textAlign: 'center' }}>
-                  <Button
-                    bsStyle="default"
-                    bsSize="sm"
-                    onClick={this.addCurie}
-                  >
-                    <Glyphicon glyph="plus" />
-                  </Button>
+                  )}
+                </AutoSizer>
+                <div
+                  style={{
+                    width: '30px', verticalAlign: 'top', padding: '5px 10px',
+                  }}
+                >
+                  {(i !== 0) && (
+                    <Button
+                      bsStyle="default"
+                      onClick={() => removeEntity(i)}
+                      style={{ padding: '8px' }}
+                    >
+                      <Glyphicon glyph="trash" />
+                    </Button>
+                  )}
                 </div>
-              </Col>
-            </Row>
-            <Row style={{ textAlign: 'center', margin: '40px 0px' }}>
-              <Button id="submitAPI" bsSize="large" onClick={this.getResults} disabled={disabled}>Submit</Button>
-            </Row>
-          </Form>
-          <Row style={{ margin: '20px 0px' }}>
-            {loading &&
-              <Loading />
-            }
-            {loaded &&
-              <Panel>
-                <Panel.Heading>
-                  <Panel.Title>
-                    {pubs.length} Publications
-                    <div className="pull-right">
-                      <div style={{ position: 'relative' }}>
-                        {showDownload &&
-                          <div style={{ position: 'absolute', top: -3, right: -8 }}>
-                            <span style={{ fontSize: '22px', color: downloadColor }} title={downloadTitle}>
-                              <FaDownload onClick={activeCallback} style={{ cursor }} />
-                            </span>
-                          </div>
-                        }
+              </Row>
+            ))}
+            <div style={{ width: '100%', textAlign: 'center' }}>
+              <Button
+                bsStyle="default"
+                bsSize="sm"
+                onClick={addEntity}
+              >
+                <Glyphicon glyph="plus" />
+              </Button>
+            </div>
+          </Col>
+        </Row>
+        <Row style={{ textAlign: 'center', margin: '40px 0px' }}>
+          <Button id="submitAPI" bsSize="large" onClick={getResults} disabled={disabled}>Submit</Button>
+        </Row>
+      </Form>
+      <Row style={{ margin: '20px 0px' }}>
+        {simpleStore.loading && (
+          <Loading />
+        )}
+        {simpleStore.ready && (
+          <Panel>
+            <Panel.Heading>
+              <Panel.Title>
+                {publications.length} Publications
+                <div className="pull-right">
+                  <div style={{ position: 'relative' }}>
+                    {showDownload && (
+                      <div style={{ position: 'absolute', top: -3, right: -8 }}>
+                        <span style={{ fontSize: '22px', color: downloadColor }} title={downloadTitle}>
+                          <FaDownload onClick={activeCallback} style={{ cursor }} />
+                        </span>
                       </div>
-                    </div>
-                  </Panel.Title>
-                </Panel.Heading>
-                <Panel.Body style={{ padding: 0 }}>
-                  <PubmedList publications={pubs} />
-                </Panel.Body>
-              </Panel>
-            }
-            {fail &&
-              <h4 style={{ textAlign: 'center' }}>There was an error with your request. Please try a different query.</h4>
-            }
-          </Row>
-        </Grid>
-        <Footer config={config} />
-      </div>
-    );
-  }
+                    )}
+                  </div>
+                </div>
+              </Panel.Title>
+            </Panel.Heading>
+            <Panel.Body style={{ padding: 0 }}>
+              <PubmedList publications={publications} />
+            </Panel.Body>
+          </Panel>
+        )}
+        {simpleStore.fail && (
+          <h4 style={{ textAlign: 'center' }}>There was an error with your request. Please try a different query.</h4>
+        )}
+      </Row>
+    </Grid>
+  );
 }
-
-export default SimplePublications;

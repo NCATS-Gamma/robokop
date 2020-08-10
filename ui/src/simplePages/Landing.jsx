@@ -166,7 +166,7 @@ export default function Landing() {
                     glyph="screenshot"
                     header="Neighborhood"
                     text="Explore many sources and one-hop neighbors from specified node."
-                    href={config.routes.alpha}
+                    href={config.routes.neighborhood}
                   />
                 </Row>
               </ListGroup>

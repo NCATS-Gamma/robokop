@@ -2,7 +2,7 @@ import { useState } from 'react';
 import entityNameDisplay from '../utils/entityNameDisplay';
 
 export default function useSimpleStore(initialValues) {
-  const [type1, setType1] = useState('');
+  const [type1, setType1] = useState(initialValues.type1 || '');
   const [type2, setType2] = useState('');
   const [identifier, setIdentifier] = useState('');
   const [term, setTerm] = useState('');
