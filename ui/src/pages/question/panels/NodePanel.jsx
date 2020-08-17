@@ -1,34 +1,21 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { toJS } from 'mobx';
-import { observer, PropTypes as mobxPropTypes } from 'mobx-react';
-import { FormControl, Button, Badge, InputGroup, Glyphicon } from 'react-bootstrap';
+import {
+  FormControl, Button, Badge, InputGroup, Glyphicon,
+} from 'react-bootstrap';
 import { AutoSizer, List } from 'react-virtualized';
 import shortid from 'shortid';
 import _ from 'lodash';
 
 import AppConfig from '../../../AppConfig';
-import { config } from '../../../index';
-import Loading from '../../Loading';
-import entityNameDisplay from '../../util/entityNameDisplay';
-import curieUrls from '../../util/curieUrls';
-import getNodeTypeColorMap from '../../util/colorUtils';
+import config from '../../../config.json';
+import Loading from '../../../components/shared/Loading';
+import entityNameDisplay from '../../../utils/entityNameDisplay';
+import curieUrls from '../../../utils/curieUrls';
+import getNodeTypeColorMap from '../../../utils/colorUtils';
 import NodeProperties from './NodeProperties';
 
+const setify = (type) => `set of ${type}s`;
 
-const propTypes = {
-  activePanel: PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    type: PropTypes.string,
-    set: PropTypes.bool.isRequired,
-    curie: mobxPropTypes.observableArrayOf(PropTypes.string),
-    name: PropTypes.string,
-  }).isRequired,
-};
-
-const setify = type => `set of ${type}s`;
-
-@observer
 class NodePanel extends React.Component {
   constructor(props) {
     super(props);
@@ -327,7 +314,5 @@ class NodePanel extends React.Component {
     );
   }
 }
-
-NodePanel.propTypes = propTypes;
 
 export default NodePanel;

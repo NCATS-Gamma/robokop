@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
 
-import { FaDownload, FaPaperPlaneO, FaTrash } from 'react-icons/fa';
+import { FaDownload, FaPaperPlane, FaTrash } from 'react-icons/fa';
 
 /**
  * Header buttons for new question page
@@ -59,7 +59,7 @@ class NewQuestionButtons extends React.Component {
           onClick={onSubmitQuestion}
         >
           <span>
-            Submit <span style={{ fontSize: '22px' }}><FaPaperPlaneO style={{ cursor: 'pointer' }} /></span>
+            Submit <span style={{ fontSize: '22px' }}><FaPaperPlane style={{ cursor: 'pointer' }} /></span>
           </span>
         </Button>
       </div>

@@ -53,7 +53,7 @@ export default function useMessageStore() {
   }
 
   useEffect(() => {
-    if (message) {
+    if (message && message.answers) {
       message.answers.forEach((a, i) => {
         if (!a.id) {
           a.id = i;

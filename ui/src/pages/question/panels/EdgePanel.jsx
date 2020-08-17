@@ -1,32 +1,21 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { Form, Col, Glyphicon, Badge, Button } from 'react-bootstrap';
+import {
+  Form, Col, Glyphicon, Badge, Button,
+} from 'react-bootstrap';
 import { FaSpinner } from 'react-icons/fa';
-import { toJS } from 'mobx';
-import { observer, PropTypes as mobxPropTypes } from 'mobx-react';
 import { Multiselect, DropdownList } from 'react-widgets';
 
-import Loading from '../../Loading';
-
-const propTypes = {
-  activePanel: PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    source_id: PropTypes.number,
-    target_id: PropTypes.number,
-    predicate: mobxPropTypes.observableArrayOf(PropTypes.string),
-  }).isRequired,
-};
+import Loading from '../../../components/shared/Loading';
 
 const listItem = ({ item }) => (
   <div className="listItem">
     {item.name}
-    {item.degree !== undefined &&
+    {item.degree !== undefined && (
       <Badge>{item.degree}</Badge>
-    }
+    )}
   </div>
 );
 
-@observer
 class EdgePanel extends React.Component {
   constructor(props) {
     super(props);
@@ -66,7 +55,7 @@ class EdgePanel extends React.Component {
     const { store } = this.props.activePanel;
     const ready = store.dataReady && store.conceptsReady && store.userReady && store.predicatesReady;
     const { activePanel } = this.props;
-    const validNodeSelectionList = store.visibleNodePanels.map(panel => ({ id: panel.id, name: panel.panelName }));
+    const validNodeSelectionList = store.visibleNodePanels.map((panel) => ({ id: panel.id, name: panel.panelName }));
     const {
       predicateList, targetNodeList, disablePredicates, predicatesReady, connectionsCountReady,
     } = activePanel;
@@ -80,7 +69,7 @@ class EdgePanel extends React.Component {
     const disabledSwitch = activePanel.source_id === null || activePanel.target_id === null;
     return (
       <div>
-        {ready ?
+        {ready ? (
           <div>
             <Form horizontal>
               <Col sm={5}>
@@ -92,7 +81,7 @@ class EdgePanel extends React.Component {
                   textField="name"
                   valueField="id"
                   value={activePanel.source_id}
-                  onChange={value => activePanel.updateField('source_id', value.id)}
+                  onChange={(value) => activePanel.updateField('source_id', value.id)}
                   containerClassName={activePanel.isValidSource ? 'valid' : 'invalid'}
                 />
               </Col>
@@ -109,14 +98,14 @@ class EdgePanel extends React.Component {
                 <h4 style={{ color: '#CCCCCC' }}>TARGET</h4>
                 <DropdownList
                   filter="contains"
-                  data={toJS(targetNodeList)}
+                  data={targetNodeList}
                   busy={!connectionsCountReady}
                   busySpinner={<FaSpinner className="icon-spin" />}
                   itemComponent={listItem}
                   textField="name"
                   valueField="id"
                   value={activePanel.target_id}
-                  onChange={value => activePanel.updateField('target_id', value.id)}
+                  onChange={(value) => activePanel.updateField('target_id', value.id)}
                   containerClassName={activePanel.isValidTarget ? 'valid' : 'invalid'}
                 />
               </Col>
@@ -127,14 +116,14 @@ class EdgePanel extends React.Component {
                   allowCreate={false}
                   readOnly={!predicatesReady || disablePredicates}
                   busy={!predicatesReady}
-                  data={toJS(predicateList)}
+                  data={predicateList}
                   itemComponent={listItem}
                   busySpinner={<FaSpinner className="icon-spin" />}
                   placeholder={predicateInputMsg}
-                  textField={value => value.name || value}
-                  value={toJS(activePanel.predicate)}
-                  valueField={value => value.name || value}
-                  onChange={value => activePanel.updatePredicate(value)}
+                  textField={(value) => value.name || value}
+                  value={activePanel.predicate}
+                  valueField={(value) => value.name || value}
+                  onChange={(value) => activePanel.updatePredicate(value)}
                   containerClassName={activePanel.isValidPredicate ? 'valid' : 'invalid'}
                   messages={{
                     emptyList: 'No predicates were found',
@@ -143,14 +132,12 @@ class EdgePanel extends React.Component {
               </Col>
             </Form>
           </div>
-          :
+        ) : (
           <Loading />
-        }
+        )}
       </div>
     );
   }
 }
-
-EdgePanel.propTypes = propTypes;
 
 export default EdgePanel;

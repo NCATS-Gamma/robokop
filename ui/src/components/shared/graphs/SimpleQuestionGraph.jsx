@@ -1,7 +1,7 @@
 import React from 'react';
 import { Row, Col, Panel } from 'react-bootstrap';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import MachineQuestionView from './MachineQuestionView';
+import QuestionGraphView from './QuestionGraphView';
 import entityNameDisplay from '../../../utils/entityNameDisplay';
 
 /* eslint-disable no-param-reassign */
@@ -86,7 +86,7 @@ class SimpleQuestionGraph extends React.Component {
             </Panel.Heading>
             <Panel.Collapse>
               <Panel.Body style={{ padding: '0px' }}>
-                <MachineQuestionView
+                <QuestionGraphView
                   height={200}
                   // width={width}
                   question={messageStore.message.question_graph}

@@ -18,7 +18,7 @@ import SimpleSynonymize from './pages/SimpleSynonymize';
 import SimplePublications from './pages/SimplePublications';
 
 import Neighborhood from './pages/neighborhood/Neighborhood';
-import SimpleQuestion from './pages/newQuestion/SimpleQuestion';
+import SimpleQuestion from './pages/question/SimpleQuestion';
 // import QuestionNew from './pages/newQuestion/QuestionNew';
 // import Question from './pages/question/Question';
 // import QuestionList from './pages/questionList/QuestionList';
@@ -53,7 +53,7 @@ export default function App() {
               path="/simple"
               render={({ match: { url } }) => (
                 <>
-                  <Route path={`${url}/question`} component={() => SimpleQuestion({ concepts: {} })} exact />
+                  <Route path={`${url}/question`} component={() => SimpleQuestion({ user: ensuredUser, concepts: {} })} exact />
                   <Route path={`${url}/view`} component={() => SimpleViewer({ user: ensuredUser })} exact />
                   <Route path={`${url}/enriched`} component={() => SimpleEnriched({ concepts: {} })} exact />
                   <Route path={`${url}/similarity`} component={() => SimpleSimilarity({ concepts: {} })} exact />

@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import CardTypes from '../../../utils/questionNewCardTypes';
 import getNodeTypeColorMap from '../../../utils/colorUtils';
 import entityNameDisplay from '../../../utils/entityNameDisplay';
@@ -8,22 +7,6 @@ const Graph = require('react-graph-vis').default;
 
 const shortid = require('shortid');
 const _ = require('lodash');
-
-const propTypes = {
-  concepts: PropTypes.arrayOf(PropTypes.string).isRequired,
-  question: PropTypes.shape({
-    nodes: PropTypes.array,
-    edges: PropTypes.array,
-  }),
-  width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  selectable: PropTypes.bool, // Whether node and edge can be selected
-  interactable: PropTypes.bool, // whether you can do anything with the graph
-  nodePreProcFn: PropTypes.func,
-  edgePreProcFn: PropTypes.func,
-  // nodeSelectCallback: PropTypes.func,
-  // edgeSelectCallback: PropTypes.func,
-};
 
 const defaultProps = {
   height: 250,
@@ -133,7 +116,7 @@ function defaultEdgePreProc(e) {
 }
 /* eslint-enable no-param-reassign */
 
-class MachineQuestionView extends React.Component {
+class QuestionGraphView extends React.Component {
   constructor(props) {
     super(props);
 
@@ -300,13 +283,14 @@ class MachineQuestionView extends React.Component {
       interaction,
     });
   }
+
   render() {
     const { displayGraph } = this.state;
     const isValid = !(displayGraph == null);
 
     return (
       <div>
-        {isValid &&
+        {isValid && (
           <Graph
             key={shortid.generate()}
             graph={displayGraph}
@@ -315,13 +299,12 @@ class MachineQuestionView extends React.Component {
             getNetwork={(network) => { this.network = network; }} // Store network reference in the component
             style={{ width: this.props.width }}
           />
-        }
+        )}
       </div>
     );
   }
 }
 
-MachineQuestionView.propTypes = propTypes;
-MachineQuestionView.defaultProps = defaultProps;
+QuestionGraphView.defaultProps = defaultProps;
 
-export default MachineQuestionView;
+export default QuestionGraphView;

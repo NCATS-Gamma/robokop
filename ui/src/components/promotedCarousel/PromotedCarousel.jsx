@@ -4,7 +4,7 @@ import { Jumbotron, Button, Carousel } from 'react-bootstrap';
 
 import './promotedCarousel.css';
 
-import MachineQuestionView from '../shared/graphs/MachineQuestionView';
+import QuestionGraphView from '../shared/graphs/QuestionGraphView';
 
 class PromotedCarousel extends React.Component {
   constructor(props) {
@@ -86,7 +86,7 @@ class PromotedCarousel extends React.Component {
               <Carousel.Caption>
                 <p className="promotedQuestionText">{question.naturalQuestion}</p>
                 {questionGraphs[i] && (
-                  <MachineQuestionView
+                  <QuestionGraphView
                     height={250}
                     concepts={concepts}
                     question={questionGraphs[i]}

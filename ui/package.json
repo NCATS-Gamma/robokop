@@ -31,6 +31,8 @@
     "webpack-merge": "^5.0.9"
   },
   "dependencies": {
+    "@material-ui/core": "^4.11.0",
+    "@material-ui/icons": "^4.9.1",
     "ag-grid-community": "^23.2.1",
     "ag-grid-react": "^23.2.1",
     "axios": "^0.19.2",

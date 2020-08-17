@@ -11,7 +11,7 @@ import Header from '../Header';
 import Footer from '../Footer';
 import Loading from '../Loading';
 import LoadingNlpQuestionModal from '../shared/modals/LoadingNlpQuestion';
-import QuestionBuilder from './subComponents/QuestionBuilder';
+import QuestionBuilder from './questionBuilder/QuestionBuilder';
 
 
 @inject(({ store }) => ({ store }))

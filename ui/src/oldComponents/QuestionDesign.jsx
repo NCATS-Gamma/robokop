@@ -6,7 +6,7 @@ import { FaWrench } from 'react-icons/fa';
 
 import Loading from '../Loading';
 import InputOptions from './InputOptions';
-import MachineQuestionView from './graphs/MachineQuestionView';
+import QuestionGraphView from './graphs/QuestionGraphView';
 import MachineQuestionEditor from './MachineQuestionEditor';
 
 class QuestionDesign extends React.Component {
@@ -212,7 +212,7 @@ class QuestionDesign extends React.Component {
                 </Row>
                 <Row>
                   <Col md={12}>
-                    <MachineQuestionView
+                    <QuestionGraphView
                       height={viewHeight}
                       question={this.state.machineQuestion}
                       concepts={this.props.concepts}
