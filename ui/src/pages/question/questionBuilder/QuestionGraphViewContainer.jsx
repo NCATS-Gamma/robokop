@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSpinner, FaPlusSquare } from 'react-icons/fa';
 import { Modal, Button } from 'react-bootstrap';
 
@@ -24,6 +24,7 @@ function getHeight() {
 export default function QuestionGraphViewContainer(props) {
   const { questionStore, height = getHeight(), width = '100%' } = props;
   const [showJsonEditor, toggleJsonEditor] = useState(false);
+  const [showGraph, toggleGraph] = useState(false);
 
   function graphClickCallback(data) {
     if (data.nodes.length > 0) {
@@ -33,10 +34,11 @@ export default function QuestionGraphViewContainer(props) {
     }
   }
 
-  function saveJsonEditor({ data }) { // { data: this.state.data, isValid: this.state.isValid }
+  function saveJsonEditor(questionGraph) {
     try {
-      questionStore.machineQuestionSpecToPanelState(data);
+      questionStore.queryGraphSpecToPanelState(questionGraph);
       toggleJsonEditor(!showJsonEditor);
+      toggleGraph(true);
     } catch (err) {
       console.error(err);
       // TODO: what did this used to be?
@@ -51,8 +53,6 @@ export default function QuestionGraphViewContainer(props) {
     }
   }
 
-  const graph = questionStore.machineQuestion;
-  const showGraph = (!(graph === null) && (questionStore.graphState === graphStates.display));
   const showFetching = questionStore.graphState === graphStates.fetching;
   const notInitialized = questionStore.graphState === graphStates.empty;
   const numNodes = questionStore.panelState.length;
@@ -65,8 +65,8 @@ export default function QuestionGraphViewContainer(props) {
         <QuestionGraphView
           height={height}
           width={width}
-          question={questionStore.machineQuestion}
-          concepts={questionStore.concepts}
+          question={questionStore.questionGraph}
+          concepts={config.concepts}
           graphState={questionStore.graphState}
           selectable
           graphClickCallback={graphClickCallback}
@@ -85,7 +85,7 @@ export default function QuestionGraphViewContainer(props) {
               </div>
             )}
             {notInitialized && (
-              <Button bsSize="large" onClick={() => questionStore.newActivePanel('node')}>
+              <Button bsSize="large" onClick={() => questionStore.newQuestionPanel('node')}>
                 <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{' Add Node'}
               </Button>
             )}
@@ -99,7 +99,7 @@ export default function QuestionGraphViewContainer(props) {
       )}
       {(numNodes === 1 || numNodes === 2) && (
         <div style={{ position: 'absolute', top: '47%', right: '20%' }}>
-          <Button bsSize="large" onClick={() => questionStore.newActivePanel(numNodes === 1 ? 'node' : 'edge')}>
+          <Button bsSize="large" onClick={() => questionStore.newQuestionPanel(numNodes === 1 ? 'node' : 'edge')}>
             <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{` Add ${numNodes === 1 ? 'Node' : 'Edge'}`}
           </Button>
         </div>
@@ -116,7 +116,6 @@ export default function QuestionGraphViewContainer(props) {
         <Modal.Body>
           <QuestionJsonEditor
             height={700}
-            concepts={config.concepts}
             questionStore={questionStore}
             callbackSave={saveJsonEditor}
             callbackCancel={() => toggleJsonEditor(!showJsonEditor)}

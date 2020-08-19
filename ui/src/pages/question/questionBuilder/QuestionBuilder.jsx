@@ -31,7 +31,7 @@ export default function QuestionBuilder(props) {
   }
 
   useEffect(() => {
-    if (questionStore.questionName && questionStore.graphState === graphStates.display) {
+    if (questionStore.question_name && questionStore.graphState === graphStates.display) {
       submitQuestionName();
     }
   }, []);
@@ -52,7 +52,7 @@ export default function QuestionBuilder(props) {
 
   // Loads the question template and updates the MobX store/UI
   function onQuestionTemplate(question) {
-    questionStore.machineQuestionSpecToPanelState(question);
+    questionStore.queryGraphSpecToPanelState(question);
     toggleModal(false);
     setStep('build');
   }
@@ -66,7 +66,7 @@ export default function QuestionBuilder(props) {
         const fileContents = e.target.result;
         try {
           const fileContentObj = JSON.parse(fileContents);
-          questionStore.machineQuestionSpecToPanelState(fileContentObj);
+          questionStore.queryGraphSpecToPanelState(fileContentObj);
           setStep('build');
         } catch (err) {
           console.error(err);
@@ -102,7 +102,7 @@ export default function QuestionBuilder(props) {
     // this.appConfig.questionData(
     //   qid,
     //   (data) => {
-    //     questionStore.machineQuestionSpecToPanelState(data.data.question);
+    //     questionStore.queryGraphSpecToPanelState(data.data.question);
     //     setStep('build');
     //     setQuestionsReady(false);
     //   },
@@ -180,12 +180,12 @@ export default function QuestionBuilder(props) {
             <FormGroup
               bsSize="large"
               controlId="formHorizontalNodeIdName"
-              validationState={questionStore.questionName.length > 0 ? 'success' : 'error'}
+              validationState={questionStore.question_name.length > 0 ? 'success' : 'error'}
               style={{ margin: '0' }}
             >
               <FormControl
                 type="text"
-                value={questionStore.questionName}
+                value={questionStore.question_name}
                 onChange={(e) => questionStore.updateQuestionName(e.target.value)}
                 inputRef={(ref) => { questionName.current = ref; }}
                 placeholder="Please provide a title for your question."
@@ -196,7 +196,7 @@ export default function QuestionBuilder(props) {
                 id="questionNameSubmit"
                 type="submit"
                 onClick={submitQuestionName}
-                disabled={questionStore.questionName.length === 0}
+                disabled={questionStore.question_name.length === 0}
               >
                 Next
               </Button>
@@ -210,7 +210,7 @@ export default function QuestionBuilder(props) {
             <Panel>
               <Panel.Heading>
                 <Panel.Title>
-                  {'Machine Question Editor - Question Graph '}
+                  {'Question Graph Editor '}
                   <HelpButton link="machineQuestionEditor" />
                 </Panel.Title>
               </Panel.Heading>

@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 
 const _publicFields = ['id', 'source_id', 'target_id', 'predicate'];
 
-export default function useEdgePanel() {
+export default function useEdgePanels() {
   const [id, setId] = useState(null);
   const [sourceId, setSourceId] = useState(null);
   const [targetId, setTargetId] = useState(null);
@@ -18,6 +18,10 @@ export default function useEdgePanel() {
 
   const connectionsCancel = useRef(null);
   const predicatesCancel = useRef(null);
+
+  function createNew(newEdge) {
+    console.log(newEdge);
+  }
 
   function constructor(store, userObj = {}) {
     this.store = store;
@@ -303,5 +307,7 @@ export default function useEdgePanel() {
     }
     return jsonObj;
   }
-  return {};
+  return {
+    createNew,
+  };
 }

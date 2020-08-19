@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import _ from 'lodash';
 
 import entityNameDisplay from '../utils/entityNameDisplay';
 
@@ -6,7 +7,8 @@ const _publicFields = ['id', 'name', 'type', 'curie', 'set', 'curieEnabled'];
 const _privateFields = ['panelType', 'deleted', 'regular'];
 const _nodeFunctionTypes = ['curieEnabled', 'set', 'regular'];
 
-export default function useNodePanel() {
+export default function useNodePanels() {
+  const [nodes, updateNodes] = useState([]);
   const [id, setId] = useState(null);
   const [type, setType] = useState('');
   const [name, setName] = useState('');
@@ -15,8 +17,29 @@ export default function useNodePanel() {
   const [properties, setProperties] = useState([]);
   const [curieEnabled, setCurieEnabled] = useState(false);
   const [set, setSet] = useState(false);
-  const [regular, setRegular] = usestate(false);
+  const [regular, setRegular] = useState(false);
   const [deleted, setDeleted] = useState(false);
+
+  // Convert to JSON object representation. Only return "non-empty" field
+  function toJsonObj() {
+    const jsonObj = {
+      id,
+      type,
+      set,
+      curieEnabled,
+      deleted,
+    };
+    properties.forEach((prop) => {
+      jsonObj[prop.key] = prop.value;
+    });
+    if (name !== '') {
+      jsonObj.name = name;
+    }
+    if (curie.length > 0) {
+      jsonObj.curie = curie;
+    }
+    return jsonObj;
+  }
 
   function constructor(store, userObj = {}) {
     this.store = store;
@@ -55,6 +78,21 @@ export default function useNodePanel() {
     });
   }
 
+  function createNew(nodeContents) {
+    console.log(nodeContents);
+    nodes.push(nodeContents);
+    updateNodes([...nodes]);
+  }
+
+  function getById(nodeId) {
+    return nodes.find((node) => node.id === nodeId);
+  }
+
+  // Return list of ids for nodes that are not flagged with deleted = true
+  function visibleNodes() {
+    return nodes.filter((node) => !node.deleted);
+  }
+
   function resetNodePanel() {
     this.curie = [];
     this.name = '';
@@ -82,25 +120,25 @@ export default function useNodePanel() {
   function updateField(field, value) { // eslint-disable-line consistent-return
     // Reset the curieList and propertiesList for Node if a new type is selected
     if (field === 'type') {
-      if (this.type !== value) {
-        this.resetCurie();
-        this.resetProperties();
+      if (type !== value) {
+        resetCurie();
+        resetProperties();
       }
       if (value === 'named_thing') {
-        this.regular = true;
-        this.curieEnabled = false;
+        setRegular(true);
+        setCurieEnabled(false);
       }
     }
     this[field] = value;
   }
 
   function updateSearchTerm(value) {
-    this.searchTerm = value;
-    if (this.curie.length) {
-      this.resetCurie();
+    setSearchTerm(value);
+    if (curie.length) {
+      resetCurie();
     }
-    if (this.type) {
-      this.type = '';
+    if (type) {
+      setType('');
     }
   }
 
@@ -130,7 +168,7 @@ export default function useNodePanel() {
   }
 
   function resetProperties() {
-    this.properties = [];
+    setProperties([]);
   }
 
   function addCurie() {
@@ -145,13 +183,13 @@ export default function useNodePanel() {
     // only update the panel once a curie is selected.
     if (curie) {
       this.curie[0] = curie;
-      this.name = label;
+      setName(label);
     }
   }
 
   function resetCurie() {
-    this.curie = [];
-    this.name = '';
+    setCurie([]);
+    setName('');
   }
 
   function isValidType() {
@@ -201,17 +239,14 @@ export default function useNodePanel() {
 
   // Prettified label for the panel
   function panelName() {
-    let name = 'Any';
-    if (this.type) {
-      name = entityNameDisplay(this.type);
+    let newName = name || 'Any';
+    if (type && !name) {
+      newName = entityNameDisplay(type);
     }
-    if (this.name) {
-      ({ name } = this);
+    if (set) {
+      newName = `Set Of ${name || newName}s`;
     }
-    if (this.set) {
-      name = `Set Of ${name}s`;
-    }
-    return `${this.id}: ${name}`;
+    return `${id}: ${newName}`;
   }
 
   /**
@@ -227,30 +262,15 @@ export default function useNodePanel() {
 
   // Make a deep clone of this instance
   function clone() {
-    const userObj = this.toJsonObj();
+    const userObj = toJsonObj();
     // this._publicFields.forEach(field => (userObj[field] = toJS(this[field])));
-    return new NodePanel(this.store, userObj);
+    return createNew(userObj);
   }
 
-  // Convert to JSON object representation. Only return "non-empty" field
-  function toJsonObj() {
-    const jsonObj = {
-      id: toJS(this.id),
-      type: toJS(this.type),
-      set: toJS(this.set),
-      curieEnabled: toJS(this.curieEnabled),
-      deleted: toJS(this.deleted),
-    };
-    this.properties.forEach((prop) => {
-      jsonObj[prop.key] = prop.value;
-    });
-    if (this.name !== '') {
-      jsonObj.name = toJS(this.name);
-    }
-    if (this.curie.length > 0) {
-      jsonObj.curie = toJS(this.curie);
-    }
-    return jsonObj;
-  }
-  return {};
+  return {
+    createNew,
+    toJsonObj,
+    getUniqueId,
+    nodes,
+  };
 }

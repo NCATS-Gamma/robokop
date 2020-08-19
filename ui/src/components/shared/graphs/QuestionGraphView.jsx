@@ -1,24 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import shortid from 'shortid';
+import _ from 'lodash';
+
 import CardTypes from '../../../utils/questionNewCardTypes';
 import getNodeTypeColorMap from '../../../utils/colorUtils';
 import entityNameDisplay from '../../../utils/entityNameDisplay';
 
+import config from '../../../config.json';
+
 const Graph = require('react-graph-vis').default;
-
-const shortid = require('shortid');
-const _ = require('lodash');
-
-const defaultProps = {
-  height: 250,
-  width: '100%',
-  question: { nodes: [], edges: [] },
-  selectable: false,
-  interactable: true,
-  nodePreProcFn: defaultNodePreProc, // eslint-disable-line no-use-before-define
-  edgePreProcFn: defaultEdgePreProc, // eslint-disable-line no-use-before-define
-  // nodeSelectCallback: () => {},
-  // edgeSelectCallback: () => {},
-};
 
 // Default pre-processing method on each node object to return updated node obj
 /* eslint-disable no-param-reassign */
@@ -116,68 +106,30 @@ function defaultEdgePreProc(e) {
 }
 /* eslint-enable no-param-reassign */
 
-class QuestionGraphView extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      displayGraph: null,
-      displayOptions: {},
-    };
-
-    this.syncStateAndProps = this.syncStateAndProps.bind(this);
-    this.setNetworkCallbacks = this.setNetworkCallbacks.bind(this);
-  }
-
-  componentDidMount() {
-    this.syncStateAndProps(this.props);
-  }
-  componentWillReceiveProps(nextProps) {
-    this.syncStateAndProps(nextProps);
-  }
-
-  shouldComponentUpdate(nextProps) {
-    // Only redraw/remount component if graph components change
-    if (_.isEqual(this.props.question, nextProps.question) && this.network) {
-      return false;
-    }
-    return true;
-  }
-
-  componentDidUpdate() {
-    // this.setNetworkCallbacks();
-  }
-
-  syncStateAndProps(newProps) {
-    let graph = newProps.question;
-
-    const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'nodes')) && (Object.prototype.hasOwnProperty.call(graph, 'edges'));
-    if (isValid) {
-      graph = this.getDisplayGraph(graph);
-    }
-    const graphOptions = this.getDisplayOptions(graph);
-
-    this.setState({ displayGraph: graph, displayOptions: graphOptions }, () => {
-      if (this.props.interactable) {
-        this.setNetworkCallbacks();
-      }
-    });
-  }
+export default function QuestionGraphView(props) {
+  const {
+    question = { nodes: [], edges: [] }, selectable = false, height = 250, width = '100%',
+    graphClickCallback, nodePreProcFn = defaultNodePreProc, edgePreProcFn = defaultEdgePreProc,
+    interactable = true,
+  } = props;
+  const [displayGraph, setDisplayGraph] = useState(null);
+  const [displayOptions, updateDisplayOptions] = useState({});
+  const network = useRef(null);
 
   // Bind network fit callbacks to resize graph and cancel fit callbacks on start of zoom/pan
-  setNetworkCallbacks() {
-    this.network.once('afterDrawing', () => this.network.fit());
-    this.network.on('doubleClick', () => this.network.fit());
-    this.network.on('zoom', () => this.network.off('afterDrawing'));
-    this.network.on('dragStart', () => this.network.off('afterDrawing'));
+  function setNetworkCallbacks() {
+    network.current.once('afterDrawing', () => network.current.fit());
+    network.current.on('doubleClick', () => network.current.fit());
+    network.current.on('zoom', () => network.current.off('afterDrawing'));
+    network.current.on('dragStart', () => network.current.off('afterDrawing'));
   }
 
   /* eslint-disable no-param-reassign */
-  getDisplayGraph(rawGraph) {
+  function getDisplayGraph(rawGraph) {
     const graph = _.cloneDeep(rawGraph);
 
     // Adds vis.js specific tags to manage colors in graph
-    const nodeTypeColorMap = getNodeTypeColorMap(this.props.concepts);
+    const nodeTypeColorMap = getNodeTypeColorMap(config.concepts);
 
     graph.nodes.forEach((n) => {
       const backgroundColor = nodeTypeColorMap(n.type);
@@ -189,18 +141,17 @@ class QuestionGraphView extends React.Component {
       };
     }); /* eslint-enable no-param-reassign */
 
-    graph.nodes = graph.nodes.map(this.props.nodePreProcFn);
-    graph.edges = graph.edges.map(this.props.edgePreProcFn);
+    graph.nodes = graph.nodes.map(nodePreProcFn);
+    graph.edges = graph.edges.map(edgePreProcFn);
     return graph;
   }
 
-  getDisplayOptions(graph) {
+  function getDisplayOptions(graph) {
     // potential change display depending on size/shape of graph
-    let { height } = this.props;
-    const { interactable } = this.props;
-    if (!(typeof height === 'string' || height instanceof String)) {
-      // height is not a string must convert it
-      height = `${height}px`;
+    let actualHeight = height;
+    if (!(typeof actualHeight === 'string' || actualHeight instanceof String)) {
+      // actualHeight is not a string must convert it
+      actualHeight = `${actualHeight}px`;
     }
 
     // default layout (LR)
@@ -257,13 +208,13 @@ class QuestionGraphView extends React.Component {
         dragView: true,
         hoverConnectedEdges: false,
         selectConnectedEdges: false,
-        selectable: this.props.selectable,
+        selectable,
         tooltipDelay: 50,
       };
     }
 
     return ({
-      height,
+      height: actualHeight,
       autoResize: true,
       layout,
       physics,
@@ -284,27 +235,44 @@ class QuestionGraphView extends React.Component {
     });
   }
 
-  render() {
-    const { displayGraph } = this.state;
-    const isValid = !(displayGraph == null);
+  function getGraphOptions() {
+    let graph = _.cloneDeep(question);
 
-    return (
-      <div>
-        {isValid && (
-          <Graph
-            key={shortid.generate()}
-            graph={displayGraph}
-            options={this.state.displayOptions}
-            events={{ click: this.props.graphClickCallback }}
-            getNetwork={(network) => { this.network = network; }} // Store network reference in the component
-            style={{ width: this.props.width }}
-          />
-        )}
-      </div>
-    );
+    const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'nodes')) && (Object.prototype.hasOwnProperty.call(graph, 'edges'));
+    if (isValid) {
+      graph = getDisplayGraph(graph);
+    }
+    const graphOptions = getDisplayOptions(graph);
+
+    setDisplayGraph(graph);
+    updateDisplayOptions(graphOptions);
   }
+
+  useEffect(() => {
+    console.log('question', question);
+    getGraphOptions();
+  }, [question]);
+
+  useEffect(() => {
+    if (selectable) {
+      setNetworkCallbacks();
+    }
+  }, [displayOptions]);
+
+  const isValid = !(displayGraph == null);
+
+  return (
+    <div>
+      {isValid && (
+        <Graph
+          key={shortid.generate()}
+          graph={displayGraph}
+          options={displayOptions}
+          events={{ click: graphClickCallback }}
+          getNetwork={(ref) => { network.current = ref; }} // Store network reference in the component
+          style={{ width }}
+        />
+      )}
+    </div>
+  );
 }
-
-QuestionGraphView.defaultProps = defaultProps;
-
-export default QuestionGraphView;

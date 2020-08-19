@@ -1,97 +1,102 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactJson from 'react-json-view';
 import { Row, Col } from 'react-bootstrap';
 import { FaReply, FaCheck, FaCloudUploadAlt } from 'react-icons/fa';
 import Dropzone from 'react-dropzone';
 import SplitterLayout from 'react-splitter-layout';
+import 'react-splitter-layout/lib/index.css';
 
 import QuestionGraphView from '../../../components/shared/graphs/QuestionGraphView';
 import Loading from '../../../components/shared/Loading';
 
 import config from '../../../config.json';
 
-export default function QuesitonJsonEditor(props) {
+const questionGraphSchema = {
+  question_name: '',
+  query_graph: {
+    nodes: [],
+    edges: [],
+  },
+  max_connectivity: 0,
+};
+
+export default function QuestionJsonEditor(props) {
   const {
     height = '100%',
-    callbackCancel,
+    questionStore,
     callbackSave,
-    question = { nodes: [], edges: [] },
-    onUpdate = () => {},
+    callbackCancel,
   } = props;
-  const [isValid, setIsValid] = useState(false);
+  const [questionGraph, updateQuestionGraph] = useState(questionGraphSchema);
+  const [isValidQuestion, setIsValidQuestion] = useState(false);
   const [thinking, setThinking] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  function updateQuestion(e) {
-    const data = e.updated_src;
+  function validateQuestionGraph(graph) {
     // Quick question validity checks (not bullet proof, just to help you out a little)
     // This is primary meant to catch graph display errors
     let isValid = true;
-    let errorMessage = '';
+    let errMessage = '';
 
-    const iValidHaveQuestion = data && ('natural_question' in data) && (typeof data.natural_question === 'string');
-    isValid = isValid && iValidHaveQuestion;
-    if (!iValidHaveQuestion) {
-      errorMessage = `${errorMessage}The graph template must have a "natural_question" field that is a string.`;
+    const hasQuestionName = graph && ('question_name' in graph) && (typeof graph.question_name === 'string');
+    isValid = isValid && hasQuestionName;
+    if (!hasQuestionName) {
+      errMessage = `${errMessage}The graph template must have a "question_name" field that is a string.`;
     }
-    const isValidHaveMachineQuestion = data && ('machine_question' in data) && (typeof data.machine_question === 'object');
-    isValid = isValid && isValidHaveMachineQuestion;
-    if (!isValidHaveMachineQuestion) {
-      errorMessage = `${errorMessage}The graph template must have a "machine_question" field that is an object. `;
+    const hasQueryGraph = graph && ('query_graph' in graph) && (typeof graph.query_graph === 'object');
+    isValid = isValid && hasQueryGraph;
+    if (!hasQueryGraph) {
+      errMessage = `${errMessage}The graph template must have a "query_graph" field that is an object. `;
     } else {
       // We have a question
 
-      const { machine_question } = data;
+      const { query_graph } = graph;
       // Check for nodes
-      const isValidHaveNodes = 'nodes' in machine_question && Array.isArray(machine_question.nodes);
-      isValid = isValid && isValidHaveNodes;
-      if (!isValidHaveNodes) {
-        errorMessage = `${errorMessage}A graph template requires the field "nodes" that is an array. `;
+      const hasNodes = 'nodes' in query_graph && Array.isArray(query_graph.nodes);
+      isValid = isValid && hasNodes;
+      if (!hasNodes) {
+        errMessage = `${errMessage}A graph template requires the field "nodes" that is an array. `;
       } else {
         // question.nodes is an array
-        const isValidNodesHaveIds = machine_question.nodes.reduce((val, n) => val && n && (typeof n === 'object') && ('id' in n), true);
-        isValid = isValid && isValidNodesHaveIds;
-        if (!isValidNodesHaveIds) {
-          errorMessage = `${errorMessage}Each node must have an ID. `;
+        const nodesHaveIds = query_graph.nodes.reduce((val, n) => val && n && (typeof n === 'object') && ('id' in n), true);
+        isValid = isValid && nodesHaveIds;
+        if (!nodesHaveIds) {
+          errMessage = `${errMessage}Each node must have an ID. `;
         } else {
           // Since every node has and id we can check if they are unique
-          const nodeIds = new Set(machine_question.nodes.map(n => n.id));
-          const isValidNodeIdsUnique = nodeIds.size === machine_question.nodes.length;
-          if (!isValidNodeIdsUnique) {
-            errorMessage = `${errorMessage}There are multiple nodes with the same ID. `;
+          const nodeIds = new Set(query_graph.nodes.map((n) => n.id));
+          const hasUniqueNodeIds = nodeIds.size === query_graph.nodes.length;
+          if (!hasUniqueNodeIds) {
+            errMessage = `${errMessage}There are multiple nodes with the same ID. `;
           }
-          isValid = isValid && isValidNodeIdsUnique;
+          isValid = isValid && hasUniqueNodeIds;
         }
       }
 
       // Check for edges
-      const isValidHaveEdges = 'edges' in machine_question && Array.isArray(machine_question.edges);
-      isValid = isValid && isValidHaveEdges;
-      if (!isValidHaveEdges) {
-        errorMessage = `${errorMessage}A graph template requires the field "edges" that is an array.`;
+      const hasEdges = 'edges' in query_graph && Array.isArray(query_graph.edges);
+      isValid = isValid && hasEdges;
+      if (!hasEdges) {
+        errMessage = `${errMessage}A graph template requires the field "edges" that is an array.`;
       } else {
         // question.edges is an array
-        const isValidEdgesHaveIds = machine_question.edges.reduce((val, e) => val && e && (typeof e === 'object') && ('source_id' in e) && ('target_id' in e), true);
-        isValid = isValid && isValidEdgesHaveIds;
-        if (!isValidEdgesHaveIds) {
-          errorMessage = `${errorMessage}Each edge must have a source_id and a target_id. `;
+        const edgesHaveIds = query_graph.edges.reduce((val, e) => val && e && (typeof e === 'object') && ('source_id' in e) && ('target_id' in e), true);
+        isValid = isValid && edgesHaveIds;
+        if (!edgesHaveIds) {
+          errMessage = `${errMessage}Each edge must have a source_id and a target_id. `;
         }
       }
     }
 
-    onUpdate({ data, isValid });
-    setIsValid(isValid);
-    setErrorMessage(errorMessage);
-    this.setState({ data });
+    setIsValidQuestion(isValid);
+    setErrorMessage(errMessage);
   }
 
-  function onCancel() {
-    callbackCancel(); // Nothing special just call the callback
-  }
+  function updateQuestion(e) {
+    const data = e.updated_src;
+    validateQuestionGraph(data);
 
-  function onSave() {
-    // Call the callback with local state
-    callbackSave({ data: this.state.data, isValid });
+    updateQuestionGraph(data);
   }
 
   function onDrop(acceptedFiles, rejectedFiles) {
@@ -103,15 +108,8 @@ export default function QuesitonJsonEditor(props) {
         const fileContents = e.target.result;
         try {
           const object = JSON.parse(fileContents);
-          const { data } = this.state;
-          if ('natural_question' in object) {
-            data.natural_question = object.natural_question;
-          }
-          if ('machine_question' in object) {
-            data.machine_question = object.machine_question;
-          }
-
-          this.setState({ data });
+          validateQuestionGraph(object);
+          updateQuestionGraph(object);
         } catch (err) {
           console.log(err);
           window.alert('Failed to read this graph template. Are you sure this is valid?');
@@ -123,6 +121,12 @@ export default function QuesitonJsonEditor(props) {
       fr.readAsText(file);
     });
   }
+
+  useEffect(() => {
+    if (questionStore.query_graph) {
+      updateQuestionGraph(questionStore.query_graph);
+    }
+  }, [questionStore.query_graph]);
 
   const topBarHeight = 30;
   const fullHeight = height;
@@ -155,7 +159,7 @@ export default function QuesitonJsonEditor(props) {
             <span style={{ fontSize: '18px' }} title="Revert">
               <FaReply
                 style={{ cursor: !thinking ? 'pointer' : 'default' }}
-                onClick={!thinking ? onCancel : () => {}}
+                onClick={!thinking ? callbackCancel : () => {}}
               />
             </span>
           </div>
@@ -189,10 +193,10 @@ export default function QuesitonJsonEditor(props) {
             </div>
           </div>
           <div style={{ position: 'absolute', top: 5, right: 15 }}>
-            <span style={{ fontSize: '18px', color: isValid ? '#000' : '#ddd' }} title="Save Changes">
+            <span style={{ fontSize: '18px', color: isValidQuestion ? '#000' : '#ddd' }} title="Save Changes">
               <FaCheck
-                style={{ cursor: (!thinking && isValid) ? 'pointer' : 'default' }}
-                onClick={(!thinking && isValid) ? onSave : () => {}}
+                style={{ cursor: (!thinking && isValidQuestion) ? 'pointer' : 'default' }}
+                onClick={(!thinking && isValidQuestion) ? () => callbackSave(questionGraph) : () => {}}
               />
             </span>
           </div>
@@ -208,21 +212,21 @@ export default function QuesitonJsonEditor(props) {
                 collapseStringsAfterLength={15}
                 indentWidth={2}
                 iconStyle="triangle"
-                src={questionStore}
+                src={questionGraph}
                 onEdit={updateQuestion}
                 onAdd={updateQuestion}
                 onDelete={updateQuestion}
               />
             </div>
             <div>
-              {isValid && (
+              {isValidQuestion && (
                 <QuestionGraphView
                   height={innerHeight}
                   concepts={config.concepts}
-                  question={data.machine_question}
+                  question={questionGraph.query_graph}
                 />
               )}
-              {!isValid && (
+              {!isValidQuestion && (
                 <Row>
                   <Col md={12} style={{ padding: '15px' }}>
                     <h4>
