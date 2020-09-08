@@ -1,6 +1,7 @@
 import 'core-js/stable';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { BrowserRouter } from 'react-router-dom';
 
 // Import static css, image, and font assets so that they can be found by webpack.
 import 'bootstrap/dist/css/bootstrap.css';
@@ -12,8 +13,14 @@ import App from './App';
 
 // Our actual CSS and other images etc.
 import './app.css';
+import './components/shared/shared.css';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>,
+  document.getElementById('root'),
+);
 
 // const robokop = {
 //   landing: () => {
