@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-} from 'react-router-dom';
+import { Switch, Route } from 'react-router-dom';
 
 import Landing from './pages/Landing';
 import About from './pages/About';
@@ -23,56 +19,62 @@ import SimpleQuestion from './pages/question/SimpleQuestion';
 // import Question from './pages/question/Question';
 // import QuestionList from './pages/questionList/QuestionList';
 // import Answerset from './pages/answers/Answerset';
+import NewQuestionList from './pages/questionList/NewQuestionList';
+import Answer from './pages/Answer';
 
 import Header from './components/header/Header';
 import Footer from './components/footer/Footer';
-import ensureUser from './utils/ensureUser';
+// import ensureUser from './utils/ensureUser';
 
 export default function App() {
-  const [user, setUser] = useState({});
-  const ensuredUser = ensureUser(user);
+  const [user, setUser] = useState(null);
+  // const ensuredUser = ensureUser(user);
   return (
-    <Router>
-      <div id="pageContainer">
-        <Header user={ensuredUser} />
-        <div id="contentContainer">
-          <Switch>
-            <Route path="/about">
-              <About />
-            </Route>
-            <Route path="/help">
-              <Help />
-            </Route>
-            <Route path="/guide">
-              <Guide user={ensuredUser} />
-            </Route>
-            <Route path="/neighborhood">
-              <Neighborhood />
-            </Route>
-            <Route
-              path="/simple"
-              render={({ match: { url } }) => (
-                <>
-                  <Route path={`${url}/question`} component={() => SimpleQuestion({ user: ensuredUser, concepts: {} })} exact />
-                  <Route path={`${url}/view`} component={() => SimpleViewer({ user: ensuredUser })} exact />
-                  <Route path={`${url}/enriched`} component={() => SimpleEnriched({ concepts: {} })} exact />
-                  <Route path={`${url}/similarity`} component={() => SimpleSimilarity({ concepts: {} })} exact />
-                  <Route path={`${url}/expand`} component={() => SimpleExpand({ concepts: {} })} exact />
-                  <Route path={`${url}/synonymize`} component={() => SimpleSynonymize({ concepts: {} })} exact />
-                  <Route path={`${url}/publications`} component={() => SimplePublications({ concepts: {} })} exact />
-                </>
-              )}
-            />
-            <Route path="/termsofservice">
-              <TermsofService />
-            </Route>
-            <Route path="/">
-              <Landing />
-            </Route>
-          </Switch>
-        </div>
-        <Footer />
+    <div id="pageContainer">
+      <Header user={user} setUser={setUser} />
+      <div id="contentContainer">
+        <Switch>
+          <Route path="/about">
+            <About />
+          </Route>
+          <Route path="/help">
+            <Help />
+          </Route>
+          <Route path="/guide">
+            <Guide isSignedIn={Boolean(user)} />
+          </Route>
+          <Route path="/neighborhood">
+            <Neighborhood />
+          </Route>
+          <Route
+            path="/simple"
+            render={({ match: { url } }) => (
+              <>
+                <Route path={`${url}/question`} component={() => SimpleQuestion({ user, concepts: {} })} exact />
+                <Route path={`${url}/view`} component={() => SimpleViewer({ user })} exact />
+                <Route path={`${url}/enriched`} component={() => SimpleEnriched({ concepts: {} })} exact />
+                <Route path={`${url}/similarity`} component={() => SimpleSimilarity({ concepts: {} })} exact />
+                <Route path={`${url}/expand`} component={() => SimpleExpand({ concepts: {} })} exact />
+                <Route path={`${url}/synonymize`} component={() => SimpleSynonymize({ concepts: {} })} exact />
+                <Route path={`${url}/publications`} component={() => SimplePublications({ concepts: {} })} exact />
+              </>
+            )}
+          />
+          <Route path="/questions">
+            <NewQuestionList user={user} />
+          </Route>
+          <Route path="/answer/:question_id">
+            <Answer user={user} />
+          </Route>
+          <Route path="/termsofservice">
+            <TermsofService />
+          </Route>
+          <Route path="/">
+            <Landing isSignedIn={Boolean(user)} />
+          </Route>
+        </Switch>
       </div>
-    </Router>
+      <Footer />
+    </div>
   );
 }

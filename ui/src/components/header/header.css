@@ -1,16 +1,43 @@
-.nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
+/* .nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
     color: #5e5e5e;
     background-color: #b8c6db;
 }
 .nav-pills > li > a {
     border-radius: 0px;
-}
+} */
 /* Custom tweak to Bootstrap tabs */
-.nav-tabs > li > a {
+/* .nav-tabs > li > a {
     border: 1px solid #ededed;
     border-bottom-color: transparent;
 }  
 .nav > li.disabled > a {
     color: #999;
     background-color: #eee;
+} */
+
+.header {
+  background-color: #f5f7fa !important;
+  box-shadow: 0px 0px 5px 0px #b3b3b3 !important;
+}
+#robokopBrand {
+  font-weight: 500;
+  font-size: 20px !important;
+}
+#headerToolbar a {
+  text-decoration: none;
+  color: #5e5e5e;
+  margin: 0 20px;
+  font-size: 15px;
+}
+#headerToolbar a:hover {
+  color: #1c1c1c;
+}
+.grow {
+  flex-grow: 1;
+}
+#signInButton {
+  font-size: 15px;
+}
+#signedInIcon {
+    color: #228216;
 }
