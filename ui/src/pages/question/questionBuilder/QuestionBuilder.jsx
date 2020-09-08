@@ -9,13 +9,20 @@ import _ from 'lodash';
 
 import HelpButton from '../../../components/shared/HelpButton';
 import NewQuestionButtons from './NewQuestionButtons';
-import QuestionGraphViewContainer, { graphStates } from './QuestionGraphViewContainer';
+import QuestionGraphViewContainer from './QuestionGraphViewContainer';
 import QuestionTemplateModal from './QuestionTemplate';
 import QuestionListModal from './QuestionListModal';
 import questionTemplates from '../../../../../queries/index';
 
 import config from '../../../config.json';
-
+/**
+ * Main Question Builder component
+ * @param {object} questionStore new question custom hook
+ * @param {function} download function to download the current question spec
+ * @param {function} reset function to reset the message store custom hook
+ * @param {function} submit function to ask the current question
+ * @param {string} width width of the question graph viewer
+ */
 export default function QuestionBuilder(props) {
   const {
     questionStore, reset, download, submit, width,
@@ -24,15 +31,13 @@ export default function QuestionBuilder(props) {
   const [step, setStep] = useState('options');
   const [questions, updateQuestions] = useState([]);
   const [questionsReady, setQuestionsReady] = useState(false);
+  const [loading, setLoading] = useState(false);
+  // used just for focus
   const questionName = useRef(null);
 
-  function submitQuestionName() {
-    setStep('build');
-  }
-
   useEffect(() => {
-    if (questionStore.question_name && questionStore.graphState === graphStates.display) {
-      submitQuestionName();
+    if (questionStore.question_name) {
+      setStep('build');
     }
   }, []);
 
@@ -50,34 +55,45 @@ export default function QuestionBuilder(props) {
     }
   }, [step]);
 
-  // Loads the question template and updates the MobX store/UI
+  /**
+   * Load the selected question template
+   * @param {object} question json object of format
+   * @param {string} question.question_name name of the question
+   * @param {Object} question.query_graph consisting of nodes and edges
+   * @param {Array} question.query_graph.nodes an array of nodes
+   * @param {Array} question.query_graph.edges an array of edges
+   * @param {Number} question.max_connectivity max connections for question
+   */
   function onQuestionTemplate(question) {
-    questionStore.queryGraphSpecToPanelState(question);
-    toggleModal(false);
+    questionStore.questionSpecToPanelState(question);
     setStep('build');
+    toggleModal(false);
   }
 
   function onDropFile(acceptedFiles, rejectedFiles) { // eslint-disable-line no-unused-vars
     acceptedFiles.forEach((file) => {
       const fr = new window.FileReader();
-      fr.onloadstart = () => questionStore.setGraphState(graphStates.fetching);
+      fr.onloadstart = () => setLoading(true);
       // fr.onloadend = () => this.setState({ graphState: graphStates.fetching });
       fr.onload = (e) => {
         const fileContents = e.target.result;
         try {
           const fileContentObj = JSON.parse(fileContents);
-          questionStore.queryGraphSpecToPanelState(fileContentObj);
+          questionStore.questionSpecToPanelState(fileContentObj);
           setStep('build');
+          setLoading(false);
         } catch (err) {
           console.error(err);
-          window.alert('Failed to read this Question template. Are you sure this is valid?');
-          questionStore.setGraphState(graphStates.error);
+          // window.alert('Failed to read this Question template. Are you sure this is valid?');
+          // questionStore.setGraphState(graphStates.error);
+          setLoading(false);
         }
       };
       fr.onerror = () => {
         window.alert('Sorry but there was a problem uploading the file. The file may be invalid JSON.');
         questionStore.resetQuestion();
-        questionStore.setGraphState(graphStates.error);
+        setLoading(false);
+        // questionStore.setGraphState(graphStates.error);
       };
       fr.readAsText(file);
     });
@@ -85,6 +101,7 @@ export default function QuestionBuilder(props) {
 
   function getQuestions() {
     console.log('get questions');
+    setQuestionsReady(true);
     // this.appConfig.questionList(
     //   (data) => {
     //     updateQuestions(data.data.questions);
@@ -97,12 +114,17 @@ export default function QuestionBuilder(props) {
     // );
   }
 
+  /**
+   * Load the selected question by ID
+   * @param {String} qid Unique ID of a question in the db
+   */
   function questionSelected(qid) {
     console.log('question selected', qid);
+    // this will go get the question from the db
     // this.appConfig.questionData(
     //   qid,
     //   (data) => {
-    //     questionStore.queryGraphSpecToPanelState(data.data.question);
+    //     questionStore.questionSpecToPanelState(data.data.question);
     //     setStep('build');
     //     setQuestionsReady(false);
     //   },
@@ -195,7 +217,7 @@ export default function QuestionBuilder(props) {
               <Button
                 id="questionNameSubmit"
                 type="submit"
-                onClick={submitQuestionName}
+                onClick={() => setStep('build')}
                 disabled={questionStore.question_name.length === 0}
               >
                 Next
@@ -228,7 +250,7 @@ export default function QuestionBuilder(props) {
               onDownloadQuestion={download}
               onResetQuestion={resetSteps}
               onSubmitQuestion={submit}
-              graphValidationState={questionStore.graphValidationState()}
+              validQuestion={questionStore.isValidQuestion()}
             />
           </Col>
         </div>

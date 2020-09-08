@@ -3,12 +3,20 @@ a.list-group-item {
 }
 .jumbotron {
     background-color: #f5f7fa;
+    margin-top: 30px;
 }
 a .list-group-item-heading {
     font-size: 18px;
 }
 a .list-group-item-text {
     font-size: 16px !important;
+}
+#landingOptions a {
+    text-decoration: none;
+    color: #5e5e5e;
+}
+#landingOptions .list-group-item:hover {
+    background-color: #ededed;
 }
 /* Submit button on api pages. greyed out when disabled. */
 #submitAPI:disabled {

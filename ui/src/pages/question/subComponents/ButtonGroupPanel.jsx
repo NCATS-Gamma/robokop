@@ -5,22 +5,27 @@ import { FaPlusSquare, FaPlus } from 'react-icons/fa';
 
 // import { panelTypes } from '../../../stores/newQuestionStore';
 
-const ButtonGroupPanel = ({ questionStore, toggleJsonEditor }) => {
-  const atleastTwoNodes = questionStore.panelState.filter((panel) => questionStore.isNode(panel) && !panel.deleted).length > 1;
+/**
+ * Button group on Query graph editor
+ * @param {Object} panelStore new question panel custom hook
+ * @param {function} toggleJsonEditor function to close the advanced json editor
+ */
+export default function ButtonGroupPanel({ panelStore, toggleJsonEditor }) {
+  const atleastTwoNodes = panelStore.query_graph.nodes.filter((node) => !node.deleted).length >= 2;
   return (
-    <div>
-      {questionStore.panelState.length > 0 && (
+    <>
+      {panelStore.query_graph.nodes.length > 0 && (
         <div
           style={{
             position: 'absolute', left: '30px', top: '60px', zIndex: 99,
           }}
         >
           <ButtonGroup vertical>
-            <Button onClick={() => questionStore.newActivePanel('node')}>
+            <Button onClick={() => panelStore.openPanel('node')}>
               <FaPlusSquare style={{ verticalAlign: 'text-top' }} />{' Add Node'}
             </Button>
             <Button
-              onClick={() => questionStore.newActivePanel('edge')}
+              onClick={() => panelStore.openPanel('edge')}
               disabled={!atleastTwoNodes}
               title={!atleastTwoNodes ? 'Please create two nodes before connecting them with an edge' : ''}
             >
@@ -39,8 +44,6 @@ const ButtonGroupPanel = ({ questionStore, toggleJsonEditor }) => {
       >
         <u>Advanced</u>
       </Button>
-    </div>
+    </>
   );
-};
-
-export default ButtonGroupPanel;
+}

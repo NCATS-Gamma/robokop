@@ -10,94 +10,101 @@ import EdgePanel from './EdgePanel';
 import NodePanel from './NodePanel';
 import './panels.css';
 
-class NewQuestionPanelModal extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
+import config from '../../../config.json';
 
-    this.getBackgroundColor = this.getBackgroundColor.bind(this);
-  }
-
-  getBackgroundColor(nodePanel) {
-    const { questionStore } = this.props;
+/**
+ * Modal for creation of a new node or edge
+ * @param {Object} panelStore new question panel custom hook
+ */
+export default function NewQuestionPanelModal({ panelStore }) {
+  /**
+   * Get the panel background color
+   * @param {Boolean} isNodePanel is panel of type node
+   */
+  function getBackgroundColor(isNodePanel) {
     // set the color of the node/edge panel header
-    const panelColorMap = getNodeTypeColorMap(questionStore.concepts);
-    if (nodePanel) {
-      return { backgroundColor: panelColorMap(questionStore.activePanelState.type) };
+    const panelColorMap = getNodeTypeColorMap(config.concepts);
+    if (isNodePanel) {
+      return { backgroundColor: panelColorMap(panelStore.node.type) };
     }
+    const { nodes } = panelStore.query_graph;
     // only find the node panels in questionStore state.
-    const nodeList = questionStore.panelState.filter((panel) => panel.panelType === 'node');
-    const type1 = (nodeList[questionStore.activePanelState.source_id] && nodeList[questionStore.activePanelState.source_id].type) || 'edge';
-    const type2 = (nodeList[questionStore.activePanelState.target_id] && nodeList[questionStore.activePanelState.target_id].type) || 'edge';
+    const node1 = nodes.find((node) => node.id === panelStore.edge.source_id);
+    const type1 = (node1 && node1.type) || 'edge';
+    const node2 = nodes.find((node) => node.id === panelStore.edge.target_id);
+    const type2 = (node2 && node2.type) || 'edge';
     const color1 = panelColorMap(type1);
     const color2 = panelColorMap(type2);
     return { backgroundImage: `linear-gradient(80deg, ${color1} 50%, ${color2} 50%)`, borderRadius: '5px 5px 0px 0px' };
   }
 
-  render() {
-    const { questionStore } = this.props;
-    const { activePanelState } = questionStore;
-    const isNodePanel = activePanelState.panelType === 'node';
-    const unsavedChanges = questionStore.isUnsavedChanges;
-    const { isValid: isValidPanel } = questionStore.activePanelState;
-    const isNewPanel = questionStore.activePanelInd === questionStore.panelState.length;
-    const backgroundColor = this.getBackgroundColor(isNodePanel);
-    return (
-      <div>
-        {activePanelState.panelType && (
-          <Modal
-            show={questionStore.showPanelModal}
-            backdrop="static"
-            onHide={questionStore.togglePanelModal}
-          >
-            <Modal.Header style={backgroundColor} closeButton>
-              <Modal.Title style={{ height: '6%', display: 'inline-block' }}>
-                {`${isNodePanel ? 'Node' : 'Edge'} ${activePanelState.panelName} `}
-                <HelpButton link="nedgePanel" />
-              </Modal.Title>
-            </Modal.Header>
-            <Modal.Body style={{ minHeight: 300 }}>
-              {isNodePanel ? (
-                <NodePanel activePanel={activePanelState} />
-              ) : (
-                <EdgePanel activePanel={activePanelState} />
-              )}
-            </Modal.Body>
-            <Modal.Footer>
-              <ButtonGroup className="pull-right">
-                {(questionStore.panelState.length > 0) && (
-                  <Button onClick={questionStore.deleteActivePanel} title={`${isNewPanel ? 'Discard' : 'Delete'} current node`}>
-                    <FaTrash style={{ verticalAlign: 'text-top' }} />{` ${isNewPanel ? 'Discard' : 'Delete'}`}
-                  </Button>
-                )}
-                {!isNewPanel && (
-                  <Button
-                    onClick={questionStore.revertActivePanel}
-                    disabled={!unsavedChanges}
-                    title={unsavedChanges ? 'Undo unsaved changes' : 'No changes to undo'}
-                  >
-                    <FaUndo style={{ verticalAlign: 'text-top' }} />
-                    {' Undo'}
-                  </Button>
-                )}
-                {!_.isEmpty(activePanelState) && (
-                  <Button
-                    onClick={questionStore.saveActivePanel}
-                    disabled={!unsavedChanges || !isValidPanel}
-                    bsStyle={isValidPanel ? (unsavedChanges ? 'primary' : 'default') : 'danger'} // eslint-disable-line no-nested-ternary
-                    title={isValidPanel ? (unsavedChanges ? 'Save changes' : 'No changes to save') : 'Fix invalid panel entries first'} // eslint-disable-line no-nested-ternary
-                  >
-                    <FaSave style={{ verticalAlign: 'text-top' }} />
-                    {' Save'}
-                  </Button>
-                )}
-              </ButtonGroup>
-            </Modal.Footer>
-          </Modal>
+  const isNodePanel = panelStore.panelType === 'node';
+  const unsavedChanges = false;
+  const isValidPanel = true;
+  const isNewPanel = !panelStore.activePanelId;
+  const backgroundColor = getBackgroundColor(isNodePanel);
+  return (
+    <Modal
+      show={panelStore.showPanel}
+      backdrop="static"
+      onHide={() => panelStore.togglePanel(false)}
+      bsSize="lg"
+    >
+      <Modal.Header style={backgroundColor} closeButton>
+        <Modal.Title style={{ height: '6%', display: 'inline-block' }}>
+          {`${isNodePanel ? 'Node' : 'Edge'} ${panelStore.name} `}
+          <HelpButton link="nedgePanel" />
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body style={{ minHeight: 300 }}>
+        {isNodePanel ? (
+          <NodePanel panelStore={panelStore} />
+        ) : (
+          <EdgePanel panelStore={panelStore} />
         )}
-      </div>
-    );
-  }
+      </Modal.Body>
+      <Modal.Footer>
+        <ButtonGroup className="pull-right">
+          {(panelStore.query_graph.nodes.length > 0) && (
+            <Button
+              onClick={() => {
+                if (!isNewPanel) {
+                  if (isNodePanel) {
+                    panelStore.removeNode();
+                  } else {
+                    panelStore.removeEdge();
+                  }
+                }
+                panelStore.togglePanel(false);
+              }}
+              title={`${isNewPanel ? 'Discard' : 'Delete'} current node`}
+            >
+              <FaTrash style={{ verticalAlign: 'text-top' }} />{` ${isNewPanel ? 'Discard' : 'Delete'}`}
+            </Button>
+          )}
+          {!isNewPanel && (
+            <Button
+              onClick={panelStore.revertActivePanel}
+              disabled={!unsavedChanges}
+              title={unsavedChanges ? 'Undo unsaved changes' : 'No changes to undo'}
+            >
+              <FaUndo style={{ verticalAlign: 'text-top' }} />
+              {' Undo'}
+            </Button>
+          )}
+          {!_.isEmpty({}) && (
+            <Button
+              onClick={panelStore.saveActivePanel}
+              disabled={!unsavedChanges || !isValidPanel}
+              bsStyle={isValidPanel ? (unsavedChanges ? 'primary' : 'default') : 'danger'} // eslint-disable-line no-nested-ternary
+              title={isValidPanel ? (unsavedChanges ? 'Save changes' : 'No changes to save') : 'Fix invalid panel entries first'} // eslint-disable-line no-nested-ternary
+            >
+              <FaSave style={{ verticalAlign: 'text-top' }} />
+              {' Save'}
+            </Button>
+          )}
+        </ButtonGroup>
+      </Modal.Footer>
+    </Modal>
+  );
 }
-
-export default NewQuestionPanelModal;

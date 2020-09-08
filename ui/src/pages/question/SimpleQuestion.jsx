@@ -9,12 +9,12 @@ import './newQuestion.css';
 import Loading from '../../components/shared/Loading';
 import MessageAnswersetTable from '../../components/shared/answersetView/answersTable/AnswersTable';
 import AnswersetGraph from '../../components/shared/graphs/AnswersetGraph';
-import SimpleQuestionGraph from '../../components/shared/graphs/SimpleQuestionGraph';
+import QuestionGraphContainer from '../../components/shared/graphs/QuestionGraphContainer';
 import QuickQuestionError from './subComponents/QuickQuestionError';
 import QuestionBuilder from './questionBuilder/QuestionBuilder';
 
 import useMessageStore from '../../stores/useMessageStore';
-import useQuestionStore from '../../stores/useQuestionStore';
+import useQuestionStore from './useQuestionStore';
 import config from '../../config.json';
 
 export default function SimpleQuestion(props) {
@@ -109,7 +109,7 @@ export default function SimpleQuestion(props) {
     <Grid>
       <Row>
         {!loading && !ready && (
-          <div>
+          <>
             <h1 className="robokopApp">
               Ask a Quick Question
               <br />
@@ -123,17 +123,17 @@ export default function SimpleQuestion(props) {
               reset={onResetQuestion}
               submit={onSubmit}
             />
-          </div>
+          </>
         )}
         {ready && (
-          <div>
+          <>
             <div style={{ position: 'block', paddingBottom: '10px' }}>
               <h1 style={{ display: 'inline' }}>{questionStore.questionName}</h1>
               <span style={{ fontSize: '22px', float: 'right', marginTop: '10px' }} title="Download">
                 <FaDownload style={{ cursor: 'pointer' }} onClick={onDownloadAnswer} />
               </span>
             </div>
-            <SimpleQuestionGraph
+            <QuestionGraphContainer
               messageStore={messageStore}
               concepts={config.concepts}
             />
@@ -163,7 +163,7 @@ export default function SimpleQuestion(props) {
                 />
               </Tab>
             </Tabs>
-          </div>
+          </>
         )}
         {loading && (
           <Loading

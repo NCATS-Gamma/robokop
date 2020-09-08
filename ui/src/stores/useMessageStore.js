@@ -122,7 +122,7 @@ export default function useMessageStore() {
       // If they don't we need to figure out which qNodes they most like correspond to
       // Then check labels and use the corresponding type
 
-      const { results, knowledge_graph: kg, question_graph: qg } = message;
+      const { answers: results, knowledge_graph: kg, question_graph: qg } = message;
       const Nj = Math.round(pruneNum / numQgNodes());
 
       // Create a map between qGraph index to node id (for scoreVector)
@@ -504,6 +504,10 @@ export default function useMessageStore() {
     return false;
   }
 
+  function isAgPruned(ansId) {
+    return numAgSetNodes < getMaxNumAgNodes(ansId);
+  }
+
   function getSetNodes(answerId, nodeId) {
     const setNodeIds = message.answers[answerId].node_bindings[nodeId];
     const setNodes = setNodeIds.map((id) => getKgNode(id));
@@ -759,6 +763,7 @@ export default function useMessageStore() {
     getMaxNumAgNodes,
     getSetNodes,
     isKgPruned,
+    isAgPruned,
     filterKeys,
     initializeFilter,
     updateFilterKeys,

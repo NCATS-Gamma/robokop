@@ -3,13 +3,12 @@ import { ButtonGroup, Button } from 'react-bootstrap';
 import { FaThList, FaRegFileAlt } from 'react-icons/fa';
 import { IoIosGitNetwork } from 'react-icons/io';
 import axios from 'axios';
+import shortid from 'shortid';
 
 import config from '../../../../config.json';
 import JsonView from './tableSubComponents/JsonView';
 import MetaDataView from './tableSubComponents/MetaDataView';
 import SubgraphView from './tableSubComponents/SubgraphView';
-
-const shortid = require('shortid');
 
 function makeNodePairs(nodes, edges) {
   const axiosArray = [];
@@ -96,25 +95,26 @@ export default function AnswersTableSubComponent(props) {
 
   function getGraph(answerId) {
     let newGraph = messageStore.activeAnswerGraph(answerId);
-    console.log(newGraph);
+    answersTableStore.setGraph(newGraph);
+    answersTableStore.setLoadedGraph(true);
     // returns the array of calls to make, and an array of node pairs
-    const { calls, nodes } = makeNodePairs(newGraph.nodes, newGraph.edges);
-    // async calls for omnicorp publications
-    fetchGraphSupport(calls)
-      .then((result) => {
-        const pubs = [];
-        // put all the publications into one array
-        result.forEach((graphTest) => pubs.push(graphTest.data));
-        // adds support edges to graph object
-        newGraph = addSupportEdges(newGraph, pubs, nodes);
-        console.log('new new graph', newGraph);
-        // this signifies that the graph is updated and to display the SubGraphViewer
-        answersTableStore.setGraph(newGraph);
-        answersTableStore.setLoadedGraph(true);
-      })
-      .catch((error) => {
-        console.log('Error: ', error);
-      });
+    // const { calls, nodes } = makeNodePairs(newGraph.nodes, newGraph.edges);
+    // // async calls for omnicorp publications
+    // fetchGraphSupport(calls)
+    //   .then((result) => {
+    //     const pubs = [];
+    //     // put all the publications into one array
+    //     result.forEach((graphTest) => pubs.push(graphTest.data));
+    //     // adds support edges to graph object
+    //     newGraph = addSupportEdges(newGraph, pubs, nodes);
+    //     console.log('new new graph', newGraph);
+    //     // this signifies that the graph is updated and to display the SubGraphViewer
+    //     answersTableStore.setGraph(newGraph);
+    //     answersTableStore.setLoadedGraph(true);
+    //   })
+    //   .catch((error) => {
+    //     console.log('Error: ', error);
+    //   });
   }
 
   useEffect(() => {

@@ -8,7 +8,7 @@ import QuestionHeader from '../questionHeader/QuestionHeader';
 
 import AnswersetGraph from '../graphs/AnswersetGraph';
 import AnswersTable from './answersTable/AnswersTable';
-import SimpleQuestionGraph from '../graphs/SimpleQuestionGraph';
+import QuestionGraphContainer from '../graphs/QuestionGraphContainer';
 
 export const answerSetTabEnum = {
   // answerList: 1,
@@ -17,6 +17,21 @@ export const answerSetTabEnum = {
   aggregate: 2,
 };
 
+/**
+ * Full Answerset View
+ * @param {object} messageStore message store custom hook
+ * @param {array} concepts an array of node types
+ * @param {string} question name of the question
+ * @param {object} style custom styling to apply to answerset view container
+ * @param {boolean} omitHeader omit the question header
+ * @param {boolean} enableQuestionSelect can the user select this question
+ * @param {boolean} enableQuestionEdit can the user update the question name
+ * @param {function} callbackQuestionUpdateMeta function to update question meta data
+ * @param {function} callbackQuestionSelect function to update to the selected question
+ * @param {string} urlQuestion url to this specific question
+ * @param {function} callbackAnswersetSelect function to update to the selected answerset
+ * @param {string} urlAnswerset url to this specific answerset
+ */
 export default function AnswersetView(props) {
   const {
     messageStore, concepts, question, style, omitHeader, enableQuestionSelect,
@@ -71,7 +86,7 @@ export default function AnswersetView(props) {
               </Col>
             </Row>
           )}
-          <SimpleQuestionGraph
+          <QuestionGraphContainer
             messageStore={messageStore}
             concepts={concepts}
           />

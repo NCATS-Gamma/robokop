@@ -1,134 +1,108 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Graph from 'react-graph-vis';
+import shortid from 'shortid';
+import _ from 'lodash';
+
 import getNodeTypeColorMap from '../../../utils/colorUtils';
 import entityNameDisplay from '../../../utils/entityNameDisplay';
 
-const Graph = require('react-graph-vis').default;
-const shortid = require('shortid');
-const _ = require('lodash');
+const keyBlocklist = ['isSet', 'labels', 'label', 'equivalent_identifiers', 'type', 'id', 'degree', 'name', 'title', 'color', 'binding', 'scoreVector', 'aggScore', 'level'];
 
-const keyBlacklist = ['isSet', 'labels', 'label', 'equivalent_identifiers', 'type', 'id', 'degree', 'name', 'title', 'color', 'binding', 'scoreVector', 'aggScore', 'level'];
+const styles = {
+  supportEdgeColors: {
+    color: '#aaa',
+    hover: '#aaa',
+    opacity: 0.5,
+  },
+};
 
-class SubGraphViewer extends React.Component {
-  constructor(props) {
-    super(props);
+const defaultGraphOptions = {
+  autoResize: true,
+  height: '500px',
+  physics: {
+    minVelocity: 1,
+    barnesHut: {
+      gravitationalConstant: -300,
+      centralGravity: 0.3,
+      springLength: 120,
+      springConstant: 0.05,
+      damping: 0.2,
+      avoidOverlap: 1,
+    },
+  },
+  layout: {
+    randomSeed: 0,
+    improvedLayout: false,
+  },
+  edges: {
+    color: {
+      color: '#000',
+      highlight: '#000',
+      hover: '#000',
+    },
+    hoverWidth: 1,
+    selectionWidth: 1,
+    // smooth: {
+    //   enabled: true,
+    //   type: 'dynamic',
+    // },
+  },
+  nodes: {
+    shape: 'box',
+    labelHighlightBold: false,
+    borderWidthSelected: 2,
+    borderWidth: 1,
+    chosen: false,
+  },
+  interaction: {
+    hover: true,
+    zoomView: true,
+    dragView: true,
+    hoverConnectedEdges: true,
+    selectConnectedEdges: false,
+    selectable: true,
+    tooltipDelay: 400,
+  },
+};
 
-    this.styles = {
-      supportEdgeColors: {
-        color: '#aaa',
-        hover: '#aaa',
-        opacity: 0.5,
-      },
-    };
-    this.graphOptions = {
-      autoResize: true,
-      height: '500px',
-      physics: {
-        minVelocity: 1,
-        barnesHut: {
-          gravitationalConstant: -300,
-          centralGravity: 0.3,
-          springLength: 120,
-          springConstant: 0.05,
-          damping: 0.2,
-          avoidOverlap: 1,
-        },
-      },
-      layout: {
-        randomSeed: 0,
-        improvedLayout: false,
-      },
-      edges: {
-        color: {
-          color: '#000',
-          highlight: '#000',
-          hover: '#000',
-        },
-        hoverWidth: 1,
-        selectionWidth: 1,
-        // smooth: {
-        //   enabled: true,
-        //   type: 'dynamic',
-        // },
-      },
-      nodes: {
-        shape: 'box',
-        labelHighlightBold: false,
-        borderWidthSelected: 2,
-        borderWidth: 1,
-        chosen: false,
-      },
-      interaction: {
-        hover: true,
-        zoomView: true,
-        dragView: true,
-        hoverConnectedEdges: true,
-        selectConnectedEdges: false,
-        selectable: true,
-        tooltipDelay: 400,
-      },
-    };
-
-    this.state = {
-      displayGraph: null,
-      displayGraphOptions: this.graphOptions,
-    };
-
-    this.syncStateAndProps = this.syncStateAndProps.bind(this);
-    this.addTagsToGraph = this.addTagsToGraph.bind(this);
-    this.setNetworkCallbacks = this.setNetworkCallbacks.bind(this);
-    this.clickCallback = this.clickCallback.bind(this);
-  }
-
-  componentDidMount() {
-    this.syncStateAndProps(this.props);
-  }
-  componentWillReceiveProps(nextProps) {
-    this.syncStateAndProps(nextProps);
-  }
-
-  shouldComponentUpdate(nextProps) {
-    // Only redraw/remount component if subgraph components change
-    if (_.isEqual(this.props.subgraph, nextProps.subgraph) && this.network && (this.props.layoutStyle === nextProps.layoutStyle)) {
-      return false;
-    }
-    return true;
-  }
-
-  syncStateAndProps(newProps) {
-    let graph = newProps.subgraph;
-
-    const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'nodes'));
-    if (isValid) {
-      graph = this.addTagsToGraph(graph);
-    }
-    const graphOptions = this.getGraphOptions(graph, newProps);
-
-    this.setState({ displayGraph: graph, displayGraphOptions: graphOptions }, this.setNetworkCallbacks);
-  }
-
-  clickCallback(event) { /* eslint-disable no-param-reassign */
-    // Add edge objects not just ids
-    event.edgeObjects = event.edges.map(eId => this.state.displayGraph.edges.find(displayEdge => displayEdge.id === eId));
-    event.graph = this.state.displayGraph;
-    this.props.callbackOnGraphClick(event);
-  }
+/**
+ * SubGraph Viewer
+ * @param {object} subgraph
+ * @param {string} layoutStyle direction of the graph, options are auto, vertical, horizontal, or heirarchical
+ * @param {function} callbackOnGraphClick function to call on graph click
+ * @param {number} height the height of the graph
+ * @param {boolean} showSupport should the graph show support edges
+ * @param {boolean} omitEdgeLabel should the graph hide edge labels
+ * @param {boolean} varyEdgeSmoothRoundness should the graph edges curve so as not to overlap
+ * @param {number} layoutRandomSeed the seed number at which to generate the graph
+ * @param {array} concepts an array of node types
+ */
+export default function SubGraphViewer(props) {
+  const {
+    subgraph, layoutStyle = 'auto', callbackOnGraphClick = () => {}, height = 600,
+    showSupport = false, omitEdgeLabel = false, varyEdgeSmoothRoundness = false,
+    layoutRandomSeed = 0, concepts,
+  } = props;
+  const [displayGraph, updateDisplayGraph] = useState(null);
+  const [displayGraphOptions, updateGraphOptions] = useState(defaultGraphOptions);
+  const network = useRef(null);
 
   // Bind network fit callbacks to resize graph and cancel fit callbacks on start of zoom/pan
-  setNetworkCallbacks() {
+  function setNetworkCallbacks() {
     const stopLayout = () => {
-      this.network.stopSimulation();
-      this.network.physics.physicsEnabled = false;
+      network.current.stopSimulation();
+      network.current.physics.physicsEnabled = false;
     };
     const afterDraw = () => {
-      setTimeout(() => { stopLayout(); this.network.fit(); }, 50);
+      setTimeout(() => { stopLayout(); network.current.fit(); }, 50);
     };
     const startLayout = () => {
-      this.network.once('afterDrawing', afterDraw);
-      this.network.physics.physicsEnabled = true;
-      this.network.startSimulation();
+      network.current.once('afterDrawing', afterDraw);
+      network.current.physics.physicsEnabled = true;
+      network.current.startSimulation();
     };
     const toggleLayout = () => {
-      if (this.network.physics.physicsEnabled) {
+      if (network.current.physics.physicsEnabled) {
         stopLayout();
       } else {
         startLayout();
@@ -136,27 +110,27 @@ class SubGraphViewer extends React.Component {
     };
 
     try {
-      this.network.once('afterDrawing', afterDraw);
-      this.network.on('doubleClick', () => { this.network.off('afterDrawing'); this.network.fit(); toggleLayout(); });
-      this.network.on('zoom', () => this.network.off('afterDrawing'));
-      this.network.on('dragStart', () => this.network.off('afterDrawing'));
-      this.network.on('dragEnd', () => { setTimeout(stopLayout, 5); });
-      // this.network.on('stabilizationIterationsDone', () => { setTimeout(() => this.network.stopSimulation(), 5); });
+      network.current.once('afterDrawing', afterDraw);
+      network.current.on('doubleClick', () => { network.current.off('afterDrawing'); network.current.fit(); toggleLayout(); });
+      network.current.on('zoom', () => network.current.off('afterDrawing'));
+      network.current.on('dragStart', () => network.current.off('afterDrawing'));
+      network.current.on('dragEnd', () => { setTimeout(stopLayout, 5); });
+      // network.current.on('stabilizationIterationsDone', () => { setTimeout(() => network.current.stopSimulation(), 5); });
     } catch (err) {
       console.log(err);
     }
   }
 
-  getGraphOptions(graph, newProps) {
-    const { graphOptions } = this;
+  function getGraphOptions(graph) {
+    const graphOptions = _.cloneDeep(defaultGraphOptions);
     const nNodes = 'nodes' in graph ? graph.nodes.length : 0;
 
-    graphOptions.height = `${this.props.height}px`;
+    graphOptions.height = `${height}px`;
     let modifiedOptions = {};
-    if (this.props.layoutStyle === 'auto') {
+    if (layoutStyle === 'auto') {
       modifiedOptions = {
         layout: {
-          randomSeed: newProps.layoutRandomSeed,
+          randomSeed: layoutRandomSeed,
           // improvedLayout: true,
         },
       };
@@ -165,9 +139,9 @@ class SubGraphViewer extends React.Component {
     // Check for graph duplicate edges
     // In the event of duplicate edges directed layout doesn't work, we must stick with physics and auto
     const duplicateEdges = graph.edges.reduce((val, e) => (val || e.moreThanOneEdge), false);
-    if (!duplicateEdges && ((newProps.layoutStyle === 'vertical') || (newProps.layoutStyle === 'horizontal') || nNodes < 3)) {
+    if (!duplicateEdges && ((layoutStyle === 'vertical') || (layoutStyle === 'horizontal') || nNodes < 3)) {
       let direction = 'LR';
-      if (this.props.layoutStyle === 'vertical') {
+      if (layoutStyle === 'vertical') {
         direction = 'UD';
       }
 
@@ -190,7 +164,7 @@ class SubGraphViewer extends React.Component {
       };
     }
 
-    if (newProps.layoutStyle === 'hierarchical') {
+    if (layoutStyle === 'hierarchical') {
       modifiedOptions = {
         layout: {
           randomSeed: undefined,
@@ -219,8 +193,7 @@ class SubGraphViewer extends React.Component {
   }
 
   // Method to add requisite tags to graph definition JSON before passing to vis.js
-  addTagsToGraph(graph) {
-    const { concepts } = this.props;
+  function addTagsToGraph(graph) {
     // Adds vis.js specific tags primarily to style graph as desired
     const g = _.cloneDeep(graph);
     const nodeTypeColorMap = getNodeTypeColorMap(concepts); // We could put standardized concepts here
@@ -246,7 +219,7 @@ class SubGraphViewer extends React.Component {
 
     g.nodes.forEach((n) => {
       if (Array.isArray(n.type)) {
-        n.type = concepts.find(concept => concept !== 'named_thing' && n.type.includes(concept));
+        n.type = concepts.find((concept) => concept !== 'named_thing' && n.type.includes(concept));
       }
       const backgroundColor = nodeTypeColorMap(n.type);
       n.color = {
@@ -258,8 +231,8 @@ class SubGraphViewer extends React.Component {
 
       // Set shortened node labels and tool-tip for each node
       n.label = n.name && n.name.length > 15 ? `${n.name.substring(0, 13)}...` : n.name || 'Unknown';
-      let extraFields = Object.keys(n).filter(property => !keyBlacklist.includes(property));
-      extraFields = extraFields.map(property => `<div key={${shortid.generate()}}><span class="field-name">${property}: </span>${n[property]}</div>`);
+      let extraFields = Object.keys(n).filter((property) => !keyBlocklist.includes(property));
+      extraFields = extraFields.map((property) => `<div key={${shortid.generate()}}><span class="field-name">${property}: </span>${n[property]}</div>`);
       n.title = (
         `<div class="vis-tooltip-inner">
           <div><span class="title">${n.name}</span></div>
@@ -271,8 +244,8 @@ class SubGraphViewer extends React.Component {
     });
 
     // Separate out support and regular edges to modify things differently
-    const edgesRegular = g.edges.filter(e => e.type !== 'literature_co-occurrence');
-    const edgesSupport = g.edges.filter(e => e.type === 'literature_co-occurrence');
+    const edgesRegular = g.edges.filter((e) => e.type !== 'literature_co-occurrence');
+    const edgesSupport = g.edges.filter((e) => e.type === 'literature_co-occurrence');
 
     edgesSupport.forEach((e) => {
       // Make sure support edges actually have publications
@@ -309,7 +282,7 @@ class SubGraphViewer extends React.Component {
         }
 
         // Find a corresponding support edge
-        const sameNodesSupportEdge = edgesSupport.find(s => (((e.source_id === s.source_id) && (e.target_id === s.target_id)) || ((e.source_id === s.target_id) && (e.target_id === s.source_id))));
+        const sameNodesSupportEdge = edgesSupport.find((s) => (((e.source_id === s.source_id) && (e.target_id === s.target_id)) || ((e.source_id === s.target_id) && (e.target_id === s.source_id))));
         if (sameNodesSupportEdge) {
           // We have a repeated edge
           sameNodesSupportEdge.duplicateEdge = true; // Mark for deletion
@@ -326,8 +299,8 @@ class SubGraphViewer extends React.Component {
       // Find edges that go between the same two nodes and mark them accordingly
 
       // Find a corresponding support edge
-      const sameNodesEdge = edgesRegular.filter(e2 => (((e.source_id === e2.source_id) && (e.target_id === e2.target_id)) || ((e.source_id === e2.target_id) && (e.target_id === e2.source_id))));
-      sameNodesEdge.splice(sameNodesEdge.findIndex(e2 => e2.id === e.id), 1);
+      const sameNodesEdge = edgesRegular.filter((e2) => (((e.source_id === e2.source_id) && (e.target_id === e2.target_id)) || ((e.source_id === e2.target_id) && (e.target_id === e2.source_id))));
+      sameNodesEdge.splice(sameNodesEdge.findIndex((e2) => e2.id === e.id), 1);
       if (sameNodesEdge.length > 0) {
         // We have a repeated edge
         e.moreThanOneEdge = true;
@@ -337,10 +310,10 @@ class SubGraphViewer extends React.Component {
     });
 
     // Remove the duplicated support edges
-    g.edges = [].concat(edgesSupport.filter(s => !s.duplicateEdge && !s.selfEdge), edgesRegular);
+    g.edges = [].concat(edgesSupport.filter((s) => !s.duplicateEdge && !s.selfEdge), edgesRegular);
     // g.edges = [].concat(edgesRegular, edgesSupport.filter(s => !s.duplicateEdge && !s.selfEdge));
 
-    if (this.props.varyEdgeSmoothRoundness) {
+    if (varyEdgeSmoothRoundness) {
       // For each node pair
       // Find any edges between those nodes (in either direction)
       // Loop through those edges and set smooth
@@ -349,7 +322,7 @@ class SubGraphViewer extends React.Component {
         const n1 = g.nodes[iNode];
         for (let jNode = iNode; jNode < g.nodes.length; jNode += 1) {
           const n2 = g.nodes[jNode];
-          const theseNodeEdges = g.edges.filter(e => (((e.source_id === n1.id) && (e.target_id === n2.id)) || ((e.target_id === n1.id) && (e.source_id === n2.id))));
+          const theseNodeEdges = g.edges.filter((e) => (((e.source_id === n1.id) && (e.target_id === n2.id)) || ((e.target_id === n1.id) && (e.source_id === n2.id))));
           let roundnessStep = 0.15;
           if (theseNodeEdges.length > 13) {
             // Roundness must be between 0 and 1. In general for less than 13 edges steps of 0.15 looks good
@@ -404,11 +377,11 @@ class SubGraphViewer extends React.Component {
           enabled: true,
           type: 'dynamic',
         };
-        if (this.props.varyEdgeSmoothRoundness) {
+        if (varyEdgeSmoothRoundness) {
           smoothLit = e.smooth;
         }
         typeDependentParams = {
-          color: this.styles.supportEdgeColors,
+          color: styles.supportEdgeColors,
           // dashes: [2, 4],
           physics: false,
           font: {
@@ -425,14 +398,14 @@ class SubGraphViewer extends React.Component {
         };
       }
 
-      if (this.props.omitEdgeLabel) {
+      if (omitEdgeLabel) {
         label = '';
       }
       let smooth = { forceDirection: 'none' };
       if (e.moreThanOneEdge) {
         smooth = { enabled: true, type: 'dynamic' };
       }
-      if (this.props.varyEdgeSmoothRoundness) {
+      if (varyEdgeSmoothRoundness) {
         ({ smooth } = e);
       }
       e.from = e.source_id;
@@ -464,43 +437,71 @@ class SubGraphViewer extends React.Component {
 
       return { ...e, ...defaultParams, ...typeDependentParams };
     });
-    if (!this.props.showSupport) {
-      g.edges = g.edges.filter(e => e.type !== 'literature_co-occurrence');
+    if (!showSupport) {
+      g.edges = g.edges.filter((e) => e.type !== 'literature_co-occurrence');
     }
 
     return g;
   }
 
-  render() {
-    const graph = this.state.displayGraph;
-    const isValid = !(graph == null);
-    return (
-      <div>
-        {isValid &&
-          <div style={{ fontFamily: 'Monospace' }}>
-            <Graph
-              key={shortid.generate()} // Forces component remount
-              graph={graph}
-              style={{ width: '100%' }}
-              options={this.state.displayGraphOptions}
-              events={{ click: this.clickCallback }}
-              getNetwork={(network) => { this.network = network; }} // Store network reference in the component
-            />
-          </div>
-        }
-      </div>
-    );
+  function syncStateAndProps() {
+    let graph = _.cloneDeep(subgraph);
+
+    const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'nodes'));
+    if (isValid) {
+      graph = addTagsToGraph(graph);
+    }
+    const graphOptions = getGraphOptions(graph);
+
+    updateDisplayGraph(graph);
+    updateGraphOptions(graphOptions);
+
+    // this.setState({ displayGraph: graph, displayGraphOptions: graphOptions }, this.setNetworkCallbacks);
   }
+
+  useEffect(() => {
+    syncStateAndProps();
+  }, []);
+
+  useEffect(() => {
+    if (network.current) {
+      setNetworkCallbacks();
+    }
+  }, [displayGraphOptions, network]);
+
+  // componentWillReceiveProps(nextProps) {
+  //   this.syncStateAndProps(nextProps);
+  // }
+
+  // shouldComponentUpdate(nextProps) {
+  //   // Only redraw/remount component if subgraph components change
+  //   if (_.isEqual(this.props.subgraph, nextProps.subgraph) && this.network && (this.props.layoutStyle === nextProps.layoutStyle)) {
+  //     return false;
+  //   }
+  //   return true;
+  // }
+
+  function clickCallback(event) { /* eslint-disable no-param-reassign */
+    // Add edge objects not just ids
+    event.edgeObjects = event.edges.map((eId) => displayGraph.edges.find((displayEdge) => displayEdge.id === eId));
+    event.graph = displayGraph;
+    callbackOnGraphClick(event);
+  }
+
+  return (
+    <>
+      {displayGraph !== null && (
+        <div style={{ fontFamily: 'Monospace' }}>
+          <Graph
+            key={shortid.generate()} // Forces component remount
+            graph={displayGraph}
+            style={{ width: '100%' }}
+            options={displayGraphOptions}
+            events={{ click: clickCallback }}
+            getNetwork={(ref) => { network.current = ref; }} // Store network reference in the component
+          />
+        </div>
+      )}
+    </>
+  );
 }
-
-SubGraphViewer.defaultProps = {
-  layoutRandomSeed: 0,
-  layoutStyle: 'auto',
-  height: 600,
-  showSupport: false,
-  omitEdgeLabel: false,
-  varyEdgeSmoothRoundness: false,
-  callbackOnGraphClick: () => {},
-};
-
-export default SubGraphViewer;

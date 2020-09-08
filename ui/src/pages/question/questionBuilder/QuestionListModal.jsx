@@ -35,7 +35,7 @@ export default function QuestionListModal(props) {
                 headerName: 'Questions',
                 field: 'naturalQuestion',
                 suppressMenu: true,
-                suppressSorting: true,
+                sortable: false,
                 width: 500,
               },
             ]}

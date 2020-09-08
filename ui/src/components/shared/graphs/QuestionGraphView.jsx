@@ -106,6 +106,17 @@ function defaultEdgePreProc(e) {
 }
 /* eslint-enable no-param-reassign */
 
+/**
+ * Query graph view
+ * @param {Object} question contains nodes and edges
+ * @param {Boolean} selectable can you click on the graph
+ * @param {Number} height height of the graph
+ * @param {Number} width width of the graph
+ * @param {Function} graphClickCallback what happens when you click on the graph
+ * @param {Function} nodePreProcFn creation of each node properties
+ * @param {Function} edgePreProcFn creation of each edge properties
+ * @param {Boolean} interactable can you hover over nodes and get info
+ */
 export default function QuestionGraphView(props) {
   const {
     question = { nodes: [], edges: [] }, selectable = false, height = 250, width = '100%',
@@ -249,21 +260,18 @@ export default function QuestionGraphView(props) {
   }
 
   useEffect(() => {
-    console.log('question', question);
     getGraphOptions();
   }, [question]);
 
   useEffect(() => {
-    if (selectable) {
+    if (selectable && network.current) {
       setNetworkCallbacks();
     }
-  }, [displayOptions]);
-
-  const isValid = !(displayGraph == null);
+  }, [network.current]);
 
   return (
-    <div>
-      {isValid && (
+    <>
+      {displayGraph !== null && (
         <Graph
           key={shortid.generate()}
           graph={displayGraph}
@@ -273,6 +281,6 @@ export default function QuestionGraphView(props) {
           style={{ width }}
         />
       )}
-    </div>
+    </>
   );
 }

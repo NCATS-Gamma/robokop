@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import _ from 'lodash';
 
 import { Row, Col } from 'react-bootstrap';
 import Dropzone from 'react-dropzone';
@@ -10,8 +12,6 @@ import AnswersetView from '../components/shared/answersetView/AnswersetView';
 // import AnswersetStore from './stores/messageAnswersetStore';
 import useMessageStore from '../stores/useMessageStore';
 import config from '../config.json';
-
-const _ = require('lodash');
 
 export default function SimpleViewer(props) {
   const { user } = props;
@@ -116,6 +116,44 @@ export default function SimpleViewer(props) {
     setErrorMessage(errMsg);
   }
 
+  function uploadMessage() {
+    const formData = new FormData();
+    const blob = new Blob([JSON.stringify(messageStore.message.question_graph)], {
+      type: 'application/json',
+    });
+    formData.append('question', blob);
+    axios.post('/api/questions', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${user.id_token}`,
+      },
+    })
+      .then((res) => {
+        const question_id = res.data;
+        console.log('question id', res.data);
+        const answerData = new FormData();
+        const answerBlob = new Blob([JSON.stringify({
+          knowledge_graph: messageStore.message.knowledge_graph,
+          results: messageStore.message.answers,
+        })], {
+          type: 'application/json',
+        });
+        answerData.append('answer', answerBlob);
+        axios.post(`/api/questions/${question_id}/answers`, answerData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${user.id_token}`,
+          },
+        })
+          .then((response) => {
+            console.log('answers response', response.data);
+          })
+          .catch((error) => {
+            console.log('answers error', error);
+          });
+      });
+  }
+
   function onDrop(acceptedFiles, rejectedFiles) {
     acceptedFiles.forEach((file) => {
       const fr = new window.FileReader();
@@ -123,12 +161,12 @@ export default function SimpleViewer(props) {
         toggleLoading(true);
         setLoadingMessage('Loading Answers...');
       };
-      fr.onloadend = () => toggleLoading(false);
+      // fr.onloadend = () => toggleLoading(false);
       fr.onload = (e) => {
         const fileContents = e.target.result;
         try {
-          const object = JSON.parse(fileContents);
-          parseMessage(object);
+          const message = JSON.parse(fileContents);
+          parseMessage(message);
         } catch (err) {
           console.log(err);
           // window.alert('Failed to load this Answerset file. Are you sure this is valid?');
@@ -182,12 +220,15 @@ export default function SimpleViewer(props) {
       ) : (
         <>
           {messageSaved && !errorMessage && (
-            <AnswersetView
-              user={user}
-              concepts={config.concepts}
-              messageStore={messageStore}
-              omitHeader
-            />
+            <>
+              <AnswersetView
+                user={user}
+                concepts={config.concepts}
+                messageStore={messageStore}
+                omitHeader
+              />
+              <button type="button" onClick={uploadMessage}>Upload</button>
+            </>
           )}
           {!errorMessage && !messageSaved && (
             <Row>

@@ -1,145 +1,33 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   FormControl, Button, Badge, InputGroup, Glyphicon,
 } from 'react-bootstrap';
 import { AutoSizer, List } from 'react-virtualized';
 import shortid from 'shortid';
-import _ from 'lodash';
 
-import AppConfig from '../../../AppConfig';
-import config from '../../../config.json';
-import Loading from '../../../components/shared/Loading';
 import entityNameDisplay from '../../../utils/entityNameDisplay';
 import curieUrls from '../../../utils/curieUrls';
 import getNodeTypeColorMap from '../../../utils/colorUtils';
 import NodeProperties from './NodeProperties';
 
-const setify = (type) => `set of ${type}s`;
+/**
+ * Node Panel
+ * @param {Object} panelStore panel custom hook
+ */
+export default function NodePanel({ panelStore }) {
+  const input = useRef(null);
+  const { node } = panelStore;
 
-class NodePanel extends React.Component {
-  constructor(props) {
-    super(props);
+  useEffect(() => {
+    input.current.focus();
+  }, []);
 
-    this.appConfig = new AppConfig(config);
-
-    this.input = null; // ref to search input
-
-    this.state = {
-      conceptsWithSets: [],
-      filteredConcepts: [],
-      curies: [],
-      loading: false,
-    };
-
-    this.addSetsToConcepts = this.addSetsToConcepts.bind(this);
-    this.onSearch = this.onSearch.bind(this);
-    this.deboundedSearch = _.debounce(this.onSearch, 250);
-    this.reSearch = this.reSearch.bind(this);
-    this.onSelect = this.onSelect.bind(this);
-    this.findCurieType = this.findCurieType.bind(this);
-    this.rowRenderer = this.rowRenderer.bind(this);
-    this.handleTermChange = this.handleTermChange.bind(this);
-    this.reset = this.reset.bind(this);
-  }
-
-  componentDidMount() {
-    this.input.focus();
-    this.addSetsToConcepts();
-  }
-
-  addSetsToConcepts() {
-    const { concepts } = this.props.activePanel.store;
-    const conceptsWithSets = [];
-    concepts.forEach((concept) => {
-      conceptsWithSets.push({ label: concept, type: concept, set: false });
-      conceptsWithSets.push({ label: setify(concept), type: concept, set: true });
-    });
-    this.setState({ conceptsWithSets });
-  }
-
-  handleTermChange(event) {
-    const { activePanel } = this.props;
-    const term = event.target.value;
-    activePanel.updateSearchTerm(term);
-    this.setState({ loading: true }, () => {
-      this.deboundedSearch(term);
-    });
-  }
-
-  onSearch(input) {
-    const { conceptsWithSets } = this.state;
-    if (input.length > 2) {
-      this.appConfig.questionNewSearch(input)
-        .then((res) => {
-          if (res.cancelled) {
-            return;
-          }
-          let curies = [];
-          const setSearch = input.replace(' ', '_');
-          const filteredConcepts = conceptsWithSets.filter(concept => concept.label.includes(setSearch.toLowerCase()));
-          if (res.options) {
-            curies = res.options;
-          }
-          this.setState({ curies, filteredConcepts, loading: false });
-        })
-        .catch((err) => {
-          console.log('err', err); // eslint-disable-line
-        });
-    } else {
-      this.setState({ filteredConcepts: [], curies: [] });
-    }
-  }
-
-  onSelect(selected) {
-    const { activePanel } = this.props;
-    activePanel.updateSearchTerm(entityNameDisplay(selected.label));
-    if (selected.curie) {
-      activePanel.changeNodeFunction('curieEnabled');
-      activePanel.updateField('type', this.findCurieType(selected.type));
-      activePanel.updateCurie('', selected.label, selected.curie);
-    } else if (selected.set) {
-      activePanel.changeNodeFunction('set');
-      activePanel.updateField('type', selected.type);
-    } else if (!selected.type) {
-      activePanel.updateField('type', 'named_thing');
-      activePanel.changeNodeFunction('curieEnabled');
-      activePanel.updateCurie('', selected.label, selected.value);
-    } else {
-      activePanel.changeNodeFunction('regular');
-      activePanel.updateField('type', selected.type);
-    }
-  }
-
-  findCurieType(curieTypes) {
-    let { concepts } = this.props.activePanel.store;
-    concepts = concepts.filter(t => t !== 'named_thing');
-    const curieType = concepts.find(concept => curieTypes.includes(concept));
-    return curieType || '';
-  }
-
-  reset() {
-    const { activePanel } = this.props;
-    activePanel.resetNodePanel();
-    activePanel.updateSearchTerm('');
-    this.input.focus();
-    this.setState({ filteredConcepts: [], curies: [] });
-  }
-
-  reSearch() {
-    const { activePanel } = this.props;
-    const { searchTerm } = activePanel;
-    activePanel.resetNodePanel();
-    this.setState({ filteredConcepts: [], curies: [] }, () => {
-      this.onSearch(searchTerm);
-    });
-  }
-
-  rowRenderer({
+  function rowRenderer({
     index,
     key,
     style,
   }) {
-    const { filteredConcepts, curies } = this.state;
+    const { filteredConcepts, curies } = node;
     const isConcept = index < filteredConcepts.length;
     let name = '';
     let entry = {};
@@ -164,15 +52,15 @@ class NodePanel extends React.Component {
       const urls = curieUrls(curie);
       links = (
         <span>
-          {urls.map(u => (
-            <a target="_blank" href={u.url} alt={u.label} key={shortid.generate()} style={{ paddingRight: '3px' }}><img src={u.iconUrl} alt={u.label} height={16} width={16} /></a>
+          {urls.map((u) => (
+            <a target="_blank" rel="noreferrer" href={u.url} alt={u.label} key={shortid.generate()} style={{ paddingRight: '3px' }}><img src={u.iconUrl} alt={u.label} height={16} width={16} /></a>
           ))}
         </span>
       );
       if (Array.isArray(type)) {
-        type = type.filter(t => t !== 'named_thing');
+        type = type.filter((t) => t !== 'named_thing');
         const typeColorMap = getNodeTypeColorMap(type);
-        colorStripes = type.map(t => (
+        colorStripes = type.map((t) => (
           <div
             title={t}
             style={{
@@ -195,11 +83,11 @@ class NodePanel extends React.Component {
         className="nodePanelSelector"
         id={index === filteredConcepts.length - 1 && curies.length > 0 ? 'lastConcept' : ''}
       >
-        {!fullColor &&
+        {!fullColor && (
           <div className="colorStripesContainer">
             {colorStripes}
           </div>
-        }
+        )}
         <div className="curieName">
           <div title={entityNameDisplay(name)}>{entityNameDisplay(name)}</div>
         </div>
@@ -208,7 +96,7 @@ class NodePanel extends React.Component {
           <Badge>{degree}</Badge>
           {links}
           <Button
-            onClick={() => this.onSelect(entry)}
+            onClick={() => panelStore.node.select(entry)}
           >
             Select
           </Button>
@@ -217,102 +105,87 @@ class NodePanel extends React.Component {
     );
   }
 
-  render() {
-    const {
-      filteredConcepts, curies, loading,
-    } = this.state;
-    const { store } = this.props.activePanel;
-    const ready = store.dataReady && store.conceptsReady && store.userReady && store.nodePropertiesReady;
-    const { activePanel } = this.props;
-    const showOptions = activePanel.searchTerm && !activePanel.type;
-    const showConstraints = activePanel.regular || activePanel.set;
-    const rightButtonContents = showOptions ? (<Glyphicon glyph="remove" />) : (<Glyphicon glyph="triangle-bottom" />);
-    const rightButtonFunction = showOptions ? this.reset : this.reSearch;
-    const rowHeight = 50;
-    const nRows = filteredConcepts.length + curies.length;
-    const isEmpty = nRows === 0;
-    const height = Math.min(rowHeight * nRows, 225);
-    return (
-      <div>
-        {ready ?
-          <div>
-            <h4 style={{ color: '#CCCCCC' }}>NODE TYPE</h4>
-            <div id="nodeSelectorContainer">
-              <InputGroup>
-                <FormControl
-                  type="text"
-                  className="curieSelectorInput"
-                  placeholder="Start typing to search."
-                  value={activePanel.searchTerm}
-                  inputRef={(ref) => { this.input = ref; }}
-                  onChange={this.handleTermChange}
-                />
-                {!showOptions && activePanel.curie.length > 0 &&
-                  <InputGroup.Addon>
-                    {activePanel.curie[0]}
-                  </InputGroup.Addon>
-                }
-                <InputGroup.Addon
-                  onClick={rightButtonFunction}
-                  style={{ background: '#fff', cursor: 'pointer' }}
-                >
-                  {rightButtonContents}
-                </InputGroup.Addon>
-              </InputGroup>
-              {showOptions &&
-                <div style={{ margin: '0px 10px' }}>
-                  {!isEmpty && !loading ?
-                    <AutoSizer disableHeight defaultWidth={100}>
-                      {({ width }) => (
-                        <List
-                          style={{
-                            border: 'none',
-                            marginTop: '0px',
-                            outline: 'none',
-                          }}
-                          height={height}
-                          overscanRowCount={10}
-                          rowCount={nRows}
-                          rowHeight={rowHeight}
-                          rowRenderer={this.rowRenderer}
-                          width={width}
-                        />
-                      )}
-                    </AutoSizer>
-                    :
-                    <div
-                      className="nodePanelSelector"
-                      style={{ padding: '10px', color: '#ccc' }}
-                    >
-                      <span>
-                        {loading ? 'Loading...' : 'No results found.'}
-                      </span>
-                    </div>
-                  }
-                </div>
-              }
-            </div>
-            {showConstraints &&
-              <div>
-                {store.nodePropertyList[activePanel.type] && store.nodePropertyList[activePanel.type].length > 0 ?
-                  <NodeProperties activePanel={activePanel} validProperties={toJS(store.nodePropertyList)} />
-                  :
-                  <p style={{
-                      position: 'absolute', bottom: 0, width: '100%', textAlign: 'center',
+  const showOptions = node.searchTerm && !node.type;
+  const showConstraints = node.regular || node.set;
+  const rightButtonContents = showOptions ? (<Glyphicon glyph="remove" />) : (<Glyphicon glyph="triangle-bottom" />);
+  const rightButtonFunction = showOptions ? node.reset : node.reSearch;
+  const rowHeight = 50;
+  const nRows = node.filteredConcepts.length + node.curies.length;
+  const isEmpty = nRows === 0;
+  const height = Math.min(rowHeight * nRows, 225);
+  return (
+    <>
+      <h4 style={{ color: '#CCCCCC' }}>NODE TYPE</h4>
+      <div id="nodeSelectorContainer">
+        <InputGroup>
+          <FormControl
+            type="text"
+            className="curieSelectorInput"
+            placeholder="Start typing to search."
+            value={node.searchTerm}
+            inputRef={(ref) => { input.current = ref; }}
+            onChange={(e) => node.updateSearchTerm(e.target.value)}
+          />
+          {!showOptions && node.curie.length > 0 && (
+            <InputGroup.Addon>
+              {node.curie[0]}
+            </InputGroup.Addon>
+          )}
+          <InputGroup.Addon
+            onClick={rightButtonFunction}
+            style={{ background: '#fff', cursor: 'pointer' }}
+          >
+            {rightButtonContents}
+          </InputGroup.Addon>
+        </InputGroup>
+        {showOptions && (
+          <div style={{ margin: '0px 10px' }}>
+            {!isEmpty && !node.loading ? (
+              <AutoSizer disableHeight defaultWidth={100}>
+                {({ width }) => (
+                  <List
+                    style={{
+                      border: 'none',
+                      marginTop: '0px',
+                      outline: 'none',
                     }}
-                  >
-                    No constraints available for this type.
-                  </p>
-                }
+                    height={height}
+                    overscanRowCount={10}
+                    rowCount={nRows}
+                    rowHeight={rowHeight}
+                    rowRenderer={rowRenderer}
+                    width={width}
+                  />
+                )}
+              </AutoSizer>
+            ) : (
+              <div
+                className="nodePanelSelector"
+                style={{ padding: '10px', color: '#ccc' }}
+              >
+                <span>
+                  {node.loading ? 'Loading...' : 'No results found.'}
+                </span>
               </div>
-            }
+            )}
           </div>
-          :
-          <Loading />
-        }
+        )}
       </div>
-    );
-  }
+      {/* {showConstraints && (
+        <>
+          {store.nodePropertyList[nodePanelState.type] && store.nodePropertyList[nodePanelState.type].length > 0 ? (
+            <NodeProperties activePanel={nodePanelState} validProperties={store.nodePropertyList} />
+          ) : (
+            <p
+              style={{
+                position: 'absolute', bottom: 0, width: '100%', textAlign: 'center',
+              }}
+            >
+              No constraints available for this type.
+            </p>
+          )}
+        </>
+      )} */}
+    </>
+  );
 }
-
-export default NodePanel;

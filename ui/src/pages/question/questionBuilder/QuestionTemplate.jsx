@@ -9,9 +9,9 @@ import CurieSelectorContainer from '../../../components/shared/curies/CurieSelec
 import config from '../../../config.json';
 
 function extractDetails(questionTemplate) {
-  const types = [];
-  const labels = [];
-  const curies = [];
+  const newTypes = [];
+  const newLabels = [];
+  const newCuries = [];
   questionTemplate.machine_question.nodes.forEach((node) => {
     if (node.curie) {
       // we're going to grab the number of the identifier from the curie and add that node's type to the list of types in its correct spot.
@@ -20,17 +20,17 @@ function extractDetails(questionTemplate) {
           // find the indentifier's number
           const i = curie.match(/\d/);
           // minus one because index starts at 0
-          types[i - 1] = node.type;
+          newTypes[i - 1] = node.type;
         });
       } else {
         const i = node.curie.match(/\d/);
-        types[i - 1] = node.type;
+        newTypes[i - 1] = node.type;
       }
-      labels.push('');
-      curies.push('');
+      newLabels.push('');
+      newCuries.push('');
     }
   });
-  return { types, labels, curies };
+  return { newTypes, newLabels, newCuries };
 }
 
 function displayQuestion(questionName) {
@@ -54,7 +54,7 @@ export default function QuestionTemplateModal(props) {
   const [types, setTypes] = useState([]);
   const [labels, setLabels] = useState([]);
   const [curies, setCuries] = useState([]);
-  const curieSelector = useRef(null);
+  const curieSelector = useRef({});
 
   function setFocus(num) {
     curieSelector.current[`curie${num}`].curieSelector.input.focus();

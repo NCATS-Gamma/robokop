@@ -4,14 +4,11 @@ import { Button } from 'react-bootstrap';
 import { FaDownload, FaPaperPlane, FaTrash } from 'react-icons/fa';
 
 /**
- * Header buttons for new question page
- * @param {function} onDropFile - function to be called when a user uploads a file
+ * Footer buttons for new question page
  * @param {function} onDownloadQuestion - function for when the user downloads a question
  * @param {function} onResetQuestion - function to delete the current question and start over
  * @param {function} onSubmitQuestion - function to load a question graph based on the question
- * @param {object} graphValidationState - object of booleans and an error array
- * @param {array} questionList - an array of questions for the question template dropdown
- * @param {function} onQuestionTemplate - function that loads a question based on the question object it is passed
+ * @param {boolean} validQuestion - boolean
  */
 class NewQuestionButtons extends React.Component {
   constructor(props) {
@@ -22,11 +19,9 @@ class NewQuestionButtons extends React.Component {
   render() {
     const {
       onDownloadQuestion, onResetQuestion,
-      onSubmitQuestion, graphValidationState,
+      onSubmitQuestion, validQuestion,
     } = this.props;
     const buttonStyles = { padding: '5px', marginLeft: '10px' };
-    const isValidQuestion = graphValidationState.isValid;
-    const errorMsg = 'Error: '.concat(graphValidationState.errorList.join(',\n '));
     return (
       <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '20px 0px' }}>
         {/* Delete/ Reset Graph Button */}
@@ -43,8 +38,8 @@ class NewQuestionButtons extends React.Component {
         <Button
           style={buttonStyles}
           className="btn btn-default"
-          disabled={!isValidQuestion}
-          title={isValidQuestion ? 'Download Machine Question as JSON' : errorMsg}
+          disabled={!validQuestion}
+          title="Download Machine Question as JSON"
           onClick={onDownloadQuestion}
         >
           <span>
@@ -54,8 +49,8 @@ class NewQuestionButtons extends React.Component {
         <Button
           style={buttonStyles}
           className="btn btn-default"
-          disabled={!isValidQuestion}
-          title={isValidQuestion ? 'Submit question' : errorMsg}
+          disabled={!validQuestion}
+          title="Submit question"
           onClick={onSubmitQuestion}
         >
           <span>
