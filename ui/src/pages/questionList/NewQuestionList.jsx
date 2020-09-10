@@ -11,7 +11,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 
-import Loading from '../../components/shared/Loading';
+import Loading from '../../components/loading/Loading';
 
 import './newQuestionList.css';
 

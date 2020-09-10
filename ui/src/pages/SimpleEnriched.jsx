@@ -7,7 +7,7 @@ import {
 } from 'react-bootstrap';
 import { FaPlus } from 'react-icons/fa';
 
-import Loading from '../components/shared/Loading';
+import Loading from '../components/loading/Loading';
 import CurieSelectorContainer from '../components/shared/curies/CurieSelectorContainer';
 import entityNameDisplay from '../utils/entityNameDisplay';
 import DownloadButton from '../components/shared/DownloadButton';

@@ -6,7 +6,7 @@ import _ from 'lodash';
 import { FaDownload } from 'react-icons/fa';
 import { AutoSizer } from 'react-virtualized';
 
-import Loading from '../components/shared/Loading';
+import Loading from '../components/loading/Loading';
 import CurieSelectorContainer from '../components/shared/curies/CurieSelectorContainer';
 import PubmedList from '../components/shared/pubmedList/PubmedList';
 

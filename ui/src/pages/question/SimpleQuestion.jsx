@@ -6,7 +6,7 @@ import { FaDownload } from 'react-icons/fa';
 
 import './newQuestion.css';
 // import AnswersetStore from '../../stores/messageAnswersetStore';
-import Loading from '../../components/shared/Loading';
+import Loading from '../../components/loading/Loading';
 import MessageAnswersetTable from '../../components/shared/answersetView/answersTable/AnswersTable';
 import AnswersetGraph from '../../components/shared/graphs/AnswersetGraph';
 import QuestionGraphContainer from '../../components/shared/graphs/QuestionGraphContainer';

@@ -7,7 +7,7 @@ import SplitterLayout from 'react-splitter-layout';
 import 'react-splitter-layout/lib/index.css';
 
 import QuestionGraphView from '../../../components/shared/graphs/QuestionGraphView';
-import Loading from '../../../components/shared/Loading';
+import Loading from '../../../components/loading/Loading';
 
 import config from '../../../config.json';
 

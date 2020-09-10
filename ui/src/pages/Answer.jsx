@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
-import Loading from '../components/shared/Loading';
+import Loading from '../components/loading/Loading';
 import AnswersetView from '../components/shared/answersetView/AnswersetView';
 import useMessageStore from '../stores/useMessageStore';
 

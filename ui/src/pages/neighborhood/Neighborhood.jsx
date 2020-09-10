@@ -4,7 +4,7 @@ import {
   Grid, Row, Col, Form,
 } from 'react-bootstrap';
 
-import Loading from '../../components/shared/Loading';
+import Loading from '../../components/loading/Loading';
 import CurieSelectorContainer from '../../components/shared/curies/CurieSelectorContainer';
 import NeighborhoodViewer from './NeighborhoodViewer';
 import NodeDetails from './NodeDetails';

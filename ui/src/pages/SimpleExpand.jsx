@@ -5,7 +5,7 @@ import {
 } from 'react-bootstrap';
 
 import useMessageStore from '../stores/useMessageStore';
-import Loading from '../components/shared/Loading';
+import Loading from '../components/loading/Loading';
 import HelpButton from '../components/shared/HelpButton';
 import AnswersTable from '../components/shared/answersetView/answersTable/AnswersTable';
 import CurieSelectorContainer from '../components/shared/curies/CurieSelectorContainer';

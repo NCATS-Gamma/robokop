@@ -5,7 +5,7 @@ import {
 import ReactTable from 'react-table-6';
 import { AutoSizer } from 'react-virtualized';
 
-import Loading from '../components/shared/Loading';
+import Loading from '../components/loading/Loading';
 import CurieSelectorContainer from '../components/shared/curies/CurieSelectorContainer';
 import DownloadButton from '../components/shared/DownloadButton';
 

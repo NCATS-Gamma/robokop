@@ -12,7 +12,7 @@ import 'rc-slider/assets/index.css';
 import 'rc-tooltip/assets/bootstrap.css';
 
 import SubGraphViewer from '../../../graphs/SubGraphViewer';
-import Loading from '../../../Loading';
+import Loading from '../../../../loading/Loading';
 import AnswerExplorerInfo from '../../../answerExplorer/AnswerExplorerInfo';
 
 const { Handle } = Slider;
