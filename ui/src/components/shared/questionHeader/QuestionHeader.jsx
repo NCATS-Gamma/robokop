@@ -1,9 +1,14 @@
 import React from 'react';
 
-import { Row, Col, Alert, FormGroup, FormControl, Popover, OverlayTrigger, ProgressBar, DropdownButton, MenuItem } from 'react-bootstrap';
+import {
+  Row, Col, Alert, FormGroup, FormControl, Popover,
+  OverlayTrigger, ProgressBar, DropdownButton, MenuItem,
+} from 'react-bootstrap';
 
 import { GoPencil } from 'react-icons/go';
 import { FaDownload, FaInfoCircle } from 'react-icons/fa';
+
+import shortid from 'shortid';
 
 import QuestionToolbar from './QuestionToolbar';
 
@@ -18,9 +23,6 @@ const timestampToTimeString = (ts) => {
   }
   return '';
 };
-
-const _ = require('lodash');
-const shortid = require('shortid');
 
 class QuestionHeader extends React.Component {
   constructor(props) {
@@ -84,7 +86,8 @@ class QuestionHeader extends React.Component {
       <Popover id="popover-edit-natural" title="Edit Question" style={{ minWidth: '500px' }}>
         <FormGroup role="form">
           <p>
-          At this point our interpretation of your question is fixed. This will not cause a re-evaluation of your question. This is only used to correct typos etc.
+            At this point our interpretation of your question is fixed. This will not cause
+            a re-evaluation of your question. This is only used to correct typos etc.
           </p>
           <FormControl
             type="text"

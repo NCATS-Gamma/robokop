@@ -210,7 +210,7 @@ export default function QuestionGraphView(props) {
       zoomView: false,
       dragView: false,
       selectable: false,
-      dragNodes: false,
+      dragNodes: true,
     };
     if (interactable) {
       interaction = {

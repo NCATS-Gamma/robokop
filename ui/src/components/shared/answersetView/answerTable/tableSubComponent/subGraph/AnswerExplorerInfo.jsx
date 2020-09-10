@@ -202,6 +202,8 @@ export default function AnswerExplorerInfo(props) {
         layoutStyle="auto"
         layoutRandomSeed={1}
         showSupport
+        // TODO: add this field to the subgraphviewer
+        // interactable={false}
         omitEdgeLabel={false}
         varyEdgeSmoothRoundness
         callbackOnGraphClick={onGraphClick}

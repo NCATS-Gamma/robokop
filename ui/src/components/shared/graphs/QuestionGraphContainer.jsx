@@ -93,6 +93,7 @@ class SimpleQuestionGraph extends React.Component {
                   concepts={concepts}
                   graphState="display"
                   selectable
+                  interactable={false}
                   nodePreProcFn={nodePreProcFn}
                   graphClickCallback={() => {}} // we don't want the graph to select anything on click
                 />

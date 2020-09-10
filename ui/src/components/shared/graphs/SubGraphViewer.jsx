@@ -447,7 +447,7 @@ export default function SubGraphViewer(props) {
   function syncStateAndProps() {
     let graph = _.cloneDeep(subgraph);
 
-    const isValid = !(graph == null) && (Object.prototype.hasOwnProperty.call(graph, 'nodes'));
+    const isValid = !(graph == null) && 'nodes' in graph;
     if (isValid) {
       graph = addTagsToGraph(graph);
     }
@@ -461,7 +461,7 @@ export default function SubGraphViewer(props) {
 
   useEffect(() => {
     syncStateAndProps();
-  }, []);
+  }, [subgraph]);
 
   useEffect(() => {
     if (network.current) {

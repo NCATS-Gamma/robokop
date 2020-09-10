@@ -18,7 +18,7 @@ export default function Table(props) {
   const {
     columns, data, messageStore,
   } = props;
-  const [activeSubComponentButton, setActiveSubComponentButton] = useState(answersetSubComponentEnum.graph);
+  const [activeSubComponentButton, setActiveSubComponentButton] = useState(answersetSubComponentEnum.json);
   const {
     getTableProps,
     getTableBodyProps,
@@ -64,9 +64,12 @@ export default function Table(props) {
                 {headerGroup.headers.map((column) => (
                   <TableCell
                     {...column.getHeaderProps(column.getSortByToggleProps())}
-                    style={{ width: column.width }}
+                    style={{ width: column.width, padding: 0 }}
                   >
-                    <div className={column.isSorted ? column.isSortedDesc ? 'underline' : 'upperline' : '' }>
+                    <div
+                      className={column.isSorted ? column.isSortedDesc ? 'underline' : 'upperline' : '' }
+                      style={{ textAlign: 'center' }}
+                    >
                       {column.render('Header')}
                     </div>
                   </TableCell>
@@ -136,7 +139,7 @@ export default function Table(props) {
           Previous
         </Button>
         <div>
-          Page
+          {'Page '}
           <input
             type="number"
             value={state.pageIndex + 1}
@@ -148,7 +151,7 @@ export default function Table(props) {
             }}
             style={{ width: '100px' }}
           />
-          {`of ${pageCount}`}
+          {` of ${pageCount}`}
         </div>
         <select
           value={state.pageSize}

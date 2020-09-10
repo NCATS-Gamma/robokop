@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Row, Col, Panel, OverlayTrigger, Popover, Checkbox,
 } from 'react-bootstrap';
@@ -39,8 +39,11 @@ const handle = (props) => {
  */
 export default function AnswersetGraph({ concepts, messageStore }) {
   const [hierarchical, toggleHierarchical] = useState(false);
+  const [subgraph, updateSubGraph] = useState({ nodes: [], edges: [] });
 
-  const answersetGraph = messageStore.annotatedPrunedKnowledgeGraph();
+  useEffect(() => {
+    updateSubGraph(messageStore.annotatedPrunedKnowledgeGraph());
+  }, []);
   const sliderPopover = (
     <Popover id={shortid.generate()}>
       <div style={{ marginTop: '10px', width: '300px' }}>
@@ -96,7 +99,7 @@ export default function AnswersetGraph({ concepts, messageStore }) {
                 </OverlayTrigger>
               </div>
               <SubGraphViewer
-                subgraph={answersetGraph}
+                subgraph={subgraph}
                 concepts={concepts}
                 layoutRandomSeed={Math.floor(Math.random() * 100)}
                 layoutStyle={hierarchical}

@@ -43,7 +43,7 @@ export default function AnswerTable(props) {
           return [entityNameDisplay(colSpecObj.type), `[${setNodes.length}]`];
         };
         colSpecObj.Cell = (row) => {
-          const setNodes = messageStore.getSetNodes(row.index, row.column.id);
+          const setNodes = messageStore.getSetNodes(row.row.index, row.column.id);
           const cellText = cellTextFn(setNodes);
           return (
             <span>
@@ -57,13 +57,13 @@ export default function AnswerTable(props) {
             </span>
           );
         };
-        colSpecObj.width = getColumnWidth(
-          data, colSpecObj.accessor, colSpecObj.Header,
-          (setNodes) => `${cellTextFn(setNodes).join(' ')}   `,
-        );
+        // colSpecObj.width = getColumnWidth(
+        //   data, colSpecObj.accessor, colSpecObj.Header,
+        //   (setNodes) => `${cellTextFn(setNodes).join(' ')}   `,
+        // );
       } else {
         colSpecObj.accessor = (d) => (d[nodeId][0].name ? d[nodeId][0].name : d[nodeId][0].id);
-        colSpecObj.width = getColumnWidth(data, colSpecObj.accessor, colSpecObj.Header);
+        // colSpecObj.width = getColumnWidth(data, colSpecObj.accessor, colSpecObj.Header);
       }
       // this initializes the filter object for all nodes
       colSpecObj.filterable = true;
