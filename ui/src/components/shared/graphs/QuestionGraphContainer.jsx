@@ -89,7 +89,7 @@ class SimpleQuestionGraph extends React.Component {
                 <QuestionGraphView
                   height={200}
                   // width={width}
-                  question={messageStore.message.question_graph}
+                  question={messageStore.message.query_graph}
                   concepts={concepts}
                   graphState="display"
                   selectable

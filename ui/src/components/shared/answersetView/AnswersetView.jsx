@@ -59,7 +59,7 @@ export default function AnswersetView(props) {
     a.remove();
   }
 
-  const hasAnswers = messageStore.message.answers && Array.isArray(messageStore.message.answers) && messageStore.message.answers.length > 0;
+  const hasAnswers = messageStore.message.results && Array.isArray(messageStore.message.results) && messageStore.message.results.length > 0;
   return (
     <div>
       {hasAnswers ? (

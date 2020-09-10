@@ -1,120 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
-import _ from 'lodash';
 
 import { Row, Col } from 'react-bootstrap';
 import Dropzone from 'react-dropzone';
 import { FaCloudUploadAlt } from 'react-icons/fa';
 
 // import AppConfig from '../AppConfig';
-import Loading from '../components/shared/Loading';
+import Loading from '../components/loading/Loading';
 import AnswersetView from '../components/shared/answersetView/AnswersetView';
 // import AnswersetStore from './stores/messageAnswersetStore';
 import useMessageStore from '../stores/useMessageStore';
 import config from '../config.json';
+import parseMessage from '../utils/parseMessage';
 
 export default function SimpleViewer(props) {
   const { user } = props;
   // We only read the communications config on creation
   // const [appConfig, setAppConfig] = useState(new AppConfig(config));
   const [messageSaved, setMessageSaved] = useState(false);
-  const [loading, toggleLoading] = useState(true);
+  const [loading, toggleLoading] = useState(false);
   // const [user, setUser] = useState({});
   // const [concepts, setConcepts] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
-  const [loadingMessage, setLoadingMessage] = useState('Getting server data...');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const messageStore = useMessageStore();
-
-  function parseMessage(message) {
-    const hasMessage = _.isObject(message);
-    if (hasMessage && 'query_graph' in message) {
-      message.question_graph = message.query_graph;
-      delete message.query_graph;
-    }
-    let hasQGraph = hasMessage && 'question_graph' in message;
-    let hasKG = hasMessage && 'knowledge_graph' in message;
-    if (hasMessage && 'results' in message) {
-      message.answers = message.results;
-      delete message.results;
-    }
-    let hasAnswers = hasMessage && 'answers' in message && Array.isArray(message.answers) && message.answers.length > 0;
-
-    let allOk = hasQGraph && hasKG && hasAnswers;
-
-    if (allOk) {
-      messageStore.setMessage(message);
-      setMessageSaved(true);
-      toggleLoading(false);
-      setErrorMessage('');
-      return;
-    }
-
-    hasQGraph = hasMessage && 'query_graph' in message;
-    hasKG = hasMessage && 'knowledge_graph' in message;
-    hasAnswers = hasMessage && 'results' in message && Array.isArray(message.results) && message.results.length > 0;
-    allOk = hasQGraph && hasKG && hasAnswers;
-
-    if (allOk) {
-      message.results.map((result) => {
-        const nodeBindings = {};
-        result.node_bindings.forEach((nb) => {
-          if (nb.qg_id in nodeBindings) {
-            if (Array.isArray(nb.kg_id)) {
-              nodeBindings[nb.qg_id].concat(nb.kg_id);
-            } else {
-              nodeBindings[nb.qg_id].append(nb.kg_id);
-            }
-          } else if (Array.isArray(nb.kg_id)) {
-            nodeBindings[nb.qg_id] = nb.kg_id;
-          } else {
-            nodeBindings[nb.qg_id] = [nb.kg_id];
-          }
-        });
-        result.node_bindings = nodeBindings;
-        const edgeBindings = {};
-        result.edge_bindings.forEach((eb) => {
-          if (eb.qg_id in edgeBindings) {
-            if (Array.isArray(eb.kg_id)) {
-              edgeBindings[eb.qg_id].concat(eb.kg_id);
-            } else {
-              edgeBindings[eb.qg_id].push(eb.kg_id);
-            }
-          } else if (Array.isArray(eb.kg_id)) {
-            edgeBindings[eb.qg_id] = eb.kg_id;
-          } else {
-            edgeBindings[eb.qg_id] = [eb.kg_id];
-          }
-        });
-        result.edge_bindings = edgeBindings;
-        return result;
-      });
-      message.question_graph = message.query_graph;
-      message.answers = message.results;
-
-      messageStore.setMessage(message);
-      setMessageSaved(true);
-      toggleLoading(false);
-      setErrorMessage('');
-      return;
-    }
-
-    let errMsg = '';
-    if (!hasMessage) {
-      errMsg = `${errMsg} The uploaded file does not appear to be a valid JSON object.`;
-    }
-    if (!hasQGraph) {
-      errMsg = `${errMsg} A question_graph must be provided.`;
-    }
-    if (!hasKG) {
-      errMsg = `${errMsg} A knowledge_graph must be provided.`;
-    }
-    if (!hasAnswers) {
-      errMsg = `${errMsg} An answers array must be provided.`;
-    }
-    setMessageSaved(false);
-    toggleLoading(false);
-    setErrorMessage(errMsg);
-  }
 
   function uploadMessage() {
     const formData = new FormData();
@@ -154,11 +63,12 @@ export default function SimpleViewer(props) {
       });
   }
 
-  function onDrop(acceptedFiles, rejectedFiles) {
+  function onDrop(acceptedFiles) {
     acceptedFiles.forEach((file) => {
       const fr = new window.FileReader();
       fr.onloadstart = () => {
         toggleLoading(true);
+        setMessageSaved(false);
         setLoadingMessage('Loading Answers...');
       };
       // fr.onloadend = () => toggleLoading(false);
@@ -166,12 +76,15 @@ export default function SimpleViewer(props) {
         const fileContents = e.target.result;
         try {
           const message = JSON.parse(fileContents);
-          parseMessage(message);
+          const parsedMessage = parseMessage(message);
+          messageStore.initializeMessage(parsedMessage);
+          setMessageSaved(true);
         } catch (err) {
           console.log(err);
           // window.alert('Failed to load this Answerset file. Are you sure this is valid?');
           setErrorMessage('There was the problem loading the file. Is this valid JSON?');
         }
+        toggleLoading(false);
       };
       fr.onerror = () => {
         // window.alert('Sorry but there was a problem uploading the file. The file may be invalid.');
@@ -181,42 +94,16 @@ export default function SimpleViewer(props) {
     });
   }
 
-  useEffect(() => {
-    // makes the appropriate GET request from server.py,
-    // uses the result to set state
-    // appConfig.user((data) => setUser(appConfig.ensureUser(data)));
-    // appConfig.concepts((data) => setConcepts(data));
-
-    if (props.id) {
-      // request the file
-      // appConfig.viewData(
-      //   props.id,
-      //   (object) => {
-      //     parseMessage(object); // This will set state
-      //   },
-      //   (err) => {
-      //     console.log(err);
-      //     toggleLoading(false);
-      //     setErrorMessage('There was a problem fetching the stored file from the server. This may be an invalid identifier.');
-      //   },
-      // );
-    } else {
-      toggleLoading(false);
-    }
-  }, []);
-
   return (
     <>
       {loading ? (
-        <Row>
-          <Col md={12}>
-            <h1>
-              {loadingMessage}
-              <br />
-            </h1>
-            <Loading />
-          </Col>
-        </Row>
+        <>
+          <h1>
+            {loadingMessage}
+            <br />
+          </h1>
+          <Loading />
+        </>
       ) : (
         <>
           {messageSaved && !errorMessage && (
@@ -243,6 +130,7 @@ export default function SimpleViewer(props) {
                 <Dropzone
                   onDrop={(acceptedFiles, rejectedFiles) => onDrop(acceptedFiles, rejectedFiles)}
                   multiple={false}
+                  accept="application/json"
                 >
                   {({ getRootProps, getInputProps }) => (
                     <section>

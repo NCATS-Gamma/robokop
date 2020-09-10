@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import _ from 'lodash';
 
 import entityNameDisplay from '../utils/entityNameDisplay';
@@ -13,7 +13,7 @@ const makeEmptyArray = (len, init) => {
 const filter = {};
 
 export default function useMessageStore() {
-  const [message, setMessage] = useState(null);
+  const message = useRef(null);
   // const [activeAnswerId, updateActiveAnswerId] = useState(null);
   // const [denseAnswer, updateDenseAnswer] = useState({});
   const [numAgSetNodes, updateNumAgSetNodes] = useState(10);
@@ -28,8 +28,8 @@ export default function useMessageStore() {
 
   function graphToIndMap(graph, type) {
     const indMap = new Map();
-    if (message[graph]) {
-      message[graph][type].forEach((t, i) => indMap.set(t.id, i));
+    if (message.current[graph]) {
+      message.current[graph][type].forEach((t, i) => indMap.set(t.id, i));
     }
     return indMap;
   }
@@ -37,37 +37,35 @@ export default function useMessageStore() {
   function makeMaps() {
     const kgNodeMap = graphToIndMap('knowledge_graph', 'nodes');
     const kgEdgeMap = graphToIndMap('knowledge_graph', 'edges');
-    const qgNodeMap = graphToIndMap('question_graph', 'nodes');
-    const qgEdgeMap = graphToIndMap('question_graph', 'edges');
+    const qgNodeMap = graphToIndMap('query_graph', 'nodes');
+    const qgEdgeMap = graphToIndMap('query_graph', 'edges');
     setIdToIndMaps({
       kgNodeMap, kgEdgeMap, qgNodeMap, qgEdgeMap,
     });
-    message.question_graph.nodes.forEach((node) => {
+    message.current.query_graph.nodes.forEach((node) => {
       if (!node.type && node.curie) {
         // if no node type, go look up in knowledge graph
         const kgNodeInd = kgNodeMap.get(node.curie);
         // TODO: don't just grab the first type from the array
-        [node.type] = message.knowledge_graph.nodes[kgNodeInd].type;
+        [node.type] = message.current.knowledge_graph.nodes[kgNodeInd].type;
       }
     });
   }
 
-  useEffect(() => {
-    if (message && message.answers) {
-      message.answers.forEach((a, i) => {
-        if (!a.id) {
-          a.id = i;
-        }
-      });
-      makeMaps();
-    }
-    // updateActiveAnswerId(message.answers[0].id);
-  }, [message]);
+  function initializeMessage(msg) {
+    message.current = msg;
+    message.current.results.forEach((a, i) => {
+      if (!a.id) {
+        a.id = i;
+      }
+    });
+    makeMaps();
+  }
 
   function ansIdToIndMap() {
     const indMap = new Map();
-    if (message.answers) {
-      message.answers.forEach((ans, i) => indMap.set(ans.id, i));
+    if (message.current.results) {
+      message.current.results.forEach((ans, i) => indMap.set(ans.id, i));
     }
     return indMap;
   }
@@ -78,13 +76,13 @@ export default function useMessageStore() {
    * @returns {int} number of nodes in graph
    */
   function numNodes(graph) {
-    return message[graph] ? message[graph].nodes.length : 0;
+    return message[graph] ? message.current[graph].nodes.length : 0;
   }
   function numKgNodes() {
     return numNodes('knowledge_graph');
   }
   function numQgNodes() {
-    return numNodes('question_graph');
+    return numNodes('query_graph');
   }
   function getGraphNode(graph, nodeId) {
     return graph.nodes.find((node) => node.id === nodeId);
@@ -95,34 +93,34 @@ export default function useMessageStore() {
 
   function getQNodeIds() {
     const qNodeIds = [];
-    message.question_graph.nodes.forEach((n) => {
+    message.current.query_graph.nodes.forEach((n) => {
       qNodeIds.push(n.id);
     });
     return qNodeIds;
   }
   function getQEdgeIds() {
     const qEdgeIds = [];
-    message.question_graph.edges.forEach((e) => {
+    message.current.query_graph.edges.forEach((e) => {
       qEdgeIds.push(e.id);
     });
     return qEdgeIds;
   }
 
   function getQgNode(id) {
-    return message.question_graph.nodes[idToIndMaps.qgNodeMap.get(id)];
+    return message.current.query_graph.nodes[idToIndMaps.qgNodeMap.get(id)];
   }
 
   function getKgNode(nodeId) {
-    return message.knowledge_graph.nodes[idToIndMaps.kgNodeMap.get(nodeId)];
+    return message.current.knowledge_graph.nodes[idToIndMaps.kgNodeMap.get(nodeId)];
   }
 
   function annotatedPrunedKnowledgeGraph(pruneNum) {
-    if (message.question_graph) {
+    if (message.current.query_graph) {
       // KG nodes don't always have type
       // If they don't we need to figure out which qNodes they most like correspond to
       // Then check labels and use the corresponding type
 
-      const { answers: results, knowledge_graph: kg, question_graph: qg } = message;
+      const { answers: results, knowledge_graph: kg, query_graph: qg } = message.current;
       const Nj = Math.round(pruneNum / numQgNodes());
 
       // Create a map between qGraph index to node id (for scoreVector)
@@ -308,7 +306,7 @@ export default function useMessageStore() {
     const columnHeaders = [];
     const tempAnswers = [];
     // set the column headers object
-    message.question_graph.nodes.forEach((n) => {
+    message.current.query_graph.nodes.forEach((n) => {
       columnHeaders.push({
         Header: `${n.id}: ${entityNameDisplay(n.type)}`,
         id: n.id,
@@ -317,17 +315,17 @@ export default function useMessageStore() {
       });
     });
     // get the names and score from each answer for the table
-    message.answers.forEach((ans) => {
+    message.current.results.forEach((ans) => {
       const nodeBindings = ans.node_bindings;
       const answer = {};
-      Object.keys(nodeBindings).forEach((qnodeId) => {
-        let kNodeIds = nodeBindings[qnodeId];
-        if (!Array.isArray(kNodeIds)) {
-          kNodeIds = [kNodeIds];
-        }
+      nodeBindings.forEach((nodeBinding) => {
+        const qnodeId = nodeBinding.qg_id;
         answer[qnodeId] = [];
-        kNodeIds.forEach((kNodeId) => {
-          const kNode = getKgNode(kNodeId);
+        if (!Array.isArray(nodeBinding.kg_id)) {
+          nodeBinding.kg_id = [nodeBinding.kg_id];
+        }
+        nodeBinding.kg_id.forEach((knodeId) => {
+          const kNode = getKgNode(knodeId);
           if (kNode) {
             answer[qnodeId].push({
               name: kNode.name,
@@ -354,9 +352,9 @@ export default function useMessageStore() {
   function getDenseAnswer(answerId) {
     const qNodeIds = getQNodeIds();
     const qEdgeIds = getQEdgeIds();
-    const kg = message.knowledge_graph;
+    const kg = message.current.knowledge_graph;
     const { kgEdgeMap } = idToIndMaps;
-    const answer = message.answers[answerId];
+    const answer = message.current.results[answerId];
     const ansObj = {
       score: answer.score, nodes: {}, edges: {}, id: answer.id,
     };
@@ -401,7 +399,7 @@ export default function useMessageStore() {
   // Returns subgraphViewer compatible format graph spec { nodes: {}, edges: {} }
   function activeAnswerGraph(activeAnswerId) {
     const ansIdMap = ansIdToIndMap();
-    const answer = message.answers[ansIdMap.get(activeAnswerId)];
+    const answer = message.current.results[ansIdMap.get(activeAnswerId)];
     const graph = { nodes: [], edges: [] };
 
     // We could loop through the qNodes to find out what nodes are in this answer
@@ -427,7 +425,7 @@ export default function useMessageStore() {
         nodeIds.forEach((nodeId) => {
           const node = { id: nodeId };
           let score = 0;
-          message.knowledge_graph.edges.forEach((edge) => {
+          message.current.knowledge_graph.edges.forEach((edge) => {
             if (nodeId === edge.source_id || nodeId === edge.target_id) {
               score += edge.publications.length;
             }
@@ -467,7 +465,7 @@ export default function useMessageStore() {
       }
       edgeIds.forEach((eId) => {
         // get kedge details
-        let kgEdge = getGraphEdge(message.knowledge_graph, eId);
+        let kgEdge = getGraphEdge(message.current.knowledge_graph, eId);
         // check that kedge is not pruned away
         if (kgEdge && prunedAgNodeIdSet.has(kgEdge.source_id) && prunedAgNodeIdSet.has(kgEdge.target_id)) {
           kgEdge = _.cloneDeep(kgEdge);
@@ -484,7 +482,7 @@ export default function useMessageStore() {
 
   function getMaxNumAgNodes(activeAnswerId) {
     const ansIdMap = ansIdToIndMap();
-    const answer = message.answers[ansIdMap.get(activeAnswerId)];
+    const answer = message.current.results[ansIdMap.get(activeAnswerId)];
     const nodeBindingsMap = new Map(Object.entries(answer.node_bindings));
     let maxNumAgNodes = 0;
     nodeBindingsMap.forEach((val) => {
@@ -498,7 +496,7 @@ export default function useMessageStore() {
 
   // Determines if annotatedPrunedKnowledgeGraph had to prune KG
   function isKgPruned(ansId) {
-    if (message.knowledge_graph) {
+    if (message.current.knowledge_graph) {
       return getMaxNumAgNodes(ansId) > numKgNodes();
     }
     return false;
@@ -509,7 +507,7 @@ export default function useMessageStore() {
   }
 
   function getSetNodes(answerId, nodeId) {
-    const setNodeIds = message.answers[answerId].node_bindings[nodeId];
+    const setNodeIds = message.current.results[answerId].node_bindings.find((node_binding) => node_binding.qg_id === nodeId).kg_id;
     const setNodes = setNodeIds.map((id) => getKgNode(id));
     return setNodes;
   }
@@ -520,7 +518,7 @@ export default function useMessageStore() {
    */
   function initializeFilterKeys() {
     // the arrays are [checked, available given other columns]
-    const { question_graph: qg } = message;
+    const { query_graph: qg } = message.current;
     const tempFilterKeys = {};
     qg.nodes.forEach((qnode) => {
       const qnodeId = qnode.id;
@@ -568,7 +566,7 @@ export default function useMessageStore() {
     qNodeIds.forEach((id) => {
       filter[id] = {};
     });
-    message.answers.forEach((ans) => {
+    message.current.results.forEach((ans) => {
       const nodeBindings = ans.node_bindings;
       qNodeIds.forEach((id) => {
         if (Array.isArray(nodeBindings[id])) {
@@ -647,7 +645,7 @@ export default function useMessageStore() {
    */
   function updateFilter(newFilterKeys) {
     const qgNodeIds = getQNodeIds();
-    message.answers.forEach((ans) => {
+    message.current.results.forEach((ans) => {
       const nodeBindings = ans.node_bindings;
       qgNodeIds.forEach((qgNodeId) => {
         let knodeIds = nodeBindings[qgNodeId];
@@ -749,8 +747,8 @@ export default function useMessageStore() {
   }
 
   return {
-    message,
-    setMessage,
+    message: message.current,
+    initializeMessage,
     annotatedPrunedKnowledgeGraph,
     numKgNodes,
     numQgNodes,
