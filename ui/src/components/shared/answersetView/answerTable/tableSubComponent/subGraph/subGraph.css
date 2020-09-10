@@ -1,0 +1,45 @@
+.graphPopover {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 270px;
+    box-shadow: -2px 2px 5px 0px #7777777d;
+}
+#answerExplorerContainer {
+    margin: 0px 20px 20px 20px;
+    max-height: 740px;
+}
+#subGraphLoading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+}
+#subgraphModalNodeEdgeInfo {
+    display: flex;
+    justify-content: space-between;
+}
+#subgraphModalNodeEdgeInfo > * {
+    width: 32%;
+}
+.edgeExplorerCloseButton {
+    position: absolute !important;
+    right: 10px;
+    top: 10px;
+}
+.cardTitle {
+    padding: 15px;
+    overflow-y: auto;
+    margin: 0;
+    font-size: 16px;
+}
+.greyBackground {
+    background-color: #F0F4F8;
+}
+.cardContent {
+    max-height: 100px;
+    overflow-y: auto;
+}
+.publicationsContainer {
+    margin-top: 20px;
+}

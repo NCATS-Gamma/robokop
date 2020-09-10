@@ -1,0 +1,35 @@
+.metaDataNodeSelector {
+    width: 200px;
+}
+
+.popperContainer {
+	position: relative;
+	background: #F0F4F8;
+    border: 2px solid #D9E2EC;
+    padding: 10px;
+    border-radius: 5px;
+}
+/* this includes a top arrow */
+/* .popperContainer:after, .popperContainer:before {
+	bottom: 100%;
+	left: 50%;
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+}
+
+.popperContainer:after {
+	border-color: rgba(136, 183, 213, 0);
+	border-bottom-color: #F0F4F8;
+	border-width: 7px;
+	margin-left: -7px;
+}
+.popperContainer:before {
+	border-color: rgba(194, 225, 245, 0);
+	border-bottom-color: #D9E2EC;
+	border-width: 10px;
+	margin-left: -10px;
+} */

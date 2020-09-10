@@ -1,5 +1,8 @@
 import React from 'react';
-import { DropdownList } from 'react-widgets';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
 import ReactTable from 'react-table-6';
 import { FaClone, FaEllipsisH } from 'react-icons/fa';
 import shortid from 'shortid';
@@ -32,23 +35,23 @@ export default function MetaDataView(props) {
 
   const useNodeId = nodeId || nodeList[0];
 
-  const dropDownData = nodeList.map((nId) => ({
-    nodeId: nId,
-    isSet: rowData.nodes[nId].isSet,
-    type: entityNameDisplay(rowData.nodes[nId].type),
-  }));
-  const ListItem = ({ item }) => (
-    <span>
-      <strong>{`${item.nodeId}: `}</strong>
-      {`${item.type} `}
-      <span className="">
-        {item.isSet && <FaClone />}
-      </span>
-    </span>
-  );
+  // const dropDownData = nodeList.map((nId) => ({
+  //   nodeId: nId,
+  //   isSet: rowData.nodes[nId].isSet,
+  //   type: entityNameDisplay(rowData.nodes[nId].type),
+  // }));
+  // const ListItem = ({ item }) => (
+  //   <span>
+  //     <strong>{`${item.nodeId}: `}</strong>
+  //     {`${item.type} `}
+  //     <span className="">
+  //       {item.isSet && <FaClone />}
+  //     </span>
+  //   </span>
+  // );
   const getColumnSpecs = (nodes) => {
-    const blacklist = ['isSet'];
-    const whitelist = ['name', 'id', 'type'];
+    const blocklist = ['isSet'];
+    const allowlist = ['name', 'id', 'type'];
     const columnHeaders = [];
     let keys;
     if (nodes.length > 1) {
@@ -56,16 +59,16 @@ export default function MetaDataView(props) {
       let setKeys = new Set();
       // map over every key in all the set objects and make a list of all unique keys
       nodes.forEach((node) => Object.keys(node).map((key) => setKeys.add(key)));
-      setKeys = [...setKeys].filter((key) => !blacklist.includes(key));
-      let firstKeys = setKeys.filter((key) => whitelist.includes(key));
+      setKeys = [...setKeys].filter((key) => !blocklist.includes(key));
+      let firstKeys = setKeys.filter((key) => allowlist.includes(key));
       firstKeys = firstKeys.sort();
-      keys = firstKeys.concat(setKeys.filter((key) => !whitelist.includes(key)));
+      keys = firstKeys.concat(setKeys.filter((key) => !allowlist.includes(key)));
     } else {
       // if the nodes are just a single node
-      const node = Object.keys(nodes[0]).filter((key) => !blacklist.includes(key));
-      let firstKeys = node.filter((key) => whitelist.includes(key));
+      const node = Object.keys(nodes[0]).filter((key) => !blocklist.includes(key));
+      let firstKeys = node.filter((key) => allowlist.includes(key));
       firstKeys = firstKeys.sort();
-      keys = firstKeys.concat(node.filter((key) => !whitelist.includes(key)));
+      keys = firstKeys.concat(node.filter((key) => !allowlist.includes(key)));
       node.forEach((key) => {
         // true or false aren't showing up in react table, just making them more readable
         if (typeof nodes[0][key] === 'boolean') {
@@ -112,16 +115,22 @@ export default function MetaDataView(props) {
   return (
     <div style={{ padding: '10px 20px 0px 125px' }}>
       <div style={{ width: '300px', marginBottom: '5px' }}>
-        <DropdownList
-          data={dropDownData}
-          value={dropDownData.filter((el) => el.nodeId === useNodeId)[0]}
-          // dropUp
-          textField="label"
-          valueField="nodeId"
-          onChange={(val) => setNodeId(val.nodeId)}
-          itemComponent={ListItem}
-          valueComponent={ListItem}
-        />
+        <FormControl>
+          <InputLabel id="node-select">Node</InputLabel>
+          <Select
+            labelId="node-select"
+            id="node-select"
+            value={nodeId}
+            onChange={(e) => setNodeId(e.target.value)}
+          >
+            {nodeList.map((nId) => (
+              <MenuItem value={nId} key={nId}>
+                <b>{nId}: </b>
+                {entityNameDisplay(rowData.nodes[nId].type)}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </div>
       <ReactTable
         data={metadata}

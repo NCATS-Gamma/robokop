@@ -7,7 +7,7 @@ import {
 import QuestionHeader from '../questionHeader/QuestionHeader';
 
 import AnswersetGraph from '../graphs/AnswersetGraph';
-import AnswersTable from './answersTable/AnswersTable';
+import AnswerTable from './answerTable/AnswerTable';
 import QuestionGraphContainer from '../graphs/QuestionGraphContainer';
 
 export const answerSetTabEnum = {
@@ -59,10 +59,10 @@ export default function AnswersetView(props) {
     a.remove();
   }
 
-  const hasAnswers = messageStore.message.results && Array.isArray(messageStore.message.results) && messageStore.message.results.length > 0;
+  const hasResults = messageStore.message.results && Array.isArray(messageStore.message.results) && messageStore.message.results.length > 0;
   return (
     <div>
-      {hasAnswers ? (
+      {hasResults ? (
         <div style={style}>
           {!omitHeader && (
             <Row>
@@ -123,9 +123,9 @@ export default function AnswersetView(props) {
             </Tab> */}
             <Tab
               eventKey={answerSetTabEnum.answerTable}
-              title="Answers Table"
+              title="Answer Table"
             >
-              <AnswersTable
+              <AnswerTable
                 concepts={concepts}
                 // callbackAnswerSelected={this.props.callbackAnswerSelected}
                 messageStore={messageStore}
