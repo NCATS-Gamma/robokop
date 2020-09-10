@@ -1,13 +1,17 @@
 import React from 'react';
-import { BubbleLoader } from 'react-css-loaders';
+
+import './loading.css';
 
 const Loading = (props) => {
   const showMessage = Boolean(props && ('message' in props));
   const { message } = props;
 
   return (
-    <div className="center-block">
-      <BubbleLoader color="#b8c6db" />
+    <div className="loader">
+      <div className="bubble" />
+      <div className="bubble" />
+      <div className="bubble" />
+      <div className="bubble" />
       {showMessage && message}
     </div>
   );
