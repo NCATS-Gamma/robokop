@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Row, Col } from 'react-bootstrap';
 import Dropzone from 'react-dropzone';
 import { FaCloudUploadAlt } from 'react-icons/fa';
+import Snackbar from '@material-ui/core/Snackbar';
 
 // import AppConfig from '../AppConfig';
 import Loading from '../components/loading/Loading';
@@ -23,15 +24,19 @@ export default function SimpleViewer(props) {
   // const [concepts, setConcepts] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [showSnackbar, toggleSnackbar] = useState(false);
   const messageStore = useMessageStore();
 
   function uploadMessage() {
     const formData = new FormData();
-    const blob = new Blob([JSON.stringify(messageStore.message.question_graph)], {
+    const blob = new Blob([JSON.stringify(messageStore.message.query_graph)], {
       type: 'application/json',
     });
     formData.append('question', blob);
-    axios.post('/api/questions', formData, {
+    axios.request({
+      method: 'post',
+      url: '/api/questions',
+      data: formData,
       headers: {
         'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${user.id_token}`,
@@ -39,16 +44,21 @@ export default function SimpleViewer(props) {
     })
       .then((res) => {
         const question_id = res.data;
-        console.log('question id', res.data);
         const answerData = new FormData();
         const answerBlob = new Blob([JSON.stringify({
           knowledge_graph: messageStore.message.knowledge_graph,
-          results: messageStore.message.answers,
+          results: messageStore.message.results,
         })], {
           type: 'application/json',
         });
         answerData.append('answer', answerBlob);
-        axios.post(`/api/questions/${question_id}/answers`, answerData, {
+        axios.request({
+          url: '/api/answers',
+          method: 'post',
+          params: {
+            question_id,
+          },
+          data: answerData,
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${user.id_token}`,
@@ -56,6 +66,7 @@ export default function SimpleViewer(props) {
         })
           .then((response) => {
             console.log('answers response', response.data);
+            toggleSnackbar(true);
           })
           .catch((error) => {
             console.log('answers error', error);
@@ -115,6 +126,12 @@ export default function SimpleViewer(props) {
                 omitHeader
               />
               <button type="button" onClick={uploadMessage}>Upload</button>
+              <Snackbar
+                open={showSnackbar}
+                onClose={() => toggleSnackbar(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                message="Message saved successfully!"
+              />
             </>
           )}
           {!errorMessage && !messageSaved && (
@@ -133,7 +150,7 @@ export default function SimpleViewer(props) {
                   accept="application/json"
                 >
                   {({ getRootProps, getInputProps }) => (
-                    <section>
+                    <section id="dropzoneContainer">
                       <div id="dropzone" {...getRootProps()} style={{ backgroundColor: config.colors.bluegray }}>
                         <input {...getInputProps()} />
                         <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>

@@ -26,10 +26,12 @@ export default function parseMessage(message) {
     delete message.question_graph;
   }
 
-  // Results should have qg_ids in node and edge bindings
-  if ('results' in message && !('qg_id' in message.results[0].node_bindings)) {
-    message.answers = message.results;
-    delete message.results;
+  // Result node_bindings should be an array of qg_ids and kg_ids
+  if ('results' in message) {
+    if (!Array.isArray(message.results[0].node_bindings)) {
+      message.answers = message.results;
+      delete message.results;
+    }
   }
 
   if ('answers' in message) {

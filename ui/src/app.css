@@ -97,3 +97,7 @@ body :focus {
 .popover {
     max-width: 600px;
 }
+.center {
+    text-align: center;
+    width: 100%;
+}

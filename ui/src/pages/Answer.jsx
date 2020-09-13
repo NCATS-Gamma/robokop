@@ -14,14 +14,13 @@ import config from '../config.json';
  */
 export default function Answer({ user }) {
   const { question_id } = useParams();
-  const [loading, toggleLoading] = useState(false);
+  const [loading, toggleLoading] = useState(true);
   const [messageSaved, setMessageSaved] = useState(false);
   const messageStore = useMessageStore();
 
   useEffect(() => {
     if (question_id && user) {
       toggleLoading(true);
-      console.time('fetch_answer');
       axios.get(`/api/questions/${question_id}`, {
         headers: {
           'Content-Type': 'application/json',
@@ -29,14 +28,17 @@ export default function Answer({ user }) {
         },
       })
         .then((res) => {
-          // console.log(res.data);
-          axios.get(`/api/questions/${question_id}/answers`, {
+          axios.request({
+            method: 'get',
+            url: '/api/answers',
+            params: {
+              question_id,
+            },
             headers: {
               Authorization: `Bearer ${user.id_token}`,
             },
           })
             .then((response) => {
-              // console.log(response.data);
               if (response.data && Array.isArray(response.data)) {
                 axios.get(`/api/answers/${response.data[0].id}`, {
                   headers: {
@@ -45,13 +47,12 @@ export default function Answer({ user }) {
                 })
                   .then((res3) => {
                     // console.log('answer', res3.data.data);
-                    const { knowledge_graph, results: answers } = JSON.parse(res3.data.data);
-                    const question_graph = JSON.parse(res.data.data);
-                    const message = { question_graph, knowledge_graph, answers };
-                    messageStore.setMessage(message);
+                    const { knowledge_graph, results } = JSON.parse(res3.data.data);
+                    const query_graph = JSON.parse(res.data.data);
+                    const message = { query_graph, knowledge_graph, results };
+                    messageStore.initializeMessage(message);
                     setMessageSaved(true);
                     toggleLoading(false);
-                    console.timeEnd('fetch_answer');
                   });
               } else {
                 console.log('No answers are associated with this question');

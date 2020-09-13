@@ -461,7 +461,7 @@ export default function SubGraphViewer(props) {
 
   useEffect(() => {
     syncStateAndProps();
-  }, [subgraph]);
+  }, [subgraph, layoutStyle]);
 
   useEffect(() => {
     if (network.current) {
@@ -493,7 +493,7 @@ export default function SubGraphViewer(props) {
       {displayGraph !== null && (
         <div style={{ fontFamily: 'Monospace' }}>
           <Graph
-            key={shortid.generate()} // Forces component remount
+            // key={shortid.generate()} // Forces component remount
             graph={displayGraph}
             style={{ width: '100%' }}
             options={displayGraphOptions}

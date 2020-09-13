@@ -6,8 +6,8 @@ import {
 
 import QuestionHeader from '../questionHeader/QuestionHeader';
 
-import AnswersetGraph from '../graphs/AnswersetGraph';
-import AnswerTable from './answerTable/AnswerTable';
+import KnowledgeGraph from '../graphs/KnowledgeGraph';
+import ResultsTable from './resultsTable/ResultsTable';
 import QuestionGraphContainer from '../graphs/QuestionGraphContainer';
 
 export const answerSetTabEnum = {
@@ -123,9 +123,9 @@ export default function AnswersetView(props) {
             </Tab> */}
             <Tab
               eventKey={answerSetTabEnum.answerTable}
-              title="Answer Table"
+              title="Results Table"
             >
-              <AnswerTable
+              <ResultsTable
                 concepts={concepts}
                 // callbackAnswerSelected={this.props.callbackAnswerSelected}
                 messageStore={messageStore}
@@ -133,9 +133,9 @@ export default function AnswersetView(props) {
             </Tab>
             <Tab
               eventKey={answerSetTabEnum.aggregate}
-              title="Aggregate Graph"
+              title="Knowledge Graph"
             >
-              <AnswersetGraph
+              <KnowledgeGraph
                 concepts={concepts}
                 messageStore={messageStore}
               />

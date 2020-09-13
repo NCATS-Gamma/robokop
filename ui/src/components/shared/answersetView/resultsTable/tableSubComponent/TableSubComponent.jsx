@@ -25,8 +25,6 @@ export default function TableSubComponent(props) {
   } = props;
   const [nodeId, setNodeId] = useState(null);
   const [rowData, updateRowData] = useState({});
-  const [graph, setGraph] = useState({});
-  const [loadedGraph, setLoadedGraph] = useState(false);
 
   // Method that updates local mobx state with activeButton and nodeId based on props
   function syncPropsWithState() {
@@ -34,12 +32,8 @@ export default function TableSubComponent(props) {
       setNodeId(nodeId);
     }
     const tempRowData = messageStore.getDenseAnswer(data.id);
-    const ansId = tempRowData.id;
-    const g = messageStore.activeAnswerGraph(ansId);
 
-    setGraph(g);
     updateRowData(tempRowData);
-    setLoadedGraph(true);
   }
 
   useEffect(() => {
@@ -93,14 +87,11 @@ export default function TableSubComponent(props) {
             rowData={rowData}
           />
         )}
-        {isGraphActive && (
-          <TableSubGraph
-            loadedGraph={loadedGraph}
-            messageStore={messageStore}
-            graph={graph}
-            activeAnswerId={rowData.id}
-          />
-        )}
+        <TableSubGraph
+          show={isGraphActive}
+          messageStore={messageStore}
+          activeAnswerId={rowData.id}
+        />
         {isMetadataActive && rowData.nodes && (
           <MetaDataView
             messageStore={messageStore}

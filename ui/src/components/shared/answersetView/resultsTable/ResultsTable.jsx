@@ -7,10 +7,10 @@ import _ from 'lodash';
 // import AnswersetFilter from './AnswersetFilter';
 import entityNameDisplay from '../../../../utils/entityNameDisplay';
 import getNodeTypeColorMap from '../../../../utils/colorUtils';
-import getColumnWidth from '../../../../utils/rtColumnWidth';
+// import getColumnWidth from '../../../../utils/rtColumnWidth';
 import Table from './Table';
 
-import './answerTable.css';
+import './resultsTable.css';
 
 export default function AnswerTable(props) {
   const { messageStore, concepts } = props;
@@ -94,7 +94,9 @@ export default function AnswerTable(props) {
           {row.isExpanded ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
         </IconButton>
       ),
-      width: 50,
+      minWidth: 50,
+      width: 75,
+      maxWidth: 100,
       // filterable: false,
       disableFilters: true,
     });
@@ -102,16 +104,18 @@ export default function AnswerTable(props) {
     colHeaders.push({
       Header: 'Rank',
       id: 'score',
-      // width: 75,
+      minWidth: 50,
+      width: 100,
+      maxWidth: 100,
       // filterable: false,
       disableFilters: true,
       accessor: 'score',
       sortType: 'basic',
       Cell: (d) => {
         if (!d.value) {
-          return <span className="number">N/A</span>;
+          return <div className="center">N/A</div>;
         }
-        return <span className="number">{parseFloat(Math.round(d.value * 1000) / 1000).toFixed(3)}</span>;
+        return <div className="center">{parseFloat(Math.round(d.value * 1000) / 1000).toFixed(3)}</div>;
       },
       className: 'center',
     });

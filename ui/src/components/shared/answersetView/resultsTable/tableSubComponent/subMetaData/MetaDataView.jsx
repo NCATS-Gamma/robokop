@@ -26,8 +26,8 @@ export default function MetaDataView(props) {
   const colorMap = useCallback(getNodeTypeColorMap(config.concepts), [config.concepts]);
 
   function makeColumns() {
-    const blacklist = ['isSet', 'level'];
-    const whitelist = ['name', 'id', 'type'];
+    const blocklist = ['isSet', 'level'];
+    const allowlist = ['name', 'id', 'type'];
     const { isSet } = rowData[selectedNodeId];
     const nodes = isSet ? rowData[selectedNodeId].setNodes : [rowData[selectedNodeId]];
     const columnHeaders = [];
@@ -37,16 +37,16 @@ export default function MetaDataView(props) {
       let setKeys = new Set();
       // map over every key in all the set objects and make a list of all unique keys
       nodes.forEach((node) => Object.keys(node).map((key) => setKeys.add(key)));
-      setKeys = [...setKeys].filter((key) => !blacklist.includes(key));
-      let firstKeys = setKeys.filter((key) => whitelist.includes(key));
+      setKeys = [...setKeys].filter((key) => !blocklist.includes(key));
+      let firstKeys = setKeys.filter((key) => allowlist.includes(key));
       firstKeys = firstKeys.sort();
-      keys = firstKeys.concat(setKeys.filter((key) => !whitelist.includes(key)));
+      keys = firstKeys.concat(setKeys.filter((key) => !allowlist.includes(key)));
     } else {
       // if the nodes are just a single node
-      const node = Object.keys(nodes[0]).filter((key) => !blacklist.includes(key));
-      let firstKeys = node.filter((key) => whitelist.includes(key));
+      const node = Object.keys(nodes[0]).filter((key) => !blocklist.includes(key));
+      let firstKeys = node.filter((key) => allowlist.includes(key));
       firstKeys = firstKeys.sort();
-      keys = firstKeys.concat(node.filter((key) => !whitelist.includes(key)));
+      keys = firstKeys.concat(node.filter((key) => !allowlist.includes(key)));
       node.forEach((key) => {
         // true or false aren't showing up in react table, just making them more readable
         if (typeof nodes[0][key] === 'boolean') {
@@ -80,6 +80,7 @@ export default function MetaDataView(props) {
     ];
     setColumns(cols);
     setMetaData(nodes);
+    console.log('nodes', nodes);
   }
 
   useEffect(() => {

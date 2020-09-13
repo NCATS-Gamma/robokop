@@ -19,6 +19,12 @@ export default function Table(props) {
     columns, data, messageStore,
   } = props;
   const [activeSubComponentButton, setActiveSubComponentButton] = useState(answersetSubComponentEnum.json);
+  const defaultColumn = React.useMemo(() => ({
+    minWidth: 50, // minWidth is only used as a limit for resizing
+    width: 1500, // width is used for both the flex-basis and flex-grow
+    maxWidth: 5000, // maxWidth is only used as a limit for resizing
+  }), []);
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -37,6 +43,7 @@ export default function Table(props) {
   } = useTable(
     {
       columns,
+      defaultColumn,
       data,
       initialState: {
         pageIndex: 0,

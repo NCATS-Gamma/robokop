@@ -76,7 +76,7 @@ export default function useMessageStore() {
    * @returns {int} number of nodes in graph
    */
   function getNumNodes(graph) {
-    return message[graph] ? message.current[graph].nodes.length : 0;
+    return message.current && message.current[graph] ? message.current[graph].nodes.length : 0;
   }
   function getNumKgNodes() {
     return getNumNodes('knowledge_graph');
@@ -148,23 +148,23 @@ export default function useMessageStore() {
           const { node_bindings: nodeBindings } = ans;
           // Iterate through each node_binding in an answer and if the KG node matches any, update score
           nodeBindings.forEach((nodeBinding) => {
-            let isMatch = false;
             if (Array.isArray(nodeBinding.kg_id)) {
-              if (nodeBinding.kg_id.indexOf(kgNode.id) > -1) {
-                isMatch = true;
+              const ind = nodeBinding.kg_id.indexOf(kgNode.id);
+              if (ind > -1) {
+                kgNode.count[idToIndMaps.qgNodeMap.get(nodeBinding.qg_id)] += 1;
+                if (ans.score !== undefined) {
+                  kgNode.scoreVector[idToIndMaps.qgNodeMap.get(nodeBinding.qg_id)] += ans.score;
+                }
               }
             } else if (nodeBinding.kg_id === kgNode.id) {
-              isMatch = true;
+              kgNode.count[idToIndMaps.qgNodeMap.get(nodeBinding.qg_id)] += 1;
+              if (ans.score !== undefined) {
+                kgNode.scoreVector[idToIndMaps.qgNodeMap.get(nodeBinding.qg_id)] += ans.score;
+              }
             }
             // Update score for qNode position in scoreVector since this kGNode was
             // referenced in this answer
             // sometimes results don't have scores
-            if (isMatch) {
-              kgNode.count[idToIndMaps.qgNodeMap.get(nodeBinding)] += 1;
-              if (ans.score !== undefined) {
-                kgNode.scoreVector[idToIndMaps.qgNodeMap.get(nodeBinding)] += ans.score;
-              }
-            }
           });
         });
         kgNode.aggScore = kgNode.scoreVector.reduce((a, b) => a + b, 0);
@@ -260,17 +260,17 @@ export default function useMessageStore() {
 
           results.forEach((a) => {
             // Go through answers and look for this node
-            Object.keys(a.node_bindings).forEach((key) => {
-              const theseIds = a.node_bindings[key];
+            a.node_bindings.forEach((nodeBinding) => {
+              const theseIds = nodeBinding.kg_id;
               if (Array.isArray(theseIds)) {
                 // This answer has a set of nodes for this binding
                 if (theseIds.includes(node.id)) {
                   // The set contains this id
-                  qNodeCounts[qNodeBindings.indexOf(key)] += 1;
+                  qNodeCounts[qNodeBindings.indexOf(nodeBinding.qg_id)] += 1;
                 }
               } else if (theseIds === node.id) {
                 // This answer lists this node as qNode: key
-                qNodeCounts[qNodeBindings.indexOf(key)] += 1;
+                qNodeCounts[qNodeBindings.indexOf(nodeBinding.qg_id)] += 1;
               }
             });
           });
@@ -402,7 +402,9 @@ export default function useMessageStore() {
   // Returns subgraphViewer compatible format graph spec { nodes: {}, edges: {} }
   function activeAnswerGraph(activeAnswerId) {
     const ansIdMap = ansIdToIndMap();
+    console.log('active answer id', activeAnswerId);
     const answer = message.current.results[ansIdMap.get(activeAnswerId)];
+    console.log('answer', answer);
     const graph = { nodes: [], edges: [] };
 
     // We could loop through the qNodes to find out what nodes are in this answer
@@ -489,7 +491,7 @@ export default function useMessageStore() {
     }
     const ansIdMap = ansIdToIndMap();
     const result = message.current.results[ansIdMap.get(activeAnswerId)];
-    const nodeBindingsMap = new Map(result.node_bindings.map((n) => n.kg_id));
+    const nodeBindingsMap = result.node_bindings.map((n) => n.kg_id);
     let maxNumAgNodes = 0;
     nodeBindingsMap.forEach((val) => {
       const nodeIds = val;
