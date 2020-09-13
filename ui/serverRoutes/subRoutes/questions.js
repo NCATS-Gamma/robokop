@@ -26,6 +26,7 @@ router.route('/')
   .post(upload.single('question'),
     (req, res) => {
       const stringedQuestion = req.file.buffer.toString();
+      console.log(stringedQuestion);
       axios.request({
         method: 'POST',
         url: url('api/questions'),
@@ -63,47 +64,5 @@ router.route('/:question_id')
         res.send(err);
       });
   });
-
-router.route('/:question_id/answers')
-  .get((req, res) => {
-    const { question_id } = req.params;
-    axios.request({
-      method: 'GET',
-      url: url(`api/questions/${question_id}/answers`),
-      headers: {
-        Authorization: req.headers.authorization,
-      },
-      maxBodyLength: 10000000000,
-      maxContentLength: 10000000000,
-    })
-      .then((response) => {
-        res.send(response.data);
-      })
-      .catch((err) => {
-        res.send(err);
-      });
-  })
-  .post(upload.single('answer'),
-    (req, res) => {
-      const stringedAnswer = req.file.buffer.toString();
-      const { question_id } = req.params;
-      axios.request({
-        method: 'POST',
-        url: url(`api/questions/${question_id}/answers`),
-        data: stringedAnswer,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: req.headers.authorization,
-        },
-        maxBodyLength: 10000000000,
-        maxContentLength: 10000000000,
-      })
-        .then((response) => {
-          res.send(response.data);
-        })
-        .catch((error) => {
-          res.send(error);
-        });
-    });
 
 module.exports = router;
