@@ -69,14 +69,6 @@ export default function AnswerTable(props) {
       colSpecObj.filterable = true;
       colSpecObj.qnodeId = nodeId;
       messageStore.initializeFilter();
-      // colSpecObj.Filter = ({ column: { setFilter }, store: filterStore }) => (
-      //   <AnswersetFilter
-      //     setFilter={setFilter}
-      //     store={filterStore}
-      //     qnodeId={nodeId}
-      //   />
-      // );
-      // colSpecObj.filter = store.defaultFilter;
 
       const backgroundColor = bgColorMap(colSpecObj.type);
       const columnHeader = colSpecObj.Header;

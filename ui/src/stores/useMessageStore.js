@@ -10,10 +10,9 @@ const makeEmptyArray = (len, init) => {
   return array;
 };
 
-const filter = {};
-
 export default function useMessageStore() {
   const message = useRef(null);
+  const filter = useRef({});
   // const [activeAnswerId, updateActiveAnswerId] = useState(null);
   // const [denseAnswer, updateDenseAnswer] = useState({});
   const [numAgSetNodes, updateNumAgSetNodes] = useState(10);
@@ -23,7 +22,7 @@ export default function useMessageStore() {
   const [filteredAnswers, setFilteredAnswers] = useState([]);
   const [answers, setAnswers] = useState([]);
 
-  const keyBlacklist = ['isSet', 'labels', 'equivalent_identifiers', 'type', 'id', 'degree'];
+  const keyBlocklist = ['isSet', 'labels', 'equivalent_identifiers', 'type', 'id', 'degree', 'synonyms'];
   let unknownNodes = false;
 
   function graphToIndMap(graph, type) {
@@ -522,20 +521,19 @@ export default function useMessageStore() {
    */
   function initializeFilterKeys() {
     // the arrays are [checked, available given other columns]
-    const { query_graph: qg } = message.current;
     const tempFilterKeys = {};
-    qg.nodes.forEach((qnode) => {
-      const qnodeId = qnode.id;
+    const qgNodeIds = getQNodeIds();
+    qgNodeIds.forEach((qnodeId) => {
       tempFilterKeys[qnodeId] = {};
       const qnodeFilter = tempFilterKeys[qnodeId];
-      Object.keys(filter[qnodeId]).forEach((knodeId) => {
+      Object.keys(filter.current[qnodeId]).forEach((knodeId) => {
         const knode = getKgNode(knodeId);
         if (knode) {
           if (Object.keys(qnodeFilter).length === 0) {
             // we are dealing with the first node
             Object.keys(knode).forEach((propertyKey) => {
               propertyKey = propertyKey.replace(/ /g, '_'); // for consistency, change all spaces to underscores
-              if (!keyBlacklist.includes(propertyKey)) {
+              if (!keyBlocklist.includes(propertyKey)) {
                 qnodeFilter[propertyKey] = {};
                 qnodeFilter[propertyKey][knode[propertyKey]] = [true, true];
               }
@@ -544,7 +542,7 @@ export default function useMessageStore() {
             // we are adding a node to the existing tempFilterKeys
             Object.keys(knode).forEach((propertyKey) => {
               propertyKey = propertyKey.replace(/ /g, '_'); // for consistency, change all spaces to underscores
-              if (!keyBlacklist.includes(propertyKey) && qnodeFilter[propertyKey]) {
+              if (!keyBlocklist.includes(propertyKey) && qnodeFilter[propertyKey]) {
                 qnodeFilter[propertyKey][knode[propertyKey]] = [true, true];
               }
             });
@@ -557,6 +555,7 @@ export default function useMessageStore() {
         }
       });
     });
+    console.log('filterKeys', tempFilterKeys);
     setFilterKeys(tempFilterKeys);
     updateSearchedFilter(tempFilterKeys);
   }
@@ -568,17 +567,17 @@ export default function useMessageStore() {
   function initializeFilter() {
     const qNodeIds = getQNodeIds();
     qNodeIds.forEach((id) => {
-      filter[id] = {};
+      filter.current[id] = {};
     });
     message.current.results.forEach((ans) => {
       const nodeBindings = ans.node_bindings;
-      qNodeIds.forEach((id) => {
-        if (Array.isArray(nodeBindings[id])) {
-          nodeBindings[id].forEach((kNodeId) => {
-            filter[id][kNodeId] = true;
+      nodeBindings.forEach((nodeBinding) => {
+        if (Array.isArray(nodeBinding.kg_id)) {
+          nodeBinding.kg_id.forEach((kgNodeId) => {
+            filter.current[nodeBinding.qg_id][kgNodeId] = true;
           });
         } else {
-          filter[id][nodeBindings[id]] = true;
+          filter.current[nodeBinding.qg_id][nodeBinding.kg_id] = true;
         }
       });
     });
@@ -589,9 +588,10 @@ export default function useMessageStore() {
    * Update filterKeys object based on filter and table filtered answers
    */
   function updateFilteredAnswers(newFilteredAnswers) {
+    const newFilterKeys = _.cloneDeep(filterKeys);
     const qgNodeIds = getQNodeIds();
     qgNodeIds.forEach((qnodeId) => {
-      const qnodeFilter = filterKeys[qnodeId];
+      const qnodeFilter = newFilterKeys[qnodeId];
       Object.keys(qnodeFilter).forEach((propertyKey) => {
         Object.keys(qnodeFilter[propertyKey]).forEach((propertyValue) => {
           qnodeFilter[propertyKey][propertyValue][1] = false;
@@ -602,19 +602,18 @@ export default function useMessageStore() {
     newFilteredAnswers.forEach((answer) => { // loop over rows (remaining answers)
       qgNodeIds.forEach((qnodeId) => { // loop over columns (qnodes)
         answer[qnodeId].forEach((knode) => { // loop over knodes
-          if (filter[qnodeId][knode.id]) {
+          if (filter.current[qnodeId][knode.id]) {
             knode = getKgNode(knode.id);
             Object.keys(knode).forEach((propertyKey) => { // loop over properties belonging to knode
               propertyKey = propertyKey.replace(/ /g, '_'); // for consistency, change all spaces to underscores
-              if (propertyKey in filterKeys[qnodeId]) {
-                filterKeys[qnodeId][propertyKey][knode[propertyKey]][1] = true;
+              if (propertyKey in newFilterKeys[qnodeId]) {
+                newFilterKeys[qnodeId][propertyKey][knode[propertyKey]][1] = true;
               }
             });
           }
         });
       });
     });
-    const newFilterKeys = _.cloneDeep(filterKeys);
     setFilterKeys(newFilterKeys);
     setFilteredAnswers(newFilteredAnswers);
   }
@@ -627,7 +626,7 @@ export default function useMessageStore() {
     const qgNodeIds = getQNodeIds();
     const filteredResults = answers.filter((row) => {
       const remove = qgNodeIds.find((qnodeId) => {
-        const found = row[qnodeId].find((knode) => knode.id && !filter[qnodeId][knode.id]);
+        const found = row[qnodeId].find((knode) => knode.id && !filter.current[qnodeId][knode.id]);
         if (found) {
           // if found, we want to remove
           return true;
@@ -648,21 +647,21 @@ export default function useMessageStore() {
    * Update filter object given the filterKeys object
    */
   function updateFilter(newFilterKeys) {
-    const qgNodeIds = getQNodeIds();
     message.current.results.forEach((ans) => {
       const nodeBindings = ans.node_bindings;
-      qgNodeIds.forEach((qgNodeId) => {
-        let knodeIds = nodeBindings[qgNodeId];
+      nodeBindings.forEach((nodeBinding) => {
+        let knodeIds = nodeBinding.kg_id;
+        const { qg_id } = nodeBinding;
         if (!Array.isArray(knodeIds)) {
           knodeIds = [knodeIds];
         }
-        const qnodeFilter = newFilterKeys[qgNodeId];
+        const qnodeFilter = newFilterKeys[qg_id];
         let show;
         knodeIds.forEach((knodeId) => {
           const knode = getKgNode(knodeId);
           if (knode) {
             show = !Object.keys(qnodeFilter).some((propertyKey) => !qnodeFilter[propertyKey][knode[propertyKey]][0]);
-            filter[qgNodeId][knodeId] = show;
+            filter.current[qg_id][knodeId] = show;
           }
         });
       });
