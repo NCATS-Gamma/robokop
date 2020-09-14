@@ -292,8 +292,6 @@ export default function useMessageStore() {
         }
       });
 
-      console.log(prunedGraph);
-
       return prunedGraph;
     }
     return {};
@@ -363,25 +361,25 @@ export default function useMessageStore() {
     qNodeIds.forEach((qNodeId) => {
       const qNode = getQgNode(qNodeId);
       let nodeListObj = { type: qNode.type, isSet: false };
-      const knodeIds = answer.node_bindings[qNodeId];
-      if (!Array.isArray(knodeIds)) {
+      const kgNodeIds = answer.node_bindings.find((ans) => ans.qg_id === qNodeId).kg_id;
+      if (!Array.isArray(kgNodeIds)) {
         // This is not a set node
         if (('set' in qNode) && qNode.set) {
           // Actually a set but only has one element
           nodeListObj = { type: qNode.type, name: `Set: ${entityNameDisplay(qNode.type)}`, isSet: true };
-          nodeListObj.setNodes = [knodeIds].map((kgNodeId) => getKgNode(kgNodeId));
+          nodeListObj.setNodes = [kgNodeIds].map((kgNodeId) => getKgNode(kgNodeId));
         } else {
           // for real, not a set
-          nodeListObj = { ...getKgNode(knodeIds), ...nodeListObj };
+          nodeListObj = { ...getKgNode(kgNodeIds), ...nodeListObj };
         }
-      } else if ((knodeIds.length === 1) && !qNode.set) {
+      } else if ((kgNodeIds.length === 1) && !qNode.set) {
         // This is not a set node but, for some reason is an array
 
-        nodeListObj = { ...getKgNode(knodeIds[0]), ...nodeListObj };
+        nodeListObj = { ...getKgNode(kgNodeIds[0]), ...nodeListObj };
       } else {
         // Set
         nodeListObj = { type: qNode.type, name: `Set: ${entityNameDisplay(qNode.type)}`, isSet: true };
-        nodeListObj.setNodes = knodeIds.map((kgNodeId) => getKgNode(kgNodeId));
+        nodeListObj.setNodes = kgNodeIds.map((kgNodeId) => getKgNode(kgNodeId));
       }
       ansObj.nodes[qNodeId] = nodeListObj;
     });
@@ -402,9 +400,7 @@ export default function useMessageStore() {
   // Returns subgraphViewer compatible format graph spec { nodes: {}, edges: {} }
   function activeAnswerGraph(activeAnswerId) {
     const ansIdMap = ansIdToIndMap();
-    console.log('active answer id', activeAnswerId);
     const answer = message.current.results[ansIdMap.get(activeAnswerId)];
-    console.log('answer', answer);
     const graph = { nodes: [], edges: [] };
 
     // We could loop through the qNodes to find out what nodes are in this answer

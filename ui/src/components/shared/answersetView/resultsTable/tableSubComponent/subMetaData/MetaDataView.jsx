@@ -80,7 +80,6 @@ export default function MetaDataView(props) {
     ];
     setColumns(cols);
     setMetaData(nodes);
-    console.log('nodes', nodes);
   }
 
   useEffect(() => {
