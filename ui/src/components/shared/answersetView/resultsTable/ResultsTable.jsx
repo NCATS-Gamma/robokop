@@ -73,7 +73,7 @@ export default function AnswerTable(props) {
       const backgroundColor = bgColorMap(colSpecObj.type);
       const columnHeader = colSpecObj.Header;
       colSpecObj.Header = () => (
-        <div style={{ backgroundColor }}>{columnHeader}</div>
+        <div style={{ backgroundColor, padding: 2 }}>{columnHeader}</div>
       );
       return colSpecObj;
     });

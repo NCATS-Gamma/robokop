@@ -33,7 +33,7 @@ export default function KnowledgeGraph(props) {
   const [hierarchical, toggleHierarchy] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [localPruneNum, updateLocalPruneNum] = useState(35);
-  const [committedPruneNum, setCommittedPruneNum] = useState(35);
+  const [committedPruneNum, setCommittedPruneNum] = useState(Math.min(35, messageStore.numKgNodes));
   const [kg, setKg] = useState({ nodes: [], edges: [] });
   const [loading, toggleLoading] = useState(true);
   const randomSeed = useRef(Math.floor(Math.random() * 100));

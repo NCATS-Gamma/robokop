@@ -13,7 +13,7 @@ export default function Cell(props) {
   if (Array.isArray(row.value) && row.value.length > 1) {
     return (
       <ClickAwayListener onClickAway={() => setAnchorEl(null)}>
-        <div style={{ width: '100%', textAlign: 'center' }}>
+        <div style={{ width: '100%' }}>
           <IconButton
             onClick={(e) => setAnchorEl(anchorEl ? null : e.target)}
           >
@@ -27,6 +27,9 @@ export default function Cell(props) {
         </div>
       </ClickAwayListener>
     );
+  }
+  if (Array.isArray(row.value) && row.value.length === 0) {
+    return <div>None</div>;
   }
   return <div>{row.value}</div>;
 }

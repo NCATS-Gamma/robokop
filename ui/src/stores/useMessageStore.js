@@ -555,7 +555,6 @@ export default function useMessageStore() {
         }
       });
     });
-    console.log('filterKeys', tempFilterKeys);
     setFilterKeys(tempFilterKeys);
     updateSearchedFilter(tempFilterKeys);
   }

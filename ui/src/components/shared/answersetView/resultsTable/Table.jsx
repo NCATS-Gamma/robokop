@@ -20,8 +20,8 @@ export default function Table(props) {
   } = props;
   const [activeSubComponentButton, setActiveSubComponentButton] = useState(answersetSubComponentEnum.json);
   const defaultColumn = React.useMemo(() => ({
-    minWidth: 50, // minWidth is only used as a limit for resizing
-    width: 1500, // width is used for both the flex-basis and flex-grow
+    minWidth: 500, // minWidth is only used as a limit for resizing
+    width: 500, // width is used for both the flex-basis and flex-grow
     maxWidth: 5000, // maxWidth is only used as a limit for resizing
   }), []);
 
@@ -63,24 +63,31 @@ export default function Table(props) {
 
   return (
     <>
-      <MuiTable {...getTableProps()} size="small">
+      <MuiTable {...getTableProps()}>
         <TableHead>
           {headerGroups.map((headerGroup, i) => (
             <React.Fragment key={`header-group-${i}`}>
               <TableRow {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => (
-                  <TableCell
-                    {...column.getHeaderProps(column.getSortByToggleProps())}
-                    style={{ width: column.width, padding: 0 }}
-                  >
-                    <div
-                      className={column.isSorted ? column.isSortedDesc ? 'underline' : 'upperline' : '' }
-                      style={{ textAlign: 'center' }}
+                {headerGroup.headers.map((column) => {
+                  let className = 'tableHeader';
+                  if (column.isSortedDesc) {
+                    className += ' underline';
+                  } else if (column.isSorted) {
+                    className += ' upperline';
+                  }
+                  return (
+                    <TableCell
+                      {...column.getHeaderProps(column.getSortByToggleProps())}
+                      style={{ width: column.width, padding: 0 }}
                     >
-                      {column.render('Header')}
-                    </div>
-                  </TableCell>
-                ))}
+                      <div
+                        className={className}
+                      >
+                        {column.render('Header')}
+                      </div>
+                    </TableCell>
+                  );
+                })}
               </TableRow>
               {/* Filter row */}
               <TableRow>

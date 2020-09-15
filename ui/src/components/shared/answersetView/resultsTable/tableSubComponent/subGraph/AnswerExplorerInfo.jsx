@@ -14,8 +14,14 @@ import entityNameDisplay from '../../../../../../utils/entityNameDisplay';
 
 import config from '../../../../../../config.json';
 
-const nodeBlocklist = ['isSet', 'labels', 'label', 'equivalent_identifiers', 'type', 'id', 'degree', 'name', 'title', 'color', 'binding'];
-const edgeBlocklist = ['binding', 'ctime', 'id', 'publications', 'source_database', 'source_id', 'target_id', 'type'];
+const nodeBlocklist = [
+  'isSet', 'labels', 'label', 'equivalent_identifiers', 'type',
+  'id', 'degree', 'name', 'title', 'color', 'binding', 'level',
+];
+const edgeBlocklist = [
+  'binding', 'ctime', 'id', 'publications', 'source_database',
+  'source_id', 'target_id', 'type',
+];
 
 export default function AnswerExplorerInfo(props) {
   const { graph, selectedEdge: parentSelectedEdge } = props;

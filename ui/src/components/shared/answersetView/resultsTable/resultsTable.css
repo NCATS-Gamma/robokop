@@ -11,6 +11,13 @@
     overflow: auto;
     position: relative;
 }
+.tableHeader {
+    text-align: center;
+    font-size: 15px;
+}
+.MuiTableCell-body {
+    font-size: 12px !important;
+}
 .upperline {
     border-top: 2px solid black;
 }
