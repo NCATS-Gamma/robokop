@@ -12,7 +12,7 @@ import NewQuestionButtons from './NewQuestionButtons';
 import QuestionGraphViewContainer from './QuestionGraphViewContainer';
 import QuestionTemplateModal from './QuestionTemplate';
 import QuestionListModal from './QuestionListModal';
-import questionTemplates from '../../../../../queries/index';
+// import questionTemplates from '../../../../../queries/index';
 
 import config from '../../../config.json';
 /**
@@ -258,7 +258,8 @@ export default function QuestionBuilder(props) {
       <QuestionTemplateModal
         showModal={showModal}
         close={() => toggleModal(false)}
-        questions={_.cloneDeep(questionTemplates)}
+        // questions={_.cloneDeep(questionTemplates)}
+        questions={[]}
         selectQuestion={onQuestionTemplate}
         concepts={config.concepts}
       />
