@@ -64,12 +64,13 @@ export default function AnswerExplorerInfo(props) {
   }
 
   function getNodeInfoFrag(n) {
-    if (!n || !('name' in n)) {
-      return (<div />);
+    if (!n) {
+      return <div />;
     }
+    const title = n.name || n.id;
     const edge = subgraph.edges.find((e) => e.id === selectedEdgeId);
     const urls = curieUrls(n.id);
-    if (edge.source_database.includes('ctd')) {
+    if (edge.source_database && edge.source_database.includes('ctd')) {
       const urlObj = ctdUrls(n.type, n.equivalent_identifiers);
       urls.push(urlObj);
     }
@@ -79,7 +80,7 @@ export default function AnswerExplorerInfo(props) {
     return (
       <Card>
         <h3 className="cardTitle" style={{ backgroundColor }}>
-          {n.name}
+          {title}
           <div className="pull-right">
             {
               urls.map((link) => (
@@ -117,7 +118,7 @@ export default function AnswerExplorerInfo(props) {
 
     const extraFields = Object.keys(edge).filter((property) => !edgeBlocklist.includes(property));
 
-    let origin = ['Unknown'];
+    let origin = null;
     const sourceToOriginString = (source) => source; // source.substr(0, source.indexOf('.'));
 
     if ('source_database' in edge) {
@@ -133,12 +134,14 @@ export default function AnswerExplorerInfo(props) {
           {edge.type}
         </h3>
         <CardContent className="cardContent">
-          <h5>
-            Established using:
-            <p>
-              {origin.join(', ')}
-            </p>
-          </h5>
+          {origin && (
+            <h5>
+              Established using:
+              <p>
+                {origin.join(', ')}
+              </p>
+            </h5>
+          )}
           {extraFields.map((property) => (
             <h5 key={shortid.generate()}>
               {`${property}: ${Array.isArray(edge[property]) ? edge[property].join(', ') : edge[property].toString()}`}
@@ -176,7 +179,8 @@ export default function AnswerExplorerInfo(props) {
       if ('publications' in edge && Array.isArray(edge.publications)) {
         ({ publications } = edge);
       }
-      publicationsTitle = `${publications.length} Publications for ${sourceNode.name} and ${targetNode.name}`;
+      publicationsTitle = `${publications.length} Publications for ${sourceNode.name || sourceNode.id}
+        and ${targetNode.name || targetNode.id}`;
       publicationListFrag = <PubmedList publications={publications} />;
     } else if (selectedNodeId) {
       // Node is selected
