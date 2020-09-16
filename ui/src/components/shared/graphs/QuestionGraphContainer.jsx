@@ -33,7 +33,11 @@ const nodePreProcFn = (n) => {
         n.label = n.curie;
       }
     } else if ('type' in n) {
-      n.label = entityNameDisplay(n.type);
+      if (Array.isArray(n.type)) {
+        n.label = entityNameDisplay(n.type[0]);
+      } else {
+        n.label = entityNameDisplay(n.type);
+      }
     } else {
       n.label = '';
     }
