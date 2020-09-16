@@ -30,7 +30,9 @@ export default function NewQuestionList({ user }) {
         },
       })
         .then((res) => {
-          updateQuestions(res.data);
+          // TODO: there might be a new route that will get just questions
+          const fetchedQuestions = res.data.filter((question) => !question.parent);
+          updateQuestions(fetchedQuestions);
           toggleLoading(false);
         })
         .catch((err) => {
