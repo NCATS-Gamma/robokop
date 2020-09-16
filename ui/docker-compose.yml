@@ -1,0 +1,13 @@
+version: '3.5'
+
+services:
+  robokop:
+    build: .
+    environment:
+      ROBOKACHE_HOST: robokache
+    ports:
+      - "80:80"
+  robokache:
+    image: docker.pkg.github.com/ncats-gamma/robokache/build:v2.0.0
+    volumes:
+      - ./robokache-data:/app/data

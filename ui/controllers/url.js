@@ -1,5 +1,5 @@
 const protocol = 'http';
-const host = 'lvh.me';
+const host = process.env.ROBOKACHE_HOST || 'lvh.me';
 const port = 8080;
 
 /**
