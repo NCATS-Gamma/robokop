@@ -28,6 +28,7 @@ export default function Answer({ user }) {
         },
       })
         .then((res) => {
+          console.log('question', res.data);
           axios.request({
             method: 'get',
             url: '/api/answers',
@@ -39,6 +40,7 @@ export default function Answer({ user }) {
             },
           })
             .then((response) => {
+              console.log('answers', response.data);
               if (response.data && Array.isArray(response.data)) {
                 axios.get(`/api/answers/${response.data[0].id}`, {
                   headers: {
@@ -46,9 +48,9 @@ export default function Answer({ user }) {
                   },
                 })
                   .then((res3) => {
-                    // console.log('answer', res3.data.data);
-                    const { knowledge_graph, results } = JSON.parse(res3.data.data);
-                    const query_graph = JSON.parse(res.data.data);
+                    console.log('answer', res3.data);
+                    const { knowledge_graph, results } = res3.data;
+                    const query_graph = res.data;
                     const message = { query_graph, knowledge_graph, results };
                     messageStore.initializeMessage(message);
                     setMessageSaved(true);

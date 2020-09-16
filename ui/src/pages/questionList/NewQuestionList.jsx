@@ -88,7 +88,7 @@ export default function NewQuestionList({ user }) {
                       .map((question) => (
                         <TableRow key={question.id}>
                           <TableCell scope="row">
-                            <Link to={`/answer/${question.id}`}>
+                            <Link to={`/question/${question.id}`}>
                               {question.id}
                             </Link>
                           </TableCell>

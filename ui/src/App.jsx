@@ -20,7 +20,7 @@ import SimpleQuestion from './pages/question/SimpleQuestion';
 // import QuestionList from './pages/questionList/QuestionList';
 // import Answerset from './pages/answers/Answerset';
 import NewQuestionList from './pages/questionList/NewQuestionList';
-import Answer from './pages/Answer';
+import Answers from './pages/Answers';
 
 import Header from './components/header/Header';
 import Footer from './components/footer/Footer';
@@ -63,8 +63,8 @@ export default function App() {
           <Route path="/questions">
             <NewQuestionList user={user} />
           </Route>
-          <Route path="/answer/:question_id">
-            <Answer user={user} />
+          <Route path="/question/:question_id">
+            <Answers user={user} />
           </Route>
           <Route path="/termsofservice">
             <TermsofService />

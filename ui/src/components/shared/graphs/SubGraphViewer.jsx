@@ -230,7 +230,7 @@ export default function SubGraphViewer(props) {
       };
 
       // Set shortened node labels and tool-tip for each node
-      n.label = n.name && n.name.length > 15 ? `${n.name.substring(0, 13)}...` : n.name || 'Unknown';
+      n.label = n.name && n.name.length > 15 ? `${n.name.substring(0, 13)}...` : n.name || n.id || 'Unknown';
       let extraFields = Object.keys(n).filter((property) => !keyBlocklist.includes(property));
       extraFields = extraFields.map((property) => `<div key={${shortid.generate()}}><span class="field-name">${property}: </span>${n[property]}</div>`);
       n.title = (

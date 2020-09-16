@@ -28,48 +28,61 @@ export default function SimpleViewer(props) {
   const messageStore = useMessageStore();
 
   function uploadMessage() {
-    const formData = new FormData();
-    const blob = new Blob([JSON.stringify(messageStore.message.query_graph)], {
-      type: 'application/json',
-    });
-    formData.append('question', blob);
+    const defaultQuestion = { parent: '', visibility: 0 };
     axios.request({
       method: 'post',
       url: '/api/questions',
-      data: formData,
+      data: defaultQuestion,
       headers: {
-        'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${user.id_token}`,
       },
     })
-      .then((res) => {
-        const question_id = res.data;
-        const answerData = new FormData();
-        const answerBlob = new Blob([JSON.stringify({
-          knowledge_graph: messageStore.message.knowledge_graph,
-          results: messageStore.message.results,
-        })], {
+      .then((resp) => {
+        console.log('created question', resp);
+        const question_id = resp.data;
+        const formData = new FormData();
+        const blob = new Blob([JSON.stringify(messageStore.message.query_graph)], {
           type: 'application/json',
         });
-        answerData.append('answer', answerBlob);
+        formData.append('question', blob);
         axios.request({
-          url: '/api/answers',
-          method: 'post',
-          params: {
-            question_id,
-          },
-          data: answerData,
+          method: 'put',
+          url: `/api/questions/${question_id}/update`,
+          data: formData,
           headers: {
             'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${user.id_token}`,
           },
         })
-          .then((response) => {
-            console.log('answers response', response.data);
-            toggleSnackbar(true);
-          })
-          .catch((error) => {
-            console.log('answers error', error);
+          .then((res) => {
+            console.log('question updated', res.data);
+            const answerData = new FormData();
+            const answerBlob = new Blob([JSON.stringify({
+              knowledge_graph: messageStore.message.knowledge_graph,
+              results: messageStore.message.results,
+            })], {
+              type: 'application/json',
+            });
+            answerData.append('answer', answerBlob);
+            axios.request({
+              url: '/api/answers',
+              method: 'post',
+              params: {
+                question_id,
+              },
+              data: answerData,
+              headers: {
+                'Content-Type': 'multipart/form-data',
+                Authorization: `Bearer ${user.id_token}`,
+              },
+            })
+              .then((response) => {
+                console.log('answers response', response.data);
+                toggleSnackbar(true);
+              })
+              .catch((error) => {
+                console.log('answers error', error);
+              });
           });
       });
   }
