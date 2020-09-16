@@ -38,7 +38,7 @@ export default function SimpleViewer(props) {
       },
     })
       .then((resp) => {
-        console.log('created question', resp);
+        // console.log('created question', resp);
         const question_id = resp.data;
         const formData = new FormData();
         const blob = new Blob([JSON.stringify(messageStore.message.query_graph)], {
@@ -55,7 +55,7 @@ export default function SimpleViewer(props) {
           },
         })
           .then((res) => {
-            console.log('question updated', res.data);
+            // console.log('question updated', res.data);
             const answerData = new FormData();
             const answerBlob = new Blob([JSON.stringify({
               knowledge_graph: messageStore.message.knowledge_graph,
@@ -77,7 +77,7 @@ export default function SimpleViewer(props) {
               },
             })
               .then((response) => {
-                console.log('answers response', response.data);
+                // console.log('answers response', response.data);
                 toggleSnackbar(true);
               })
               .catch((error) => {
