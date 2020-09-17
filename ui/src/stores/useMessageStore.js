@@ -306,11 +306,16 @@ export default function useMessageStore() {
     const tempAnswers = [];
     // set the column headers object
     message.current.query_graph.nodes.forEach((n) => {
+      // TODO: handle an array of types
+      let { type } = n;
+      if (Array.isArray(type)) { // just grab first type
+        [type] = type;
+      }
       columnHeaders.push({
-        Header: `${n.id}: ${entityNameDisplay(n.type)}`,
+        Header: `${n.id}: ${entityNameDisplay(type)}`,
         id: n.id,
         isSet: n.set,
-        type: n.type,
+        type,
       });
     });
     // get the names and score from each answer for the table
@@ -426,7 +431,7 @@ export default function useMessageStore() {
           const node = { id: nodeId };
           let score = 0;
           message.current.knowledge_graph.edges.forEach((edge) => {
-            if (nodeId === edge.source_id || nodeId === edge.target_id) {
+            if ((nodeId === edge.source_id || nodeId === edge.target_id) && Array.isArray(edge.publications)) {
               score += edge.publications.length;
             }
           });
