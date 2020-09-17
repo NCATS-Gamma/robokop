@@ -11,7 +11,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Button from '@material-ui/core/Button';
 
 import SubComponent, { answersetSubComponentEnum } from './tableSubComponent/TableSubComponent';
-import EmptyTable from './EmptyTable';
+import EmptyTable from '../../emptyTableRows/EmptyTable';
 import AnswersetFilter from './AnswersetFilter';
 
 export default function Table(props) {

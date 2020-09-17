@@ -138,7 +138,9 @@ export default function SimpleViewer(props) {
                 messageStore={messageStore}
                 omitHeader
               />
-              <button type="button" onClick={uploadMessage}>Upload</button>
+              {user && (
+                <button type="button" onClick={uploadMessage}>Upload</button>
+              )}
               <Snackbar
                 open={showSnackbar}
                 onClose={() => toggleSnackbar(false)}

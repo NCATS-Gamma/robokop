@@ -13,8 +13,6 @@ import googleIcon from '../../../public/images/btn_google_light_normal_ios.svg';
 
 import './header.css';
 
-import config from '../../config.json';
-
 export default function Header(props) {
   const { user, setUser } = props;
   const [anchorEl, setAnchorEl] = useState(null);
@@ -51,26 +49,7 @@ export default function Header(props) {
 
   function openSignIn(e) {
     setAnchorEl(e.currentTarget);
-    // window.gapi.signin2.render('googleSignIn', {
-    //   scope: 'profile email',
-    //   width: 200,
-    //   height: 50,
-    //   longtitle: true,
-    //   theme: 'dark',
-    //   onsuccess: onSignIn,
-    // });
   }
-
-  // useEffect(() => {
-  //   API.getUser()
-  //     .then((res) => {
-  //       setUser(res);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err);
-  //       setUser(null);
-  //     });
-  // }, []);
 
   useEffect(() => {
     if (window.gapi && !user) {
@@ -96,15 +75,15 @@ export default function Header(props) {
     }
   }, []);
 
-  const showNewQuestion = user && config.settings.enableNewQuestions;
-
   return (
     <AppBar position="relative" className="header">
       <Toolbar id="headerToolbar">
         <Link to="/" id="robokopBrand">Robokop</Link>
         <Link to="/questions">Question Library</Link>
-        {showNewQuestion && (
+        {user ? (
           <Link to="/q/new">Ask a Question</Link>
+        ) : (
+          <Link to="/simple/question">Ask a Quick Question</Link>
         )}
         <div className="grow" />
         <Link to="/about">About</Link>
@@ -135,85 +114,9 @@ export default function Header(props) {
               <img src={googleIcon} alt="google icon" />
               <span>Sign in with Google</span>
             </Button>
-            // <Button
-            //   id="signInButton"
-            //   onClick={() => {
-            //     setAnchorEl(null);
-            //     onSignIn();
-            //   }}
-            // >
-            //   Sign in with Google
-            // </Button>
           )}
         </Popover>
       </Toolbar>
     </AppBar>
-    // <Navbar
-    //   style={{
-    //     backgroundColor: config.colors.bluegray,
-    //     boxShadow: '0px 0px 5px 0px #b3b3b3',
-    //     // backgroundImage: `linear-gradient(315deg, ${this.appConfig.colors.blue} 0%, ${this.appConfig.colors.bluegray} 74%)`,
-    //   }}
-    //   staticTop
-    // >
-    //   <Navbar.Header>
-    //     <Navbar.Brand>
-    //       <a href="/">Robokop</a>
-    //     </Navbar.Brand>
-    //     <Navbar.Toggle />
-    //   </Navbar.Header>
-    //   <Navbar.Collapse>
-    //     <Nav>
-    //       <NavItem href={config.routes.questions}>
-    //         Question Library
-    //       </NavItem>
-    //       {showNewQuestion && (
-    //         <NavItem href={config.routes.questionDesign}>
-    //           Ask a Question
-    //         </NavItem>
-    //       )}
-    //     </Nav>
-    //     <Nav pullRight>
-    //       <NavItem>
-    //         <Link to="/about">
-    //           About
-    //         </Link>
-    //       </NavItem>
-    //       <NavItem href={config.routes.help}>
-    //         Help
-    //       </NavItem>
-    //       <NavItem href={config.routes.guide}>
-    //         Guide
-    //       </NavItem>
-    //       {user ? (
-    //         <NavDropdown title={user} id="basic-nav-dropdown">
-    //           <MenuItem
-    //             onClick={signOut}
-    //           >
-    //             Sign Out
-    //           </MenuItem>
-    //         </NavDropdown>
-    //       ) : (
-    //         // <NavItem>
-    //         //   <div id="googleSignIn" />
-    //         // </NavItem>
-    //         <NavItem onClick={onSignIn}>
-    //           Sign in with Google
-    //         </NavItem>
-    //         // <GoogleLogin
-    //         //   clientId="297705140796-41v2ra13t7mm8uvu2dp554ov1btt80dg.apps.googleusercontent.com"
-    //         //   responseType="id_token"
-    //         //   render={(renderProps) => (
-    //         //     <NavItem onClick={renderProps.onClick}>Sign in with Google</NavItem>
-    //         //   )}
-    //         //   icon={false}
-    //         //   onSuccess={onSignIn}
-    //         //   onFailure={signInFailed}
-    //         //   isSignedIn
-    //         // />
-    //       )}
-    //     </Nav>
-    //   </Navbar.Collapse>
-    // </Navbar>
   );
 }

@@ -40,15 +40,3 @@
 .filterCheckboxLabel > .MuiFormControlLabel-label {
     overflow: auto;
 }
-#emptyTableOverlay {
-    position: absolute;
-    top: 40%;
-    left: 45%;
-    padding: 10px;
-    background-color: #fff;
-    border: 1px solid grey;
-    border-radius: 5px;
-}
-.emptyCell {
-    padding: 10px !important;
-}

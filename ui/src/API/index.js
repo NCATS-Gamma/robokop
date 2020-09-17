@@ -42,5 +42,46 @@ const routes = {
         reject(errorText);
       });
   }),
+  createQuestion: (question, token) => new Promise((resolve, reject) => {
+    const config = {
+      method: 'get',
+      url: '/api/questions',
+      headers: {},
+    };
+    if (token) {
+      config.headers.authorization = `Bearer ${token}`;
+    }
+    axios.request({
+      method: 'post',
+      url: '/api/questions',
+      data: question,
+    })
+      .then((res) => {
+        resolve(res);
+      })
+      .catch((err) => {
+        const errorText = errorHandling(err);
+        reject(errorText);
+      });
+  }),
+  getQuestions: (token) => new Promise((resolve, reject) => {
+    const config = {
+      method: 'get',
+      url: '/api/questions',
+      headers: {},
+    };
+    if (token) {
+      config.headers.authorization = `Bearer ${token}`;
+    }
+    axios.request(config)
+      .then((res) => {
+        resolve(res);
+      })
+      .catch((err) => {
+        const errorText = errorHandling(err);
+        reject(errorText);
+      });
+  }),
 };
+
 export default routes;

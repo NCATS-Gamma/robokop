@@ -12,6 +12,8 @@ import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 
 import Loading from '../../components/loading/Loading';
+import EmptyTable from '../../components/shared/emptyTableRows/EmptyTable';
+import API from '../../API';
 
 import './newQuestionList.css';
 
@@ -22,27 +24,23 @@ export default function NewQuestionList({ user }) {
   const [rowsPerPage, updateRowsPerPage] = useState(5);
 
   useEffect(() => {
+    let token = null;
     if (user) {
-      toggleLoading(true);
-      axios.get('/api/questions', {
-        headers: {
-          Authorization: `Bearer ${user.id_token}`,
-        },
-      })
-        .then((res) => {
-          let fetchedQuestions = [];
-          if (Array.isArray(res.data)) {
-            // TODO: there might be a new route that will get just questions
-            fetchedQuestions = res.data.filter((question) => !question.parent);
-          }
-          updateQuestions(fetchedQuestions);
-          toggleLoading(false);
-        })
-        .catch((err) => {
-          console.log('questions error', err);
-          toggleLoading(false);
-        });
+      token = user.id_token;
     }
+    API.getQuestions(token)
+      .then((res) => {
+        let fetchedQuestions = [];
+        if (Array.isArray(res.data)) {
+          // TODO: there might be a new route that will get just questions
+          fetchedQuestions = res.data.filter((question) => !question.parent);
+        }
+        updateQuestions(fetchedQuestions);
+        toggleLoading(false);
+      })
+      .catch(() => {
+        toggleLoading(false);
+      });
   }, [user]);
   return (
     <>
@@ -51,43 +49,22 @@ export default function NewQuestionList({ user }) {
         <br />
         {!loading && (
           <small>
-            {questions.length} questions have been asked using Robokop.
+            {questions.length} question{questions.length !== 1 ? 's have' : ' has'} been asked using Robokop.
           </small>
         )}
       </h1>
       {!loading ? (
-        <>
-          {!user && (
-            <div style={{ marginBottom: '20px' }}>
-              <p style={{ display: 'inline-block', marginRight: '20px' }}>
-                You aren&apos;t signed in. Please sign in to save your questions.
-              </p>
-              <Link to="/simple/quesiton">
-                Ask a Quick Question
-              </Link>
-            </div>
-          )}
-          {!questions.length ? (
-            <div>
-              <p>
-                You don&apos;t seem to have any questions of your own yet.
-              </p>
-              <Link to="/q/new">
-                Ask a Question
-              </Link>
-              <br />
-              <br />
-            </div>
-          ) : (
-            <Paper id="questionListContainer">
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Question ID</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
+        <Paper id="questionListContainer">
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Question ID</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {questions.length ? (
+                  <>
                     {questions
                       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                       .map((question) => (
@@ -99,24 +76,26 @@ export default function NewQuestionList({ user }) {
                           </TableCell>
                         </TableRow>
                       ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={questions.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onChangePage={(e, newPage) => updatePage(newPage)}
-                onChangeRowsPerPage={(e) => {
-                  updateRowsPerPage(parseInt(e.target.value, 10));
-                  updatePage(0);
-                }}
-              />
-            </Paper>
-          )}
-        </>
+                  </>
+                ) : (
+                  <EmptyTable numRows={5} numCells={1} />
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={questions.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onChangePage={(e, newPage) => updatePage(newPage)}
+            onChangeRowsPerPage={(e) => {
+              updateRowsPerPage(parseInt(e.target.value, 10));
+              updatePage(0);
+            }}
+          />
+        </Paper>
       ) : (
         <Loading />
       )}

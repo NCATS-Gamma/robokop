@@ -2,6 +2,8 @@ import React from 'react';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 
+import './emptyTable.css';
+
 function makeEmptyArray(num) {
   const emptyArray = [];
   for (let i = 0; i < num; i += 1) {

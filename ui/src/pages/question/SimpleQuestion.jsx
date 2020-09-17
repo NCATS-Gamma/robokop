@@ -3,6 +3,7 @@ import {
   Grid, Row, Tabs, Tab,
 } from 'react-bootstrap';
 import { FaDownload } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 import './newQuestion.css';
 // import AnswersetStore from '../../stores/messageAnswersetStore';
@@ -104,7 +105,6 @@ export default function SimpleQuestion(props) {
     setErrorMessage('');
   }
 
-  const questionLink = !user.is_authenticated ? <a href={config.routes.login}>Sign In</a> : <a href={config.routes.questionDesign}>Go Here</a>;
   return (
     <Grid>
       <Row>
@@ -114,7 +114,14 @@ export default function SimpleQuestion(props) {
               Ask a Quick Question
               <br />
               <small>
-                This question will not be saved. If you would like to save a question, please {questionLink}.
+                {'This question will not be saved. If you would like to save a question, please '}
+                {user ? (
+                  <Link to="/q/new">
+                    go here.
+                  </Link>
+                ) : (
+                  'sign in.'
+                )}
               </small>
             </h1>
             <QuestionBuilder

@@ -28,6 +28,7 @@ import Footer from './components/footer/Footer';
 
 export default function App() {
   const [user, setUser] = useState(null);
+  const isSignedIn = Boolean(user && user.username);
   // const ensuredUser = ensureUser(user);
   return (
     <div id="pageContainer">
@@ -41,10 +42,19 @@ export default function App() {
             <Help />
           </Route>
           <Route path="/guide">
-            <Guide isSignedIn={Boolean(user)} />
+            <Guide isSignedIn={isSignedIn} />
           </Route>
           <Route path="/neighborhood">
             <Neighborhood />
+          </Route>
+          <Route path="/questions">
+            <NewQuestionList user={user} />
+          </Route>
+          <Route path="/question/:question_id">
+            <Answers user={user} />
+          </Route>
+          <Route path="/termsofservice">
+            <TermsofService />
           </Route>
           <Route
             path="/simple"
@@ -60,17 +70,8 @@ export default function App() {
               </>
             )}
           />
-          <Route path="/questions">
-            <NewQuestionList user={user} />
-          </Route>
-          <Route path="/question/:question_id">
-            <Answers user={user} />
-          </Route>
-          <Route path="/termsofservice">
-            <TermsofService />
-          </Route>
           <Route path="/">
-            <Landing isSignedIn={Boolean(user)} />
+            <Landing isSignedIn={isSignedIn} />
           </Route>
         </Switch>
       </div>
