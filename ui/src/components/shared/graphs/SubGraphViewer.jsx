@@ -18,6 +18,9 @@ const styles = {
 
 const defaultGraphOptions = {
   autoResize: true,
+  // TODO: this prop would be helpful, but doesn't seem to do anything
+  // https://visjs.github.io/vis-network/docs/network/#options
+  clickToUse: true,
   height: '500px',
   physics: {
     minVelocity: 1,

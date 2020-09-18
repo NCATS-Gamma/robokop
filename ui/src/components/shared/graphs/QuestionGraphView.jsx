@@ -171,7 +171,7 @@ export default function QuestionGraphView(props) {
       randomSeed: 0,
       hierarchical: {
         enabled: true,
-        levelSeparation: 200,
+        levelSeparation: 300,
         nodeSpacing: 200,
         treeSpacing: 200,
         blockShifting: true,
@@ -183,7 +183,7 @@ export default function QuestionGraphView(props) {
     };
 
     // Switch to a simple quick spring layout without overlap
-    if ((graph.nodes.length > 10) || (graph.edges.length >= graph.nodes.length)) {
+    if ((graph.nodes.length > 10) || (graph.edges.length > graph.nodes.length)) {
       physics = {
         minVelocity: 0.75,
         stabilization: {
@@ -273,7 +273,7 @@ export default function QuestionGraphView(props) {
     <>
       {displayGraph !== null && (
         <Graph
-          key={shortid.generate()}
+          // key={shortid.generate()}
           graph={displayGraph}
           options={displayOptions}
           events={{ click: graphClickCallback }}
