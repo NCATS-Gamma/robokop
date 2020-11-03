@@ -9,6 +9,8 @@ services:
       - POSTGRES_PASSWORD
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - ../../../robokop_postgres:/var/lib/postgresql/data
   manager:
     container_name: manager
     build:
