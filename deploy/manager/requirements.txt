@@ -11,7 +11,7 @@ flask_cors
 graphene-sqlalchemy
 flasgger
 gunicorn
-kombu
+kombu==4.6.11
 neo4j-driver==1.5.3
 numpy>=1.8.0
 pika
