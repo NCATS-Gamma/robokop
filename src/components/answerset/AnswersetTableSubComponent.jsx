@@ -146,18 +146,49 @@ class AnswersetTableSubComponent extends React.Component {
       });
   }
 
+  /**
+   * Get an equivalent identifier from the node normalizer service
+   * @param {string} currentCurie current full curie
+   * @param {string} oldCurie curie we need to change
+   * @param {string} wantedCurie curie we want
+   */
+  getCurieSynonym(currentCurie, conversions) {
+    const { id, equivalent_identifiers } = currentCurie;
+    let curieId = id;
+    conversions.forEach((conversion) => {
+      const [oldCurie, newCurie] = conversion.split('-->');
+      if (id.toLowerCase().startsWith(oldCurie.toLowerCase())) {
+        console.log(id);
+        const newId = equivalent_identifiers.find(eqid => eqid.startsWith(newCurie));
+        console.log(newId);
+        if (newId) {
+          curieId = newId;
+        }
+      }
+    });
+    return curieId;
+  }
+
   makeNodePairs(nodes, edges) {
     const axiosArray = [];
     const nodePairs = [];
     const addrFun = (id1, id2) => `${config.protocol}://${config.host}:${config.port}/api/omnicorp/${id1}/${id2}`;
+    const chemConversion = 'PUBCHEM.COMPOUND-->CHEBI';
+    const geneConversion = 'NCBIGene-->HGNC';
     for (let i = 0; i < nodes.length; i += 1) {
       if (!(('isSet' in nodes[i]) && nodes[i].isSet)) {
         for (let m = i + 1; m < nodes.length; m += 1) {
           if (!(('isSet' in nodes[m]) && nodes[m].isSet)) {
             // Both i and m are not from a set.
+            let id1 = nodes[i].id;
+            let id2 = nodes[m].id;
+            // 4/21/21 omnicorp needs specific curie types, so we need to do some conversions of ids to correctly
+            // get edges back
+            id1 = this.getCurieSynonym(nodes[i], [chemConversion, geneConversion]);
+            id2 = this.getCurieSynonym(nodes[m], [chemConversion, geneConversion]);
 
             // builds the api call address and pushes it into an array for the promises
-            const addr = addrFun(nodes[i].id, nodes[m].id);
+            const addr = addrFun(id1, id2);
             axiosArray.push(axios.get(addr));
             // putting the node pairs as an array into an array for when we make the edges
             nodePairs.push([nodes[i].id, nodes[m].id]);
@@ -172,7 +203,13 @@ class AnswersetTableSubComponent extends React.Component {
         const existingPair = nodePairs.find(p => ((p[0] === e.source_id) && (p[1] === e.target_id)) || ((p[1] === e.source_id) && (p[0] === e.target_id)));
         if (!existingPair) {
           // We need to add this pair
-          const addr = addrFun(e.source_id, e.target_id);
+          let id1 = e.source_id;
+          let id2 = e.target_id;
+          const node1 = nodes.find(node => e.source_id === node.id);
+          const node2 = nodes.find(node => e.target_id === node.id);
+          id1 = this.getCurieSynonym(node1, [chemConversion, geneConversion]);
+          id2 = this.getCurieSynonym(node2, [chemConversion, geneConversion]);
+          const addr = addrFun(id1, id2);
           axiosArray.push(axios.get(addr));
           nodePairs.push([e.source_id, e.target_id]);
         }
