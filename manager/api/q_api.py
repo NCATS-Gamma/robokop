@@ -21,7 +21,6 @@ from manager.setup import api
 from manager.setup_db import engine
 import manager.logging_config
 import manager.api.definitions
-# from manager.celery_monitor import get_messages
 
 logger = logging.getLogger(__name__)
 
