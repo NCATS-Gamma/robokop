@@ -6,8 +6,6 @@ import FaExternalLink from 'react-icons/lib/fa/external-link';
 import AppConfig from '../../AppConfig';
 import { config } from '../../index';
 
-const shortid = require('shortid');
-
 class PubmedEntry extends React.Component {
   constructor(props) {
     super(props);
@@ -25,62 +23,92 @@ class PubmedEntry extends React.Component {
       doid: '',
     };
 
+    this.makePubmedObj = this.makePubmedObj.bind(this);
+    this.makeDoiObj = this.makeDoiObj.bind(this);
     this.getPubmedInfo = this.getPubmedInfo.bind(this);
+    this.getDisplayDate = this.getDisplayDate.bind(this);
+  }
+
+  makePubmedObj(publication) {
+    return {
+      id: publication.uid,
+      title: publication.title,
+      authors: publication.authors.map(author => author.name),
+      journal: publication.fulljournalname,
+      source: publication.source,
+      pubdate: publication.pubdate,
+      url: `https://www.ncbi.nlm.nih.gov/pubmed/${publication.uid}/`,
+      doid: publication.elocationid,
+    };
+  }
+
+  getDisplayDate(year, month, day) {
+    let date = '';
+    // sometimes we only get year or year and month
+    const monthIndex = month !== undefined ? month - 1 : undefined;
+    if (year && monthIndex !== undefined && day !== undefined) {
+      date = new Date(year, monthIndex, day);
+      return `${date.getFullYear()} ${date.toLocaleString('default', { month: 'short' })} ${date.getDate()}`;
+    } else if (year && monthIndex !== undefined && day === undefined) {
+      date = new Date(year, monthIndex);
+      return `${date.getFullYear()} ${date.toLocaleString('default', { month: 'short' })}`;
+    } else if (year && monthIndex === undefined && day === undefined) {
+      return year;
+    }
+    return 'Unknown publish date.';
+  }
+
+  makeDoiObj(publication) {
+    const authors = publication.author ? publication.author.map(author => (`${author.family} ${author.given}`)) : [];
+    let [year, month, day] = [];
+    if ('published-online' in publication) {
+      // grab date from first item in list of date-parts
+      ([[year, month, day]] = publication['published-online']['date-parts']);
+    } else if ('published-print' in publication) {
+      // grab date from first item in list of date-parts
+      ([[year, month, day]] = publication['published-print']['date-parts']);
+    }
+    const publishedDate = this.getDisplayDate(year, month, day);
+    return {
+      id: publication.DOI,
+      title: publication.title[0],
+      authors,
+      journal: publication.publisher,
+      source: publication['publisher-location'],
+      pubdate: publishedDate,
+      url: publication.URL,
+      doid: '',
+    };
   }
 
   getPubmedInfo() {
     const { pub } = this.props;
-    let linkUrl = '#';
-    let linkDisable = true;
-    const paperInfo = pub;
-    let info = {
-      id: paperInfo.uid,
-      title: paperInfo.title,
-      authors: paperInfo.authors,
-      journal: paperInfo.fulljournalname,
-      source: paperInfo.source,
-      pubdate: paperInfo.pubdate,
-      url: `https://www.ncbi.nlm.nih.gov/pubmed/${paperInfo.uid}/`,
-      doid: paperInfo.elocationid,
-    };
-    if (!info.id) {
-      // something went wrong and we got back some wonky object.
-      info = this.defaultFailureInfo;
-    }
-    if (info.url) {
-      linkDisable = false;
-      linkUrl = info.url;
+    let info = this.defaultFailureInfo;
+    if ('uid' in pub) {
+      info = this.makePubmedObj(pub);
+    } else if ('DOI' in pub) {
+      info = this.makeDoiObj(pub);
     }
     let { authors } = info;
     if (authors == null) {
       authors = [];
     }
-    const authorFrag = authors.map((a, ind, as) => {
-      let comma = ', ';
-      if ((ind + 1) === as.length) {
-        comma = '';
-      }
-      return (
-        <span key={shortid.generate()}>
-          {a.name}{comma}
-        </span>
-      );
-    });
+    const authorFrag = authors.join(', ');
     return {
-      info, linkUrl, linkDisable, authorFrag,
+      info, authorFrag,
     };
   }
 
   render() {
     const {
-      info, linkUrl, linkDisable, authorFrag,
+      info, authorFrag,
     } = this.getPubmedInfo();
     return (
       <Media>
         {info.id ?
           <div>
             <Media.Left>
-              <Button disabled={linkDisable} onClick={() => window.open(linkUrl, '_blank')}>
+              <Button disabled={!info.url} onClick={() => window.open(info.url, '_blank')}>
                 <div style={{ fontSize: '36px' }}>
                   <FaExternalLink />
                 </div>
