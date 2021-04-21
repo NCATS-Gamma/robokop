@@ -228,41 +228,72 @@ class AnswerExplorerInfo extends React.Component {
     );
   }
 
+  makePubmedObj(publication) {
+    return {
+      title: publication.title,
+      journal: publication.fulljournalname,
+      pubdate: publication.pubdate,
+      url: `https://www.ncbi.nlm.nih.gov/pubmed/${publication.uid}/`,
+    };
+  }
+
+  getDisplayDate(year, month, day) {
+    let date = '';
+    // sometimes we only get year
+    const monthIndex = month !== undefined ? month - 1 : undefined;
+    if (year && monthIndex !== undefined && day !== undefined) {
+      date = new Date(year, monthIndex, day);
+      return `${date.getFullYear()} ${date.toLocaleString('default', { month: 'short' })} ${date.getDate()}`;
+    } else if (year && monthIndex !== undefined && day === undefined) {
+      date = new Date(year, monthIndex);
+      return `${date.getFullYear()} ${date.toLocaleString('default', { month: 'short' })}`;
+    } else if (year && monthIndex === undefined && day === undefined) {
+      return year;
+    }
+    return 'Unknown publish date.';
+  }
+
+  makeDoiObj(publication) {
+    let [year, month, day] = [];
+    if ('published-online' in publication) {
+      // grab date from first item in list of date-parts
+      ([[year, month, day]] = publication['published-online']['date-parts']);
+    } else if ('published-print' in publication) {
+      // grab date from first item in list of date-parts
+      ([[year, month, day]] = publication['published-print']['date-parts']);
+    }
+    const publishedDate = this.getDisplayDate(year, month, day);
+    return {
+      title: publication.title[0],
+      journal: publication.publisher,
+      pubdate: publishedDate,
+      url: publication.URL,
+    };
+  }
+
   downloadPublicationsInfo(publications) {
     const defaultInfo = {
-      id: '',
       title: 'Unable to fetch publication information',
-      authors: [],
       journal: '',
-      source: '',
       pubdate: '',
       url: '',
-      doid: '',
     };
     const getInfo = (pub) => {
-      const paperInfo = {
-        id: pub.uid,
-        title: pub.title,
-        authors: pub.authors,
-        journal: pub.fulljournalname,
-        source: pub.source,
-        pubdate: pub.pubdate,
-        url: `https://www.ncbi.nlm.nih.gov/pubmed/${pub.uid}/`,
-        doid: pub.elocationid,
-      };
-      return { ...defaultInfo, ...paperInfo };
+      let info = {};
+      if ('uid' in pub) {
+        info = this.makePubmedObj(pub);
+      } else if ('DOI' in pub) {
+        info = this.makeDoiObj(pub);
+      }
+      return { ...defaultInfo, ...info };
     };
 
-    const getPubmedInformation = (pmid) => {
-      let pmidStr = pmid.toString();
-      if ((typeof pmidStr === 'string' || pmidStr instanceof String) && (pmidStr.indexOf(':') !== -1)) {
-        // pmidStr has a colon, and therefore probably a curie, remove it.
-        pmidStr = pmidStr.substr(pmidStr.indexOf(':') + 1);
-      }
+    const getPubmedInformation = (publicationId) => {
+      const pmid = publicationId.toString();
 
       return new Promise((resolve, reject) => {
         this.appConfig.getPubmedPublications(
-          pmidStr,
+          encodeURIComponent(encodeURIComponent(pmid)),
           (pub) => {
             resolve(getInfo(pub));
           },
@@ -281,7 +312,7 @@ class AnswerExplorerInfo extends React.Component {
       // const url = URL.createObjectURL(blob);
 
       const fields = ['url', 'title', 'journal', 'pubdate'];
-      const replacer = (key, value) => { return value === null ? '' : value; };
+      const replacer = (key, value) => (value === null ? '' : value);
 
       const csv = data.map(row => fields.map(f => JSON.stringify(row[f], replacer)).join(','));
       csv.unshift(fields.join(','));

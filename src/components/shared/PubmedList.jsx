@@ -45,17 +45,14 @@ class PubmedList extends React.Component {
     style,
     isScrolling,
   }) {
-    let pmid = this.props.publications[index].toString();
-    if ((typeof pmid === 'string' || pmid instanceof String) && (pmid.indexOf(':') !== -1)) {
-      // pmidStr has a colon, and therefore probably a curie, remove it.
-      pmid = pmid.substr(pmid.indexOf(':') + 1);
-    }
+    const pmid = this.props.publications[index].toString();
     let publication = 'Loading...';
     if (this.state.pubs[index]) {
       publication = <PubmedEntry pub={this.state.pubs[index]} />;
     } else if (!isScrolling) {
       this.appConfig.getPubmedPublications(
-        pmid,
+        // double encode because pmid might have slashes in them
+        encodeURIComponent(encodeURIComponent(pmid)),
         (pub) => {
           const { pubs } = this.state;
           pubs[index] = pub;
