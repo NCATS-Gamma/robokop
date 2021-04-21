@@ -10,6 +10,7 @@ import requests
 from celery import Celery, signals
 from kombu import Queue, Exchange
 from flask_mail import Message
+from crossref.restful import Works
 
 from manager.setup import app, mail
 from manager.task import TASK_TYPES, save_task_info, save_task_result, save_starting_task_info, save_remote_task_info, save_final_task_info  # make sure that question knows about .tasks
@@ -330,37 +331,46 @@ def update_kg(self, question_id, user_email=None):
 
 @celery.task(bind=True, name='pubmed', exchange='manager', routing_key='manager.pubmed', task_acks_late=True, track_started=True, worker_prefetch_multiplier=1, rate_limit='1/s')
 def fetch_pubmed_info(self, pmid, pubmed_cache_key):
-    # Actually make the request
-    postUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
-    postData = {"db": "pubmed", "id": pmid, "version": "2.0", "retmode": "json"}
+    target, uid = pmid.split(':', 1)
 
-    response = requests.post(postUrl, data=postData)
+    if target == 'PMID':
+        # Actually make the request
+        postUrl = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
+        postData = {"db": "pubmed", "id": uid, "version": "2.0", "retmode": "json"}
 
-    # When you get the request back
-    if not response.ok:
-        # logger.debug(f'Pubmed returned a bad response for {pmid}, status code {response.status_code}')
-        if response.status_code == 429:
-            return 'Too many robokop pubmed requests'
-        return f'Unable to complete pubmed request, pubmed request status {response.status_code}'
+        response = requests.post(postUrl, data=postData)
 
-    pubmed_payload = response.json()
-    if not pubmed_payload or 'result' not in pubmed_payload:
-        # logger.debug(f'Pubmed returned a bad json response for {pmid}, response json {pubmed_payload}')
-        return 'Unable to complete pubmed request, bad pubmed response'
+        # When you get the request back
+        if not response.ok:
+            # logger.debug(f'Pubmed returned a bad response for {uid}, status code {response.status_code}')
+            if response.status_code == 429:
+                return 'Too many robokop pubmed requests'
+            return f'Unable to complete pubmed request, pubmed request status {response.status_code}'
+
+        pubmed_payload = response.json()
+        if not pubmed_payload or 'result' not in pubmed_payload:
+            # logger.debug(f'Pubmed returned a bad json response for {uid}, response json {pubmed_payload}')
+            return 'Unable to complete pubmed request, bad pubmed response'
+        
+        pubmed_result = pubmed_payload['result']
+        if uid not in pubmed_result:
+            # logger.debug(f'Pubmed returned a bad json result for {uid}, result {pubmed_result}')
+            return 'Unable to complete pubmed request, bad pubmed result'
+        pubmed_result = pubmed_result[uid]
+    elif target == 'DOI':
+        # https://github.com/fabiobatalha/crossrefapi
+        works = Works()
+        pubmed_result = works.doi(uid)
+        # logger.debug(f'DOI response {pubmed_result}')
+    else:
+        return 'Unsupported publication type.'
     
-    pubmed_result = pubmed_payload['result']
-    if pmid not in pubmed_result:
-        # logger.debug(f'Pubmed returned a bad json result for {pmid}, result {pubmed_result}')
-        return 'Unable to complete pubmed request, bad pubmed result'
-
-    pubmed_info = pubmed_result[pmid]
-
     pubmed_redis_client = redis.Redis(
         host=os.environ['PUBMED_CACHE_HOST'],
         port=os.environ['PUBMED_CACHE_PORT'],
         db=os.environ['PUBMED_CACHE_DB'],
         password=os.environ['PUBMED_CACHE_PASSWORD'])
-    pubmed_redis_client.set(pubmed_cache_key, json.dumps(pubmed_info))
+    pubmed_redis_client.set(pubmed_cache_key, json.dumps(pubmed_result))
     # logger.debug(f'Pubmed response is now cached for pmid {pmid}')
 
     return 'cached'

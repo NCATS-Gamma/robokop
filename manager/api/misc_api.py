@@ -573,6 +573,9 @@ class Pubmed(Resource):
                         schema:
                             type: object
         """
+        # pmid can have slashes in them. ex. DOI:10.1038/sj.bmt.1704499
+        # the ui sends these encoded, so we need to decode
+        pmid = unquote(pmid)
         
         # logger.debug(f'Fetching pubmed info for pmid {pmid}')
 
