@@ -79,7 +79,7 @@ class AnswerExplorerInfo extends React.Component {
     }
     const edge = this.state.subgraph.edges.find(e => e.id === this.state.selectedEdgeId);
     const urls = curieUrls(n.id);
-    if (edge.source_database.includes('ctd')) {
+    if ('source_database' in edge && edge.source_database.includes('ctd')) {
       const urlObj = ctdUrls(n.type, n.equivalent_identifiers);
       urls.push(urlObj);
     }
