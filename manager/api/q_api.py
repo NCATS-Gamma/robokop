@@ -65,6 +65,7 @@ class AnswersetAPI(Resource):
                             type: string
         """
         question_id, answerset_id = qid_aid.split('_')
+        logger.info(f"Question id: {question_id}.  Answerset id: {answerset_id}")
         include_kg = request.args.get('include_kg', default=False)
         include_kg = include_kg if isinstance(include_kg, bool) else True if isinstance(include_kg, str) and include_kg == 'true' else False
         query = f"""{{
@@ -86,20 +87,25 @@ class AnswersetAPI(Resource):
         }}"""
         request_body = {'query': query}
         url = f'http://localhost:{os.environ["GRAPHQL_PORT"]}/graphql'
+        logger.info("Retrieve graph")
         response = requests.post(url, json=request_body)
+        logger.info("Graph Retrieved")
         graphql_out = response.json()
         question_graph = json.loads(graphql_out['data']['question']['question_graph']['body'])
         answers = graphql_out['data']['question']['qgraphByQgraphId']['answersetsByQgraphIdList'][-1]['answersByAnswersetIdAndQgraphIdList']
         answers = [json.loads(answer['body']) for answer in answers]
+        logger.info(f"{len(answers)} answers")
         message = {
             'question_graph': question_graph,
             'answers': answers
         }
         if include_kg:
+            logger.info("Call ranker /api/knowledge_graph")
             url = f'http://{os.environ["RANKER_HOST"]}:{os.environ["RANKER_PORT"]}/api/knowledge_graph'
             
             response = requests.post(url, json=message)
             if response.status_code >= 300:
+                logger.error(f"Error contacting ranker. {response.status_code}")
                 return 'Trouble contacting the ranker, there is probably a problem with the neo4j database', 500
 
             message['knowledge_graph'] = response.json()
