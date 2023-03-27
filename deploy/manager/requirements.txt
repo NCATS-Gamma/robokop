@@ -24,6 +24,6 @@ numpy==1.17.0
 pika==1.1.0
 psycopg2==2.8.3
 psycopg2-binary==2.8.3
-redis==3.3.6
+redis==4.5.3
 requests==2.22.0
 -e git+https://github.com/Supervisor/supervisor@dbff619f79c48da0776178e627221da6e40a3261#egg=supervisor
