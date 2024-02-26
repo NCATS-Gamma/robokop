@@ -29,7 +29,7 @@ RUN useradd -m -u $UID -g $GID -s /bin/bash murphy
 WORKDIR /home/murphy
 
 ## Get ROBOKOP software
-ADD ./requirements.txt /home/murphy/requirements.txt
+ADD deploy/manager/requirements.txt /home/murphy/requirements.txt
 RUN pip install -r /home/murphy/requirements.txt --src /usr/local/src
 RUN git clone https://github.com/NCATS-Gamma/robokop.git
 ## Set up the website
