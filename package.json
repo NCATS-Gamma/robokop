@@ -46,7 +46,7 @@
     "immutability-helper": "^2.4.0",
     "jquery": "^3.4.1",
     "lodash": "^4.17.15",
-    "lodash-es": "^4.17.15",
+    "lodash-es": "^4.17.21",
     "mobx": "^4.4.2",
     "mobx-react": "^5.2.8",
     "mobx-state-tree": "^3.3.0",
