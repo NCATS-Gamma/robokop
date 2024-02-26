@@ -36,7 +36,7 @@
     "ag-grid": "^14.2.0",
     "ag-grid-react": "^14.2.0",
     "apollo-boost": "^0.1.22",
-    "axios": "^0.18.1",
+    "axios": "^0.21.1",
     "axios-retry": "^3.0.2",
     "babel-polyfill": "^6.26.0",
     "bootstrap": "^3.4.1",
